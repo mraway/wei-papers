@@ -1,0 +1,135 @@
+\section{Approach}
+\subsection{Similarity Detection}
+Data locality is important to 
+Bringing deduplication to a distributed environment may
+break data locality because 
+introduces several 
+new problems. Former studies of centralized deduplication systems showed
+ that spatial locality of 
+data streams must be preserved. This is because the entire
+ chunk hashes are too big to be loaded into memory, 
+thus certain caching mechanism must be applied, and this require 
+proximal chunk IDs to be stored at nearby places. 
+Furthermore, if chunks are not stored on the disk
+base on spatial locality, file read requests will result in entirely
+ random disk access, since each data chunk is so small, that would 
+become a disaster for any host file system. 
+
+\subsubsection{Granuarity}
+Extreme binning uses files as the basic unit for
+similarity detection, this simplifies the metadata management of
+distributed storage because it only need to manage the mapping
+ from files to their bins. However, this solution doesn't
+consider the uncertainty of file sizes: it is possible that many similar big files
+can be assigned to one container, thus some storage nodes may be overlaoded when
+others are spare. For example, Amazon's S3 stores huge amount of
+virtual machine images which are very similar, so those files will be assigned
+to only a few nodes by the extreme binning.
+Even those files can be evenly distributed to hundreds of nodes, the overall 
+deduplication ratio won't be good since too much dulicates are tolerated.
+
+We suggest that data segment at the size of several megabytes is the best unit for
+similarity based deduplication. Sparse Indexing has already 
+proved that content based chunking method can be also applied to break the list of
+chunks into large segments, such that each segment contains a few hundred of small chunks.
+Using such medium size segments as the basic unit for similarity detection could eliminate
+disadvantages mentioned above, and doing so won't add  much computation cost
+to the deduplication process.
+
+\subsubsection{Signature Algorithm}
+In general, we expect to generate a signature for each segments, such that if two segments
+has a lot of chunks in common, there is a high probablity that their signatures are the same.
+Since we represent segment as a list of chunks, the information available for generating 
+signatures are the chunk hash values, chunk sizes, and offsets. 
+
+Extreme binning suggests the min-hash signature algorithm. By Broder's theorem, 
+the probability that the smallest elements of two sets are identical, is equal to their Jaccard similarity coefficient.
+Therefore they use the smallest chunk hash value as the signature to represent the whole file. 
+
+We propose a Size-based Similarity Detection (SSD) method, 
+which is more storage specific because it uses the chunk size information. Intuitively if one segment is
+only slightly modified, then most of the chunks should remain the same, thus their sizes should mostly remain the same.
+Even modifications could change the chunk hash value, due to the modification resistant property of 
+content based chunking algorithm, most of the time that chunk size is unchanged. Therefore if we want to 
+generate a $n$ bit signature for a segment, we simply split the range of size evenly at logarithmic scale by $n$ , and count how many chunks
+fall into each range. Then if that number is above average, we set the bit for that range as 1, otherwise 0, as shown
+in figure.
+
+By using the signature of segment to represent all of its chunks, Sloud clusters
+segments that are highly similar into one container. Each container is the collection of 
+segments that have the same signature. When a new segment arrives, it will be assigned by its signature to
+the corresponding container which has chunks that are highly similar to it. Thus,  highly accurate deduplcation is achieved.
+However, since every segment is only assigned to one container, if any of the its chunks do not 
+exist in that container but exist elsewhere, they will be treated as new chunks, in other words, 
+duplicates are allowed. Sloud trade such storage space efficiency for faster deduplication and  
+fewer resources consumption such as RAM usage and disk access. In addition, we believe this is the best way to 
+build distributed deduplication solution without losing data locality.
+
+\subsection{Architecture}
+We designed a distributed storage system, Sloud, to demonstrate the possibility of
+providing scalibility to large scale deduplication systems. Sloud cluster similar segment into containers and store
+those containers to the disk. The overall architecture is shown in .
+Sloud uses a DHT service for node discovery and storage space partitioning, all nodes in Sloud are completely equal, 
+there's no node that has special responsibilities.
+
+At every storage node , we keep in memory a bloom filter and a segment index for every container, 
+the rest of part of the container, including the chunk data and chunk index, are stored onto disk. When a new segment comes in, the segment index is used
+for the first pass of deduplication, such that duplicate segments can be detected without looking below. The second pass is done by bloom filter,
+most of new chunks are immediately identified. Otherwise, Sloud look into the chunk index for the final pass of deduplication, as shown in Figure.
+
+Assuming all node are reliable, no failure ever happens, and there is no replication involved, 
+the deduplication process can be described as following:
+\begin{enumerate}
+\item Firstly,  sender scan the files that to need be deduplicated, generate all information about chunks and segments.
+\item For each segment, sender queries the DHT service to find out the node that is responsible to segment's container, then it will send a segment writting message with segment's signature and hash.
+\item The receiver then lookup corresponding container's segment index to see if its a duplicate. If it is, there is no need for further deduplication, it will update the segment's reference count and acknowledge the sender deduplication is complete.
+\item If the segment hash does not exist in segment index, receiver asks sender for the segment recipe, which is all the chunks' information except the actual data.
+\item On receiving the segment recipe, receiver starts deduplicate them against existing chunks in that container. Firstly it goes to the bloom filter, most of the new chunks are identified in this step. For those chunks that are identified as 'exist' by the bloom filter, the receiver looks into chunk index to see if they are really there or not. At any step, if a chunk is identified as new, a request of chunk data is immdeiately sent out.
+\item Incoming chunk data are written to a temporary disk place until all new chunks belonging to that segment are received. Upon this time, receiver merges new data into that container's disk file.
+\item Finally the receiver update the segment index and chunk index, and acknowledge the sender this segment is sucessfully received and deduplicated.
+\end{enumerate}
+
+\subsection{Replication and Concistency}
+Sloud uses consistent hashing ring\cite{consistent_hash97} to maintain a dynamic hash table for node discovery. 
+Each node is given an unique ID and the Sha-1 checksum of their IDs are mapped onto this ring. 
+Containers are also mapped onto the consistent hash ring by the Sha-1 checksum of their represented signatures.
+The benefit of using consistent hash is that adding or removing nodes from the system won't introduce too much
+workload of reorganization. For each container on the ring, Sloud treat the first three consequential nodes as 
+the primary replicas of that container, and the next two nodes as the secondary replicas. Primary replicas hold
+the real copy of container's data, the secondary replicas are only used to cache write requests when some of the 
+primary replicas are temporarily unavailable.
+
+Sloud provides a variation of eventual consistency\cite{eventually09} in its data replication. Read
+requests will succeed if at least one of the three primary replicas is available, write requests requires
+the majority of five primary and secondary replica nodes to be available, which means one of the primary replicas
+must be available for the write request.
+During a segment write, sender finds out the first available node in three of primary replicas, say node A, 
+and let this node handle the rest of deduplication and replication process. Node A will first deduplicate
+the new segment as described in previous sections, then it tries to acknowledge other two primary replicas
+about this update. If succeed, then this segment is successfully written. Otherwise it will
+try to write this update to secondary replicas in order to make sure the new data is written to three places.
+Upon a successful writting to both primary and secondary replicas with three copies, node A can tell the sender
+the new segment is added to storage. But if the sender can not find a available primary replica node, or node A
+can not write to the other two replicas, then the write request will fail.
+
+When secondary replicas receive a segment write request, it will only cache the data because they do not have
+that container. They will try to send cached requests to primary replicas when possible.
+However, if two secdonary replicas want to acknowledge a recently recovered primary replica about the lastest updates,
+the recovered node will receive duplicate requests.
+Furthermore, it is possible that multiple senders want to write identical segment simultaneously, so it is necessary to use an ID
+to distinguish every unique segment writting process.
+In Sloud this segment process ID (SPID) is composed of sender's node ID and an incremental logical clock. The SPID is used through out that segment's
+deduplication process and carried by all related messages.
+In order to avoid processing the same request twice, for every segment Sloud keeps
+its recent SPIDs in the segment index for a short period, therefore if the SPID of incoming segment writting request is found in segment index, 
+receiver could know it has already received and deduplicated this segment.
+
+Periodically, Sloud synchronize each container among its replicas. Synchronization requires
+all primary and secondary replicas to be available. During this process, 
+primary replicas compare each others' recent SPIDs along with secondary replica's cache to determine which write request it has missed. 
+Upon a successful synchronization, all cached segment updates are ensured
+to be delivered to three primary replicas, thus the secondary replicas' cachecan be cleaned up. In addition,
+recent SPIDs in segment index is also stale, they will be cleaned up so that Sloud do not need to keep too many recent SPIDs
+in segment index. If any node is not available during the synchronization, this process will fail. However, the primary replicas
+still try to synchronize as much data as possible, except that the cache and SPIDs will not be cleaned up.
+

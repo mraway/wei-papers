@@ -1,0 +1,69 @@
+\section{Related Works}
+Several approaches have been previously proposed to enable efficient deduplication in D2D backup.
+
+DDFS\cite{bottleneck08} exploits chunk locality to achieve high-throughput perfect deduplication. 
+It preserves locality by a Stream-Informed Segment Layout and exploits locality with Locality Preserved Cache. 
+An in-memory Bloom Filter is also used to accelerate non-duplicate chunk identification.
+
+Sparse Indexing\cite{sparseindex09} is an approximate deduplication technique designed for D2D backup. 
+It divides data stream into variable-sized multiple kilobytes chunks, and construct multiple megabytes segments
+using the same chunking technique, 
+which are then sampled and mapped to a compact in-memory sparse index. 
+Incoming segments are only deduplicated against several existing similar 
+segments selected according to the sparse index.
+
+Both DDFS and Sparse Indexing are designed for D2D backup workloads, 
+and do not address the scalability issue in a distributed environment. 
+A few scalable deduplication approaches have been proposed recently.
+
+Extreme Binning\cite{extreme_binning09} is a scalable parallel deduplication approach 
+that targets at non-traditional backup workloads that consist of low-locality individual files. 
+It groups highly similar files into bins, and eliminates duplicate chunks inside each bin. 
+Duplicate chunks are allowed to exist among different bins, resulting in approximate deduplication. 
+By keeping only the primary index in memory, Extreme Binning can reduce the RAM requirement while 
+maintaining a reasonably high throughput. However, their per-file based similarity detection 
+is going to group all similar files into one node, which will break load balancing if some files are
+huge and similar(e.g., virtual machine images).
+
+MAD2\cite{mad210} is a scalable high-throughput exact duplication approach. 
+MAD2 utilizes on-disk Hash Bucket Matrix to preserve fingerprint locality and 
+integrates in-memory Dual Cache to capture and exploit locality. 
+In addition, MAD2 employs Bloom Filter Array to efficiently identify unique 
+incoming fingerprints and indicate where a duplicate may reside. 
+By employing a DHT-based Load-Balance technique to distribute file recipes 
+and chunk contents among multiple storage nodes in their backup sequences, 
+MAD2 further enhances performance with a well balanced load. However, the
+data locality does not exist for cloud storage because only changed chunks are expected
+to be uploaded, and
+the heavy usage of memory and CPU indicates such exact deduplication backup systems
+need storage-exclusive servers with hardware replication support, which is not a general case 
+for the cloud..
+
+HYDRAstor\cite{hydrastor09}, a scalable secondary storage solution, 
+constructs its backend using a grid of storage nodes built around a distributed hash table. 
+The backend maintains large-scale variable-sized, content-addressed, immutable, 
+and highly-resilient data blocks that are logically organized in a directed acyclic graph. 
+Duplicate chunks are eliminated according to their hashes. 
+HYDRAstor adopts an average chunk size of 64KB, among other constraints, 
+to keep all the metadata in memory and avoid the duplicate-lookup disk bottleneck. 
+This degrades the space efficiency of deduplication, and still requires huge amount of memory.
+
+We believe a deduplication backend of cloud storage must have scalability and
+ high availability built in mind, being able to run on low-cost non-proprietary machines.
+  Unlike sloud, all above systems lack one or a few such properties. All exact deduplication approaches
+are too costly, this is why we choose similarity based approach to trade deduplication
+accuracy for speed. 
+
+Eariler deduplication systems mainly focus on improving storage space efficiency by eliminating 
+duplicates at the file level, fixed-size block level, or variable-sized chunk level. 
+EMC's Centera\cite{emc_centera} identify and eliminate duplicate data by comparing 
+the hash of the whole file or fixed content. Venti\cite{venti02}, a block-level archival storage, 
+removes redundant fixed-size data blocks by comparing their secure hashes. Pastiche\cite{pastiche02} 
+utilizes chunk-level duplicate detection to construct a resource-saving peer-to-peer backup network. 
+Deep Store\cite{deepstore05}, a large scale archival storage system, uses both variable-sized 
+chunk-level deduplication and delta compression to save storage. Jumbo Store\cite{jumbo07} organizes 
+variable-sized chunks into Hash-Based Directed Acyclic Graphs to save both storage and 
+bandwidth while performing incremental upload and versioning for a utility rendering service. 
+
+Duplicate detection technique has also been used in bandwidth-saving synchronization protocols\cite{rsync} 
+and low-bandwidth network file systems\cite{lbfs01}.
