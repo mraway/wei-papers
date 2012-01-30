@@ -1,0 +1,25 @@
+\begin{abstract}
+Virtualization has became the engine behind many cloud computing platforms.
+In a virtualized computing environment, virtual machines
+operate on virtual disks, so backing up user data is done by constantly 
+taking snapshots of those virtual disks. Because such VM snapshots are huge in
+terms of both quantity and individual sizes, snapshot storage would cost tremendous amount 
+of space without deduplication.
+Current snapshot deduplication is mainly done through copy-on-write 
+on fixed-size disk blocks. Such solutions cannot handle the
+ cross VM data duplication because VMs do not share any data. 
+In addition, storing VM images and their snapshots
+in the same storage engine reduce the underline design flexibility because 
+these two kinds of data have distinct access requirements.
+
+In this paper, we first perform a large scale study in production VM clusters 
+to show that cross VM data duplication is severe due to they have large amount of
+common data. Then our data analysis finds out that the overall data duplication pattern follows the Zipf's law.
+Base on these discoveries, we propose a snapshot storage deduplication scheme using variable-size chunking
+to address the above problem efficiently.
+We eliminate the majority of cross VM data duplication by pre-select
+a small set of frequently seen data blocks to be shared globally, and we also remove
+many cross snapshot duplication by using smaller chunking granuarity and locality.
+Experiment shows our design can achieve high deduplication ratio with very limited 
+amount of resources in large scale VM cloud environment.
+\end{abstract}

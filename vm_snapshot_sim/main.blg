@@ -1,51 +1,51 @@
-This is BibTeX, Version 0.99c (TeX Live 2009)
+This is BibTeX, Version 0.99c (TeX Live 2009/Debian)
 The top-level auxiliary file: main.aux
 The style file: abbrv.bst
 Database file #1: dedup.bib
+Warning--I didn't find a database entry for "vmimage"
 Warning--to sort, need author or key in emc_avamar
 Warning--to sort, need author or key in datadomain_whitepaper
-Warning--to sort, need author or key in emc_centera
 Warning--empty author in datadomain_whitepaper
 Warning--empty year in datadomain_whitepaper
-You've used 20 entries,
+You've used 12 entries,
             2118 wiz_defined-function locations,
-            615 strings with 7695 characters,
-and the built_in function-call counts, 7901 in all, are:
-= -- 808
-> -- 335
-< -- 14
-+ -- 135
-- -- 114
-* -- 519
-:= -- 1200
-add.period$ -- 66
-call.type$ -- 20
-change.case$ -- 117
+            570 strings with 6344 characters,
+and the built_in function-call counts, 4906 in all, are:
+= -- 496
+> -- 215
+< -- 10
++ -- 87
+- -- 74
+* -- 320
+:= -- 742
+add.period$ -- 40
+call.type$ -- 12
+change.case$ -- 74
 chr.to.int$ -- 0
-cite$ -- 25
-duplicate$ -- 343
-empty$ -- 630
-format.name$ -- 114
-if$ -- 1762
+cite$ -- 16
+duplicate$ -- 217
+empty$ -- 387
+format.name$ -- 74
+if$ -- 1099
 int.to.chr$ -- 0
-int.to.str$ -- 20
-missing$ -- 15
-newline$ -- 101
-num.names$ -- 34
-pop$ -- 157
+int.to.str$ -- 12
+missing$ -- 9
+newline$ -- 62
+num.names$ -- 20
+pop$ -- 104
 preamble$ -- 1
-purify$ -- 97
+purify$ -- 61
 quote$ -- 0
-skip$ -- 258
+skip$ -- 161
 stack$ -- 0
-substring$ -- 471
-swap$ -- 122
-text.length$ -- 14
+substring$ -- 273
+swap$ -- 81
+text.length$ -- 10
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 80
-warning$ -- 5
-while$ -- 72
-width$ -- 22
-write$ -- 230
+type$ -- 48
+warning$ -- 4
+while$ -- 43
+width$ -- 14
+write$ -- 140
 (There were 5 warnings)

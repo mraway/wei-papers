@@ -1,135 +1,115 @@
-\section{Approach}
-\subsection{Similarity Detection}
-Data locality is important to 
-Bringing deduplication to a distributed environment may
-break data locality because 
-introduces several 
-new problems. Former studies of centralized deduplication systems showed
- that spatial locality of 
-data streams must be preserved. This is because the entire
- chunk hashes are too big to be loaded into memory, 
-thus certain caching mechanism must be applied, and this require 
-proximal chunk IDs to be stored at nearby places. 
-Furthermore, if chunks are not stored on the disk
-base on spatial locality, file read requests will result in entirely
- random disk access, since each data chunk is so small, that would 
-become a disaster for any host file system. 
+\section{Our Approach}
+\subsection{Aliyun's VM Cloud}
+Aliyun provides the largest public VM cloud in China which is based on the 
+open-source Xen technology. A typical VM cluster in our cloud environment
+consists of from hundreds to thousands physical machines, each of which can
+host tens of virtual machines. A few varieties of mainstream OS are supported,
+including several editions of Windows Server, major Linux distributions, and FreeBSD.
+During the VM creation, user choose his flavor of OS distribution, our system will
+copy the corresponding pre-configured base VM image to his VM as the OS disk, 
+and an empty data disk is created and mounted onto his VM as well. 
 
-\subsubsection{Granuarity}
-Extreme binning uses files as the basic unit for
-similarity detection, this simplifies the metadata management of
-distributed storage because it only need to manage the mapping
- from files to their bins. However, this solution doesn't
-consider the uncertainty of file sizes: it is possible that many similar big files
-can be assigned to one container, thus some storage nodes may be overlaoded when
-others are spare. For example, Amazon's S3 stores huge amount of
-virtual machine images which are very similar, so those files will be assigned
-to only a few nodes by the extreme binning.
-Even those files can be evenly distributed to hundreds of nodes, the overall 
-deduplication ratio won't be good since too much dulicates are tolerated.
+\begin{figure}
+  \centering
+  \epsfig{file=images/tapdisk.eps, height=2in, width=2.66in}
+  \caption{I/O channel between VM and image files}
+  \label{fig:tapdisk}
+\end{figure}
 
-We suggest that data segment at the size of several megabytes is the best unit for
-similarity based deduplication. Sparse Indexing has already 
-proved that content based chunking method can be also applied to break the list of
-chunks into large segments, such that each segment contains a few hundred of small chunks.
-Using such medium size segments as the basic unit for similarity detection could eliminate
-disadvantages mentioned above, and doing so won't add  much computation cost
-to the deduplication process.
+All these virtual disks are represented as virtual machine image files in our
+underline runtime VM storage system. The runtime I/O between virtual machine and its virtual
+disks is tunneled by the TapDisk driver. To avoid network latency and congestion, 
+our distributed file system carefully selects the location of primary replica of VM's 
+image files such that they are located on the same physical machine of VM instance.
 
-\subsubsection{Signature Algorithm}
-In general, we expect to generate a signature for each segments, such that if two segments
-has a lot of chunks in common, there is a high probablity that their signatures are the same.
-Since we represent segment as a list of chunks, the information available for generating 
-signatures are the chunk hash values, chunk sizes, and offsets. 
+Inside the TapDisk driver, we maintain an array of \emph{dirty bits} to record the dirty area
+of runtime VM image file since the last snapshot, each bit represent a 2MB fix-sized
+data segment. During a snapshot operation, we only need to look at the dirty region
+rather than scan over the whold image file, which would be extremely slow.
 
-Extreme binning suggests the min-hash signature algorithm. By Broder's theorem, 
-the probability that the smallest elements of two sets are identical, is equal to their Jaccard similarity coefficient.
-Therefore they use the smallest chunk hash value as the signature to represent the whole file. 
+The snapshot storage system also resides in our distributed file system, just like the 
+runtime VM storage. But the difference is that snapshot storage do not need to be
+co-located with VM instances, in fact they can even live in a different cluster to improve the 
+data safty. When cluster A is offline, we can quickly restore its VMs from cluster B
+to reduce the impact to our users.
 
-We propose a Size-based Similarity Detection (SSD) method, 
-which is more storage specific because it uses the chunk size information. Intuitively if one segment is
-only slightly modified, then most of the chunks should remain the same, thus their sizes should mostly remain the same.
-Even modifications could change the chunk hash value, due to the modification resistant property of 
-content based chunking algorithm, most of the time that chunk size is unchanged. Therefore if we want to 
-generate a $n$ bit signature for a segment, we simply split the range of size evenly at logarithmic scale by $n$ , and count how many chunks
-fall into each range. Then if that number is above average, we set the bit for that range as 1, otherwise 0, as shown
-in figure.
+The detail design and implementation of our distributed file system and various 
+storage subsystems would be too complicated to be intorduced here, and also beyond
+the scope of this paper. In the remaining section we will brief the model and interface of 
+our snapshot storage.
 
-By using the signature of segment to represent all of its chunks, Sloud clusters
-segments that are highly similar into one container. Each container is the collection of 
-segments that have the same signature. When a new segment arrives, it will be assigned by its signature to
-the corresponding container which has chunks that are highly similar to it. Thus,  highly accurate deduplcation is achieved.
-However, since every segment is only assigned to one container, if any of the its chunks do not 
-exist in that container but exist elsewhere, they will be treated as new chunks, in other words, 
-duplicates are allowed. Sloud trade such storage space efficiency for faster deduplication and  
-fewer resources consumption such as RAM usage and disk access. In addition, we believe this is the best way to 
-build distributed deduplication solution without losing data locality.
+\subsection{Snapshot Representation}
+Each snapshot is a two-level index data structure in the form of HDAG. 
+At the bottom level is variable-sized data blocks, like many other deduplication storage systems, 
+we use 4KB as the average block size.
+In the middle is the segment layer, a segment contains hundreds of blocks, it records the list
+of block hash, data reference and some other meta information in a data structure we called
+segment recipe. Then the segment recipe itself, can be serialized into a data block, so the hash
+of segment recipes and their meta data formed the snapshot recipe. We take this two-level
+structure because in practice we observed that at each snapshot only a small fraction
+of dirty bits array are marked as set, so snapshot recipes can share the unmodified
+segment recipes to reduce the space cost of snapshot meta data.
 
-\subsection{Architecture}
-We designed a distributed storage system, Sloud, to demonstrate the possibility of
-providing scalibility to large scale deduplication systems. Sloud cluster similar segment into containers and store
-those containers to the disk. The overall architecture is shown in .
-Sloud uses a DHT service for node discovery and storage space partitioning, all nodes in Sloud are completely equal, 
-there's no node that has special responsibilities.
+Instead of using variables-sized segment like many others did, we take the simpler approach
+to let every segment being aligned to the boundary of dirty bits array. This is because
+\emph{vhd} file format will keep the allocated inner blocks at the same positions until deletion,
+which means the locality of snapshot data is almost natively aligned. Enforcing a boundary at every 2MB will
+only break 0.2\% of total data blocks which is tiny.
 
-At every storage node , we keep in memory a bloom filter and a segment index for every container, 
-the rest of part of the container, including the chunk data and chunk index, are stored onto disk. When a new segment comes in, the segment index is used
-for the first pass of deduplication, such that duplicate segments can be detected without looking below. The second pass is done by bloom filter,
-most of new chunks are immediately identified. Otherwise, Sloud look into the chunk index for the final pass of deduplication, as shown in Figure.
+\subsection{Snapshot Storage}
+The snapshot storage system sits on top of our distributed file system, 
+it can be abstracted as a block store which operates a few \emph{append-only} files
+in the underline file storage. Each virtual disk has its own data store, all data 
+blocks after deduplication will be stored into that system.
 
-Assuming all node are reliable, no failure ever happens, and there is no replication involved, 
-the deduplication process can be described as following:
-\begin{enumerate}
-\item Firstly,  sender scan the files that to need be deduplicated, generate all information about chunks and segments.
-\item For each segment, sender queries the DHT service to find out the node that is responsible to segment's container, then it will send a segment writting message with segment's signature and hash.
-\item The receiver then lookup corresponding container's segment index to see if its a duplicate. If it is, there is no need for further deduplication, it will update the segment's reference count and acknowledge the sender deduplication is complete.
-\item If the segment hash does not exist in segment index, receiver asks sender for the segment recipe, which is all the chunks' information except the actual data.
-\item On receiving the segment recipe, receiver starts deduplicate them against existing chunks in that container. Firstly it goes to the bloom filter, most of the new chunks are identified in this step. For those chunks that are identified as 'exist' by the bloom filter, the receiver looks into chunk index to see if they are really there or not. At any step, if a chunk is identified as new, a request of chunk data is immdeiately sent out.
-\item Incoming chunk data are written to a temporary disk place until all new chunks belonging to that segment are received. Upon this time, receiver merges new data into that container's disk file.
-\item Finally the receiver update the segment index and chunk index, and acknowledge the sender this segment is sucessfully received and deduplicated.
-\end{enumerate}
+\begin{figure}
+  \centering
+  \epsfig{file=images/storage_overview.eps, height=2in, width=2.66in}
+  \caption{Storage architecture}
+  \label{fig:arch}
+\end{figure}
 
-\subsection{Replication and Concistency}
-Sloud uses consistent hashing ring\cite{consistent_hash97} to maintain a dynamic hash table for node discovery. 
-Each node is given an unique ID and the Sha-1 checksum of their IDs are mapped onto this ring. 
-Containers are also mapped onto the consistent hash ring by the Sha-1 checksum of their represented signatures.
-The benefit of using consistent hash is that adding or removing nodes from the system won't introduce too much
-workload of reorganization. For each container on the ring, Sloud treat the first three consequential nodes as 
-the primary replicas of that container, and the next two nodes as the secondary replicas. Primary replicas hold
-the real copy of container's data, the secondary replicas are only used to cache write requests when some of the 
-primary replicas are temporarily unavailable.
+We let each virtual disk has its own block store rather than sharing for several reasons:
+first, all data written to block store are already being processed by deduplication
+process, thus no sharing is necessary unless we want to perform additional deduplication
+inside the block store. Second, such seperation will facilitate VM data stastics, 
+deletion and migration. Finally, this reduces the complexity of concurrent snapshot operations.
 
-Sloud provides a variation of eventual consistency\cite{eventually09} in its data replication. Read
-requests will succeed if at least one of the three primary replicas is available, write requests requires
-the majority of five primary and secondary replica nodes to be available, which means one of the primary replicas
-must be available for the write request.
-During a segment write, sender finds out the first available node in three of primary replicas, say node A, 
-and let this node handle the rest of deduplication and replication process. Node A will first deduplicate
-the new segment as described in previous sections, then it tries to acknowledge other two primary replicas
-about this update. If succeed, then this segment is successfully written. Otherwise it will
-try to write this update to secondary replicas in order to make sure the new data is written to three places.
-Upon a successful writting to both primary and secondary replicas with three copies, node A can tell the sender
-the new segment is added to storage. But if the sender can not find a available primary replica node, or node A
-can not write to the other two replicas, then the write request will fail.
+The main interface of our snapshot storage is \emph{get}, \emph{put} and \emph{delete}.
+Get interface accepts a piece of data, write it to the underline data file, and return
+a reference to the caller. This reference then can be used in the put interface to
+retrive or delete the data, thus the caller of put interface must preserve the
+data reference for future use. Since all the underline data structures is append only,
+upon a delete request, the corresponding data will only be marked rather than being deleted.
+A compaction will take place when deleted data has accumulated to certain threshold, thus 
+reclaiming the disk space .
 
-When secondary replicas receive a segment write request, it will only cache the data because they do not have
-that container. They will try to send cached requests to primary replicas when possible.
-However, if two secdonary replicas want to acknowledge a recently recovered primary replica about the lastest updates,
-the recovered node will receive duplicate requests.
-Furthermore, it is possible that multiple senders want to write identical segment simultaneously, so it is necessary to use an ID
-to distinguish every unique segment writting process.
-In Sloud this segment process ID (SPID) is composed of sender's node ID and an incremental logical clock. The SPID is used through out that segment's
-deduplication process and carried by all related messages.
-In order to avoid processing the same request twice, for every segment Sloud keeps
-its recent SPIDs in the segment index for a short period, therefore if the SPID of incoming segment writting request is found in segment index, 
-receiver could know it has already received and deduplicated this segment.
+In addition to above data access interfaces, the snapshot storage also supports
+\emph{scan} and \emph{quota} methods. Scan allows us to traverse all the data blocks
+that store in the data store, and quota is used to acknowledge user how much space he
+has actually used.
 
-Periodically, Sloud synchronize each container among its replicas. Synchronization requires
-all primary and secondary replicas to be available. During this process, 
-primary replicas compare each others' recent SPIDs along with secondary replica's cache to determine which write request it has missed. 
-Upon a successful synchronization, all cached segment updates are ensured
-to be delivered to three primary replicas, thus the secondary replicas' cachecan be cleaned up. In addition,
-recent SPIDs in segment index is also stale, they will be cleaned up so that Sloud do not need to keep too many recent SPIDs
-in segment index. If any node is not available during the synchronization, this process will fail. However, the primary replicas
-still try to synchronize as much data as possible, except that the cache and SPIDs will not be cleaned up.
+\subsection{CDS Operations}
+The CDS is divided into CDS meta and CDS data. THe structure of CDS meta is not different from the
+segment recipe we discussed above, except that it is partitioned into many small slices so that each node
+is easy to load its own slice. At the runtime, our CDS meta resides in a global shared memory cache for 
+deduplication lookups. The data of CDS is stored in a special block store, which doesn't belong to any VM disk.
 
+CDS meta assignment is done statically, each slice of CDS meta has one primary and two backup nodes.
+During the system bootup, snapshot storage controller will read the assignment, 
+load its primary portion of CDS meta from distributed file system. Loading the backup portion
+of CDS is due upon a query arrives for it. Everyday the CDS assignment and CDS data will be checked
+ for updates and reloaded if necessary.
+
+Behind the scene there is a offline map-reduce job, which will periodically scan the block stores
+in the entire cluster and perform a ``word counting''. High frequency blocks are then added to the CDS if its count 
+ is greater than threshold, which is pre-defined by the system memory restrictions.
+
+\subsection{Dedup Process}
+Our deduplication process can be summarized as four steps:
+\begin{list}{Dedup}{}
+\item {Dirty bits: Copy the unchanged portion of snapshot recipe from parent snapshot, base on dirty bits.}
+\item {Locality: Divide dirty segments into blocks, compare to the corresponding segment recipe at the same position of parent snapshot, if duplicate, copy the data reference into segment recipe.}
+\item {CDS: Check if this data exist in the CDS, if yes, copy the returned data reference. Otherwise, write data block to block store, save the returned reference into segment recipe.}
+\item {Save meta: write down the segment recipes and snapshot recipe when finish.}
+\end{list}

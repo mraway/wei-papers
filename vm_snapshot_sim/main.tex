@@ -2,7 +2,7 @@
 %\usepackage[top=1in, bottom=1in, left=1.25in, right=1.25in]{geometry}
 \usepackage[colorlinks,linkcolor=red,anchorcolor=blue,citecolor=green,urlcolor=black]{hyperref}
 \usepackage{epsfig}
-\usepackage{breakurl}
+%\usepackage{breakurl}
 %% Define a new 'leo' style for the package that will use a smaller font.
 \makeatletter
 \def\url@leostyle{%
@@ -13,42 +13,19 @@
 %\linespread{1.2}
 %\setlength{\parskip}{1ex}
 \begin{document}
-\title{foo}
-\author{bar}
+\title{Data Deduplication and Zipf-like Distribution in VM Cloud Storage}
+\author{Wei Zhang, Hong Tang, Hao Jiang, Rachael Zeng, Xiaogang Li, Tao Yang}
 \date{}
 \maketitle
 
-\begin{abstract}
-Virtualization has became the engine behind many cloud computing platforms.
-In a virtualized computing environment, virtual machines
-operate on virtual disks, so backing up user data is done by constantly 
-taking snapshots of those virtual disks. Because such VM snapshots are huge in
-terms of both quantity and individual sizes, snapshot storage would cost tremendous amount 
-of space without deduplication.
-Current snapshot deduplication is mainly done through copy-on-write 
-on fixed-size disk blocks. Such solutions are fast but unable to handle the
- cross VM and inner-block data duplications. In addition, storing VM images and their snapshots
-in the same storage engine reduce the underline design flexibility since these two kinds of data
-have distinct access requirements.
-
-In this paper, we first perform a large scale study in production VM clusters 
-to show that cross VM data duplication is severe due to they have large amount of
-common data. Then our data analysis finds out that the overall data duplication pattern follows the Zipf's law.
-Base on these discoveries, we propose a snapshot storage deduplication scheme using variable-size chunking
-to address the above problem efficiently.
-We eliminate the majority of cross VM data duplication by pre-select
-a small set of frequently seen chunks to dedup against, and we also remove
-many inner-block duplication using smaller chunking granuarity and locality.
-Experiment shows our design can achieve high deduplication ratio and throughput
-without incuring significant overhead to the runtime VM environment.
-\end{abstract}
-
-\input{intro}
-%\input{background}
-\input{approach}
-%\input{results}
-\input{related}
-%\input{conclusion}
+\input{abstract}
+\input{intro} %introduce the problem, related solutions and our requirements
+\input{cds} %data study, zipf, model of cds size and dedup efficiency
+\input{approach} %our dedup process
+\input{results}
+%\input{related}
+%\input{future}
+\input{conclusion}
 \bibliographystyle{abbrv}
 \bibliography{dedup}
 \end{document}

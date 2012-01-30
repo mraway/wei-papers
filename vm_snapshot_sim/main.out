@@ -1,8 +1,19 @@
-\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
-\BOOKMARK [1][-]{section.2}{Approach}{}% 2
-\BOOKMARK [2][-]{subsection.2.1}{Similarity Detection}{section.2}% 3
-\BOOKMARK [3][-]{subsubsection.2.1.1}{Granuarity}{subsection.2.1}% 4
-\BOOKMARK [3][-]{subsubsection.2.1.2}{Signature Algorithm}{subsection.2.1}% 5
-\BOOKMARK [2][-]{subsection.2.2}{Architecture}{section.2}% 6
-\BOOKMARK [2][-]{subsection.2.3}{Replication and Concistency}{section.2}% 7
-\BOOKMARK [1][-]{section.3}{Related Works}{}% 8
+\BOOKMARK [1][-]{section.1}{Introduction}{}
+\BOOKMARK [1][-]{section.2}{Zipf-like Distribution and Common Data Set}{}
+\BOOKMARK [2][-]{subsection.2.1}{OS CDS}{section.2}
+\BOOKMARK [2][-]{subsection.2.2}{Zipf-like Distribution and Data CDS}{section.2}
+\BOOKMARK [3][-]{subsubsection.2.2.1}{The model}{subsection.2.2}
+\BOOKMARK [3][-]{subsubsection.2.2.2}{Methodology}{subsection.2.2}
+\BOOKMARK [3][-]{subsubsection.2.2.3}{Result}{subsection.2.2}
+\BOOKMARK [2][-]{subsection.2.3}{Discussion}{section.2}
+\BOOKMARK [1][-]{section.3}{Our Approach}{}
+\BOOKMARK [2][-]{subsection.3.1}{Aliyun's VM Cloud}{section.3}
+\BOOKMARK [2][-]{subsection.3.2}{Snapshot Representation}{section.3}
+\BOOKMARK [2][-]{subsection.3.3}{Snapshot Storage}{section.3}
+\BOOKMARK [2][-]{subsection.3.4}{CDS Operations}{section.3}
+\BOOKMARK [2][-]{subsection.3.5}{Dedup Process}{section.3}
+\BOOKMARK [1][-]{section.4}{Results}{}
+\BOOKMARK [2][-]{subsection.4.1}{Experiment Setup}{section.4}
+\BOOKMARK [2][-]{subsection.4.2}{OS Disk}{section.4}
+\BOOKMARK [2][-]{subsection.4.3}{Data Disk}{section.4}
+\BOOKMARK [1][-]{section.5}{Conclusion}{}

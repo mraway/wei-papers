@@ -1,0 +1,9 @@
+\section{Conclusion}
+In this paper we present a new parallel deduplication technique for VM cloud.
+Our technique utilizes the special data characteristic in VM cloud backup system
+to accommodate very limited resources for data deduplication.
+By storing the commonly used OS related data, and the hottest user generated data, 
+we greatly reduce the cross-VM data duplication in VM snapshot backups. Experiments show
+our solution can eliminate the majority of data duplication with a tiny fraction of
+block hash index store in memory. It does not only saves valuable system resouces in
+the VM cloud, but also makes deduplication much faster.

@@ -1,30 +1,33 @@
 \section{Introduction}
 
-1.how virtual machines work on storage
-2.cow and why they are not good
-3.introduce dedup
+%1.how virtual machines work on storage
+%2.cow and why they are not good
+%3.introduce dedup
 
-Virtualization is the engine behind many today's cloud computing platforms.
-Amazon and many others have provided clusters that host 
+Virtualization is the engine behind many popular cloud computing platforms.
+Amazon, Aliyun and many others have provided public VM clouds that host 
 hundreds of thousand virtual machines(VM) which are dynamically created
-by users. In such a 
-each instance of a guest operating system stores a
-file called a virtual disk (e.g. .vhd, .vmdk) on the host system
+by users. In such a virtualized environment,
+each instance of guest operating system operates
+on virutal disks, which are represented as
+files called virtual disk image (e.g. .vhd, .vmdk) in the host operating system.
+Because those virtual disk images are stored as files in the external storage,
+backing up VM data in virtual disks is mainly done by taking snapshots
+of virtual disk images,
+which is quite different from traditional file system backup. 
 
-Because those virtual machines are stored in  maVirtualization provide
-
-Backing user data on these virtual disks is quite different from traditional file system backup.
+The most widely used snapshot method is copy-on-write (CoW). Upon VM image storage system receives a save snapshot request,
+it freezes the state of that image file, then all consequent write request will result in the write region being copied
+to a incremental snapshot data file. CoW method can finish a snapshot operation instantly, but it has several disadvantages:
+first, CoW may affect the general I/O performance due to defered data coping. 
+Second, CoW does not seperate backup data and runtime image data,
+which have distinct access requirements: runtime image data is directly used by the running VM, 
+thus need high throughput, and is very sensitive to latency,
+such data must be served with hig cost hardware, but backup data generally only need fair aggregate throughput, 
+is not sensitive to latency, thus can be stored in secondary storage devices.
+Finally and most important, VM snapshots contain tremendous amount of data duplication, which is nearly impossible to tackle 
+if these two kinds of data are tightly coupled together.
  
-File storage is a critical component in cloud infrastructure, because users and applications expect a  
-persistent place to store and share their data. 
-But there can be a significant amount of data redundancy in the storage system
- because large number of users employ such systems for backups, 
-and file data between different users may overlap especially when user base is huge. 
-For example, in a VM-based cloud, users usualy backup their virtual machine images along with application data 
-to a cloud file storage periodically. 
-Therefore, improving the space efficiency is an 
-important factor in designing a file storage service for cloud.
-
 Data deduplication technique can eliminate such redundancy,
 today many D2D backup systems\cite{emc_avamar}\cite{datadomain_whitepaper}.
 uses vaiable-size chunking algorithm to detect duplicates in file data.
@@ -69,27 +72,9 @@ Deepavali\cite{extreme_binning09} uses Broder's theorem\cite{resemblance97} to f
 into the same physical location (bins) to deduplicate against each other.
 
 In cloud storage, we are solving data deduplication problem in a different context of 
-data stream deduplication (the D2D case). 
-We now consider the case for file synchronization service designed to service fine-grained low-locality backup workloads. 
-Such a workload consists of newly modified files, instead of large data streams, that arrive in random order from many clients. 
-There is generally no locality between files that arrive in a given window of time. 
-In the absence of locality, deduplication approach designed for D2D backups perform poorly.
+data stream deduplication (the D2D case). Because our snapshot storage servive is co-located with runtim VMs,
+we have very limited amount of system resource to perform deduplication. For example,
+on our typical 8-core, 48GB memory, 12TB disk server, there lives over 20 VMs who are hungrily eating
+system resources: some are running map-reduce jobs, some are busy web servers, some are backend databases.
+Any behavior that affects user VMs performance or stability is unacceptable.
 
-In addition, file storage with deduplication allow a data chunk to be shared by many files,
-this has not been a problem in D2D backup systems because they may use costly hardware components
-and RAID to reduce the risk of data loss. Unlike D2D backup systems, cloud storage prefers 
-low-cost hardware at large scale to achieve both performance and reliability. Without software
-replication, data is fragile in the constant presense of disk or system failure.
-
-Our solution, Sloud, is designed for data deduplication in cloud storage systems. 
-Sloud exploits file similarity and only in-file data locality.
-Like Sparse Indexing, it splits large files into small chunks and coarse-grain segments.
-Sloud uses segment as the basic unit for storage allocation, thus avoiding the possibility that a set of 
-similar large files may overload part of the system. 
-Then a stastic based signature algorithm is used to cluster similar segments into containers
-which are located at fixed places by stateless routing. When new segment comes in, 
-Sloud finds the container which is most likely to have similar data, then it store new segment
-to that container for chunk deduplication. By doing this Sloud trade deduplication space efficiency
-for performance and simplicity. In addition, Sloud provides software replication and eventual consistency
-to enhance file availability and integrity.
-Experiments shows our solution achieves a balance of space efficiency, data reliability and load balancing.

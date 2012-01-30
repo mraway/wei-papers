@@ -9,10 +9,6 @@ Emc avamar.
 \newblock
   \url{http://www.emc.com/products/detail/hardware/avamar-data-store.htm}.
 
-\bibitem{emc_centera}
-Emc centera.
-\newblock \url{http://www.emc.com/products/family/emc-centera-family.htm}.
-
 \bibitem{extreme_binning09}
 D.~Bhagwat, K.~Eshghi, D.~Long, and M.~Lillibridge.
 \newblock Extreme binning: Scalable, parallel deduplication for chunk-based
@@ -36,11 +32,6 @@ A.~Broder.
   of Sequences 1997}, page~21, Washington, DC, USA, 1997. IEEE Computer
   Society.
 
-\bibitem{pastiche02}
-L.~P. Cox, C.~D. Murray, and B.~D. Noble.
-\newblock Pastiche: making backup cheap and easy.
-\newblock {\em SIGOPS Oper. Syst. Rev.}, 36(SI):285--298, 2002.
-
 \bibitem{hydrastor09}
 C.~Dubnicki, L.~Gryz, L.~Heldt, M.~Kaczmarczyk, W.~Kilian, P.~Strzelczak,
   J.~Szczepkowski, C.~Ungureanu, and M.~Welnicki.
@@ -56,14 +47,6 @@ K.~Eshghi, M.~Lillibridge, L.~Wilcock, G.~Belrose, and R.~Hawkes.
 \newblock In {\em FAST '07: Proceedings of the 5th USENIX conference on File
   and Storage Technologies}, pages 123--138, Berkeley, CA, USA, 2007. USENIX
   Association.
-
-\bibitem{consistent_hash97}
-D.~Karger, E.~Lehman, T.~Leighton, R.~Panigrahy, M.~Levine, and D.~Lewin.
-\newblock Consistent hashing and random trees: distributed caching protocols
-  for relieving hot spots on the world wide web.
-\newblock In {\em STOC '97: Proceedings of the twenty-ninth annual ACM
-  symposium on Theory of computing}, pages 654--663, New York, NY, USA, 1997.
-  ACM.
 
 \bibitem{sparseindex09}
 M.~Lillibridge, K.~Eshghi, D.~Bhagwat, V.~Deolalikar, G.~Trezis, and P.~Camble.
@@ -85,42 +68,12 @@ C.~Policroniades and I.~Pratt.
   Annual Technical Conference}, pages 6--6, Berkeley, CA, USA, 2004. USENIX
   Association.
 
-\bibitem{venti02}
-S.~Quinlan and S.~Dorward.
-\newblock Venti: A new approach to archival storage.
-\newblock In {\em FAST '02: Proceedings of the Conference on File and Storage
-  Technologies}, pages 89--101, Berkeley, CA, USA, 2002. USENIX Association.
-
 \bibitem{rabin81}
 M.~O. Rabin.
 \newblock Fingerprinting by random polynomials.
 \newblock Technical Report TR-CSE-03-01, Center for Research in Computing
   Technology, Harvard University, 1981.
 \newblock \url{http://www.xmailserver.org/rabin.pdf}.
-
-\bibitem{rsync}
-A.~Tridgell.
-\newblock {\em Efficient Algorithms for Sorting and Synchronization}.
-\newblock PhD thesis, The Australian National University, February 1999.
-
-\bibitem{eventually09}
-W.~Vogels.
-\newblock Eventually consistent.
-\newblock {\em Commun. ACM}, 52(1):40--44, 2009.
-
-\bibitem{mad210}
-J.~Wei, H.~Jiang, K.~Zhou, and D.~Feng.
-\newblock Mad2: A scalable high-throughput exact deduplication approach for
-  network backup services.
-\newblock In {\em Mass Storage Systems and Technologies (MSST), 2010 IEEE 26th
-  Symposium on}, pages 1 --14, May 2010.
-
-\bibitem{deepstore05}
-L.~L. You, K.~T. Pollack, and D.~D.~E. Long.
-\newblock Deep store: An archival storage system architecture.
-\newblock In {\em ICDE '05: Proceedings of the 21st International Conference on
-  Data Engineering}, pages 804--8015, Washington, DC, USA, 2005. IEEE Computer
-  Society.
 
 \bibitem{bottleneck08}
 B.~Zhu, K.~Li, and H.~Patterson.
