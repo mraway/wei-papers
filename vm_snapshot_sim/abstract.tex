@@ -1,25 +1,15 @@
 \begin{abstract}
-Virtualization has became the engine behind many cloud computing platforms.
-In a virtualized computing environment, virtual machines
-operate on virtual disks, so backing up user data is done by constantly 
-taking snapshots of those virtual disks. Because such VM snapshots are huge in
-terms of both quantity and individual sizes, snapshot storage would cost tremendous amount 
-of space without deduplication.
-Current snapshot deduplication is mainly done through copy-on-write 
-on fixed-size disk blocks. Such solutions cannot handle the
- cross VM data duplication because VMs do not share any data. 
-In addition, storing VM images and their snapshots
-in the same storage engine reduce the underline design flexibility because 
-these two kinds of data have distinct access requirements.
-
-In this paper, we first perform a large scale study in production VM clusters 
-to show that cross VM data duplication is severe due to they have large amount of
-common data. Then our data analysis finds out that the overall data duplication pattern follows the Zipf's law.
-Base on these discoveries, we propose a snapshot storage deduplication scheme using variable-size chunking
-to address the above problem efficiently.
-We eliminate the majority of cross VM data duplication by pre-select
-a small set of frequently seen data blocks to be shared globally, and we also remove
-many cross snapshot duplication by using smaller chunking granuarity and locality.
-Experiment shows our design can achieve high deduplication ratio with very limited 
-amount of resources in large scale VM cloud environment.
+In a virtualized cloud computing environment,
+frequent snapshot backups of virtual disks improve hosting reliability,
+while storage demand of such operations is huge.
+While a dirtybit-based technique can identify unmodified data
+between versions, full deduplication with fingerprint comparison
+can remove more redundant content but it requires more computing resources.
+In this paper, we present a multi-level selective deduplication scheme which integrates inner-VM
+and cross-VM duplicate elimination with minimal resource impact
+to the existing cloud services. This scheme uses popular common
+data to facilitate fingerprint comparison while reducing the cost,
+and it strikes a balance between local and global deduplication to increase parallelism and improve
+reliability. Experimental results show the proposed scheme can achieve a high deduplication
+ratio while using a small amount of cloud resources.
 \end{abstract}
