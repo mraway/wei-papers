@@ -1,0 +1,267 @@
+
+\section{Background and Related Work}
+\label{sect:background}
+
+In a VM cloud, several operations are provided for creating and managing snapshots and snapshot trees,
+such as creating snapshots, reverting to any snapshot, and removing snapshots.
+For VM snapshot backup, file-level semantics are normally not provided. 
+Snapshot operations are taken place at the virtual device driver level, which means no fine-grained file system metadata can be used to determine the changed data. Only raw access information at disk block level are provided.
+%Snapshots may be shared among VMs when a user runs the same binary image on different  VMs.
+% This feature complicates the snapshot management, 
+%but also require all snapshots be managed in a global namespace.
+
+
+%While snapshot backup loads are heavy but computing and storage  resources available 
+%can be limited to reduce the overall operation cost of a cloud. The whole VM cluster have petabytes of data and need to 
+%be backed up at daily basis, if not more frequently. But at the same time snapshot tasks must not affect the normal VM operations
+%in a cloud service, which means only a tiny slice of CPU and memory can be used for this purpose.
+
+
+VM snapshots can be  backed up  incrementally by identifying file  blocks that have
+changed from the previous version of the snapshot~\cite{Clements2009,Vrable2009,TanIPDPS2011}.
+%Even though the snapshots are saved incrementally,
+%when deleting a snapshot, only the data not needed for any other snapshot is removed.
+%So regardless of which prior snapshots have been deleted, all active snapshots will contain
+%all the information needed to restore the virtual disk.
+%One widely used snapshot strategy is copy-on-write (CoW).
+%The earlier use of COW is to improve memory usage and reduce copying overhead in process 
+%management~\cite{OSbook,Waldspurger2002} and it can be extended for snapshot 
+%storage management~\cite{vmware_kb1015180}. 
+%C. Waldspurger. Memory Resource Management in VMware ESX Server in Proceedings of the 5th Symposium 
+%on Operating Systems Design and Implementation, 2002
+%Upon VM image storage system receives a save snapshot request,
+%it freezes the state of that image file, then all consequent write request will result in the write region being copied
+%to an incremental snapshot data file. 
+%Such a strategy exploits version difference between consecutive snapshots
+%of the same image.
+The main weakness
+is that it does not reveal content redundancy among data blocks from different files or
+different VMs.
+%has several disadvantages:
+%first, CoW may affect the general I/O performance due to defered data coping. 
+%Second, CoW does not seperate backup data and runtime image data,
+%which have distinct access requirements: runtime image data is directly used by the running VM, 
+%thus need high throughput, and is very sensitive to latency,
+%such data must be served with hig cost hardware, but backup data generally only need fair aggregate throughput, 
+%is not sensitive to latency, thus can be stored in secondary storage devices.
+%Finally, VM snapshots contain tremendous amount of data duplication, which is nearly impossible to tackle 
+%if these two kinds of data are tightly coupled together.
+ 
+
+Data deduplication techniques can eliminate redundancy globally among different files from different users. 
+Backup systems have been developed to use content hash (finger prints) to identify duplicate 
+content~\cite{venti02,Rhea2008}.
+%,NGmiddleware2011}. 
+Today's commercial data backup systems (e.g. from EMC and NetApp)
+%\cite{emc_avamar}\cite{datadomain_whitepaper} 
+use a variable-size chunking algorithm to detect duplicates in file data~\cite{similar94,hydrastor09}.
+%Chunking divides a data stream into variable length chunks, it has been used to conserve bandwidth\cite{lbfs01}, 
+%search and index documents in large repositories\cite{bhag07}, scalable storage systems\cite{hydrastor09}, 
+%store and transfer large directory trees efficiently and with high reliability\cite{jumbo07}.
+To chunk a file, starting from the first byte, its contents as seen through a fixed-sized (overlapping) 
+sliding window are examined. At every position of the window, a fingerprint of its 
+contents, $f$, is computed using hashing techniques such as Rabin fingerprints~\cite{rabin81}. 
+When this fingerprint meets a certain criteria,
+% such as $f mod D = r$ where $D$, the divisor, 
+%and $r$ are predefined values; 
+the position of the corresponding window defines the boundary of the chunk. 
+This process is repeated until the entire file has been completely broken down into chunks. Next, 
+a cryptographic hash or chunk ID of the chunk is computed using a technique such as MD5 or SHA.
+After a file is chunked, the index containing the chunk IDs of backed up chunks 
+is queried to determine duplicate chunks. New chunks are written to disk and the 
+index is updated with their chunk IDs. A file recipe containing all the information 
+required during reconstruction is generated. The index also contains some metadata 
+about each chunk, such as its size and disk location.
+%The compression rate obtained by deduplication depends on the inherent content overlapping degree in a dataset, 
+%the average size of chunks, and the chunking method\cite{poli04}. 
+%In general, smaller chunks yield better deduplication.
+
+Data deduplication has been applied as  a post-processing operation for offline removal
+of redundant content in the file system data management once backup data is written in a temporary stage area.
+Dynamic inline deduplication is an effort to improve storage efficiency  
+by detecting and removing  duplicates before data is written to the backup storage,
+thus reduces extra disk space required to hold temporary data. 
+This approach requires a fingerprint  comparison of the new content chunks with
+previously stored fingerprints. 
+As data grows to be big, content chunk lookup for fingerprint comparison from disk storage
+becomes too slow to be scalable.
+%and searching such disk
+%However, unless some form of locality or similarity is exploited, inline, chunk-based deduplication, 
+%when done at a large scale faces what has been termed the disk bottleneck problem: to facilitate fast chunk ID lookup, 
+%a single index containing the chunk IDs of all the backed up chunks must be maintained. 
+%As the backed up data grows, the index overflows the amount of RAM available and must be paged to disk. 
+%Without locality, the index cannot be cached effectively, and it is common for nearly 
+%every index access to require a random disk access. This disk bottleneck severely limits deduplication throughput.
+Several techniques have been proposed to speedup searching of duplicate 
+content~\cite{bottleneck08,extreme_binning09,sparseindex09}. For example,  
+Zhu et al.~\cite{bottleneck08} tackle it 
+by using an in-memory Bloom filter and prefetch groups of chunk IDs that are likely to be 
+accessed together with high probability. It takes significant memory resource for filtering.
+NG et al.~\cite{ NGmiddleware2011}  use  
+a related filtering technique for integrating deduplication in Linux  file system and the memory
+consumed is up to 2GB for a single machine. That is still too big in our context discussed below. 
+%Lillibridge et al.~\cite{sparseindex09} break list of chunks 
+%into large segments, the chunk IDs in each incoming segment are sampled and the segment is 
+%deduplicated by comparing with the chunk IDs of only a few carefully selected backed up segments. 
+%These are segments that share many chunk IDs with the incoming segment with high probability.
+%Deepavali et al.~\cite{extreme_binning09}  use signature-based file similarity  and group similar files
+%into the same physical location (bins) to deduplicate against each other.
+
+Duplicate  search approximation~\cite{extreme_binning09,sparseindex09}  has been proposed 
+%in extreme bining and other sparse indexing 
+to package similar content in one disk, and duplicate lookup  only searches
+for chunks within files which have a similar file-level or segment-level  content fingerprints.
+That leads  to a smaller amount of memory usage for storing meta data in signature
+lookup with a tradeoff of the reduced recall ratio. 
+
+\section{Requirements and Design Options}
+\label{sect:options}
+
+We discuss the characteristics and 
+main requirements for VM snapshot backup in a cloud environment.
+which are different from a traditional data backup. 
+% That arises mainly in Alibaba's Aliyun cloud service.
+%concerns
+%Base on Aliyun's production environment, the snapshot backup job has to satisfy 
+\begin{enumerate}
+\item {\em Cost consciousness.}
+There are tens of thousands of VMs running on a large-scale cloud cluster. 
+The amount of VM data to backup is huge and cost of complete backup can be prohibitively high without
+deduplication and compression support.  Thus cost minimization is required to deliver a deplorable solution.
+
+On the other hand, the computing resource allocated for backup is often very small.
+This is because snapshot data is not retrieved frequently by users and the allocation of  cluster resource
+is typically prioritized towards active services such as online web services and map-reduce jobs.
+Thus  it is not easy to accept any backup behavior that affects VMs performance or stability of active users.  
+
+%snapshot service shall not compete cpu, memory, or I/O bandwidth with VMs. Specifically, the memory usage of snapshot service can never exceed 500MB in any node.
+\item {\em Fast backup speed.}
+The snapshot  backup  operations need to be completed quickly  every day (e.g. 1-2 hours ). 
+Often a cloud service has  few hours of light workload each day (e.g. midnight),  which creates an opportunity  for backup.
+But a  longer use of bandwidth and computing resource  for backup can create  noticeable  contention with the existing cloud,
+which is not preferred for cloud production system operation. 
+%As a large-scale cluster hosting tens of thousand of active VMs everyday,  the amount of data
+%to be processed is huge. 
+%For example, in an Aliyun cluster with over 1,000 nodes and each hosts over 25 VMs, The aggreated amount of data 
+ % the system must finish saving daily snapshots of all VMs in 2 hours. In our typical 1000 nodes cluster, each node hosts 25 VMs, each VM has 40GB of data on average, that translates to backup throughput of 139GB/second, or 500TB/hour.
+
+% the system must finish saving daily snapshots of all VMs in 2 hours. In our typical 1000 nodes cluster, each node hosts 25 VMs, each VM has 40GB of data on average, that translates to backup throughput of 139GB/second, or 500TB/hour.
+\item {\em Fault tolerance.}
+The addition of a backup service should not decrease the degree of
+fault tolerance.  If data failure in  a backup service  affects many users,  such a solution is not desirable.
+%when users access snapshots in a recovery process. 
+\end{enumerate}
+
+There are multiple choices in designing a backup architecture  for VM snapshots.
+We discuss the following design options with a consideration on their strengths and weakness.
+\begin{enumerate}
+\item  {\em An external and dedicated backup storage system.} 
+In this architecture setting, a separate backup storage system using
+the standard backup and deduplication techniques can be deployed~\cite{bottleneck08,extreme_binning09,sparseindex09}. 
+This system is attached to the cloud network and every machine can periodically transfer snapshot data to 
+the attached backup system. 
+A key weakness of this approach is communication bottleneck between a large number of machines
+in a cloud to this centralized  service.
+Another weakness is that the cost of allocating separate resource for dedicated backup  can be expensive.
+Since most of backup data is not used eventually, CPU and memory resource in such a backup cluster may not be fully utilized.
+\item {\em A decentralized and co-hosted backup system with full deduplication.}
+In this option, the backup system runs on an existing set of cluster machines. 
+The advantage is that there is no separate and dedicated cost for backup.
+% and a distributed storage architecture for backup allows a possible exploitation of  data locality between
+%the source of data and storage location of backup data. 
+The disadvantage is that 
+%the backup service would compete CPU, memory, and disk resources with the other cloud services.
+even such a  backup service may only use  a fraction of the existing disk storage, 
+fingerprint-based search does require a significant amount of memory for fast lookup of identical content chunks.
+This competes memory resource  with the existing applications.
+%Decentralized deduplication is studied in ~\cite{Clements2009} and the focus is on
+%block-level copy-on-write and compare-by-value techniques.
+Even approximation~\cite{extreme_binning09,sparseindex09} can be used to reduce memory requirement,  
+a  key weakness of global content fingerprint comparison is that it can affect fault isolation.
+Because a content chunk is compared with a content signature collected from other users,
+this artificially creates data dependence among different cloud users.
+% since storage for shared identical content chunks can become a failure point.
+The loss of a common chunk can affect many users whose VM images share this 
+chunk. Adding replicas for this global dataset can enhance the availability,
+but incurs significantly more cost.
+%2) data sharing among users for accessing common signagutes causes the system less resilient to storage failures.
+%any loss of one piece of  shared data content hash and actualcontent will damange many VM snapshots, which can cause massive impacts
+%on reliability of many users.
+
+%Another point is that the previous work in signature-based comparison does not address
+%load balancing for a distributed environment during parallel access.  
+%Some content signatures can be extremely hot, but the machines  that  handle such signatures can become
+% a bottleneck. Uncoordinated signature assignment could lead to imbalanced access workload.
+\end{enumerate}
+
+
+%There are multiple choices of snapshot backup design for VM images and our considerations are described
+%as follows. 
+%Our design considerations
+%\begin{enumerate}
+%\item {\bf Centralized vs. decenalized} 
+%
+%It is desirable to have  a decentralized architecture.
+%Given a large amount of snapshot data communicated from each machine to the backup storage,
+%with a distributed storage architecture for backup, one could exploit  exploit data locality between
+%the source of data and storage location of data to reduce cross-platform bandwidth requirement for backup.
+
+%execute in parallel and easy to coordinate. In fact, we want to avoid cross-node dependency at scheduling VM snapshot operations, such that no global coordinator is necessary.
+%\item {Load balancing in resource consumption}: the cost of snapshot service shall be evenly distributed onto every node. We don't have a super powerful
+%or stable node that can accept extra responsibility.
+%\item {minimization of inter-user data dependency for fault tolerance}: we want to minimize the data dependency to a controllable level. Data deduplication means sharing of data, thus one failure at a single point may affect the snapshot service of hundreds of VMs, which is absolutely unacceptable.
+%\item {Resource usage modeling and control}.
+%\end{enumerate}
+
+With these considerations in mind, we propose a decentralized backup architecture with multi-level and selective 
+deduplication. This 
+backup service is hosted   in the existing set of cloud machines and resource usage is controlled
+with a minimal impact to the existing applications.
+The duplication process is first conducted among data within each VM
+and then is conducted  across VMs when needed to 
+utilize a common dataset.  
+Given the concern that searching duplicates across  VMs  is a global feature which can affect parallel performance
+and complicate failure management,
+we would like to use a small common dataset while still maintaining a cost-effective deduplication ratio.
+For this purpose, we exploit the data characteristics of snapshots and only store most popular data.
+%
+%in the  our studies show that there are a large amount of data unmodified in VM snapshots
+%and shared among many users (e.g. OS data). The sharing pattern follows a zip-like distribution.
+%With this characteristic, we can store a small amount of popular data items which coverage a large amount of
+%snapshot data blocks. 
+%We discuss our design and data analysis in the next section.
+
+
+%This method is based on the observation of two facts in Aliyun's VM cloud: first, VM's OS disks contain 
+%huge amount of operating system and software related data which is almost never modified during VM's life span. 
+%Second, the duplication pattern of user generated data follows Zipf-like law, thus a tiny set of hottest data
+%take up the majority of data duplication. As a result, if we extract these hot data as a common data set,
+%then most of data duplication will emerge by searching in this very small scope.
+
+
+%For example, In cloud storage, we are solving data deduplication problem in a different context of 
+%data stream deduplication (the D2D case): our snapshot storage service is co-located with runtime VMs,
+%thus we have very limited amount of system resource leave for data deduplication. For example,
+%in Aliyun's 8-core, 48GB memory, 12TB VM server, there lives over 20 VMs who are hungrily competing for
+%system resources: some may running map-reduce jobs, some may serving busy web requests, 
+%some may storing backend databases, any behavior that affects user VMs performance or stability is unacceptable.
+
+%To reduce the cost of deduplication, we must confine the scope of searching duplicates as much as possible,
+%thus some hints are needed to tell us where the most likely duplicates would hide. 
+%Several form of hints have been used in the past: many D2D systems exploits locality,
+%which bases on the fact that duplicates are likely to appear in the same sequence as they have arrived before.
+%Similarity is another popular hint, it suggests that two sets of data blocks may contain lots of
+%duplicates if they are indetified as similar by certain similarity detection measurements.
+
+
+
+%\section{Architecture design and Deduplication for Snapshot Support}
+%
+%\section{Popularity analysis}
+% data on what data popular.
+%
+%Analysis: modeling: singular
+%
+%Compute: Cache hit ratio vs. cache cost (memory cost).
+
+

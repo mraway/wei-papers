@@ -1,0 +1,34 @@
+\begin{abstract}
+%Virtualization has became the engine behind many cloud computing platforms.
+In a virtualized cloud computing environment, frequent  snapshot backup of virtual disks improves
+hosting  reliability while  storage demand of such operations is huge.
+A dirtybit-based technique can identify unmodified data between versions 
+and full deduplication with fingerprint comparison  can remove more redundant content
+while it requires more computing resource.
+%with  for similarity comparison and   reliability handling.
+%Current snapshot deduplication is mainly done through copy-on-write 
+%on fixed-size disk blocks. Such solutions cannot handle the
+% cross VM data duplication because VMs do not share any data. 
+%In addition, storing VM images and their snapshots
+%in the same storage engine reduce the underline design flexibility because 
+%these two kinds of data have distinct access requirements.
+In this paper, 
+%we show that there is a large amount of duplicated data shared amongy virtual machines
+%through a production VM data study and thus it is expective to perform cross-machine deduplication. 
+This paper presents a multi-level selective deduplication  scheme which
+integrates  inner-VM and cross-VM duplicate elimination with minimal  resource impact
+to the existing cloud services.  This scheme uses popular common data to facilitate 
+fingerprint comparison while reducing the cost and it
+strikes a balance  between local and global deduplication 
+to  increase parallelism and  improve reliability. 
+% first perform a large scale study in production VM clusters 
+%to show that cross VM data duplication is severe due to they have large amount of
+%common data. Then our data analysis finds out that the overall data duplication pattern follows the Zipf's law.
+%Base on these discoveries, we propose a snapshot storage deduplication scheme using variable-size chunking
+%to address the above problem efficiently.
+%We eliminate the majority of cross VM data duplication by pre-select
+%a small set of frequently seen data blocks to be shared globally, and we also remove
+%many cross snapshot duplication by using smaller chunking granuarity and locality.
+Experimental results  show the proposed scheme  can achieve high deduplication ratio while using
+a  small  amount of cloud resources. 
+\end{abstract}

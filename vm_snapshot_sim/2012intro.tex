@@ -1,0 +1,83 @@
+\section{Introduction}
+
+%1.how virtual machines work on storage
+%2.cow and why they are not good
+%3.introduce dedup
+%1 
+
+%Virtualization is the engine behind many popular cloud computing platforms.
+%Amazon, Alibaba,  and many others have provided public VM clouds that host 
+%tens of thousands of  virtual machines(VM) dynamically created
+%for various active users. 
+%In the  case of Alibaba cloud service, the sevice is called Aliyu, which
+%provides the largest public cloud in based on the open-source Xen technology.
+In a virtualized cloud environment such as ones provided by Amazon EC2 and  Alibaba Aliyun,
+each instance of a guest operating system runs on a virtual machine, accessing
+virtual disks represented as virtual disk image files  in the host operating system.
+%virtual disk image files (e.g. .vhd, .vmdk) in the host operating system.
+Because these image files are stored as regular files from the external point of view,
+backing up VM's data is mainly done by taking snapshots of virtual disk images.
+
+A snapshot preserves the data of a VM's file system at a specific point in time. 
+VM snapshots can be  backed up  incrementally by comparing blocks from one version to another 
+and only the blocks that have changed from the previous version of snapshot will be saved~\cite{Clements2009,Vrable2009}. 
+%Even though the snapshots are saved incrementally, 
+%when deleting a snapshot, only the data not needed for any other snapshot is removed. 
+%So regardless of which prior snapshots have been deleted, all active snapshots will contain 
+%all the information needed to restore the virtual disk.
+%Snapshots can also be shared to instantiate multiple new virtual disks, such that user can make
+%duplicate VMs with exact the same disk state. This feature is especially useful when a user wants to run
+%an application on multiple VMs, for example Hadoop or MPI.
+
+Frequent  backup of VM snapshots increases  the reliability of VM's hosted in a cloud.
+For example, Aliyun, the largest cloud service provided by Alibaba in China, 
+provides automatic frequent backup of VM images to strengthen the reliability of its service for all users.
+The cost of frequent backup of VM snapshots is  high because of the huge storage demand.
+Using a backup service with full deduplication support~\cite{venti02,bottleneck08,extreme_binning09,sparseindex09}
+can identify content duplicates among snapshots to remove redundant storage content,  but the weakness is that it
+either adds the  extra cost significantly or competes computing resource with the existing cloud services.
+Data dependence created by duplicate relationship among snapshots
+adds the complexity in fault tolerance management, especially when  VMs can migrate around in the cloud. 
+
+Unlike the previous work dealing with general file-level backup and deduplication, our problem is focused on 
+virtual disk image backup and even each virtual disk is viewed as a file logically, its size is very large.
+On the other hand, we need to support parallel backup of a large number of virtual disks in a cloud everyday. 
+Thus our objective is to exploit the characteristics of VM snapshot data and
+pursue a cost-effective solution with the following two aspects.
+First,   VM snapshot backup should only use a minimal amount of system
+resource so that most of resource is allocated for regular cloud system services or applications.
+Second, VM snapshot backup should be  decentralized and localized as much as possible.
+That brings the benefits for increased parallelism  and fault isolation. 
+
+With these in mind, we  have developed a decentralized multi-level solution to conduct 
+segment-level  and block-level  within each VM to localize deduplication when possible.
+It then makes global inter-VM deduplication efforts by using a small number of
+popular common data blocks.  Our study shows that there are a larger number
+of popular common content  blocks shared by many users while they only take
+a small amount of resource for global deduplication. 
+Leveraging popular blocks makes the fault tolerance management easier while
+it can still effectively accomplish a significant percentage of inter-VM  deduplication
+compared to a full deduplication algorithm. 
+%Restricting the scope of global deduplication reduces
+%the inter-component  data dependenc during machine failure.
+
+%Several operations are provided for creating and managing snapshots and snapshot trees,
+%such as create snapshots, revert to any snapshot, and remove snapshots.
+%VM snapshots is different from traditional file system backup from a few aspects:
+%\begin{enumerate}
+%\item The backup loads are heavy but resources are limited. The whole VM cluster have PBs of data and need to be backuped at daily basis, if not more frequently. But at the same time snapshot tasks must not affect the normal VM operations, which means only a tiny slice of CPU and memory can be used for this purpose.
+%\item No file system semantics are provided. Snapshot operations are taken place at the virtual device driver level, which means no fine-grained file system metadata can be used to determine the changed data. Only raw access information at disk block level are provided.
+%\item Snapshots can be shared between users. This does not only complicates the parent-child relationship between snapshots, but also require all snapshots be managed in a global namespace.
+%\end{enumerate}
+
+%In this paper we intorduce the deduplication scheme of snapshot storage in Aliyun's VM cloud. We exploit the 
+The rest of the paper is arranged as follows. 
+Section ~\ref{sect:background}
+discusses on some background and related work.
+Section~\ref{sect:options} discusses the requirements and  design options.
+Section ~\ref{sect:arch} presents our snapshot backup architecture with multi-level selective deduplication 
+Section ~\ref{sect:exper} presents  our evaluation results on the effectiveness
+of multi-level deduplication for snapshot backup. 
+Section ~\ref{sect:final} concludes this paper.
+% talks about Aliyun's VM snapshot system and deduplication process. In section 4 we present
+%the snapshot deduplication results of our real user VMs.
