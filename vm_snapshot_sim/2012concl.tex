@@ -1,12 +1,13 @@
-\section{Conclusion}
+\section{Conclusions}
 \label{sect:final}
-The main contribution of this paper is a multi-level selective deduplication scheme among VM snapshots. 
+The main contribution of this paper is a multi-level selective deduplication scheme among VM 
+snapshots, using less than 0.5\% of memory per node to meet a stringent cloud resource requirement. 
 Inner-VM deduplication localizes backup data dependence and exposes more parallelism  
 while global deduplication using a small common data set appeared in OS and data disks
 effectively  covers a large amount of snapshot blocks.
 Our evaluation using Aliyun's data has shown that 
-level 1 and level 2 deduplication can reduce the storage need by 78\% while level 2 inner 
-fingerprint comparsion contributes 4.5\%%. 
+level 1 deduplication can reduce the storage need by 78\% while level 2 inner 
+fingerprint comparison contributes 4.5\%%. 
 Level 3 can add additional 10.5\% reduction and accomplish 75\% of what full fingerprint-based
 deduplication can do. Our scheme uses a very small amount of memory on each node, and leaves
 room for additional optimization we are further studying.

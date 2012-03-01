@@ -12,12 +12,14 @@ while it requires more computing resource.
 %In addition, storing VM images and their snapshots
 %in the same storage engine reduce the underline design flexibility because 
 %these two kinds of data have distinct access requirements.
-In this paper, 
+%In this paper, 
 %we show that there is a large amount of duplicated data shared amongy virtual machines
 %through a production VM data study and thus it is expective to perform cross-machine deduplication. 
 This paper presents a multi-level selective deduplication  scheme which
-integrates  inner-VM and cross-VM duplicate elimination with minimal  resource impact
-to the existing cloud services.  This scheme uses popular common data to facilitate 
+integrates  inner-VM and cross-VM duplicate elimination under
+a stringent resource requirement.
+% minimal  resource impact to the existing cloud services.  
+This scheme uses popular common data to facilitate 
 fingerprint comparison while reducing the cost and it
 strikes a balance  between local and global deduplication 
 to  increase parallelism and  improve reliability. 

@@ -36,14 +36,15 @@ We have used a storage dataset of  1323 VM users collected from 100 Aliyun's clo
 In this dataset, there are 10 snapshots per each VM user and the total amount of space investigated 
 is 23.5 terabytes.
 Each VM file is  divided into content blocks of
-variable sizes~\cite{similar94,rabin81} with an average size of 4KB. Each segment is of size 2MB.  
+variable sizes~\cite{similar94,rabin81} with an average size of 4KB. 
+The signature for variable-sized blocks is computed using  their SHA-1 hash. 
+Each segment is of size 2MB.  
 Popularity is computed by using 90\% of dataset, which reflects our setting that the system recomputes
 CDS every 1-2 days to catch up the popularity trend.
 
 %seg, and we performed global perfect deduplication 
 %to caculate the number of duplicate copies of each individual unique block. We choose 2KB, 4KB, 16KB as the minimum, average
 %and maximum block size
-The signature for variable-sized blocks is computed using  their SHA-1 hash. 
 %OS data
 %user data: zipf
 %prediction
@@ -199,7 +200,8 @@ is because there are a large number of OS blocks which have appear in all copies
 \label{fig:userdatacoverage}
 \end{figure}
 
-We further study how CDS covers content blocks used in image files.
+We further study how CDS covers content blocks used in image files using 90\% of
+the collected dataset.
 Figure \ref{fig:userdatacoverage} shows the cumulative coverage  ratio of  popular common user data blocks. 
 The $X$ axis is the rank of common user data blocks.
 Let $S_i$ and $F_I$ be the size and duplicate count 
@@ -210,7 +212,7 @@ the common dataset covering data items from rank 1 to rank $i$. Namely
 \]
 
 Thus with about 1\% of blocks on data disks, CDS can cover about 38\% of total data blocks
-appeared in in all data snapshots. CDS index uses about 150MB memory per machine.
+appeared in in all data snapshots. The corresponding CDS index uses about 150MB memory per machine.
 
 %Figure~\ref{fig:OSdatacoverage} shows the cumulative coverage  ratio of  popular common OS blocks. 
 %From both graphs, a small number of most popular common blocks can coverage a large percentage of 
@@ -271,7 +273,7 @@ among OS snapshots of these users.
 
 Based on the above analysis, we have selected a small set of most popular
 OS blocks, which is about 100GB OS data and its corresponding CDS index takes about 1GB memory space in total.
-They can cover sufficiently over 70\% OS blocks.
+They can cover sufficiently over 70\% of OS blocks.
 
 %Then we use this CDS to run the deduplication process again.
 %That correspond to about  80GB of OS blocks and its corresponding CDS meta occupies 800MB in the cache.
@@ -377,20 +379,20 @@ of what perfect deduplication can do.
   \label{fig:datacdssize}
 \end{figure}
 
-CDS size is restricted by system memory resource.
+%CDS size is restricted by system memory resource.
 Figure \ref{fig:datacds} shows how CDS space saving ratio
 compared to the full deduplication is affected by the dataset size. 
 The calculation is done after level 1 and level 2 deduplication.
-$X$ axis uses the data size collected  from up to 1190 VMs, which occupies about
-47 machines. 
+$X$ axis uses the data size collected  from up to 1323 VMs, which occupies about
+53 machines. 
 In this experiment we first set out a goal of space saving ratio completed, 
 then watch how much data needs to be placed in CDS cache to achieve this goal.
 From the graph we can see a 75\% saving ratio lead to a stable ratio between 
 CDS size and data size, which requires 1\% of data to be placed in CDS.
 
 When we deal with a cluster of 1,000 nodes, we expect that using
-1\% of data disks as the CDS size can cover more what we have seen from this
-1190 VM dataset, assuming that the average behavior of every subcluster with 47 machines
+1\% of data disks can cover more what we have seen from this
+1323 VM dataset, assuming that the average behavior of every subcluster with 53 machines
 exhibits a similar commonality. 
 In addition to this, CDS for OS disks will become even more effective when
 there are more VMs sharing the same collection of OS releases. 

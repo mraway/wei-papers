@@ -17,7 +17,7 @@ disks is tunneled by the virtual device driver (called TapDisk at Xen). To avoid
 Aliyun's distributed file system carefully selects the location of primary replica of VM's 
 image files such that they are located on the same physical machine of VM instance.
 During snapshot backup, concurrent disk write is logged 
-so that each snapshot can have a   consistent version.
+so that a  consistent snapshot version  can be derived. 
 
 Figure~\ref{fig:arch} shows the architecture view of snapshot service with selective deduplication
 at each node. The  snapshot broker provides the functional interface for  snapshot backup, access, and deletion.
@@ -209,7 +209,7 @@ to mitigate the failure.
 In Aliyun's VM cloud, each VM explicitly maintains  one OS disk, plus  one or more data disks.
 During VM's creation, its OS disk is directly copied from user's chosen base image.
 Given the separation of OS disks and data disks, we study  their characteristics separately.
-We expect that the operating system and along with popular software installations  are not frequently
+We expect that operating system blocks   along with popular software installations  are not frequently
 modified or deleted. 
 %base image data as a hint.Through users may change configurations, install software, or write user data into OS disk,
 %Thus most of content blocks for the OS related snapshots  shall keep unchanged.
@@ -221,13 +221,13 @@ The left part of Figure \ref{fig:zipf-data} shows the duplicate count  for diffe
 terms of the duplication count. $Y$ axis is the popularity of a data block in a log scale 
 measured its duplicate count among snapshots. $X$ axis is the identification of data blocks in a log scale
 sorted by their duplicate rank.  The rank number  1  is the block with the highest number of duplicates.
-The curve exhibits that the popularity of common data blocks partially follows a  Zipf-like distribution.
 The right part of Figure \ref{fig:zipf-data} shows the duplicate count  for OS disk snapshot blocks sorted by their ranking.
+These two curves exhibit that the popularity of common blocks partially follows a  Zipf-like distribution.
 %$Y$ axis is the popularity of an OS block in a log scale 
 %measured its duplicate count among snapshots. $X$ axis is the identification of OS blocks in a log scale
 %sorted by their duplicate rank.  
-For the top ranked blocks, there is a flat line in terms of duplicate counts. That
-is because there are a large number of OS blocks which have appeared in all copies of such OS releases.
+%For the top ranked blocks, there is a flat line in terms of duplicate counts. That
+%is because there are a large number of OS blocks which have appeared in all copies of such OS releases.
 
 
 \begin{figure}[htbp]
@@ -260,8 +260,8 @@ our CDS selection strategy is designed as follows.
 Our experiment data shows that about 
 100GB data from 7 most popular OS releases
 can at least cover over 70\% of OS snapshots and the index of these 100GB OS blocks
-only takes about total 1GB in the CDS index and then memory requirement per node for running the backup
-on  a large cluster is tiny.
+only takes about total 1GB in the CDS index and then memory requirement per node 
+for duplicate search a large cluster is tiny.
 We expect that the OS CDS index may grow up to 2GB in order to cover large varieties  of commonly deployed
 OS releases in practice.
 \item Second, the degree of duplication is computed for snapshot blocks of data disks and
