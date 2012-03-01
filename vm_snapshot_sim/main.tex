@@ -12,20 +12,56 @@
 \urlstyle{leo}
 %\linespread{1.2}
 %\setlength{\parskip}{1ex}
+
+
+\newcommand{\comments}[1]{}
+
 \begin{document}
-\title{Data Deduplication and Zipf-like Distribution in VM Cloud Storage}
-\author{Wei Zhang, Hong Tang, Hao Jiang, Rachael Zeng, Xiaogang Li, Tao Yang}
+%\title{Selective Deduplication for VM Snapshots in Cloud Storage}
+\title{Multi-level Selective Deduplication for VM Snapshots in Cloud Storage}
+%\title{Data Deduplication and Zipf-like Distribution in VM Cloud Storage}
+\author{Wei Zhang$^{\star\dagger}$, Hong Tang$^\dagger$, Hao Jiang$^\dagger$, Tao Yang$^\star$, 
+Xiaogang Li$^\dagger$, and Rachael Zeng$^\dagger$ \\
+   {\normalsize $^\star$UC Santa Barbara}\\
+   {\normalsize$^\dagger$Alibaba.com}
+}
+
+
 \date{}
 \maketitle
 
-\input{abstract}
-\input{intro} %introduce the problem, related solutions and our requirements
-\input{cds} %data study, zipf, model of cds size and dedup efficiency
-\input{approach} %our dedup process
-\input{results}
+%need to explain: vm cloud, vm backup, dedup fundamentals, vm dedup(2 works), distributed dedup, zipf
+%need to define: requirements, design considerations, architecture
+
+\input{2012abs}
+\input{2012intro} %introduce the vm cloud, backup problem, and our requirements
+\input{2012background} %related works, related solutions, 
+\input{2012arch} %, design considerations, architecture
+\input{2012eval} %data study, zipf, model of cds size and dedup efficiency
+%\input{results}
 %\input{related}
 %\input{future}
-\input{conclusion}
+\input{2012concl}
+
+      %\setlength{\itemsep}{ex}%
+%      \setlength{\parskip}{0ex}%
+%\setlength{\itemsep}{-3mm}
+
+	%\linespread{0.3} 
+  \let\oldthebibliography=\thebibliography
+  \let\endoldthebibliography=\endthebibliography
+  \renewenvironment{thebibliography}[1]{%
+    \begin{oldthebibliography}{#1}%
+      \setlength{\parskip}{-0.02ex}%
+      \setlength{\itemsep}{-0.02ex}%
+      \setlength{\baselineskip}{-0.02ex}%
+
+  }%
+  {%
+    \end{oldthebibliography}%
+  }
+{\small
 \bibliographystyle{abbrv}
-\bibliography{dedup}
+\bibliography{dedup,dedup1}
+}
 \end{document}

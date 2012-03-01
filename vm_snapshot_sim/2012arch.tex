@@ -6,8 +6,8 @@
 Our architecture is built on the Aliyun platform which provides the largest public VM cloud in China 
 based on Xen~\cite{Xen2003}. A typical VM cluster in our cloud environment
 consists of from hundreds to thousands of physical machines, each of which can
-host tens of VMs. A few varieties of mainstream OS are supported,
-including several editions of Windows Server, major Linux distributions, and FreeBSD.
+host tens of VMs. A few varieties of mainstream OS are supported.
+%including several editions of Windows Server, major Linux distributions, and FreeBSD.
 During the VM creation, a user chooses her flavor of OS distribution and the cloud system 
 copies the corresponding pre-configured base VM image to her VM as the OS disk, 
 and an empty data disk is created and mounted onto her VM as well. 
@@ -16,7 +16,8 @@ underline runtime VM storage system. The runtime I/O between virtual machine and
 disks is tunneled by the virtual device driver (called TapDisk at Xen). To avoid network latency and congestion, 
 Aliyun's distributed file system carefully selects the location of primary replica of VM's 
 image files such that they are located on the same physical machine of VM instance.
-
+During snapshot backup, concurrent disk write is logged 
+so that each snapshot can have a   consistent version.
 
 Figure~\ref{fig:arch} shows the architecture view of snapshot service with selective deduplication
 at each node. The  snapshot broker provides the functional interface for  snapshot backup, access, and deletion.
@@ -53,8 +54,8 @@ contains snapshot backup and run these VMs.
 %in the snapshot store, and quota is used to acknowledge user how much space he
 %has actually used.
 
-With Aliyun's distributed file system support, the snapshot store operates a few \emph{append-only} files
-in the underline file storage. Each virtual disk has its own data store, all data 
+With Aliyun's distributed file system support, the snapshot store operates 
+\emph{append-only} files. Each virtual disk has its own data store, all data 
 blocks after deduplication will be stored into that system.
 Since all the underline data structures is append only,
 upon a delete request, the corresponding data will only be marked rather than being deleted.
@@ -177,10 +178,10 @@ At the runtime, the CDS index resides in a distributed  memory lookup table
 implemented using Memcached~\cite{memcached} to leverage the aggregated memory in a cluster.
 Th usage of memory at each machine is small and thus  this scheme  does not
 lead to  a memory resource contention with the existing cloud services.
-For example, in our current implementation setting at Aliyun, we use up to  150MB memory per node during night backup
-including CDS and other metadata for all levels of deduplication. Most of memory resource (48GB per node 
-in our experiment) is used for existing  applications.
-Each CDS content data stored  in the distributed file system
+%For example, in our current implementation setting at Aliyun, we use up to  150MB memory per node during night backup
+%including CDS and other metadata for all levels of deduplication. Most of memory resource (48GB per node 
+%in our experiment) is used for existing  applications.
+CDS raw data stored  in the distributed file system
 has multiple copies in different machines for the purpose of fault tolerance and 
 while providing high read  throughput.  
 %The data of CDS is stored in a special block store in the distribued file system.
@@ -215,35 +216,40 @@ modified or deleted.
 %This is verified in  Section~\ref{sect:exper}.
 We have sampled  the  popularity of common blocks in the OS and data disks from a dataset
 containing over 1,000 VMs and each has 10 snapshots.
-Figure \ref{fig:zipf-data} shows the duplicate count  for different data blocks sorted by their ranking in 
+
+The left part of Figure \ref{fig:zipf-data} shows the duplicate count  for different data blocks sorted by their ranking in 
 terms of the duplication count. $Y$ axis is the popularity of a data block in a log scale 
 measured its duplicate count among snapshots. $X$ axis is the identification of data blocks in a log scale
 sorted by their duplicate rank.  The rank number  1  is the block with the highest number of duplicates.
 The curve exhibits that the popularity of common data blocks partially follows a  Zipf-like distribution.
+The right part of Figure \ref{fig:zipf-data} shows the duplicate count  for OS disk snapshot blocks sorted by their ranking.
+%$Y$ axis is the popularity of an OS block in a log scale 
+%measured its duplicate count among snapshots. $X$ axis is the identification of OS blocks in a log scale
+%sorted by their duplicate rank.  
+For the top ranked blocks, there is a flat line in terms of duplicate counts. That
+is because there are a large number of OS blocks which have appeared in all copies of such OS releases.
 
 
 \begin{figure}[htbp]
 \centering
 %\epsfig{file=images/log-log.disk.eps, height=2in, width=2.66in}
 %\epsfig{file=images/log-log.disk.eps, width=3in}
-\epsfig{file=images/datadisk.count_rank.eps, width=3in}
-\caption{Duplicate count  of common data blocks in a log scale.}
+
+\begin{tabular}{cc}
+\epsfig{file=images/datadisk.count_rank.eps, width=1.5in} &
+\epsfig{file=images/35vmos.count-rank.eps,width=1.5in}
+\end{tabular}
+
+\caption{Duplicate count  of common data blocks in a log scale on the left. The right is for common OS blocks.}
 \label{fig:zipf-data}
 \end{figure}
-Figure \ref{fig:OSpopular} shows the duplicate count  for OS disk snapshot blocks sorted by their ranking.
-$Y$ axis is the popularity of an OS block in a log scale 
-measured its duplicate count among snapshots. $X$ axis is the identification of OS blocks in a log scale
-sorted by their duplicate rank.  For the top ranked blocks, there is a flat line in terms of duplicate counts. That
-is because there are a large number of OS blocks which have appeared in all copies of such OS releases.
 
-\begin{figure}
-\centering
-%\epsfig{file=images/log-log.35vmos.eps,  width=3in}
-%\epsfig{file=images/35os.count_rank.eps, width=3in}
-\epsfig{file=images/35vmos.count-rank.eps,width=3in}
-\caption{ Duplicate count of  common OS blocks in a log scale.}
-\label{fig:OSpopular}
-\end{figure}
+%\begin{figure}
+%\centering
+%\epsfig{file=images/35vmos.count-rank.eps,width=3in}
+%\caption{ Duplicate count of  common OS blocks in a log scale.}
+%\label{fig:OSpopular}
+%\end{figure}
 
 As the number of VMs increases, the popularity of common blocks for data disks changes.
 But this increase has a small impact on OS block popularity because 
