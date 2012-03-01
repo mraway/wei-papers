@@ -42,12 +42,13 @@ adds the complexity in fault tolerance management, especially when  VMs can migr
 Unlike the previous work dealing with general file-level backup and deduplication, our problem is focused on 
 virtual disk image backup and even each virtual disk is viewed as a file logically, its size is very large.
 On the other hand, we need to support parallel backup of a large number of virtual disks in a cloud everyday. 
-Thus our objective is to exploit the characteristics of VM snapshot data and
-pursue a cost-effective solution with the following two aspects.
-First,   VM snapshot backup should only use a minimal amount of system
+One key requirement we face at Alibaba Aliyun is that VM snapshot backup should only use a minimal amount of system
 resource so that most of resource is allocated for regular cloud system services or applications.
-Second, VM snapshot backup should be  decentralized and localized as much as possible.
-That brings the benefits for increased parallelism  and fault isolation. 
+Thus our objective is to exploit the characteristics of VM snapshot data and
+pursue a cost-effective deduplication solution. 
+Another goal  is to decentralize VM snapshot backup and  localize  deduplication as much as possible,
+which brings the benefits for increased parallelism  and fault isolation.
+
 
 With these in mind, we  have developed a decentralized multi-level solution to conduct 
 segment-level  and block-level  within each VM to localize deduplication when possible.
