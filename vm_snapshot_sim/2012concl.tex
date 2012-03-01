@@ -1,15 +1,17 @@
 \section{Conclusion}
 \label{sect:final}
-In this paper we propose and present a multi-level selective deduplication scheme for VM snapshots. 
-with minimal cost. Inner-VM deduplication localizes backup data dependence and exposes more parallelism  
-while we use  data characteristic in VM cloud backup to identify popular common data blocks
-and cover  a large percentage of snapshot content blocks wit a small amount of memory index.
-Our evaluation using Aliyun's implementation has shown that 
-level 1 and level 2 deduplication can reduce the storage need by 80\%. 
-Level 3 with small CDS memory usage can accomplish close to 44\% of what full fingerprint-based
-deduplication can do and bring additional 6\% storage reduction compared to the original data size.
-Noted that 6\% is still significant, which is about 24GB per each VM and for a 1000 node Aliyun cluster,
-this is about 600 terabytes.
+The main contribution of this paper is a multi-level selective deduplication scheme among VM snapshots. 
+Inner-VM deduplication localizes backup data dependence and exposes more parallelism  
+while global deduplication using a small common data set appeared in OS and data disks
+effectively  covers a large amount of snapshot blocks.
+Our evaluation using Aliyun's data has shown that 
+level 1 and level 2 deduplication can reduce the storage need by 78\% while level 2 inner 
+fingerprint comparsion contributes 4.5\%%. 
+Level 3 can add additional 10.5\% reduction and accomplish 75\% of what full fingerprint-based
+deduplication can do. Our scheme uses a very small amount of memory on each node, and leaves
+room for additional optimization we are further studying.
+%Noted that 6\% is still significant, which is about 24GB per each VM and for a 1000 node Aliyun cluster,
+%this is about 600 terabytes.
  
 %Our experiments show th
 %our solution can eliminate the majority of data duplication with a tiny fraction of

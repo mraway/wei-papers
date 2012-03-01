@@ -58,6 +58,7 @@ use a variable-size chunking algorithm to detect duplicates in file data~\cite{s
 %Chunking divides a data stream into variable length chunks, it has been used to conserve bandwidth\cite{lbfs01}, 
 %search and index documents in large repositories\cite{bhag07}, scalable storage systems\cite{hydrastor09}, 
 %store and transfer large directory trees efficiently and with high reliability\cite{jumbo07}.
+\comments{
 To chunk a file, starting from the first byte, its contents as seen through a fixed-sized (overlapping) 
 sliding window are examined. At every position of the window, a fingerprint of its 
 contents, $f$, is computed using hashing techniques such as Rabin fingerprints~\cite{rabin81}. 
@@ -83,6 +84,7 @@ by detecting and removing  duplicates before data is written to the backup stora
 thus reduces extra disk space required to hold temporary data. 
 This approach requires a fingerprint  comparison of the new content chunks with
 previously stored fingerprints. 
+}
 As data grows to be big, content chunk lookup for fingerprint comparison from disk storage
 becomes too slow to be scalable.
 %and searching such disk
@@ -169,8 +171,7 @@ in a cloud to this centralized  service.
 Another weakness is that the cost of allocating separate resource for dedicated backup  can be expensive.
 Since most of backup data is not used eventually, CPU and memory resource in such a backup cluster may not be fully utilized.
 \item {\em A decentralized and co-hosted backup system with full deduplication.}
-In this option, the backup system runs on an existing set of cluster machines. 
-The advantage is that there is no separate and dedicated cost for backup.
+In this option, the backup system runs on an existing set of cluster machines.
 % and a distributed storage architecture for backup allows a possible exploitation of  data locality between
 %the source of data and storage location of backup data. 
 The disadvantage is that 
@@ -219,12 +220,10 @@ but incurs significantly more cost.
 %\end{enumerate}
 
 With these considerations in mind, we propose a decentralized backup architecture with multi-level and selective 
-deduplication. This 
-backup service is hosted   in the existing set of cloud machines and resource usage is controlled
+deduplication. This service is hosted   in the existing set of machines and resource usage is controlled
 with a minimal impact to the existing applications.
 The duplication process is first conducted among data within each VM
-and then is conducted  across VMs when needed to 
-utilize a common dataset.  
+and then is conducted  across VMs to utilize a common dataset.  
 Given the concern that searching duplicates across  VMs  is a global feature which can affect parallel performance
 and complicate failure management,
 we would like to use a small common dataset while still maintaining a cost-effective deduplication ratio.
