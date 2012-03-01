@@ -133,13 +133,17 @@ On the other hand, the computing resource allocated for backup is often very sma
 This is because snapshot data is not retrieved frequently by users and the allocation of  cluster resource
 is typically prioritized towards active services such as online web services and map-reduce jobs.
 Thus  it is not easy to accept any backup behavior that affects VMs performance or stability of active users.  
+At Aliyun, it is required that while CPU and disk usage should be  small or modest during backup time,
+the memory footprint of deduplication should not exceed 1\% of memory at each node, which is about 480MB.
 
 %snapshot service shall not compete cpu, memory, or I/O bandwidth with VMs. Specifically, the memory usage of snapshot service can never exceed 500MB in any node.
 \item {\em Fast backup speed.}
 The snapshot  backup  operations need to be completed quickly  every day (e.g. 1-2 hours ). 
 Often a cloud service has  few hours of light workload each day (e.g. midnight),  which creates an opportunity  for backup.
 But a  longer use of bandwidth and computing resource  for backup can create  noticeable  contention with the existing cloud,
-which is not preferred for cloud production system operation. 
+which is not preferred for cloud production system operation. Thus it is desirable that backup for all nodes
+can be conducted in parallel and any centralized or  cross-machine communication for
+deduplication should not become a bottleneck.
 %As a large-scale cluster hosting tens of thousand of active VMs everyday,  the amount of data
 %to be processed is huge. 
 %For example, in an Aliyun cluster with over 1,000 nodes and each hosts over 25 VMs, The aggreated amount of data 
@@ -176,6 +180,7 @@ fingerprint-based search does require a significant amount of memory for fast lo
 This competes memory resource  with the existing applications.
 %Decentralized deduplication is studied in ~\cite{Clements2009} and the focus is on
 %block-level copy-on-write and compare-by-value techniques.
+
 Even approximation~\cite{extreme_binning09,sparseindex09} can be used to reduce memory requirement,  
 a  key weakness of global content fingerprint comparison is that it can affect fault isolation.
 Because a content chunk is compared with a content signature collected from other users,

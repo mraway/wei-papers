@@ -175,7 +175,7 @@ in the snapshot content block store residing in the underlying distributed file 
 
 At the runtime, the CDS index resides in a distributed  memory lookup table  
 implemented using Memcached~\cite{memcached} to leverage the aggregated memory in a cluster.
-Th usage of memory for each machine is small and thus  this scheme  does not
+Th usage of memory at each machine is small and thus  this scheme  does not
 lead to  a memory resource contention with the existing cloud services.
 For example, in our current implementation setting at Aliyun, we use up to  150MB memory per node during night backup
 including CDS and other metadata for all levels of deduplication. Most of memory resource (48GB per node 
@@ -245,23 +245,30 @@ is because there are a large number of OS blocks which have appeared in all copi
 \label{fig:OSpopular}
 \end{figure}
 
-Thus our CDS selection strategy is designed as follows.
+As the number of VMs increases, the popularity of common blocks for data disks changes.
+But this increase has a small impact on OS block popularity because 
+there are a limited number of OS releases used by VMs. We let CDS cover the common OS blocks first and
+our CDS selection strategy is designed as follows.
 \begin{itemize}
 \item First, most popular items from OS disks are selected.
 Our experiment data shows that about 
-100GB data ($25\times 10^6$\cite{BAD}) from 7 most popular OS releases
-can cover over 70\% of OS snapshots and the index of these 100GB OS data blocks
-only takes about total 800MB in the CDS index and then memory requirement per node for running the backup
-on  100 nodes is tiny.
-We expect in practice the OS CDS index may grow up to 2GB in order to cover large varieties  of commonly deployed
+100GB data from 7 most popular OS releases
+can at least cover over 70\% of OS snapshots and the index of these 100GB OS blocks
+only takes about total 1GB in the CDS index and then memory requirement per node for running the backup
+on  a large cluster is tiny.
+We expect that the OS CDS index may grow up to 2GB in order to cover large varieties  of commonly deployed
 OS releases in practice.
 \item Second, the degree of duplication is computed for snapshot blocks of data disks and
 % and also snapshot 
 %blocks of user data items stored in the OS disk (some users store data in their OS disks).
 the  most popular items are selected. As discussed in Section~\ref{sect:exper}, 
-about $10^7$ (???) most popular items
-can cover about 37\% of content blocks appeared in various snapshots after level 1 and level deduplication.  
+that about 1\% of data blocks are selected based on their duplicate counts and these popular blocks
+can cover about 38\% of data  blocks appeared in various snapshots after level 1 and level deduplication.  
+The memory size per node used for CDS is within 150MB.
 \end{itemize}
+Thus in total the CDS index size per node takes less than 160MB in a large cluster bigger than 100 nodes based on
+Aliyun's experiment data, covering over 53\% of blocks in OS and data disks after inner VM deduplication.
+This memory usage is well below the limit required by Aliyun.
 
 
 \subsection{Illustration  of multi-level deduplication process}

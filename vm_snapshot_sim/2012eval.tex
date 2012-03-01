@@ -72,14 +72,14 @@ deduplication divided by the original data size and the unit is percentage. }
 Figure~\ref{fig:overall} shows the overall impact of 3-level deduplication.
 The X axis shows the overall impact in (a),  impact on OS disk in (b), and impact on data disk in (c).
 Each bar in the Y axis shows the data size after deduplication divided by the original data size.
-Level-1 elimination can reduce the data size to 22\% of original data, namely it delivers close 80\% reduction.
+Level-1 elimination can reduce the data size to about 22\% of original data, namely it delivers close 78\% reduction.
 Level-2 elimination applied after level 1
-reduces the size further to 16\% of original size, namely it delivers additional 6\% reduction.
+reduces the size further to about 18.5\% of original size, namely it delivers additional 4.5\% reduction.
 Level-3 elimination together with level 1 and 2
-reduces the size further to 9\% of original size, namely it delivers additional 7\% reduction.
+reduces the size further to 8\% of original size, namely it delivers additional 10.5\% reduction.
 Level 2 elimination is more visible in OS disk than data disk, because data change frequency is really small
-when we sample last 10 snapshots of each user in 10 days. Nevertheless, the average impact of level 2 is also significant.
-A 6-7\% of reduction from the original data represents about 600-700TB of space.
+when we sample last 10 snapshots of each user in 10 days. Nevertheless, the overall impact of level 2 is still significant.
+A 4.5\% of reduction from the original data represents about 450TB space saving for a 1000-node cluster.
 
 
 \begin{figure}
@@ -115,13 +115,13 @@ contributing about about 10\% of reduction on average.
 %The extreme binning approach can reduce this data set to 542GB, which is slightly worse. As a reference, 
 %perfect deduplication achieves 364GB in this experiment.
 
-Overall speaking, inner   VM deduplication or  CDS-based deduplication
-can work well alone, but by combining them together we get a fairly good and stable deduplication ratio to 
-all kind of OSes. 
-Compared to a traditional dirty bit approach based on pages of
-each file (e.g. segment in our scheme),
-our CDS-based level 3 approach  can save additional 50\% storage space because many of level 2 block
-content can be eliminated using the CDS also.
+%Overall speaking, inner   VM deduplication or  CDS-based deduplication
+%can work well alone, but by combining them together we get a fairly good and stable deduplication ratio to 
+%all kind of OSes. 
+%Compared to a traditional dirty bit approach based on pages of
+%each file (e.g. segment in our scheme),
+%our CDS-based level 3 approach  can save additional 50\% storage space because many of level 2 block
+%content can be eliminated using the CDS also.
 
 \subsection{Coverage of common data blocks}
 
@@ -209,22 +209,18 @@ the common dataset covering data items from rank 1 to rank $i$. Namely
 \frac{ \sum_{i=1}^{i} S_i * F_i} {\mbox{Total data size}}
 \]
 
-Figure~\ref{fig:OSdatacoverage} shows the cumulative coverage  ratio of  popular common OS blocks. 
-From both graphs, a small number of most popular common blocks can coverage a large percentage of 
-snapshot blocks and thus the size of CDS can be chosen to be small while still having a large
-coverage. 
-% with $\alpha$ close to 0.78.
-%A tiny hottest fraction of data lead to majority of data duplication, as a result, we can target at this small set of commonly seen data
-%to design our fast and lightweight deduplication process, just like what people did in CDN and web proxy.
 
-\begin{figure}
-\centering
-%\epsfig{file=images/cdf.os.v4.eps, width=3in}
-%\epsfig{file=images/cdf.os.v4.eps, width=3in}
-\epsfig{file=images/ay41a_small.os_incremental.cdf.eps, width=3in}
-\caption{ Cumulative  coverage of popular common OS disk blocks.}
-\label{fig:OSdatacoverage}
-\end{figure}
+%Figure~\ref{fig:OSdatacoverage} shows the cumulative coverage  ratio of  popular common OS blocks. 
+%From both graphs, a small number of most popular common blocks can coverage a large percentage of 
+%snapshot blocks and thus the size of CDS can be chosen to be small while still having a large
+%coverage. 
+
+%\begin{figure}
+%\centering
+%\epsfig{file=images/ay41a_small.os_incremental.cdf.eps, width=3in}
+%\caption{ Cumulative  coverage of popular common OS disk blocks.}
+%\label{fig:OSdatacoverage}
+%\end{figure}
 
 
 %We define \emph{OS CDS} to be the unchanged data across the base VM image and the snapshots of all
@@ -233,14 +229,13 @@ coverage.
 %base image data as a hint.
 
 
-
-The selection of CDS is completed by separating OS disk and data disk.
-While block commonality among data disks may be affected in some degree
- when we scale up the number of total VMs  to be supported,
-we expect that  the block commonality among OS disks still remains to be high and  
-can be well covered by a fixed CDS because users still adopt common OS releases.
-To  verify this,  we examine the percentage of common  OS blocks of the same
-release in different VMs  OS releases in Figure~\ref{fig:OSunchanged}. 
+Because there are a limited number of OS releases supported by Aliyun, we study common blocks  among
+OS disks loaded with  the same OS release. 
+%The selection of CDS is completed by separating OS disk and data disk.
+%While block commonality among data disks may be affected in some degree
+% when we scale up the number of total VMs  to be supported,
+%we expect that  the block commonality among OS disks still remains to be high and  
+%%can be well covered by a fixed CDS because users still adopt common OS releases.
 %we choose 7 major OSes in Aliyun's
 %VM cloud platform and they are: 
 %Win2008 Server 64 bits, Win2003 Server 32 bits, Win2003 Server 64 bits, RHEL, CentOS, Ubuntu Server and Debian (all Linux
@@ -251,12 +246,12 @@ release in different VMs  OS releases in Figure~\ref{fig:OSunchanged}.
 %For example, some Ubuntu OS disks have only 2GB of data while some have 50GB.
 %For each OS, the base image and all OS
 %disk snapshots are divided into variable-sized blocks. Then 
-We consider the earlier snapshot for each OS disk as the base image.
-For every block in the base image, 
-we classify this block as ``completely common''
+In  Figure~\ref{fig:OSunchanged},  we list a conservative  commonality study in 7 major OS versions  supported
+in Aliyun.  We consider the earlier snapshot for each OS disk as the base image.
+For every block in the base image, we classify this block as ``completely common''
 if  this block has appeared in all snapshots of the same OS release even they are used by different VMs.
 Figure \ref{fig:OSunchanged} shows that for each
-OS,  at least 70\% of OS blocks are common among all snapshots of the same OS. 
+OS,  at least 70\% of OS blocks are completely common among all snapshots of the same OS. 
 Some latest release  of OS tends to have a higher percentage of content change
 while  old release tends to have more variations of content versions.
 That can be interpreted as that users with very old  version of operating systems
@@ -272,12 +267,12 @@ among OS snapshots of these users.
 \label{fig:OSunchanged}
 \end{figure}
 
-????????????????????????????????????????????????
 Based on the above analysis, we have selected a small set of most popular
-OS blocks, which is 1.5\% of  unique OS blocks. This set
-is quite sufficient to cover the OS related blocks. 
+OS blocks, which is about 100GB OS data and its corresponding CDS index takes about 1GB memory space in total.
+They can cover sufficiently over 70\% OS blocks.
+
 %Then we use this CDS to run the deduplication process again.
-That correspond to about  80GB of OS blocks and its corresponding CDS meta occupies 800MB in the cache.
+%That correspond to about  80GB of OS blocks and its corresponding CDS meta occupies 800MB in the cache.
 %  data from 350 OS disk snapshots,
 
 %The above analysis is only an estimation of OS and software related common data, 
