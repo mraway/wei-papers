@@ -4,7 +4,6 @@
 *.dvi
 *.log
 *.out
-*.pdf
 *.ps
 *~
 .classpath
