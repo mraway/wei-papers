@@ -11,9 +11,9 @@
 %for various active users. 
 %In the  case of Alibaba cloud service, the sevice is called Aliyu, which
 %provides the largest public cloud in based on the open-source Xen technology.
-In a virtualized cloud environment such as ones provided by Amazon EC2 and  Alibaba Aliyun,
+In a virtualized cloud environment such as ones provided by Amazon EC2 and Alibaba Aliyun,
 each instance of a guest operating system runs on a virtual machine, accessing
-virtual disks represented as virtual disk image files  in the host operating system.
+virtual hard disks represented as virtual disk image files in the host operating system.
 %virtual disk image files (e.g. .vhd, .vmdk) in the host operating system.
 Because these image files are stored as regular files from the external point of view,
 backing up VM's data is mainly done by taking snapshots of virtual disk images.
@@ -30,35 +30,43 @@ and only the blocks that have changed from the previous version of snapshot will
 %an application on multiple VMs, for example Hadoop or MPI.
 
 Frequent  backup of VM snapshots increases  the reliability of VM's hosted in a cloud.
-For example, Aliyun, the largest cloud service provided by Alibaba in China, 
+For example, Aliyun, the largest cloud service provider by Alibaba in China, 
 provides automatic frequent backup of VM images to strengthen the reliability of its service for all users.
 The cost of frequent backup of VM snapshots is  high because of the huge storage demand.
-Using a backup service with full deduplication support~\cite{venti02,bottleneck08,extreme_binning09,sparseindex09}
+Using a backup service with full deduplication support~\cite{venti02,bottleneck08}
 can identify content duplicates among snapshots to remove redundant storage content,  but the weakness is that it
 either adds the  extra cost significantly or competes computing resource with the existing cloud services.
-Data dependence created by duplicate relationship among snapshots
+In addition, data dependence created by duplicate relationship among snapshots
 adds the complexity in fault tolerance management, especially when  VMs can migrate around in the cloud. 
 
 Unlike the previous work dealing with general file-level backup and deduplication, our problem is focused on 
-virtual disk image backup and even each virtual disk is viewed as a file logically, its size is very large.
+virtual disk image backup. Although we treat each virtual disk  as a file logically, its size is very large.
 On the other hand, we need to support parallel backup of a large number of virtual disks in a cloud everyday. 
 One key requirement we face at Alibaba Aliyun is that VM snapshot backup should only use a minimal amount of system
-resource so that most of resource is allocated for regular cloud system services or applications.
+resources so that most of resources is kept for regular cloud system services or applications.
 Thus our objective is to exploit the characteristics of VM snapshot data and
 pursue a cost-effective deduplication solution. 
 Another goal  is to decentralize VM snapshot backup and  localize  deduplication as much as possible,
 which brings the benefits for increased parallelism  and fault isolation.
 
+%,extreme_binning09,sparseindex09
+By observations on the VM snapshot data from production cloud, we found snapshot data duplication 
+can be easily classified into two categories: \emph{inner-VM} and \emph{cross-VM}. Inner-VM duplication
+exists between VM's snapshots, because the majority of data are unchanged during each backup period. 
+On the other hand, Cross-VM duplication is mainly due to widely-used software and libraries: 
+there are only two type of OSes (Linux and Windows), most users either uses MySQL or MS SQL Server as their database.
+As the result, different VMs tend to backup large amount of highly similar data.
 
 With these in mind, we  have developed a decentralized multi-level solution to conduct 
-segment-level  and block-level  within each VM to localize deduplication when possible.
-It then makes global inter-VM deduplication efforts by using a small number of
-popular common data blocks.  Our study shows that there are a larger number
-of popular common content  blocks shared by many users while they only take
-a small amount of resource for global deduplication. 
-Leveraging popular blocks makes the fault tolerance management easier while
-it can still effectively accomplish a significant percentage of inter-VM  deduplication
-compared to a full deduplication algorithm. 
+segment-level  and block-level inner-VM  deduplication to localize the deduplication effort when possible.
+It then makes cross-VM deduplication by excluding a small number of
+popular common data blocks from being backed up. Our study shows that common data blocks
+occupy significant amount of storage space while they only take
+a small amount of resources to deduplicate.
+Seperating deduplication into multi levels effectively accomplish the major space saving goal
+compare the global complete deduplication scheme, at the same time it makes
+the backup of different VMs to be indepdent for better fault tolerance.
+
 %Restricting the scope of global deduplication reduces
 %the inter-component  data dependenc during machine failure.
 

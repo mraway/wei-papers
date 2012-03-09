@@ -35,7 +35,7 @@ changed from the previous version of the snapshot~\cite{Clements2009,Vrable2009,
 %Such a strategy exploits version difference between consecutive snapshots
 %of the same image.
 The main weakness
-is that it does not reveal content redundancy among data blocks from different files or
+is that it does not reveal content redundancy among data blocks from different snapshots or
 different VMs.
 %has several disadvantages:
 %first, CoW may affect the general I/O performance due to defered data coping. 
@@ -85,7 +85,7 @@ thus reduces extra disk space required to hold temporary data.
 This approach requires a fingerprint  comparison of the new content chunks with
 previously stored fingerprints. 
 }
-As data grows to be big, content chunk lookup for fingerprint comparison from disk storage
+As data grows to be big, fingerprint lookup in such schemes
 becomes too slow to be scalable.
 %and searching such disk
 %However, unless some form of locality or similarity is exploited, inline, chunk-based deduplication, 
@@ -95,10 +95,10 @@ becomes too slow to be scalable.
 %Without locality, the index cannot be cached effectively, and it is common for nearly 
 %every index access to require a random disk access. This disk bottleneck severely limits deduplication throughput.
 Several techniques have been proposed to speedup searching of duplicate 
-content~\cite{bottleneck08,extreme_binning09,sparseindex09}. For example,  
+content. For example,  
 Zhu et al.~\cite{bottleneck08} tackle it 
 by using an in-memory Bloom filter and prefetch groups of chunk IDs that are likely to be 
-accessed together with high probability. It takes significant memory resource for filtering.
+accessed together with high probability. It takes significant memory resource for filtering and caching.
 NG et al.~\cite{ NGmiddleware2011}  use  
 a related filtering technique for integrating deduplication in Linux  file system and the memory
 consumed is up to 2GB for a single machine. That is still too big in our context discussed below. 
@@ -111,10 +111,15 @@ consumed is up to 2GB for a single machine. That is still too big in our context
 
 Duplicate  search approximation~\cite{extreme_binning09,sparseindex09}  has been proposed 
 %in extreme bining and other sparse indexing 
-to package similar content in one disk, and duplicate lookup  only searches
+to package similar content in one location, and duplicate lookup  only searches
 for chunks within files which have a similar file-level or segment-level  content fingerprints.
 That leads  to a smaller amount of memory usage for storing meta data in signature
 lookup with a tradeoff of the reduced recall ratio. 
+
+One weakness the hasn't been addressed by previous solutions is that we want to isolate 
+each VM's snapshot backup as much as possible while still enjoy the benefit of deduplication.
+In large scale cloud, node faiures happen at daily basis, we don't want a problem at small scale
+to affect large amount of VMs due to data sharing.
 
 \section{Requirements and Design Options}
 \label{sect:options}
@@ -127,23 +132,19 @@ which are different from a traditional data backup.
 %Base on Aliyun's production environment, the snapshot backup job has to satisfy 
 \begin{enumerate}
 \item {\em Cost consciousness.}
-There are tens of thousands of VMs running on a large-scale cloud cluster. 
-The amount of VM data to backup is huge and cost of complete backup can be prohibitively high without
-deduplication and compression support.  Thus cost minimization is required to deliver a deplorable solution.
-
-On the other hand, the computing resource allocated for backup is often very small.
-This is because snapshot data is not retrieved frequently by users and the allocation of  cluster resource
-is typically prioritized towards active services such as online web services and map-reduce jobs.
-Thus  it is not easy to accept any backup behavior that affects VMs performance or stability of active users.  
-At Aliyun, it is required that while CPU and disk usage should be  small or modest during backup time,
-the memory footprint of deduplication should not exceed 1\% of memory at each node, which is about 480MB.
+There are tens of thousands of VMs running on a large-scale cluster. 
+The amount of data to backup is so huge such that 3rd-party solutions are generally not affordable.
+On the other hand, the computing resources allocated for snapshot service is very limited
+because VM performance has higher priority.  
+At Aliyun, it is required that while CPU and disk usage should be small or modest during backup time,
+the memory footprint of snapshot service should not exceed 500MB at each node.
 
 %snapshot service shall not compete cpu, memory, or I/O bandwidth with VMs. Specifically, the memory usage of snapshot service can never exceed 500MB in any node.
 \item {\em Fast backup speed.}
-The snapshot  backup  operations need to be completed quickly  every day (e.g. 1-2 hours ). 
-Often a cloud service has  few hours of light workload each day (e.g. midnight),  which creates an opportunity  for backup.
-But a  longer use of bandwidth and computing resource  for backup can create  noticeable  contention with the existing cloud,
-which is not preferred for cloud production system operation. Thus it is desirable that backup for all nodes
+Often a cloud has a few hours of light workload each day (e.g. midnight),  which creates an small window for automatic backup.
+%But a  longer use of bandwidth and computing resource  for backup can create  noticeable  contention with the existing cloud,
+%which is not preferred for cloud production system operation. 
+Thus it is desirable that backup for all nodes
 can be conducted in parallel and any centralized or  cross-machine communication for
 deduplication should not become a bottleneck.
 %As a large-scale cluster hosting tens of thousand of active VMs everyday,  the amount of data
@@ -153,8 +154,8 @@ deduplication should not become a bottleneck.
 
 % the system must finish saving daily snapshots of all VMs in 2 hours. In our typical 1000 nodes cluster, each node hosts 25 VMs, each VM has 40GB of data on average, that translates to backup throughput of 139GB/second, or 500TB/hour.
 \item {\em Fault tolerance.}
-The addition of a backup service should not decrease the degree of
-fault tolerance.  If data failure in  a backup service  affects many users,  such a solution is not desirable.
+The addition of data deduplication should not decrease the degree of
+fault tolerance. It's not desirable that small scale of data failure affects the backup of many VMs.
 %when users access snapshots in a recovery process. 
 \end{enumerate}
 
