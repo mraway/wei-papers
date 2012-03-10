@@ -1,5 +1,5 @@
 MAIN = main
-TEX = ${MAIN}.tex  intro.tex approach.tex  related.tex
+TEX = ${MAIN}.tex 2012eval.tex 2012intro.tex 2012arch.tex  2012abs.tex 2012background.tex
 FIG = 
 BIB = dedup.bib
 
