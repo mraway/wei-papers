@@ -6,26 +6,29 @@
 Our architecture is built on the Aliyun platform which provides the largest public VM cloud in China 
 based on Xen~\cite{Xen2003}. A typical VM cluster in our cloud environment
 consists of from hundreds to thousands of physical machines, each of which can
-host tens of VMs. A few varieties of mainstream OS are supported.
-%including several editions of Windows Server, major Linux distributions, and FreeBSD.
+host tens of VMs.
+
+A GFS-like distributed file system holds the responsibility of managing physical disk storage
+in the cloud. All data needed for VM services, which include runtime VM disk images and snapshot backup data,
+reside in this distributed file system.
 During the VM creation, a user chooses her flavor of OS distribution and the cloud system 
 copies the corresponding pre-configured base VM image to her VM as the OS disk, 
 and an empty data disk is created and mounted onto her VM as well. 
 All these virtual disks are represented as virtual machine image files in our
 underline runtime VM storage system. The runtime I/O between virtual machine and its virtual
 disks is tunneled by the virtual device driver (called TapDisk at Xen). To avoid network latency and congestion, 
-Aliyun's distributed file system carefully selects the location of primary replica of VM's 
-image files such that they are located on the same physical machine of VM instance.
+our distributed file system place the primary replica of VM's 
+image files at physical machine of VM instance.
 During snapshot backup, concurrent disk write is logged 
-so that a  consistent snapshot version  can be derived. 
+to ensure a consistent snapshot version is captured. 
 
-Figure~\ref{fig:arch} shows the architecture view of snapshot service with selective deduplication
-at each node. The  snapshot broker provides the functional interface for  snapshot backup, access, and deletion.
-In accomplishing such a function, this broker accesses  the snapshot store managed by the underlying distributed file
-system.  The inner VM  deduplication is conducted by the broker to access meta data in the snapshot data store
+Figure~\ref{fig:arch} shows the architecture view of our snapshot service
+at each node. The snapshot broker provides the functional interface for  snapshot backup, access, and deletion.
+The inner-VM  deduplication is conducted by the broker to access meta data in the snapshot data store
 and we discuss this in details in Section~\ref{sect:innerVM}.
-The inter-VM deduplication is conducted by the broker to access a  common data block set (CDS) across multiple VMs.
-The CDS hash index is stored in the distributed memory cache. 
+The cross-VM deduplication is conducted by the broker to access 
+a common data set (CDS) (will discuss in Section~\ref{sect:crossVM},
+whose block hash index is stored in a distributed memory cache. 
 
 \begin{figure}[htbp]
   \centering
@@ -35,15 +38,13 @@ The CDS hash index is stored in the distributed memory cache.
   \label{fig:arch}
 \end{figure}
 
-
-The snapshot store  residing in the distributed file system
-supports data access operations  such as \emph{get}, \emph{put} and \emph{delete}.
-Other operations include data block traverse  and resource usage  report.
-Snapshots are stored  in our distributed file system, just like regular virtual data files. 
-A key  difference is that snapshot storage does not need to be
-co-located within VM instances and  in fact they can even live in a different cluster to improve the 
-data reliability. When a computing cluster is not available, we are still able to  restore users' VMs from another cluster which
-contains snapshot backup and run these VMs. 
+The snapshot store 
+supports data access operations such as \emph{get}, \emph{put} and \emph{delete}.
+Other operations include data block traverse and resource usage report.
+The snapshot data does not need to be
+co-located with VM instances, and in fact they can even live in a different cluster to improve the 
+data reliability: when one cluster is not available, we are still able to restore its VMs from another cluster which
+holds its snapshot data. 
 %to reduce the impact to our users.
 %Get interface accepts a piece of data, write it to the underline data file, and return
 %a reference to the caller. This reference then can be used in the put interface to
@@ -54,13 +55,15 @@ contains snapshot backup and run these VMs.
 %in the snapshot store, and quota is used to acknowledge user how much space he
 %has actually used.
 
-With Aliyun's distributed file system support, the snapshot store operates 
-\emph{append-only} files. Each virtual disk has its own data store, all data 
-blocks after deduplication will be stored into that system.
-Since all the underline data structures is append only,
-upon a delete request, the corresponding data will only be marked rather than being deleted.
-A compaction will take place when deleted data has accumulated to a certain threshold, thus 
-reclaiming the disk space .
+Under the hood of snapshot store, it organizes and operates snapshot data 
+in the distributed file system. We let each virtual disk has its own snapshot store, 
+and no data is shared between
+any two snapshot stores, thus achieve great fault isolation. For those selected popular data
+that shared by many VM snapshot stores, we could easily increase its availability by having more replications.
+%Since all the underline data structures is append only,
+%upon a delete request, the corresponding data will only be marked rather than being deleted.
+%A compaction will take place when deleted data has accumulated to a certain threshold, thus 
+%reclaiming the disk space .
 
 
 
@@ -78,7 +81,7 @@ The first-level deduplication is logically localized within each VM.
 %First, all data written to block store are already being processed by deduplication
 %process, thus no sharing is necessary unless we want to perform additional deduplication
 %inside the block store. Second, 
-Such localization increases data independence between different  VM backups,
+Such localization increases data independency between different  VM backups,
 simplifies  snapshot  management and statistics collection during VM migration and termination,
 and facilitates parallel execution of snapshot operations.
 %Finally, this reduces the complexity of concurrent snapshot operations.
@@ -94,7 +97,7 @@ and facilitates parallel execution of snapshot operations.
   \centering
   %\epsfig{file=images/dedup_process.eps, height=2in, width=2.66in}
   \epsfig{file=images/snapshot_representation.eps,  width=3.2in}
-  \caption{An example  of snapshot representation.}
+  \caption{An example of snapshot representation.}
   \label{fig:snapshot}
 \end{figure}
 
@@ -103,24 +106,24 @@ each snapshot is correspondingly designed as a two-level level index data struct
 directed acyclic graph as shown in Figure~\ref{fig:snapshot}.
 An image file is divided into a set of segments and each  segment contains hundreds of content blocks from the bottom level.
 These blocks are of variable-size, partitioned using
-the standard chunking technique~\cite{similar94}.  We use 4KB as the average block size. 
-The segment metadata (called segment recipe) records its  content block hashes and  data reference. 
-The snapshot-level recipe contains a set of  segment recipes and other meta data information.
+the standard chunking technique~\cite{similar94} with 4KB as the average block size. 
+%To simplify the deduplication process, segments are aligned to fix-sized boundaries, currently using 2MB.
+Segment metadata (called segment recipe) records its  content block hashes and data pointers. 
+The snapshot recipe contains a list of segments and other meta data information.
 \begin{itemize}
 \item {\em Level 1 Segment modification  detection}.
-If a segment is not changed, indicated by a dirty bit, its content blocks are not changed also. In this case,
- segment-level duplicate detection is more efficient than the block level. 
+If a segment is not changed, indicated by a dirty bit embedded in the virtual disk driver, its content blocks are not changed as well, thus its segment recipe can be simply reused. Operations at this level have almost no cost and most of unmodified data are filtered here. 
 
 \item {\em Level 2  Block fingerprint comparison.}
-If a segment is modified, content blocks of this segment are compared with 
-the fingerprints of the existing content blocks within the same segment in
-the previous version of this snapshot (called parent  snapshot). Partial duplication
+If a segment is modified, we perform fine-grained deduplication using content blocks of this segment to compared with 
+the same segment in
+the previous snapshot (also called parent snapshot). Partial duplication
 within the segment can be detected and eliminated. 
 \end{itemize}
 
-We choose this two-level structure because in practice we observe that at each snapshot there are a large
-number of content blocks which are not modified from one snapshot version to another.
-Aggregating a large number of content blocks as one segment can significantly
+We choose this two-level structure because in practice we observe that during each backup period only a small amount
+of VM data are added or modified. As the result, even the meat data of two snapshots can be highly similar,
+thus aggregating a large number of content blocks as one segment can significantly
 reduce the space cost of snapshot meta data. 
 %Namely the  snapshort metadata starts with
 %the representation of segment-level meta data. Each segment receipe can be further represented by
@@ -130,8 +133,8 @@ How can we choose the length of a segment?
 Instead of using variables-sized segments, we take a simple approach
 to let every segment being aligned to the page boundary of each virtual image file.
 For Aliyun, each VM image file is represented as a virtual disk file format
-(called \emph{vhd} at Xen) and we use a dirty bit to capture if a page (or segment) of a virtual snapshot file 
-has been modified or not for segment-level deduplication.
+(called \emph{vhd} at Xen) and we use a dirty bit to capture if a page (or segment) of a virtual disk file 
+has been modified or not to ease the segment-level deduplication.
 %This is effective because  
 %a vhd   file keeps the allocated inner blocks at the same positions until deletion,
 %which means the locality of snapshot data is almost natively aligned. 
@@ -165,12 +168,13 @@ That only takes a tiny amount of space to hold their fingerprints.
 %time to search all segments sequentially~\cite{NOT-CLEAR-HERE}
 
 \subsection{Cross-VM Deduplication with CDS}
+\label{sect:crossVM}
 
-The third-level of deduplication is to identify duplicated data blocks among multiple VMs through the index cache
+The level-3 deduplication is to identify duplicated data blocks among multiple VMs through the index cache
 of common data set (CDS).  CDS is the most popular content blocks 
-among  recent snapshots across all VMs. 
+among snapshots across all VMs. 
 Each index entry contains  the block fingerprint and a reference pointer to the location of its real content
-in the snapshot content block store residing in the underlying distributed file system.
+in the snapshot content block store.
 %The structure of CDS meta is not different from the segment recipe we discussed above, 
 %except that it is partitioned into many small slices so that each node is easy to load its own slice. 
 
@@ -183,7 +187,7 @@ lead to  a memory resource contention with the existing cloud services.
 %in our experiment) is used for existing  applications.
 CDS raw data stored  in the distributed file system
 has multiple copies in different machines for the purpose of fault tolerance and 
-while providing high read  throughput.  
+while providing high read throughput.  
 %The data of CDS is stored in a special block store in the distribued file system.
 
 % which doesn't belong to any VM disk.
@@ -201,15 +205,14 @@ To control the size of searchable common data in this global setting, we focus o
 are most popular based on the historical snapshot data and the popular analysis is conducted periodically to ensure 
 meta data freshness to match the latest data access trend.
 There are two advantages to exploit this.
-First, a smaller CDS reduces overall resource requirement while covering  most of data blocks in snapshots.
-Second a smaller CDS makes the fault tolerance management  easier because we can replicate  more copies
-to mitigate the failure.
+First, a smaller CDS reduces overall resource requirement while covering most of data duplication.
+Second, knowing this small set of data is shared heavily makes the fault tolerance management 
+easier because we can replicate more copies to mitigate the failure.
 
-
-In Aliyun's VM cloud, each VM explicitly maintains  one OS disk, plus  one or more data disks.
+In Aliyun's VM cloud, each VM explicitly maintains  one OS disk, plus one or more data disks.
 During VM's creation, its OS disk is directly copied from user's chosen base image.
 Given the separation of OS disks and data disks, we study  their characteristics separately.
-We expect that operating system blocks   along with popular software installations  are not frequently
+We expect that operating system blocks along with popular software installations  are not frequently
 modified or deleted. 
 %base image data as a hint.Through users may change configurations, install software, or write user data into OS disk,
 %Thus most of content blocks for the OS related snapshots  shall keep unchanged.
@@ -217,12 +220,12 @@ modified or deleted.
 We have sampled  the  popularity of common blocks in the OS and data disks from a dataset
 containing over 1,000 VMs and each has 10 snapshots.
 
-The left part of Figure \ref{fig:zipf-data} shows the duplicate count  for different data blocks sorted by their ranking in 
+The left part of Figure \ref{fig:zipf-data} shows the duplicate count for different data blocks sorted by their ranking in 
 terms of the duplication count. $Y$ axis is the popularity of a data block in a log scale 
 measured its duplicate count among snapshots. $X$ axis is the identification of data blocks in a log scale
-sorted by their duplicate rank.  The rank number  1  is the block with the highest number of duplicates.
+sorted by their duplicate rank.  The rank number 1 is the block with the highest number of duplicates.
 The right part of Figure \ref{fig:zipf-data} shows the duplicate count  for OS disk snapshot blocks sorted by their ranking.
-These two curves exhibit that the popularity of common blocks partially follows a  Zipf-like distribution.
+These two curves exhibit that the popularity of common blocks partially follows a Zipf-like distribution.
 %$Y$ axis is the popularity of an OS block in a log scale 
 %measured its duplicate count among snapshots. $X$ axis is the identification of OS blocks in a log scale
 %sorted by their duplicate rank.  
@@ -232,15 +235,15 @@ These two curves exhibit that the popularity of common blocks partially follows 
 
 \begin{figure}[htbp]
 \centering
-%\epsfig{file=images/log-log.disk.eps, height=2in, width=2.66in}
+\epsfig{file=images/vector.eps, width=3.2in}
 %\epsfig{file=images/log-log.disk.eps, width=3in}
 
-\begin{tabular}{cc}
-\epsfig{file=images/datadisk.count_rank.eps, width=1.5in} &
-\epsfig{file=images/35vmos.count-rank.eps,width=1.5in}
-\end{tabular}
+%\begin{tabular}{cc}
+%\epsfig{file=images/datadisk.count_rank.eps, width=1.5in} &
+%\epsfig{file=images/35vmos.count-rank.eps,width=1.5in}
+%\end{tabular}
 
-\caption{Duplicate count  of common data blocks in a log scale on the left. The right is for common OS blocks.}
+\caption{Number of duplicates vesus ranking}
 \label{fig:zipf-data}
 \end{figure}
 
@@ -256,7 +259,7 @@ But this increase has a small impact on OS block popularity because
 there are a limited number of OS releases used by VMs. We let CDS cover the common OS blocks first and
 our CDS selection strategy is designed as follows.
 \begin{itemize}
-\item First, most popular items from OS disks are selected.
+\item First, most popular items from OS disks are selected as the initial CDS.
 Our experiment data shows that about 
 100GB data from 7 most popular OS releases
 can at least cover over 70\% of OS snapshots and the index of these 100GB OS blocks
@@ -264,7 +267,7 @@ only takes about total 1GB in the CDS index and then memory requirement per node
 for duplicate search a large cluster is tiny.
 We expect that the OS CDS index may grow up to 2GB in order to cover large varieties  of commonly deployed
 OS releases in practice.
-\item Second, the degree of duplication is computed for snapshot blocks of data disks and
+\item Second, the degree of duplication is computed for the rest of blocks in snapshot store, and
 % and also snapshot 
 %blocks of user data items stored in the OS disk (some users store data in their OS disks).
 the  most popular items are selected. As discussed in Section~\ref{sect:exper}, 
@@ -273,9 +276,8 @@ can cover about 38\% of data  blocks appeared in various snapshots after level 1
 The memory size per node used for CDS is within 150MB.
 \end{itemize}
 Thus in total the CDS index size per node takes less than 160MB in a large cluster bigger than 100 nodes based on
-Aliyun's experiment data, covering over 53\% of blocks in OS and data disks after inner VM deduplication.
-This memory usage is well below the limit required by Aliyun.
-
+Aliyun's experiment data, covering over 53\% of blocks in OS and data disks after inner-VM deduplication.
+This memory usage is well below the limit required by our VM services.
 
 \subsection{Illustration  of multi-level deduplication process}
 
@@ -305,7 +307,7 @@ The 3-level deduplication process can be summarized as four steps:
 %
 \begin{figure}
   \centering
-  \epsfig{file=images/dedup_flow1.eps, height=2in, width=4in}
+  \epsfig{file=images/dedup_flow1.eps, height=2in, width=3.5in}
   \caption{Illustration of snapshot deduplication dataflow.}
   \label{fig:dedupflow}
 \end{figure}
@@ -333,13 +335,15 @@ copied into the segment recipe.
 \item {\em Write new snapshot blocks :}
 We continue the previous step and 
 if a data block cannot be found in the CDS index, this block is considered to be a new block
-and such a block is to be saved in the snapshot block store and  the returned reference  pointer is
+and such a block is to be saved in the snapshot block store and  the returned data pointer is
 saved in the  segment recipe.
 \item {\em Save recipes.} Finally the  segment recipes are saved in the  snapshot block store also.
- After all segment recipes are saved, the snapshot recipe is complete and can be saved also.
+ After all segment recipes are saved, the snapshot recipe is complete and can be saved finally.
 \end{enumerate}
 
 If there is no parent snapshot available, which happens when a VM creates its first snapshot, 
-only CDS-based checkup will be conducted.
+only CDS-based checkup will be conducted. 
+Most of the cross-VM duplication, such as OS related data and popular software data, is eliminated
+at this stage. Later snapshot will very likely find these data are not changed and simply copy the data pointers from parent snapshot.
 %This is important because most of the cross-VM duplication, such as OS related data and popular software data, is eliminated
 %at this stage. Later snapshot will very likely find these data are not changed and simply copy the data pointers from parent snapshot.

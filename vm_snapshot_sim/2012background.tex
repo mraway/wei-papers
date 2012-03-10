@@ -116,11 +116,6 @@ for chunks within files which have a similar file-level or segment-level  conten
 That leads  to a smaller amount of memory usage for storing meta data in signature
 lookup with a tradeoff of the reduced recall ratio. 
 
-One weakness the hasn't been addressed by previous solutions is that we want to isolate 
-each VM's snapshot backup as much as possible while still enjoy the benefit of deduplication.
-In large scale cloud, node faiures happen at daily basis, we don't want a problem at small scale
-to affect large amount of VMs due to data sharing.
-
 \section{Requirements and Design Options}
 \label{sect:options}
 
@@ -133,7 +128,7 @@ which are different from a traditional data backup.
 \begin{enumerate}
 \item {\em Cost consciousness.}
 There are tens of thousands of VMs running on a large-scale cluster. 
-The amount of data to backup is so huge such that 3rd-party solutions are generally not affordable.
+The amount of data is so huge such that backup cost must be controlled carefully.
 On the other hand, the computing resources allocated for snapshot service is very limited
 because VM performance has higher priority.  
 At Aliyun, it is required that while CPU and disk usage should be small or modest during backup time,
@@ -178,19 +173,30 @@ In this option, the backup system runs on an existing set of cluster machines.
 The disadvantage is that 
 %the backup service would compete CPU, memory, and disk resources with the other cloud services.
 even such a  backup service may only use  a fraction of the existing disk storage, 
-fingerprint-based search does require a significant amount of memory for fast lookup of identical content chunks.
-This competes memory resource  with the existing applications.
+fingerprint-based search does require a significant amount of memory for fingerprint lookup of searching duplicates.
+This competes memory resource  with the existing VMs.
 %Decentralized deduplication is studied in ~\cite{Clements2009} and the focus is on
 %block-level copy-on-write and compare-by-value techniques.
 
-Even approximation~\cite{extreme_binning09,sparseindex09} can be used to reduce memory requirement,  
-a  key weakness of global content fingerprint comparison is that it can affect fault isolation.
+Even approximation~\cite{extreme_binning09,sparseindex09} can be used to reduce memory requirement,
+one key weakness the hasn't been addressed by previous solutions is that global content sharing affects
+fault isolation.
 Because a content chunk is compared with a content signature collected from other users,
-this artificially creates data dependence among different cloud users.
+this artificially creates data dependency among different VM users.
 % since storage for shared identical content chunks can become a failure point.
-The loss of a common chunk can affect many users whose VM images share this 
-chunk. Adding replicas for this global dataset can enhance the availability,
-but incurs significantly more cost.
+In large scale cloud, node faiures happen at daily basis,
+the loss of a shared block can affect many users whose snapshots share this 
+data block. 
+Without any control of such data sharing, we can only increase  
+replication for global dataset to enhance the availability,
+but this incurs significantly more cost.
+
+%we want to isolate 
+%each VM's snapshot backup as much as possible while still enjoy the benefit of deduplication.
+%In large scale cloud, node faiures happen at daily basis, we don't want a problem at small scale
+%to affect large amount of VMs due to data sharing.
+%a key weakness of global content fingerprint comparison is that it affects fault isolation.
+
 %2) data sharing among users for accessing common signagutes causes the system less resilient to storage failures.
 %any loss of one piece of  shared data content hash and actualcontent will damange many VM snapshots, which can cause massive impacts
 %on reliability of many users.
@@ -223,12 +229,13 @@ but incurs significantly more cost.
 With these considerations in mind, we propose a decentralized backup architecture with multi-level and selective 
 deduplication. This service is hosted   in the existing set of machines and resource usage is controlled
 with a minimal impact to the existing applications.
-The duplication process is first conducted among data within each VM
-and then is conducted  across VMs to utilize a common dataset.  
-Given the concern that searching duplicates across  VMs  is a global feature which can affect parallel performance
+The deduplication process is first conducted among snapshots within each VM
+and then is conducted across VMs.  
+Given the concern that searching duplicates across VMs is a global feature which can affect parallel performance
 and complicate failure management,
-we would like to use a small common dataset while still maintaining a cost-effective deduplication ratio.
-For this purpose, we exploit the data characteristics of snapshots and only store most popular data.
+we only eliminate the duplication of a small but popular data set while still maintaining a cost-effective deduplication ratio.
+For this purpose, we exploit the data characteristics of snapshots and collect most popular data.
+Data sharing across VMs is limited within this small data set such that adding replicas for it could enhance fault tolerance.
 %
 %in the  our studies show that there are a large amount of data unmodified in VM snapshots
 %and shared among many users (e.g. OS data). The sharing pattern follows a zip-like distribution.
