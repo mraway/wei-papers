@@ -33,7 +33,7 @@ whose block hash index is stored in a distributed memory cache.
 \begin{figure}[htbp]
   \centering
   %\epsfig{file=images/arch.eps, height=2in, width=2.66in}
-  \epsfig{file=images/arch.eps, width=3.5in}
+  \epsfig{file=images/arch.eps, width=3.9in}
   \caption{Snapshot backup architecture of each node.}
   \label{fig:arch}
 \end{figure}
@@ -96,7 +96,7 @@ and facilitates parallel execution of snapshot operations.
 \begin{figure}[htbp]
   \centering
   %\epsfig{file=images/dedup_process.eps, height=2in, width=2.66in}
-  \epsfig{file=images/snapshot_representation.eps,  width=3.2in}
+  \epsfig{file=images/snapshot_representation.eps,  width=3.8in}
   \caption{An example of snapshot representation.}
   \label{fig:snapshot}
 \end{figure}
@@ -219,7 +219,8 @@ and the rest of data, either from OS or data disks, are called \emph{user-relate
 %Thus most of content blocks for the OS related snapshots  shall keep unchanged.
 %This is verified in  Section~\ref{sect:exper}.
 We have studied the popularity of common blocks in the OS and data disks from a dataset
-containing over 1,000 VMs, taking their first snapshots to watch the cross-VM duplication pattern.
+containing over 1,000 VMs, taking their first snapshots to watch the cross-VM duplication pattern 
+(scale of OS disk sampling is smaller due to performance impact to user VMs).
 Figure \ref{fig:zipf-data} shows the duplicate count for unique data blocks sorted by their ranking in 
 terms of the duplication count. $Y$ axis is the popularity of a data block in a log scale 
 measured its duplicate count among snapshots. $X$ axis is the identification of data blocks in a log scale
@@ -234,7 +235,7 @@ These two curves exhibit that the popularity of common blocks partially follows 
 
 \begin{figure}[htbp]
 \centering
-\epsfig{file=images/vector.eps, width=3.2in}
+\epsfig{file=images/vector.eps, width=3.8in}
 %\epsfig{file=images/log-log.disk.eps, width=3in}
 
 %\begin{tabular}{cc}
@@ -327,7 +328,7 @@ The 3-level deduplication process can be summarized as four steps:
 %
 \begin{figure}
   \centering
-  \epsfig{file=images/dedup_flow1.eps, height=2in, width=3.5in}
+  \epsfig{file=images/dedup_flow1.eps, width=3.8in}
   \caption{Illustration of snapshot deduplication dataflow.}
   \label{fig:dedupflow}
 \end{figure}
@@ -336,15 +337,15 @@ We illustrate the steps of 3-level deduplication in Figure~\ref{fig:dedupflow}, 
 \begin{enumerate}
 \item {\em Segment level checkup.}
 As shown in Figure~\ref{fig:dedupflow} (a),
-when  a snapshot of a plain virtual disk file is being created, we first check the dirty bitmap array of
-this disk file  to see which segments are modified. If a segment is not modified since last snapshot, 
+when  a snapshot of a plain virtual disk file is being created, we first check the dirty bitmap 
+to see which segments are modified. If a segment is not modified since last snapshot, 
 it's data pointer in the recipe of the  parent snapshot  can be directly copied into 
 current snapshot recipe (shown as the shadow area in Figure~\ref{fig:dedupflow} (b)).
 
 \item {\em Block level checkup.}
 As shown in Figure~\ref{fig:dedupflow} (b),
 for each dirty segment, we divide it into variable-sized blocks,
-and compare their signatures with  the corresponding segment recipe in the previous snapshot version (called parent
+and compare their signatures with  the corresponding segment recipe in the previous snapshot (called parent
 snapshot). 
 For any duplicated block, we copy the data pointer directly from the parent segment recipe. 
 \item {\em CDS checkup.} For the remaining  content blocks whose duplicate status is unknown,
@@ -353,17 +354,17 @@ shows  a further check to compare  them with  the cached signatures in the CDS b
 the CDS hash index. If there is a match, the corresponding data pointer from the CDS index is
 copied into the segment recipe. 
 \item {\em Write new snapshot blocks :}
-We continue the previous step and 
-if a data block cannot be found in the CDS index, this block is considered to be a new block
-and such a block is to be saved in the snapshot block store and  the returned data pointer is
+If a data block cannot be found in the CDS index, this block is considered to be a new block
+and such a block is to be saved in the snapshot store, the returned data pointer is
 saved in the  segment recipe.
 \item {\em Save recipes.} Finally the  segment recipes are saved in the  snapshot block store also.
- After all segment recipes are saved, the snapshot recipe is complete and can be saved finally.
+ After all segment recipes are saved, the snapshot recipe is complete and can be saved.
 \end{enumerate}
 
 If there is no parent snapshot available, which happens when a VM creates its first snapshot, 
 only CDS-based checkup will be conducted. 
-Most of the cross-VM duplication, such as OS related data and popular software data, is eliminated
-at this stage. Later snapshot will very likely find these data are not changed and simply copy the data pointers from parent snapshot.
+Most of the cross-VM duplication, such as OS-related data, is eliminated
+at this stage. 
+%Later snapshot will very likely find these data are not changed and simply copy the data pointers from parent snapshot.
 %This is important because most of the cross-VM duplication, such as OS related data and popular software data, is eliminated
 %at this stage. Later snapshot will very likely find these data are not changed and simply copy the data pointers from parent snapshot.

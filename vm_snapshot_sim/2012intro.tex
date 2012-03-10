@@ -53,8 +53,7 @@ which brings the benefits for increased parallelism  and fault isolation.
 By observations on the VM snapshot data from production cloud, we found snapshot data duplication 
 can be easily classified into two categories: \emph{inner-VM} and \emph{cross-VM}. Inner-VM duplication
 exists between VM's snapshots, because the majority of data are unchanged during each backup period. 
-On the other hand, Cross-VM duplication is mainly due to widely-used software and libraries: 
-there are only two type of OSes (Linux and Windows), most users either uses MySQL or MS SQL Server as their database.
+On the other hand, Cross-VM duplication is mainly due to widely-used software and libraries such as Linux and MySQL.
 As the result, different VMs tend to backup large amount of highly similar data.
 
 With these in mind, we  have developed a decentralized multi-level solution to conduct 
