@@ -254,7 +254,7 @@ These two curves exhibit that the popularity of common blocks partially follows 
 %\label{fig:OSpopular}
 %\end{figure}
 
-Base on the Zipf-like distribution pattern, many previous analysis and result on web caching may apply.
+Base on the Zipf-like distribution pattern, many previous analysis and results on web caching may apply.
 In general this indicates a small set of popular data dominates data duplication.
 Although we already know OS-related data are heavily duplicated among OS disks, 
 it still surprises us that user-related data follow a similar pattern.
@@ -266,7 +266,9 @@ The CDS collected from user-related data is generally proportional to the data s
 As discussed in Section~\ref{sect:exper}, selecting about 1\% of data (after level 1 and level 2 deduplication)
 can cover about 38\% of data blocks. Consider we allow maximum 25 VMs per machine, each VM has
 about 30GB of user-related data, having 10 snapshots in its snapshot store and the data change ratio during
-each backup is 10\%, this translates to 15GB CDS data per machine, and the 
+each backup is 10\%, this translates to 15GB CDS data per machine. 
+Consider each CDS hash index entry cost about 40 bytes and the average block size is 4KB, this leads to
+a 1:100 ratio so the 
 memory cost by CDS hash index is about 150MB per machine.
 On the other hand, the CDS from OS-related data is only relvant to the number of OS releases.
 Our experiment on 7 major OS releases shows that about 100GB of data is never modified, and we expect
