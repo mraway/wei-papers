@@ -212,19 +212,18 @@ easier because we can replicate more copies to mitigate the failure.
 In Aliyun's VM cloud, each VM explicitly maintains  one OS disk, plus one or more data disks.
 During VM's creation, its OS disk is directly copied from user's chosen base image.
 Given the separation of OS disks and data disks, we study  their characteristics separately.
-We expect that operating system blocks along with popular software installations  are not frequently
-modified or deleted. 
+We expect that data related to OS and popular software installations are not frequently
+modified or deleted, to facilitate analysis we call them \emph{OS-related} data, 
+and the rest of data, either from OS or data disks, are called \emph{user-related} data.
 %base image data as a hint.Through users may change configurations, install software, or write user data into OS disk,
 %Thus most of content blocks for the OS related snapshots  shall keep unchanged.
 %This is verified in  Section~\ref{sect:exper}.
-We have sampled  the  popularity of common blocks in the OS and data disks from a dataset
-containing over 1,000 VMs and each has 10 snapshots.
-
-The left part of Figure \ref{fig:zipf-data} shows the duplicate count for different data blocks sorted by their ranking in 
+We have studied the popularity of common blocks in the OS and data disks from a dataset
+containing over 1,000 VMs, taking their first snapshots to watch the cross-VM duplication pattern.
+Figure \ref{fig:zipf-data} shows the duplicate count for unique data blocks sorted by their ranking in 
 terms of the duplication count. $Y$ axis is the popularity of a data block in a log scale 
 measured its duplicate count among snapshots. $X$ axis is the identification of data blocks in a log scale
 sorted by their duplicate rank.  The rank number 1 is the block with the highest number of duplicates.
-The right part of Figure \ref{fig:zipf-data} shows the duplicate count  for OS disk snapshot blocks sorted by their ranking.
 These two curves exhibit that the popularity of common blocks partially follows a Zipf-like distribution.
 %$Y$ axis is the popularity of an OS block in a log scale 
 %measured its duplicate count among snapshots. $X$ axis is the identification of OS blocks in a log scale
@@ -254,10 +253,31 @@ These two curves exhibit that the popularity of common blocks partially follows 
 %\label{fig:OSpopular}
 %\end{figure}
 
+Base on the Zipf-like distribution pattern, many previous analysis and result on web caching may apply.
+In general this indicates a small set of popular data dominates data duplication.
+Although we already know OS-related data are heavily duplicated among OS disks, 
+it still surprises us that user-related data follow a similar pattern.
+Therefore, we collect the CDS by performing global reference counting through map-reduce for all
+blocks in snapshot store, and select the most popular ones base on the memory limitation of
+CDS hash index. 
+
+The CDS collected from user-related data is generally proportional to the data size.
+As discussed in Section~\ref{sect:exper}, selecting about 1\% of data (after level 1 and level 2 deduplication)
+can cover about 38\% of data blocks. Consider we allow maximum 25 VMs per machine, each VM has
+about 30GB of user-related data, having 10 snapshots in its snapshot store and the data change ratio during
+each backup is 10\%, this translates to 15GB CDS data per machine, and the 
+memory cost by CDS hash index is about 150MB per machine.
+On the other hand, the CDS from OS-related data is only relvant to the number of OS releases.
+Our experiment on 7 major OS releases shows that about 100GB of data is never modified, and we expect
+it won't grow over 200GB in the near future. So it would cost the entire cluster 2GB of memory to
+store its hash index, or 20MB per machine on a 100 node cluster. On average each OS disk has about 10GB
+of data that can be completely eliminated in this way.
+\comments{
 As the number of VMs increases, the popularity of common blocks for data disks changes.
 But this increase has a small impact on OS block popularity because 
 there are a limited number of OS releases used by VMs. We let CDS cover the common OS blocks first and
-our CDS selection strategy is designed as follows.
+our CDS selection strategy is designed as follows. 
+
 \begin{itemize}
 \item First, most popular items from OS disks are selected as the initial CDS.
 Our experiment data shows that about 
@@ -274,9 +294,9 @@ the  most popular items are selected. As discussed in Section~\ref{sect:exper},
 that about 1\% of data blocks are selected based on their duplicate counts and these popular blocks
 can cover about 38\% of data  blocks appeared in various snapshots after level 1 and level deduplication.  
 The memory size per node used for CDS is within 150MB.
-\end{itemize}
-Thus in total the CDS index size per node takes less than 160MB in a large cluster bigger than 100 nodes based on
-Aliyun's experiment data, covering over 53\% of blocks in OS and data disks after inner-VM deduplication.
+\end{itemize}}
+Thus in total the CDS index size per node takes less than 170MB in a large cluster bigger than 100 nodes, 
+covering over 47\% of blocks in OS and data disks after inner-VM deduplication.
 This memory usage is well below the limit required by our VM services.
 
 \subsection{Illustration  of multi-level deduplication process}
