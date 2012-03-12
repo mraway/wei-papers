@@ -1,0 +1,57 @@
+\section{Overall Deduplication Effect}
+Our study start from examining the effect of complete deduplication over both data sets.
+Each virtual disk image is divided into small variable-sized blocks using the TTTD algorithm\cite{frame05},
+under the average 4KB, maximum 16KB and minimum 4KB setting. Complete deduplication is
+done by caculating the SHA-1 hash of each block and identifying duplicate copies base on compare-by-hash.
+
+Regarding to the VM snapshots storage, one popular technique is to split disk image file into fix-sized
+pages, and only store the dirty pages since last backup. But unlike complete deduplication considering duplicates
+across VMs, this technique is limited within each VM's backups. We also tested this data reduction method
+using 2MB page size over the dataset VOSS. 
+
+Table~\ref{tab:dedup} shows the data reduction of both methods, 
+the reduction ratio is defined as the original size divide by size after reduction.
+In general, complete deduplication achieves great data reduction
+
+We see that 
+
+\begin{table*}[htb]
+  \centering
+    \begin{tabular}{|l|l|p{0.8in}|p{1.1in}|p{0.3in}|p{0.9in}|p{0.3in}|}
+        \hline
+        Data Set & OS Type & Original Size \newline (GB) & After Complete \newline Deduplication (GB) & Ratio & After 2MB Page \newline Reduction (GB) & Ratio \\ \hline
+        \multirow{8}{*}{VOSS} & Debian & 1034.59 & 77.10 & 13.42 & 218.29 & 4.74 \\ \cline{2-7}
+         & Ubuntu & 989.32 & 81.60 & 12.12 & 178.38 & 5.55 \\ \cline{2-7}
+         & RHEL & 1007.28 & 62.70 & 16.07 & 215.33 & 4.68 \\ \cline{2-7}
+         & CentOS & 973.03 & 57.34 & 16.97 & 522.53 & 1.86 \\ \cline{2-7}
+         & Win2003 32Bit & 630.37 & 30.12 & 20.93 & 150.31 & 4.19 \\ \cline{2-7}
+         & Win2003 64Bit & 793.47 & 44.16 & 17.97 & 167.15 & 4.75 \\ \cline{2-7}
+         & Win2008 64Bit & 1508.97 & 46.39 & 32.52 & 222.54 & 6.78 \\ \cline{2-7}
+         & Combined & 6937.03 & 389.65 & 17.80 & 1674.53 & 4.14 \\ \hline
+        DDS & ~ & 23125.2 & 10887.2 & 2.12 & ~ & ~ \\
+        \hline
+    \end{tabular}
+    \caption{Data reduction via complete deduplication and dirty page reduction}
+    \label{tab:dedup}
+\end{table*}
+
+\emph{Observation 1: Both methods reduce the data significantly, 
+but there is still a big gap between the effect of dirty page method 
+and what complete deduplication can acheive.} 
+We believe complete deduplication can reduces 2x~5x more data than dirty page method for several resons:
+First, the dirty page method doesn't resolve the duplication across VM backups. Second, the page size
+is usually much bigger than actual range of modification, so many unchanged data are still backed up.
+
+\emph{Observation 2: Locality could be ruined with system upgrade.}
+We notice dirty page method works poorly on CentOS, while complete deduplication works as efficient as on
+other OSes. We believe this is probably due to the user have upgraded his system heavily during our
+data sampling period, thus damaged the offset-based locality. In addition, the cloud will only have
+more and more variations of operating systems with different installation configurations,
+All these suggest data reduction base on offset may not work across different user snapshot backups.
+
+\emph{Observation 3: There is not much duplication on user data if without multiple backups.}
+For DDS data set, because it doesn't contain snapshot backups, the overall reduction ratio is only about 2:1,
+which suggests we probably should put less effort on the reduction of user generated data. These data
+are changed slowly and mostly by append, so locality should work well enough.
+
+
