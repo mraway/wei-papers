@@ -1,0 +1,51 @@
+\section{Introduction}
+In a virtualized cloud environment such as ones provided by Amazon EC2 and Aliyun,
+each instance of a guest operating system runs on a virtual machine, accessing
+virtual hard disks represented as virtual disk image files in the host operating system.
+Because these image files are stored as regular files from the external point of view,
+backing up VM's data is mainly done by taking snapshots of virtual disk images.
+
+Frequent  backup of VM snapshots increases  the reliability of VM's hosted in a cloud.
+For example, Aliyun, the largest cloud service provider by Alibaba in China, 
+provides automatic frequent backup of VM images to strengthen the reliability of its service for all users.
+The cost of frequent backup of VM snapshots is  high because of the huge storage demand.
+
+Unlike the legacy backup systems\cite{jumbo07} dealing with general file-level backup and deduplication, 
+Backing up VM images is different. Although each VM image is treated as a file logically, its size is very large.
+On the other hand, a cloud must support parallel backup of a large number of virtual disks everyday. 
+One key requirement we face at Aliyun is that VM snapshot backup should only use a minimal amount of system
+resources so that most of resources is kept for regular cloud system services or applications.
+Thus our objective is to exploit the characteristics and duplication pattern of VM snapshot data and
+pursue a cost-effective deduplication solution. 
+
+There are several previous studies on this topic. Jayaram\cite{Jayaram2011} and
+Jin\cite{Jin2009} has investigated the data similarity between VM images using 
+Rabin's fingerprinting\cite{identify00} algorithm. 
+Silo\cite{xia2011} and Extreme Binning\cite{extreme_binning09} studied the problem
+of deduplication in a large distributed environment which also helps solving the
+problem of VM snapshot backup.
+
+In this paper we present the data analysis of Aliyun's VM snapshot data.
+Our work is different from previous studies at several aspects:
+First, we are targeting at the problem of snapshot backups, 
+and no previous study has studied VM image with backup data involved.
+Second, we focus on observing the pattern of data duplication in VM snapshot backups,
+rather than examining the effect of variable-sized chunking algorithm.
+Finally, we use real user's VM data rather than hand-made VM images.
+
+\section{Experiment Setup}
+We sampled two data sets from Aliyun's public VM cluster, all VMs
+are used by real external users running various applications such like
+database, web server, rendering services or even Hadoop. Each VM has
+two virtual disks, one is for OS and software installations, and the other one
+is for storing user data contents.
+
+Data set VOSS composes of the OS disks from 35 VMs in 7 popular OSes: 
+Debian, Ubuntu, Redhat, CentOS, Win2003 32bit, win2003 64 bit and win2008 64 bit. For each OS, 
+5 VMs are chosen, and every VM come with 10 full snapshots of it OS disk. So
+there is 350 full snapshot backups in this data set, overall size is about 7 TB.
+We use VOSS to study the backup duplication characteristics, and OS disk change patterns.
+
+Data set DDS contains the first snapshots of 1323 VMs' data disks from a cluster with 100+ nodes. 
+Since no backup duplication is involved in this data set, this data set helps us to 
+study the duplication pattern of user generated data. The overall size of dataset2 is near 23 TB.

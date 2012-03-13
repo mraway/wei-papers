@@ -1,5 +1,5 @@
 MAIN = main
-TEX = ${MAIN}.tex overall.tex locality.tex
+TEX = ${MAIN}.tex overall.tex locality.tex dup.tex con.tex abs.tex intro.tex
 FIG = 
 BIB = dedup.bib
 
@@ -7,12 +7,12 @@ all: ${MAIN}.pdf
 
 
 ${MAIN}.pdf: ${TEX} ${FIG} ${BIB} makefile
-	latex ${MAIN}
+	pdflatex ${MAIN}
 	bibtex ${MAIN}
-	latex ${MAIN}
-	latex ${MAIN}
-	dvips -t letter -T 8.5in,11in -o ${MAIN}.ps ${MAIN}.dvi
-	ps2pdf ${MAIN}.ps
+	pdflatex ${MAIN}
+	pdflatex ${MAIN}
+	#dvips -t letter -T 8.5in,11in -o ${MAIN}.ps ${MAIN}.dvi
+	#ps2pdf ${MAIN}.ps
 
 
 clean:

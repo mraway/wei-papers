@@ -14,26 +14,27 @@
 
 \begin{document}
 %\title{Selective Deduplication for VM Snapshots in Cloud Storage}
-\title{Understanding the Data Duplication of VM Cloud Storage}
+\title{Understanding the Data Duplication in VM Cloud Storage}
 %\title{Data Deduplication and Zipf-like Distribution in VM Cloud Storage}
 \author{
-Wei Zhang$^{\star\dagger}$, Hong Tang$^\dagger$, Hao Jiang$^\dagger$, Tao Yang$^\star$, 
-   {\normalsize $^\star$UC Santa Barbara}\\
-   {\normalsize$^\dagger$Alibaba.com}
+Wei Zhang$^{\star\dagger}$, Hong Tang$^\dagger$, Hao Jiang$^\dagger$, Tao Yang$^\star$\\
+   {\normalsize $^\star$UC Santa Barbara, \{wei, tyang\}@cs.ucsb.edu}\\
+   {\normalsize$^\dagger$Alibaba.com, \{hongtang, haojiang\}@alibaba.com}
 }
 \date{}
 \maketitle
 
-%\input{abs}
-%\input{intro} %introduce the vm cloud, snapshot
+\input{abs}
+\input{intro} %introduce the vm cloud, snapshot
 \input{overall} %complete dedup on both datasets 
 \input{locality} %
 \input{user}
+\input{dup}
 %\input{count} %data study, zipf, model of cds size and dedup efficiency
 %\input{results}
 %\input{related}
 %\input{conclusion}
-%\input{con}
+\input{con}
 
       %\setlength{\itemsep}{ex}%
 %      \setlength{\parskip}{0ex}%
@@ -54,6 +55,6 @@ Wei Zhang$^{\star\dagger}$, Hong Tang$^\dagger$, Hao Jiang$^\dagger$, Tao Yang$^
 %  }
 {\small
 \bibliographystyle{abbrv}
-\bibliography{dedup,dedup1}
+\bibliography{dedup1,library}
 }
 \end{document}

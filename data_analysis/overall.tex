@@ -4,17 +4,6 @@ Each virtual disk image is divided into small variable-sized blocks using the TT
 under the average 4KB, maximum 16KB and minimum 4KB setting. Complete deduplication is
 done by caculating the SHA-1 hash of each block and identifying duplicate copies base on compare-by-hash.
 
-Regarding to the VM snapshots storage, one popular technique is to split disk image file into fix-sized
-pages, and only store the dirty pages since last backup. But unlike complete deduplication considering duplicates
-across VMs, this technique is limited within each VM's backups. We also tested this data reduction method
-using 2MB page size over the dataset VOSS. 
-
-Table~\ref{tab:dedup} shows the data reduction of both methods, 
-the reduction ratio is defined as the original size divide by size after reduction.
-In general, complete deduplication achieves great data reduction
-
-We see that 
-
 \begin{table*}[htb]
   \centering
     \begin{tabular}{|l|l|p{0.8in}|p{1.1in}|p{0.3in}|p{0.9in}|p{0.3in}|}
@@ -35,6 +24,15 @@ We see that
     \label{tab:dedup}
 \end{table*}
 
+Regarding to the VM snapshots storage, one popular technique is to split disk image file into fix-sized
+pages, and only store the dirty pages since last backup. But unlike complete deduplication considering duplicates
+across VMs, this technique is limited within each VM's backups. We also tested this data reduction method
+using 2MB page size over the dataset VOSS. 
+
+Table~\ref{tab:dedup} shows the data reduction of both methods, 
+the reduction ratio is defined as the original size divide by size after reduction.
+In general, complete deduplication achieves great data reduction, except for DDS data set.
+
 \emph{Observation 1: Both methods reduce the data significantly, 
 but there is still a big gap between the effect of dirty page method 
 and what complete deduplication can acheive.} 
@@ -42,7 +40,7 @@ We believe complete deduplication can reduces 2x~5x more data than dirty page me
 First, the dirty page method doesn't resolve the duplication across VM backups. Second, the page size
 is usually much bigger than actual range of modification, so many unchanged data are still backed up.
 
-\emph{Observation 2: Locality could be ruined with system upgrade.}
+\emph{Observation 2: Locality could be damaged with system upgrade.}
 We notice dirty page method works poorly on CentOS, while complete deduplication works as efficient as on
 other OSes. We believe this is probably due to the user have upgraded his system heavily during our
 data sampling period, thus damaged the offset-based locality. In addition, the cloud will only have
