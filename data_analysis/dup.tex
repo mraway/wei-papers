@@ -1,4 +1,5 @@
 \section{Heavily Duplicated Data}
+\label{sect:dup}
 Knowing that locality has ruled the 
 data reduction within individual VM's snapshot backups,
 in this section we investigate the dominant factor
@@ -38,7 +39,7 @@ across VMs.
 We examine this by using the public VM images in Aliyun's cloud environment as a reference.
 Every VM is generated from one of the public VM images by copying its data from base image,
 so in order to see whether these data are changed after VM usage,
-we first divide the public images into 4KB variable-sized blocks, then for each type of
+we first split the public images into 4KB variable-sized blocks, then for each type of
 OS, we check its 50 VM snapshot backups in VOSS, to see if this data block still exist in all
 50 backups. This is a very strict criteria, a data block will only be marked as ``unchanged''
 if it appear in all 50 snapshots.
@@ -47,7 +48,7 @@ if it appear in all 50 snapshots.
   \centering
   %\epsfig{file=dedup_ratio.eps, width=3.2in}
   \includegraphics[width=3in,height=2in]{os_subset.png}
-  \caption{}
+  \caption{Data that almost never change in OS disks}
   \label{fig:osdup}
 \end{figure}
 

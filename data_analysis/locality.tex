@@ -1,4 +1,5 @@
 \section{Impact of Locality}
+\label{sect:loc}
 Locality is widely used in many deduplication solutions, e.g., Zhu et al.~\cite{bottleneck08}
 put in memory cache of block indices near the one which result in a disk index look-up and is found.
 This is base on the observation that duplicates usually come in sequence rather than independently.
@@ -8,14 +9,6 @@ For each snapshot, we compare it to the previous snapshot, in the unit of 2MB fi
 to find out locations of dirty pages since last backup. We end up with a bitmap of
 dirty pages for every snapshot, except those earliest ones who don't have a previous version
 to compare against.
-
-\begin{figure*}[htb]
-  \centering
-  \includegraphics[width=6.5in,height=2in]{countmodify.png}
-  %\epsfig{file=countmodify.eps, width=6.5in}
-\caption{Bitmaps of dirty pages between snapshots}
-\label{fig:dirty}
-\end{figure*}
 
 In Figure~\ref{fig:dirty}, a snapshot's bitmap of dirty pages is represented as a vertical line 
 composed of discontinuous segments. 
@@ -42,11 +35,18 @@ We believe this is due to the design difference between NTFS and ext3, and we al
 the upgrade from Win2003 to Win2008 reduces such writes. However, this doesn't mean windows has more 
 dirty pages, it's just more scattered.
 
-
 In order to see the impact of locality further, we investigate deeper into the dirty pages.
 We split those fix-sized pages into variable-sized 4KB blocks, for every block in the dirty pages,
 we look into the corresponding
 page (base on offset) of previous snapshot to see if a duplicate can be found.
+
+\begin{figure*}[tbhp]
+  \centering
+  \includegraphics[width=6.5in,height=2in]{countmodify.png}
+  %\epsfig{file=countmodify.eps, width=6.5in}
+\caption{Bitmaps of dirty pages between snapshots}
+\label{fig:dirty}
+\end{figure*}
 
 \begin{table}[htb]
   \centering

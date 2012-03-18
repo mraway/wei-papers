@@ -1,7 +1,10 @@
 \section{Conclusion}
 In this paper, a empirical study using Aliyun's real user VM data traces is conducted. 
-We present a number of observations and insights on the data duplication
-in VM snapshot backups. We describe
-in detail the patterns of VM access, VM snapshot duplication, locality reduction, and
-the dintinct difference between OS and user generated data.
-We hope this will facilitate future designs of cloud storage for VMs.
+We present a number of observations and insights on where and how data duplication
+exist in VM snapshot backups. We describe
+in detail the patterns of VM access, the potential of deduplication, 
+important factors such as locality, similarity and popularity, and
+the dintinct difference between OS and user generated data duplication.
+We hope this study will facilitate researchers and engineers to design better
+data deduplication strategies
+for backup storage in VM Cloud.

@@ -1,10 +1,7 @@
 \section{Overall Deduplication Effect}
-Our study start from examining the effect of complete deduplication over both data sets.
-Each virtual disk image is divided into small variable-sized blocks using the TTTD algorithm\cite{frame05},
-under the average 4KB, maximum 16KB and minimum 2KB setting. Complete deduplication is
-done by caculating the SHA-1 hash of each block and identifying duplicate copies base on compare-by-hash.
+\label{sect:dedup}
 
-\begin{table*}[htb]
+\begin{table*}[tbh]
   \centering
     \begin{tabular}{|l|l|p{0.8in}|p{1.1in}|p{0.3in}|p{0.9in}|p{0.3in}|}
         \hline
@@ -24,6 +21,11 @@ done by caculating the SHA-1 hash of each block and identifying duplicate copies
     \label{tab:dedup}
 \end{table*}
 
+Our study start from examining the effect of complete deduplication over both data sets.
+Each virtual disk image is divided into small variable-sized blocks using the TTTD algorithm\cite{frame05},
+under the average 4KB, maximum 16KB and minimum 2KB setting. Complete deduplication is
+done by caculating the SHA-1 hash of each block and identifying duplicate copies base on compare-by-hash.
+
 Regarding to the VM snapshots storage, one popular technique is to split disk image file into fix-sized
 pages, and only store the dirty pages since last backup. But unlike complete deduplication considering duplicates
 across VMs, this technique is limited within each VM's backups. We also tested this data reduction method
@@ -35,7 +37,7 @@ In general, complete deduplication achieves great data reduction, except for DDS
 
 \emph{Observation 1: Both methods reduce the data significantly, 
 but there is still a big gap between the effect of dirty page method 
-and what complete deduplication can acheive.} 
+and what complete deduplication can accomplish.} 
 We believe complete deduplication can reduces 2x~5x more data than dirty page method for several resons:
 First, the dirty page method doesn't resolve the duplication across VM backups. Second, the page size
 is usually much bigger than actual range of modification, so many unchanged data are still backed up.
