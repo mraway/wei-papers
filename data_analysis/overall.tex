@@ -1,7 +1,7 @@
 \section{Overall Deduplication Effect}
 Our study start from examining the effect of complete deduplication over both data sets.
 Each virtual disk image is divided into small variable-sized blocks using the TTTD algorithm\cite{frame05},
-under the average 4KB, maximum 16KB and minimum 4KB setting. Complete deduplication is
+under the average 4KB, maximum 16KB and minimum 2KB setting. Complete deduplication is
 done by caculating the SHA-1 hash of each block and identifying duplicate copies base on compare-by-hash.
 
 \begin{table*}[htb]
