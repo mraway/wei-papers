@@ -1,5 +1,5 @@
 MAIN = main
-TEX = ${MAIN}.tex overall.tex locality.tex dup.tex con.tex abs.tex intro.tex
+TEX = ${MAIN}.tex overall.tex locality.tex dup.tex con.tex abs.tex intro.tex cds.tex
 FIG = 
 BIB = dedup.bib
 
