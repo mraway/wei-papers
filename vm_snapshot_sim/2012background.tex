@@ -109,12 +109,12 @@ consumed is up to 2GB for a single machine. That is still too big in our context
 %Deepavali et al.~\cite{extreme_binning09}  use signature-based file similarity  and group similar files
 %into the same physical location (bins) to deduplicate against each other.
 
-Duplicate  search approximation~\cite{extreme_binning09,sparseindex09}  has been proposed 
+Duplicate  search approximation~\cite{extreme_binning09,sparseindex09,Xia2011}  has been proposed 
 %in extreme bining and other sparse indexing 
 to package similar content in one location, and duplicate lookup  only searches
 for chunks within files which have a similar file-level or segment-level  content fingerprints.
 That leads  to a smaller amount of memory usage for storing meta data in signature
-lookup with a tradeoff of the reduced recall ratio. 
+lookup with a tradeoff of the reduced recall ratio.
 
 \section{Requirements and Design Options}
 \label{sect:options}

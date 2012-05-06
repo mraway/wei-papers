@@ -1,7 +1,7 @@
 MAIN = main
 TEX = ${MAIN}.tex 2012eval.tex 2012intro.tex 2012arch.tex  2012abs.tex 2012background.tex 2012concl.tex
 FIG = 
-BIB = dedup.bib
+BIB = library.bib dedup1.bib
 
 all: ${MAIN}.pdf 
 
