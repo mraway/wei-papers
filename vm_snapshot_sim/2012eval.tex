@@ -123,13 +123,13 @@ As we can see from Figure~\ref{fig:oscds}, level-1 deduplication accomplishes a 
 this is because the time interval between two snapshots in our dataset
 is quite short and the Aliyun cloud service makes a snapshot  everyday  for each VM.
 On the other hand,  CDS still finds lots of duplicates that inner VM deduplication can't find,
-contributing about about 10\% of reduction on average.
+contributing about 10\% of reduction on average.
 
-It is noticable that level-1 deduplication doesn't work well for CentOS, a significant percentage of data is not
+It is noticeable that level-1 deduplication doesn't work well for CentOS, a significant percentage of data is not
 eliminated until they reach level-3. It shows that even user upgrade his VM system heavily and frequently
 such that data locality is totally lost, those OS-related data can still be identified at level-3. 
 
-In gengral we see a stable data reduction ratio for all OS varieties, ranging from 92\% to 97\%, that means
+In general we see a stable data reduction ratio for all OS varieties, ranging from 92\% to 97\%, that means
 the storage cost of 10 full snapshots combined is still smaller than the original disk size. And compare to 
 today's widely used copy-on-write snapshot technique, which is similar to our level-1 deduplication, our
 solution cut the snapshot storage cost by 64\%.
@@ -225,12 +225,12 @@ is because there are a large number of OS blocks which have appear in all copies
 
 One of our biggest advantage is small memory footprint for deduplication, because we only
 eliminate a small amount of highly popular data.
-we use dataset2 to demostrate the coverage of popular data blocks on user-related data, 
+we use dataset2 to demonstrate the coverage of popular data blocks on user-related data, 
 as shown in Figure \ref{fig:userdatacoverage}.
 %content blocks used in image files using 90\% of
 %the collected dataset.
 %Figure \ref{fig:userdatacoverage} shows the cumulative coverage  ratio of  popular common user data blocks. 
-The $X$ axis is the rank of cmomon user data blocks, and $Y$ shows how much raw data can be covered given
+The $X$ axis is the rank of common user data blocks, and $Y$ shows how much raw data can be covered given
 the size of CDS.
 Let $S_i$ and $F_I$ be the size and duplicate count 
 of the $i$-th block ranked by its duplicate rank.  Then $Y$ axis is the coverage of
@@ -240,7 +240,7 @@ the common dataset covering data items from rank 1 to rank $i$. Namely
 \]
 
 Thus with about 1\% of blocks on data disks, CDS can cover about 38\% of total data blocks
-appeared in in all data snapshots. The corresponding CDS index uses no more than 150MB memory per machine,
+appeared in all data snapshots. The corresponding CDS index uses no more than 150MB memory per machine,
 which can be easily co-located with other cloud services.
 
 %Figure~\ref{fig:OSdatacoverage} shows the cumulative coverage  ratio of  popular common OS blocks. 

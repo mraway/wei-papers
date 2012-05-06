@@ -96,7 +96,7 @@ and facilitates parallel execution of snapshot operations.
 \begin{figure}[htbp]
   \centering
   %\epsfig{file=images/dedup_process.eps, height=2in, width=2.66in}
-  \epsfig{file=images/snapshot_representation.eps,  width=3.8in}
+  \epsfig{file=images/snapshot_representation.eps,  width=3.7in}
   \caption{An example of snapshot representation.}
   \label{fig:snapshot}
 \end{figure}
@@ -180,7 +180,7 @@ in the snapshot content block store.
 
 At the runtime, the CDS index resides in a distributed  memory lookup table  
 implemented using Memcached~\cite{memcached} to leverage the aggregated memory in a cluster.
-Th usage of memory at each machine is small and thus  this scheme  does not
+The usage of memory at each machine is small and thus  this scheme  does not
 lead to  a memory resource contention with the existing cloud services.
 %For example, in our current implementation setting at Aliyun, we use up to  150MB memory per node during night backup
 %including CDS and other metadata for all levels of deduplication. Most of memory resource (48GB per node 
@@ -270,7 +270,7 @@ each backup is 10\%, this translates to 15GB CDS data per machine.
 Consider each CDS hash index entry cost about 40 bytes and the average block size is 4KB, this leads to
 a 1:100 ratio so the 
 memory cost by CDS hash index is about 150MB per machine.
-On the other hand, the CDS from OS-related data is only relvant to the number of OS releases.
+On the other hand, the CDS from OS-related data is only relevant to the number of OS releases.
 Our experiment on 7 major OS releases shows that about 100GB of data is never modified, and we expect
 it won't grow over 200GB in the near future. So it would cost the entire cluster 2GB of memory to
 store its hash index, or 20MB per machine on a 100 node cluster. On average each OS disk has about 10GB

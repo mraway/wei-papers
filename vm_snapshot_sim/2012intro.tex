@@ -41,7 +41,7 @@ adds the complexity in fault tolerance management, especially when  VMs can migr
 
 Unlike the previous work dealing with general file-level backup and deduplication, our problem is focused on 
 virtual disk image backup. Although we treat each virtual disk  as a file logically, its size is very large.
-On the other hand, we need to support parallel backup of a large number of virtual disks in a cloud everyday. 
+On the other hand, we need to support parallel backup of a large number of virtual disks in a cloud every day. 
 One key requirement we face at Alibaba Aliyun is that VM snapshot backup should only use a minimal amount of system
 resources so that most of resources is kept for regular cloud system services or applications.
 Thus our objective is to exploit the characteristics of VM snapshot data and
@@ -62,9 +62,9 @@ It then makes cross-VM deduplication by excluding a small number of
 popular common data blocks from being backed up. Our study shows that common data blocks
 occupy significant amount of storage space while they only take
 a small amount of resources to deduplicate.
-Seperating deduplication into multi levels effectively accomplish the major space saving goal
+Separating deduplication into multi levels effectively accomplish the major space saving goal
 compare the global complete deduplication scheme, at the same time it makes
-the backup of different VMs to be indepdent for better fault tolerance.
+the backup of different VMs to be independent for better fault tolerance.
 
 %Restricting the scope of global deduplication reduces
 %the inter-component  data dependenc during machine failure.
