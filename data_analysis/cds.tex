@@ -24,12 +24,12 @@ store a reference.
 The more data we put into CDS, the closer we come to complete deduplication. But in reality we are facing a list of restrictions such like [blabla].
 We borrowed the idea of web caching[refs here] to analysis the size of CDS vesus its effectiveness on data reduction.
 
-We let $M$ be the number of machines in a VM cluster, $N$ be the total number of VMs,
-$D$ denotes the average size of one VM's snapshot backups, which is near 40 GB in our production clusters.
+We let $M$ be the number of nodes in a cluster, $N$ be the number of VMs hosted per node,
+and let $D$ denotes the average size of one VM's snapshot backups (after level 1 and 2 reduction, which is near 40 GB in our production environment).
 And let $C_0$, $C_s$ and $C_u$ denote the size of zero-filled block, system-related data and user-generated data in CDS,
 then the total size of CDS is represented by $C=C_0+C_s+C_u$.
-We let $S_0$, $S_s$ and $S_u$ denote the corresponding average space saving ratio (coverage) relative to $D$ in per VM's snapshot backups,
-so the total saving ratio is $S=S_0+S_s+S_u$.
+We let $S_0$, $S_s$ and $S_u$ denote the corresponding data coverage ratio (with respect to $D$) by $C_0$, $C_s$ and $C_u$,
+so the total space saving ratio is $S=S_0+S_s+S_u$.
 
 Zero-filled block at maximum length is the first item we need to put into CDS. This is the one and only special data block, 
 and because CDS only stores unique data blocks, $C_0$ is almost equal to 0. In practice we found zero-filled blocks account
