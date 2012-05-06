@@ -16,7 +16,7 @@ copies the corresponding pre-configured base VM image to her VM as the OS disk,
 and an empty data disk is created and mounted onto her VM as well. 
 All these virtual disks are represented as virtual machine image files in our
 underline runtime VM storage system. The runtime I/O between virtual machine and its virtual
-disks is tunneled by the virtual device driver (called TapDisk at Xen). To avoid network latency and congestion, 
+disks is tunneled by the virtual device driver (called TapDisk\cite{Warfield2005} at Xen). To avoid network latency and congestion, 
 our distributed file system place the primary replica of VM's 
 image files at physical machine of VM instance.
 During snapshot backup, concurrent disk write is logged 
