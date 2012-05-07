@@ -56,7 +56,7 @@ exists between VM's snapshots, because the majority of data are unchanged during
 On the other hand, Cross-VM duplication is mainly due to widely-used software and libraries such as Linux and MySQL.
 As the result, different VMs tend to backup large amount of highly similar data.
 
-With these in mind, we  have developed a decentralized multi-level solution to conduct 
+With these in mind, we  have developed a distributed multi-level solution to conduct 
 segment-level  and block-level inner-VM  deduplication to localize the deduplication effort when possible.
 It then makes cross-VM deduplication by excluding a small number of
 popular common data blocks from being backed up. Our study shows that common data blocks

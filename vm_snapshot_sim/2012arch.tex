@@ -101,6 +101,13 @@ and facilitates parallel execution of snapshot operations.
   \label{fig:snapshot}
 \end{figure}
 
+
+\begin{figure*}[htbp]
+\centering
+\epsfig{file=images/vector.eps, width=7in}
+\caption{Number of duplicates vesus ranking}
+\label{fig:zipf-data}
+\end{figure*}
 The inner VM deduplication contains two levels of duplicate detection efforts and the representation of
 each snapshot is correspondingly designed as a two-level level index data structure in the form of a hierarchical
 directed acyclic graph as shown in Figure~\ref{fig:snapshot}.
@@ -120,13 +127,6 @@ the same segment in
 the previous snapshot (also called parent snapshot). Partial duplication
 within the segment can be detected and eliminated. 
 \end{itemize}
-
-\begin{figure*}[htbp]
-\centering
-\epsfig{file=images/vector.eps, width=7in}
-\caption{Number of duplicates vesus ranking}
-\label{fig:zipf-data}
-\end{figure*}
 
 We choose this two-level structure because in practice we observe that during each backup period only a small amount
 of VM data are added or modified. As the result, even the meat data of two snapshots can be highly similar,
@@ -334,7 +334,7 @@ The 3-level deduplication process can be summarized as four steps:
 %
 \begin{figure}
   \centering
-  \epsfig{file=images/dedup_flow1.eps, width=3.8in}
+  \epsfig{file=images/dedup_flow1.eps, height=2.8in, width=3.8in}
   \caption{Illustration of snapshot deduplication dataflow.}
   \label{fig:dedupflow}
 \end{figure}
