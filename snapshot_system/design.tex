@@ -144,6 +144,30 @@ Data sharing across VMs is limited within this small data set such that adding r
 %Similarity is another popular hint, it suggests that two sets of data blocks may contain lots of
 %duplicates if they are indetified as similar by certain similarity detection measurements.
 
+Overall, our contributions are:
+\begin{enumerate}
+\item {\em CDS. parallelism, localized}
+We designed a highly efficient global deduplication scheme using common data between VMs as the primary
+deduplication target, which adopts to our resource-constrained production environment very well. We developed a fast
+approxmation algorithm to extract the commonly used data from VM snapshot backups.
+
+\item {\em Append Store.}
+We address the problem of managing billions of small variable-sized data objects by building an append store
+on top of our distributed file system (DFS). We carefully designed an efficient index data structure to 
+optimize large sequential read/write requests, while minimize the cost of key to object location conversion.
+
+\item {\em Fast Data Deletion.}
+Traditional deletion in deduplication systems involves reference counting, either online or offline. Both ways
+are costly due to the sharing of large amount of data objects.
+We avoid this cost of data deletion with an approxmation deletion method using bloom filters.
+
+\item {\em Fault-tolerant.}
+Golbal deduplication brings data sharing across different users VM snapshots, therefore a single failure
+on some data can break many VMs' snapshots. We avoid such all-to-all data dependency by restricting
+the cross VM data sharing with the CDS. By taking extra care of protecting CDS data, 
+the overall degree of fault tolerancy is guaranteed.
+
+\end{enumerate}
 
 \subsection{Design Considerations}
 While this idea sounds conceptually simple, realizing it requires us to address three
@@ -156,9 +180,69 @@ Inline deduplication requires more resources and can suffer from latency issues 
 \item {\em Data dependency}
 
 \item {\em Backup speed}
-456
+
 \end{enumerate}
 \subsection{Architecture Overview}
+Our architecture is built on the Aliyun platform which provides the largest public VM cloud in China 
+based on Xen~\cite{Xen2003}. A typical VM cluster in our cloud environment
+consists of from hundreds to thousands of physical machines, each of which can
+host tens of VMs.
+
+A GFS-like distributed file system holds the responsibility of managing physical disk storage
+in the cloud. All data needed for VM services, which include runtime VM disk images and snapshot backup data,
+reside in this distributed file system.
+During the VM creation, a user chooses her flavor of OS distribution and the cloud system 
+copies the corresponding pre-configured base VM image to her VM as the OS disk, 
+and an empty data disk is created and mounted onto her VM as well. 
+All these virtual disks are represented as virtual machine image files in our
+underline runtime VM storage system. The runtime I/O between virtual machine and its virtual
+disks is tunneled by the virtual device driver (called TapDisk\cite{Warfield2005} at Xen). To avoid network latency and congestion, 
+our distributed file system place the primary replica of VM's 
+image files at physical machine of VM instance.
+During snapshot backup, concurrent disk write is logged 
+to ensure a consistent snapshot version is captured. 
+
+Figure~\ref{fig:arch} shows the architecture view of our snapshot service
+at each node. The snapshot broker provides the functional interface for  snapshot backup, access, and deletion.
+The inner-VM  deduplication is conducted by the broker to access meta data in the snapshot data store
+and we discuss this in details in Section~\ref{sect:innerVM}.
+The cross-VM deduplication is conducted by the broker to access 
+a common data set (CDS) (will discuss in Section~\ref{sect:crossVM},
+whose block hash index is stored in a distributed memory cache. 
+\begin{figure}[htbp]
+  \centering
+  %\epsfig{file=images/arch.eps, height=2in, width=2.66in}
+  \epsfig{file=images/arch.eps, width=3.9in}
+  \caption{Snapshot backup architecture of each node.}
+  \label{fig:arch}
+\end{figure}
+The snapshot store 
+supports data access operations such as \emph{get}, \emph{put} and \emph{delete}.
+Other operations include data block traverse and resource usage report.
+The snapshot data does not need to be
+co-located with VM instances, and in fact they can even live in a different cluster to improve the 
+data reliability: when one cluster is not available, we are still able to restore its VMs from another cluster which
+holds its snapshot data. 
+%to reduce the impact to our users.
+%Get interface accepts a piece of data, write it to the underline data file, and return
+%a reference to the caller. This reference then can be used in the put interface to
+%retrive or delete the data, thus the caller of put interface must preserve the
+%data reference for future use. 
+%In addition to above standand data access operations, the snapshot service also supports
+%\emph{scan} and \emph{quota} methods. Scan allows us to traverse all the data blocks of each VM
+%in the snapshot store, and quota is used to acknowledge user how much space he
+%has actually used.
+
+Under the hood of snapshot store, it organizes and operates snapshot data 
+in the distributed file system. We let each virtual disk has its own snapshot store, 
+and no data is shared between
+any two snapshot stores, thus achieve great fault isolation. For those selected popular data
+that shared by many VM snapshot stores, we could easily increase its availability by having more replications.
+%Since all the underline data structures is append only,
+%upon a delete request, the corresponding data will only be marked rather than being deleted.
+%A compaction will take place when deleted data has accumulated to a certain threshold, thus 
+%reclaiming the disk space .
+
 
 \subsection{Block Storage Device}
 \subsection{CDS}
@@ -225,5 +309,5 @@ The size of user-generated data in CDS would be 0.006$D$, with coverage $S_u=0.1
 Thus the estimation of CDS coverage is $S=S_0+S_s+S_u=0.58$, with the size of CDS to be no more than $(200 + 0.006*D*N)$ GB.
 In a VM cluster of 100 machines, with 25 VMs on each physical machine, the size of CDS is 800 GB in total, or 8 GB per machine.
 The total size of CDS index would be 8 GB, which will cost 80 MB memory on each machine. 
-\subsection{Append Store}
 
+\subsection{Append Store}
