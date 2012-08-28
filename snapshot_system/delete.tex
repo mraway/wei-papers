@@ -99,7 +99,7 @@ D_{leakage} / D_{del} = N_{fuzzy} * P_{bl} > T \Rightarrow N_{fuzzy} > T/P_{bl}
 Therefore, when $P_{bl} = 0.01$ and $T=1$, 
 there would be a run of accurate deletion for every $T/P_{bl} = 100$ runs of fuzzy deletion.
 On a machine that hosts 20 VMs and each VM deletes snapshot daily, there would be less than
-one accurate deletion executed per day.
+one accurate deletion scheduled per day.
 
 \subsection{Discussion}
 When a snapshot is scheduled for deletion, we always choose fuzzy deletion.
