@@ -1,5 +1,5 @@
 MAIN	= main
-TEX	= ${MAIN}.tex abs.tex intro.tex design.tex snapshot.tex append.tex cds.tex failover.tex result.tex con.tex
+TEX	= ${MAIN}.tex abs.tex intro.tex design.tex snapshot.tex append.tex cds.tex failover.tex result.tex delete.tex con.tex
 FIG	= 
 BIB	= library.bib
 
