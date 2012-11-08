@@ -45,11 +45,29 @@ bool load_segment(Segment& seg, ifstream& is)
         return true;
 }
 
+bool load_whole_file(Segment& seg, ifstream& is)
+{
+    Block blk;
+    seg.Init();
+    while (blk.Load(is)) {
+        if (blk.GetSize() == 0) {	// fix the zero-sized block bug in scanner
+            pr_msg("ignore zero-sized block");
+            continue;
+        }
+        seg.AddBlock(blk);
+    }
+    seg.Final();
+    if (seg.GetSize() == 0) 
+        return false;
+    else
+        return true;
+}
+
 int main(int argc, char** argv)
 {
     std::vector<Block> cds;
     std::vector<Block>::iterator it;
-    Segment current_seg, parent_seg;
+    Segment current_seg, parent_seg, parent_whole;
     ifstream current_input, parent_input, cds_input;
     ofstream output;
     bool has_parent = false;
@@ -83,7 +101,7 @@ int main(int argc, char** argv)
     }
 
     string outputname = argv[1];
-    outputname += ".cdssim";
+    outputname += ".fulllevel2";
     output.open(outputname.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
 
     // prepare CDS, assume it was sorted
@@ -92,8 +110,16 @@ int main(int argc, char** argv)
         //sort(cds.begin(), cds.end());
     }
 
+    // prepare parent for level 2
+    if (has_parent) {
+        load_whole_file(parent_whole, parent_input);
+        parent_whole.SortByHash();
+        parent_input.clear();
+        parent_input.seekg(0, ios::beg);
+    }
+    
     while(load_segment(current_seg, current_input)) {
-        // prepare parent
+        // prepare parent segment
         if (has_parent && load_segment(parent_seg, parent_input))
             parent_seg.SortByHash();
 
@@ -109,7 +135,7 @@ int main(int argc, char** argv)
         // level 2: search dirty segment
         else if (has_parent) {
             for (i = 0; i < current_seg.blocklist_.size(); i ++)
-                if (parent_seg.SearchBlock(current_seg.blocklist_[i]))
+                if (parent_whole.SearchBlock(current_seg.blocklist_[i]))
                     current_seg.blocklist_[i].file_id_ |= IN_DIRTY_SEG;
         }
 

@@ -1,3 +1,4 @@
+#include <queue>
 #include "lru_cache.hpp"
 
 bool TimerNewer(const LruCacheEntry& left, const LruCacheEntry& right)
@@ -22,20 +23,20 @@ void LruCacheEntry::SetAccessTime(const struct timeval& tv)
     latime_ = tv;
 }
 
-LruCache::LruCache(int size = DEFAULT_CACHE_SIZE)
+LruCache::LruCache(int size)
 {
     cache_.reserve(size);
     capacity_ = size;
 }
 
-void LruCache::RemoveEntries(int n)
+void LruCache::RemoveItems(int n)
 {
     std::sort(cache_.begin(), cache_.end(), TimerNewer);
     for (int i = 0; i < n && !cache_.empty(); i ++)
         cache_.pop_back();
 }
 
-void LruCache::AddSegment(const Segment& seg)
+void LruCache::AddItems(const Segment& seg)
 {
     struct timeval tv;
     struct timezone tz;
@@ -51,7 +52,7 @@ void LruCache::AddSegment(const Segment& seg)
     else {
         // make some room for the new data
         if (seg.blocklist_.size() + cache_.size() > capacity_) {
-            RemoveEntries(seg.blocklist_.size() + cache_.size() - capacity_);
+            RemoveItems(seg.blocklist_.size() + cache_.size() - capacity_);
         }
         for (uint32_t i = 0; i < seg.blocklist_.size(); i ++) {
             ent.SetValue(seg.blocklist_[i], tv);
@@ -91,7 +92,7 @@ void LruCache::AddSegment(const Segment& seg)
     pr_msg("add done");
 }
 */
-bool LruCache::SearchEntry(const Block& blk)
+bool LruCache::SearchItem(const Block& blk)
 {
     LruCacheEntry ent;
     struct timeval tv;
@@ -105,4 +106,77 @@ bool LruCache::SearchEntry(const Block& blk)
         return true;
     }
     return false;
+}
+
+bool TimeComparison::operator()(const CacheIterator &left, const CacheIterator &right) const
+{
+    return timercmp(&(*left).second, &(*right).second, <) > 0;
+}
+
+CdsLruCache::CdsLruCache(int size)
+{
+    capacity_ = size;
+}
+
+bool CdsLruCache::SearchItem(const Block &blk)
+{
+    std::map<Block, struct timeval>::iterator it = cache_.find(blk);
+    if (it == cache_.end())
+        return false;
+
+    struct timeval tv;
+    struct timezone tz;
+    gettimeofday(&tv, &tz);
+    (*it).second = tv;	// update the timestamp if found
+    return true;
+}
+
+void CdsLruCache::AddItem(const Block &blk)
+{
+    struct timeval tv;
+    struct timezone tz;
+    gettimeofday(&tv, &tz);
+    cache_[blk] = tv;
+
+    if (cache_.size() > capacity_)
+        RemoveItems(capacity_ / 10);
+}
+
+void CdsLruCache::BatchAddItem(const std::vector<Block> &blklist)
+{
+    struct timeval tv;
+    struct timezone tz;
+    gettimeofday(&tv, &tz);
+    for (size_t i = 0; i < blklist.size(); i ++)
+        cache_[blklist[i]] = tv;
+
+    while (cache_.size() > capacity_)
+        RemoveItems(cache_.size() - capacity_ + capacity_ / 10);
+}
+
+void CdsLruCache::RemoveItems(size_t n)
+{
+    cout << "need to remove: " << n << std::endl;
+    std::priority_queue<CacheIterator, std::vector<CacheIterator>, TimeComparison> myheap;
+    for (CacheIterator it = cache_.begin(); it != cache_.end(); it ++)
+    {
+        // heap not full, just insert
+        if (myheap.size() < n) {
+            myheap.push(it);
+            continue;
+        }
+        // heap full, remove the top if necessary
+        if (timercmp(&(*it).second, &(*myheap.top()).second, <) > 0) {
+            myheap.pop();
+            myheap.push(it);
+        }
+    }
+
+    std::vector<CacheIterator> *myvector;
+    myvector = reinterpret_cast<std::vector<CacheIterator> *>(&myheap);
+    for (std::vector<CacheIterator>::iterator it = myvector->begin(); it != myvector->end(); it ++)
+    {
+        cout << "remove: " << (*it)->first.size_ << std::endl;
+        cache_.erase(*it);
+    }
 }
