@@ -7,6 +7,7 @@
 #include <vector> 
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <algorithm>
 
@@ -32,11 +33,15 @@ using namespace std;
 #define READ_BUFFER_SIZE 0x800000	// 8MB
 #define MAX_RETRY 6			// will retry a few times if open fail
 
+#define IN_PARENT 0x01		// 001
+#define IN_CDS 0x02			// 010
+#define IN_DIRTY_SEG 0x05	// 101
+
 typedef uint8_t Checksum[CKSUM_LEN];	// checksum type
 
 enum FileSystemType {LOCAL = 0, PANGU = 1, KVFILE = 2};	// file system type
 
-void pr_msg(const char *fmt, ...)
+static void pr_msg(const char *fmt, ...)
 {
 	va_list ap;
 	char buf[BUFSIZ], *p2;
@@ -81,25 +86,41 @@ public:
 
 	Block() {};
 
+    Block(const Block& blk) {
+        SetValue(blk);
+    }
+
 	Block(int sz, const Checksum& ck) {
 		Set(sz, ck);
 	};
 
 	~Block() {};
 
+    void SetValue(const Block& blk) {
+        size_ = blk.size_;
+        file_id_ = blk.file_id_;
+        offset_ = blk.offset_;
+		memcpy(cksum_, blk.cksum_, CKSUM_LEN * sizeof(uint8_t));
+    }
+
 	void Set(int sz, const Checksum& ck) {
 		size_ = sz;
 		memcpy(cksum_, ck, CKSUM_LEN * sizeof(uint8_t));
-	};
+	}
 
-	void Save(ofstream& os) {
+    uint32_t GetSize()
+    {
+        return size_;
+    }
+
+	void Save(ostream& os) {
 		os.write((char *)cksum_, CKSUM_LEN);
 		os.write((char *)&file_id_, sizeof(Block::file_id_));
 		os.write((char *)&size_, sizeof(Block::size_));
 		os.write((char *)&offset_, sizeof(Block::offset_));
 	}
 
-	bool Load(ifstream& is) {
+	bool Load(istream& is) {
 		is.read((char *)cksum_, CKSUM_LEN);
 		if (is.gcount() != CKSUM_LEN)
 			return false;
@@ -162,6 +183,13 @@ public:
 			min_idx_ = blocklist_.size() - 1;
 	}
 
+    void Clear() 
+    {
+        min_idx_ = 0;
+        size_ = 0;
+        blocklist_.clear();
+    }
+
 	void Final() 
     {
 		SHA1_Final(cksum_, ctx_);
@@ -174,6 +202,11 @@ public:
 			return 0;
 		return blocklist_[0].offset_;
 	}
+
+    uint32_t GetSize()
+    {
+        return size_;
+    }
 
 	// minhash value can be used this way
 	uint8_t* GetMinHash() 
@@ -190,7 +223,17 @@ public:
         return s;
     }
 
-    void Save(ofstream& os) 
+    void SortByHash()
+    {
+        std::sort(blocklist_.begin(), blocklist_.end());
+    }
+
+    bool SearchBlock(const Block& blk)
+    {
+        return std::binary_search(blocklist_.begin(), blocklist_.end(), blk);
+    }
+
+    void Save(ostream& os) 
     {
         uint32_t num_blocks = blocklist_.size();
         os.write((char *)&num_blocks, sizeof(uint32_t));
@@ -198,7 +241,7 @@ public:
             blocklist_[i].Save(os);
     }
 
-	bool Load(ifstream& is) 
+	bool Load(istream& is) 
     {
 		Block blk;
         uint32_t num_blocks;
@@ -217,6 +260,10 @@ public:
         Final();
         return true;
     }
+
+	bool operator==(const Segment& other) const {
+		return memcmp(this->cksum_, other.cksum_, CKSUM_LEN) == 0;
+	}
 };
 
 class Bin {

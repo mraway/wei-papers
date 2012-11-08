@@ -83,7 +83,8 @@ int main(int argc, char** argv)
     }
 
     string outputname = argv[3];
-    outputname += ".cdssimlru";
+    outputname += ".simlru";
+    outputname += argv[2];
     output.open(outputname.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
 
     // prepare CDS, assume it was sorted
@@ -113,9 +114,9 @@ int main(int argc, char** argv)
         }
         // level 2: search dirty segment
         else if (has_parent) {
-            cache.AddSegment(parent_seg);
+            cache.AddItems(parent_seg);
             for (i = 0; i < current_seg.blocklist_.size(); i ++)
-                if (cache.SearchEntry(current_seg.blocklist_[i])) {
+                if (cache.SearchItem(current_seg.blocklist_[i])) {
                     current_seg.blocklist_[i].file_id_ |= IN_DIRTY_SEG;
                 }
         }
