@@ -1,2 +1,62 @@
 \section{Introduction}
-We've found a gold mine!
+In a virtualized cloud environment such as ones provided by Amazon EC2\cite{AmazonEC2} and Alibaba Aliyun\cite{Aliyun},
+each instance of a guest operating system runs on a virtual machine, accessing
+virtual hard disks represented as virtual disk image files in the host operating system.
+%virtual disk image files (e.g. .vhd, .vmdk) in the host operating system.
+Because these image files are stored as regular files from the external point of view,
+backing up VM's data is mainly done by taking snapshots of virtual disk images.
+
+A snapshot preserves the data of a VM's file system at a specific point in time. 
+VM snapshots can be  backed up  incrementally by comparing blocks from one version to another 
+and only the blocks that have changed from the previous version of snapshot will be saved~\cite{Clements2009,Vrable2009}. 
+
+Frequent  backup of VM snapshots increases  the reliability of VM's hosted in a cloud.
+For example, Aliyun, the largest cloud service provider by Alibaba in China, 
+provides automatic frequent backup of VM images to strengthen the reliability of its service for all users.
+The cost of frequent backup of VM snapshots is  high because of the huge storage demand.
+Using a backup service with full deduplication support~\cite{venti02,bottleneck08}
+can identify content duplicates among snapshots to remove redundant storage content,  but the weakness is that it
+either adds the  extra cost significantly or competes computing resource with the existing cloud services.
+In addition, data dependence created by duplicate relationship among snapshots
+adds the complexity in fault tolerance management, especially when  VMs can migrate around in the cloud. 
+
+Unlike the previous work dealing with general file-level backup and deduplication, our problem is focused on 
+virtual disk image backup. Although we treat each virtual disk  as a file logically, its size is very large.
+On the other hand, we need to support parallel backup of a large number of virtual disks in a cloud every day. 
+One key requirement we face at Alibaba Aliyun is that VM snapshot backup should only use a minimal amount of system
+resources so that most of resources is kept for regular cloud system services or applications.
+Thus our objective is to exploit the characteristics of VM snapshot data and
+pursue a cost-effective deduplication solution. 
+Another goal  is to decentralize VM snapshot backup and  localize  deduplication as much as possible,
+which brings the benefits for increased parallelism  and fault isolation.
+
+%,extreme_binning09,sparseindex09
+By observations on the VM snapshot data from production cloud, we found snapshot data duplication 
+can be easily classified into two categories: \emph{inner-VM} and \emph{cross-VM}. Inner-VM duplication
+exists between VM's snapshots, because the majority of data are unchanged during each backup period. 
+On the other hand, Cross-VM duplication is mainly due to widely-used software and libraries such as Linux and MySQL.
+As the result, different VMs tend to backup large amount of highly similar data.
+
+With these in mind, we  have developed a distributed multi-level solution to conduct 
+segment-level  and block-level inner-VM  deduplication to localize the deduplication effort when possible.
+It then makes cross-VM deduplication by excluding a small number of
+popular common data blocks from being backed up. Our study shows that common data blocks
+occupy significant amount of storage space while they only take
+a small amount of resources to deduplicate.
+Separating deduplication into multi levels effectively accomplish the major space saving goal
+compare the global complete deduplication scheme, at the same time it makes
+the backup of different VMs to be independent for better fault tolerance.
+
+The following table shows the strength and weakness of some well-know deduplication systems:
+\begin{table}
+    \begin{tabular}{|l|l|l|l|}
+        \hline
+        ~           & Scalability & Low-cost & Full Dedup \\ \hline
+        DDFS        & N           & N        & Y          \\ 
+        Ex-bin      & Y           & Y        & N          \\ 
+        Guo         & Y           & N        & N          \\ 
+        iDedup      & N           & Y        & N          \\ 
+        Founadation & N           & N        & Y          \\
+        \hline
+    \end{tabular}
+\end{table}

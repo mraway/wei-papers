@@ -1,0 +1,137 @@
+\section{Challenges}
+\subsection{Indexing}
+Most deduplication systems operate at the sub-file level:
+a file or a data stream is divided into a sequence of fixed
+or variable sized segments. For each segment, a cryptographic
+hash (MD5, SHA-1/2, etc.) is calculated as its
+fingerprint (FP), and it is used to uniquely identify that
+particular segment. A fingerprint index is used as a catalog
+of FPs stored in the system, allowing the detection
+of duplicates: during backup, if a tuple of the form <
+FP, location > exists in the index for a particular
+FP, then a reference to the existing copy of the chunk
+is created. Otherwise, the chunk is considered new, a
+copy is stored on the server and the index is updated accordingly.
+In many systems, the FP index is also crucial
+for the restore process, as index entries are used to locate
+the exact storage location of the chunks the backup
+consists of.
+
+The index needs to have three important properties:
+1) scale to high capacities, 2) achieve good indexing
+throughput, and 3) provide high duplicate detection
+rate—i.e., high deduplication efficiency. Table 1 demonstrates
+how these goals become very challenging for a
+Petascale system. Consider a typical virtualized cloud 
+in which 10,000 VMs store 1 PB data, and the
+chunk size is 4 KB (for fine-granularity duplicate detection),
+indexing capacity will need to be at least 10,000
+GB to support all 250 billion objects in the system. Such
+an index is impossible to maintain in memory. Storing it
+on disk, however, would greatly reduce query throughput.
+To support 1000 concurrent snapshot backup tasks, 
+an aggregate throughput of 20 GB/sec, would require the
+index and the whole dedupe system for that matter
+to provide a query service throughput of at least 5,000
+Kops/sec. Trying to scale to 1 PB by storing the index
+on disk would make it impossible to achieve this level
+of performance. Making the chunk size larger (e.g.,
+128 KB) would make deduplication far more coarse and
+severely reduce its efficiency.
+
+Even we can distribute the index over the cloud machines,
+the resources that can be allocated to system services are
+limited to minimize the negative impact to user experiences. 
+So it becomes obvious that efficient, scalable indexing is
+a hard problem. On top of all other indexing challenges,
+one must point out that chunk FPs are cryptographic
+hashes, randomly distributed in the index. Adjacent index
+entries share no locality and any kind of simple readahead
+scheme could not amortize the cost of storing index
+entries on disk.
+
+\subsection{Deletion}
+Contrary to a traditional backup system, a dedupe system
+shares data among files by default. 
+Since snapshots in VM cloud face constant deletion, 
+reference management
+is necessary to keep track of chunk usage and reclaim
+freed space. In addition to scalability and speed, reliability
+is another challenge for reference management.
+If a chunk gets freed while it is still referenced by snapshots,
+data loss occurs and files cannot be restored. On the other
+hand, if a chunk is referenced when it is actually no
+longer in use, it causes storage leakage.
+
+For simplicity, many previous works only investigated simple reference
+counting without considering reliability
+and recoverability. Reference counting, however, suffers
+from low reliability, since it is vulnerable to lost or repeated
+updates: when errors occur some chunks may
+be updated and some may not. Complicated transaction
+rollback logic is required to make reference counts consistent.
+Moreover, if a chunk becomes corrupted, it is
+important to know which files are using it so as to recover
+the lost segment by backing up the file again. Unfortunately,
+reference counting cannot provide such information.
+Finally, there is almost no way to verify if the
+reference count is correct or not in a large dynamic system.
+Our field feedback indicates that power outages and
+data corruption are really not that rare. In real deployments,
+where data integrity and recoverability directly
+affect product reputation, simple reference counting is
+unsatisfactory.
+
+Maintaining a reference list is a better solution: it is
+immune to repeated updates and it can identify the files
+that use a particular segment. However, some kind of logging
+is still necessary to ensure correctness in the case of
+lost operations. More importantly, variable length reference
+lists need to be stored on disk for each chunk.
+Every time a reference list is updated, the whole list (and
+possibly its adjacent reference lists—due to the lists’
+variable length) must be rewritten. This greatly hurts the
+speed of reference management.
+
+Mark-and-sweep is generally a better solution. 
+During the mark phase, all snapshot metadata are traversed 
+so as to mark the used chunks. 
+In the sweep phase all chunks are swept and unmarked chunks are reclaimed. 
+This approach is very resilient to errors: 
+at any time the process can simply be restarted with no negative side effects. 
+Scalability, however, is an issue.
+To deal with 1 PB snapshots data, which may be represented by 10,000 GB FP index,
+If we account
+for an average deduplication factor of 10 (i.e., each chunk
+is referenced by 10 different snapshots),
+the total size
+of snapshot metadata that need to be read during the mark phase will
+be 100 TB. 
+This alone will take almost 2 hours on a
+1000-machine cloud. Furthermore, marking the in-use
+bits for 250 billion entries is no easy task. There is no
+way to put the bit map in memory. One might want
+to mitigate the poor performance of mark-and-sweep by
+doing it less frequently. But in practice this is not a viable
+option: customers always want to keep the utilization
+of the system close to its capacity so that a longer
+history can be stored. With daily snapshots taking place,
+systems rarely have the luxury to postpone deletion operations
+for a long time. In our field deployment, deletion
+is done once a day. More than 2 hours in each run is too
+much. In a large production-oriented dedupe system reference
+management needs to be very reliable and have
+good recoverability. It should tolerate errors and always
+ensure correctness. Although mark-and-sweep provides
+these properties, its performance is proportional to the
+capacity of the system, thus limiting its scalability.
+
+\subsection{Fault Tolerance}
+Because deduplication storage system
+ artificially creates data dependency among different VM users,
+it increases the risk of data availability.
+In large scale cloud, node failures happen at daily basis,
+the loss of access to a shared chunk can affect many VMs whose snapshots share this chunk. 
+Without any control of the scope of data sharing, we can only increase the level of 
+replication to enhance availability, which would significantly 
+balance out the benefits of deduplication.
