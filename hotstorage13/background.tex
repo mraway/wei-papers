@@ -1,0 +1,46 @@
+
+\section{Background and Related Work}
+\label{sect:background}
+
+
+
+
+In a virtualized cloud environment such as ones provided by Amazon EC2\cite{AmazonEC2} and Alibaba Aliyun\cite{Aliyun}, each instance of a guest operating system runs on a virtual machine, accessing virtual hard disks represented as virtual disk image files in the host operating system.
+For VM snapshot backup, file-level semantics are normally not provided.
+Snapshot operations are taken place at the virtual device driver level, which means no fine-grained file system metadata can be used to determine the changed data. Only raw access information at disk block level are provided. 
+Each physical hosts many VMs and a cloud cluster has  petabytes of data that need to be backed up at daily basis, 
+if not more frequently. But at the same time snapshot tasks must not affect the normal cloud service, 
+which means that ideally only a very small slice of CPU and memory can be used for the backup purpose.
+
+
+The previous work for storage backup has extensively used  data deduplication techniques can eliminate redundancy globally among different files from different users.
+Backup systems have been developed to use content hash (finger prints) to identify duplicate
+content~\cite{venti02,Rhea2008}.
+%,NGmiddleware2011}.
+Today's commercial data backup systems (e.g. from EMC and NetApp)
+%\cite{emc_avamar}\cite{datadomain_whitepaper}
+use a variable-size chunking algorithm to detect duplicates in file data~\cite{similar94,hydrastor09}.
+
+
+Several techniques have been proposed to speedup searching of duplicate
+content. For example,
+Zhu et al.~\cite{bottleneck08} tackle it
+by using an in-memory Bloom filter and prefetch groups of chunk IDs that are likely to be
+accessed together with high probability. It takes significant memory resource for filtering and caching.
+NG et al.~\cite{ NGmiddleware2011}  use
+a related filtering technique for integrating deduplication in Linux  file system and the memory
+consumed is up to 2GB for a single machine. That is still too big in our context discussed below.
+Lillibridge et al.~\cite{sparseindex09} break list of chunks
+into large segments, the chunk IDs in each incoming segment are sampled and the segment is
+deduplicated by comparing with the chunk IDs of only a few carefully selected backed up segments.
+These are segments that share many chunk IDs with the incoming segment with high probability.
+Deepavali et al.~\cite{extreme_binning09}  use fingerprint-based file similarity  and group similar files into the same physical location (bins) to deduplicate against each other.
+That leads  to a smaller amount of memory usage for storing meta data in fingerprint
+lookup with a tradeoff of the reduced recall ratio.
+
+Additional inline deduplications are studied in ~\cite{idedup}. All of the above appraoches have focused on
+such inline duplicate detection, namely given a content chunk, how to detect if it is duplicate instantantly
+to trigger the data backup of this chunk or not before the detection request for the next chunk can be launched. 
+In our work, this constraint is relaxed and 
+there is a waiting time for many duplicate detection requests. Our goal is to minimizing  computing  resource without
+affeting the overall time of backup. 
