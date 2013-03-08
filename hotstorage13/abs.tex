@@ -8,7 +8,7 @@ This paper presents a low-cost clustered deduplication soluton scalable for hand
 of virtual machines.  The key idea is to seperate duplicate detection from 
 the actual storage data backup instead of using inline deduplication, and partition
 global index and  detection requests among machines using  fingerprint values.
-Then each machine conducts duplicate detection partiton by partition indepdently with a minimal memory usage.
+Then each machine conducts duplicate pre-detection partiton by partition indepdently with a minimal memory usage.
 %in parallel among all machines and  each machine full duplication detection is 
 Another optimization is to allocate and control
 buffer space for exchanging  detection messages and duplicate summary among machines.

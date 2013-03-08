@@ -5,10 +5,8 @@ The contribiton  of this work is a low-cost and scalable clustered deduplication
 using a non-inline approach. Because of seperation  of duplicate detection and actual backup,
 we are able to evenly distribute  fingerprint comparison among clustered machine
 nodes, and only load one partition at time at each machine for in-memory comparison.
-That leads to a minimal system resource usage.
-The tradeoff is that evyer machine has to read 
-virtual machine images twice to accomplish
-backup 
+That leads to an insignificant system resource, which  does not compete with the existing cloud services.
+The tradeoff is that evyer machine has to read virtual machine images twice to accomplish backup. 
 %in parallel among all machines and  each machine full duplication detection is 
 %Another optimization is to allocate and control
 %buffer space for exchanging  detection messages and duplicate summary among machines.

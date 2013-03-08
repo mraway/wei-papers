@@ -116,8 +116,9 @@ If a block is dupliate to another block in the system,  the block recipe contain
 \subsection{Processing flow and resource usage}
 
 The data flow of our partition-based  dupliate detectionis depicted in
-Figure~\ref{fig:flow}. let $v$ be the total number of virtual machines hosted in  
-a cluster,  we divide the backup into $k$  iterations. 
+Figure~\ref{fig:flow}. 
+%let $v$ be the total number of virtual machines hosted in  a cluster,  
+%we divide the backup into $k$  iterations. 
 \begin{figure}
 \centering
 \includegraphics[width=0.45\textwidth]{steps.pdf}
@@ -127,8 +128,10 @@ a cluster,  we divide the backup into $k$  iterations.
 
 \begin{itemize}
 \item
-The first step of each iteration is to read  $v/k$  virtual machine images in parallel on the cloud 
-cluster and issue backup requests. For those segments that have been modified since last backup indicated by 
+The first step is that each machine independently reads  
+%$v/k$  
+virtual machine images that need a backup
+and forms duplicate  detection requests. For those segments that have been modified since last backup indicated by 
 dirty bits,  the system divides  each segment into a sequence of chunk blocks,  computes the meta 
 information such as chunk fingerprints,  sends the metadata of a chunk block, and accumulate  into 
 a partition bucket on the temporary disk storage. 
@@ -169,7 +172,8 @@ When a receive buffer for a VM is  full, the data is written to the local disk s
 %These substeps are repeated as the stream of data is exchanged when each machine compares through all $q$ partitions.
 
 \item The third step is to read  nonduplicate blocks from each VM and output to the final backup 
-storage. In this process, if a segment is not dirty, we only need to output the segment meta data 
+storage. Additionally, the global index on each machine is updated with the meta data of new chunk blocks added.
+In this process, if a segment is not dirty, we only need to output the segment meta data 
 such as reference pointers to the original segments previously saved in the backup.  
 If a segment is dirty,  we use the duplicate summary information from Step 2 for internal 
 duplicate blocks of this dirty segment and output the remaining non-duplicate blocks to the backup storage.
@@ -184,7 +188,7 @@ The  disk storage usage on each machine
 is fairly small for  storing part of global index and
 accumulating  duplicate detection requests that contain fingerprint information.   
 We impose a limit for memory allocated at each machine node to accomplish low-cost deduplication.  
-Memory usage for each step of above iteration is carefully controlled as follows.
+Memory usage for each step of above scheme is carefully controlled as follows.
 \begin{itemize}
 \item For Step 1, the allocated memory for each machine is evenly divided for $p$ send buffers and $q$ receive buffers.
 
@@ -226,7 +230,7 @@ reference. The third step is that every VM gathers the confirmed deletion reques
 to the backup storage.
 The archival data repository may log these deletion requests,  and will periodically perform a compaction operation when 
 its deletion log is too big. 
-Due to the paper constraint, we will not discuss the deletion operations in details.
+%Due to the paper constraint, we will not discuss the deletion operations in details.
 
 %The above method requires the counter information to be consistently maintained in the global index.
 %Finally the deleteion summary. it will adjust the corresponding reference counts. At the end of bucket worker's operation, it outputs the unused blocks information to each VM data repository's deletion log.

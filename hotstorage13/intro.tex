@@ -22,7 +22,7 @@ VMs can migrate around in the cloud.
 
 Among the three factors - time, cost and de-deduplication efficiency, one of them has to be compromised for the other two. For instance, if we were build a deduplication system that has a high rate of duplication detection and has a very fast response time, 
 it would need a lot of memory to hold fingerprint index and do fast comparison.  This leads to a compromise on cost. 
-Our objective in this paper is to lower the cost incurred while sustaining the highest de-duplication ratio. 
+The objective of our project is to lower the cost incurred while sustaining the highest de-duplication ratio. 
 %at the expense of processing latency.  
 At the same time, we ensure the aggregate read/write throughput of the system 
 is sufficiently scalable  for dealing with backup of a large number of virtual machine images. 
@@ -33,17 +33,16 @@ is sufficiently scalable  for dealing with backup of a large number of virtual m
 The traditional approach to  deduplication for backup is an inline approach which follows
 a sequence of VM block reading, duplicate detection,  and nonduplicate  block write to the 
 backup storage.  
-Our key idea  is to  perform parallel duplicate detection first for VM content blocks 
+Our key idea  is to  first perform parallel duplicate pre-detection for VM content blocks 
 among all machines before performing actual data backup. Each machine
-accumulates detection requests and  then performs detection   parititon by partition 
+accumulates detection requests and  then performs pre-detection   parititon by partition 
 with minimal resource usage.
-Fignureprint based partitioning allows highly parallel duplicate detection  and also simplifies 
-reference counting management  during snapshot detection.
+Fignureprint based partitioning allows highly parallel duplicate pre-detection  and also simplifies 
+reference counting management.  
 % as the entire process can also be divided into a
 %parition-wise  deletion. 
 With careful parallelism management and message buffering during cross-machine data exchange,
-this partition-based  deduplication scheme can provide  a sufficient 
-throughput for large-scale cloud data  backup.   
+this pre-detecton scheme can provide  a sufficient throughput for large-scale cloud data  backup.   
 
 
 
