@@ -1,5 +1,5 @@
 MAIN = main
-TEX = main.tex abs.tex background.tex arch.tex eval.tex concl.tex intro.tex
+TEX = main.tex abs.tex background.tex arch.tex eval.tex concl.tex intro.tex steps.pdf snapshotdata.pdf
 FIG = 
 BIB = dedup1.bib library.bib
 
