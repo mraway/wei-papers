@@ -1,0 +1,86 @@
+\section{Introduction}
+
+
+
+%Virtualization is the engine behind many popular cloud computing platforms.
+%Amazon, Alibaba,  and many others have provided public VM clouds that host
+%tens of thousands of  virtual machines(VM) created for various active users.
+Periodic  archiving of virtual machine (VM) snaps is important for a public cloud service provider
+for long-term data  retention and fault recovery in case of machine failures.  
+While VM backup  may  be mainly requested by users  in some providers,  
+in the case of Alibaba which provides the largest public cloud service in China,
+daily backup of VM images  is conducted automatically for all  active users 
+to improve data reliability and availability. 
+
+The cost of frequent backup of VM snapshots is  high because of the huge storage demand.
+This issue has been addressed by   storage data deduplication ~\cite{venti02,bottleneck08} that
+identifies redundant content duplicates among snapshots.  On the other hand, performing
+deduplication adds significant  memory cost for comparison of content fingerprints. 
+Since each physical machine in a cluster  hosts many VMs, memory contention happens frequently. 
+Cloud providers often wish that the backup service only consumes  the minimal resource usage without 
+impacting any existing cloud service.  Another challenge for backup with deduplication is that deletion 
+of old snapshot competes computing resource with noticable cost. That is because data dependence created 
+by duplicate relationship among snapshots  adds processing complexity, especially when  
+VMs can migrate around in the cloud. 
+
+Among the three factors - time, cost and de-deduplication efficiency, one of them has to be compromised for the other two. For instance, if we were build a deduplication system that has a high rate of duplication detection and has a very fast response time, 
+it would need a lot of memory to hold fingerprint index and do fast comparison.  This leads to a compromise on cost. 
+Our objective in this paper is to lower the cost incurred while sustaining the highest de-duplication ratio. 
+%at the expense of processing latency.  
+At the same time, we ensure the aggregate read/write throughput of the system 
+is sufficiently scalable  for dealing with backup of a large number of virtual machine images. 
+% This business model partially  resembles that of Amazon Glacier.
+
+%Our solution  only uses a very small amount of memory space during backup while completing  snapshot backup and 
+%deletion in a reasonable amount of time. 
+The traditional approach to  deduplication for backup is an inline approach which follows
+a sequence of VM block reading, duplicate detection,  and nonduplicate  block write to the 
+backup storage.  
+Our key idea  is to  perform parallel duplicate detection first for VM content blocks 
+among all machines before performing actual data backup. Each machine
+accumulates detection requests and  then performs detection   parititon by partition 
+with minimal resource usage.
+Fignureprint based partitioning allows highly parallel duplicate detection  and also simplifies 
+reference counting management  during snapshot detection.
+% as the entire process can also be divided into a
+%parition-wise  deletion. 
+With careful parallelism management and message buffering during cross-machine data exchange,
+this partition-based  deduplication scheme can provide  a sufficient 
+throughput for large-scale cloud data  backup.   
+
+
+
+
+
+
+
+
+%Our study shows that common data blocks
+%occupy significant amount of storage space while they only take
+%a small amount of resources to deduplicate.
+%Separating deduplication into multi levels effectively accomplish the major space saving goal
+%compare the global complete deduplication scheme, at the same time it makes
+%the backup of different VMs to be independent for better fault tolerance.
+
+%Restricting the scope of global deduplication reduces
+%the inter-component  data dependenc during machine failure.
+
+%Several operations are provided for creating and managing snapshots and snapshot trees,
+%such as create snapshots, revert to any snapshot, and remove snapshots.
+%VM snapshots is different from traditional file system backup from a few aspects:
+%\begin{enumerate}
+%\item The backup loads are heavy but resources are limited. The whole VM cluster have PBs of data and need to be backuped at daily basis, if not more frequently. But at the same time snapshot tasks must not affect the normal VM operations, which means only a tiny slice of CPU and memory can be used for this purpose.
+%\item No file system semantics are provided. Snapshot operations are taken place at the virtual device driver level, which means no fine-grained file system metadata can be used to determine the changed data. Only raw access information at disk block level are provided.
+%\item Snapshots can be shared between users. This does not only complicates the parent-child relationship between snapshots, but also require all snapshots be managed in a global namespace.
+%\end{enumerate}
+
+%In this paper we intorduce the deduplication scheme of snapshot storage in Aliyun's VM cloud. We exploit the 
+The rest of the paper is arranged as follows. 
+Section ~\ref{sect:background}
+discusses on the background and related work.
+Section ~\ref{sect:arch} presents our snapshot backup solution with request and index partitioning.
+Section ~\ref{sect:analysis} summarizes  our analysis of the system performance.
+Section ~\ref{sect:exper} presents  our evaluation results on the effectiveness.
+Section ~\ref{sect:final} concludes this paper.
+% talks about Aliyun's VM snapshot system and deduplication process. In section 4 we present
+%the snapshot deduplication results of our real user VMs.

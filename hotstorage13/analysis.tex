@@ -1,0 +1,113 @@
+\section{ Performance Analysis and Comparison}
+\label{sect:analysis}
+
+We assume a flat architecture that we use all machines in a cluster to host virtual machines, and also evenly host  raw data and meta data of the temporarily accumulated requests.  We call global index to be the meta data of all non-duplicate chunks such as chunk fingerprints and reference pointers.
+
+Following parameters are used to analyze the performance of our system.
+\begin{itemize}
+\item
+$p$ is the number of machines in a cluster. These machines can run in parallel for backup. The request buckets are evenly distributed among these machines.
+\item $v$ is the number of virtual machines per machine. At Alibaba, $v=25$.
+\item $x$ is the number of snapshots saved for each VM.
+\item $k$ is the number of iterations to complete all virtual machine backup. Each iteration performs v/k backups.
+\item $t$  is the  amount of temporary disk space used per physical machine for deduplication.
+\item $m$ is the amount of memory used per each physical machine for deduplication. Our goal is to minimize 
+\item $s$ is the average size of virtual machine image. At Alibaba data we have tested, $s=40GB$.
+\item $d_1$  is the average  deduplication ratio using  segment-based dirtbit.  s*d1 represents the amount of data items that are duplicates and can be avoided for backup. For Alabalba dataset tested, 
+$d_1$=77\%.
+\item $d_2$ is the average  deduplication ratio using content chunk fingerprints after segment-based deduplication. For Alaba dataset tested,  $d_2=50$\%.
+\item $b$ is the average disk bandwidth for reading from local storage at each machine. 
+\item $q$ is the number of buckets to accumulate requests at each machine. Thus the total number of buckets is $p*q$.
+\item $c$ is the chunk block size in bytes.  In practice $c=4KB$.
+\item $u$ is the record size of detection request per block.  In practice, 
+\item $u$=40. That includes block ID and fingerprint.
+\item $m$ is the maximum memory allocated for deduplication purpose.  A $g$ fraction used for 
+machine-machine network  request buffering and $(1-g)$ fraction used for memory-disk bucket buffering.
+\item $e$ is the size of a duplicate summary record for each chunk block.
+\item $\alpha_n$ is the startup cost for sending a message in a cluster. $\alpha_d$ is the startup cost 
+such as seek for disk IO. $\beta$ is the time cost for in-memory duplicate comparison.
+\end{itemize}
+The system keeps at most  $ x$ copies of snapshots for each VM on average.  The total size of  global content fingerprints is $x*s*v/c*u *(1-d1)*(1-d2)$ where $c$ is the average chunk size and $u$ is the meta data size of each chunk fingerprint. In practice $c=4K$ and $u/c$  is about 100.  $x=10$ in the case of Alibaba cloud.
+
+Define $r = s v (1-d_1)/(ck)$  which is the total number of duplicate detection requests issued at each machine and at each iteration.
+
+We first discuss the memory usage and processing time  of 3 steps. 
+ For Step 1,  the buffer for sending requests from one machine to another has a size of  $g*m/p$, and with such a buffering, the total number of outgoing communication messages from  each machine to other machines  can be 
+\[
+r u p/(g*m)
+\]
+The total  amount of data communicated among machines is relatively small: $r u p$ in the cluster, distributed among $p$ machines.
+
+Once every machine receives detection requests and divide them into buckets, it writes the content to the disk once the buffer is full. The buffer for each bucket is $(1-g)m/q$ and the total number of disk write requests issued after the bucket buffer is full is:
+\[
+r u q/((1-g)*m)
+\]
+The total time for step 1  which  reads VM images and write accumulated detection requests  is:   
+\[
+r  ( c+  u) /b   +r u /m (\alpha_n  p/g  + \alpha_d q/(1-g)  )
+\].
+
+For Step 2,  part of memory at each machine is  to hold  a bucket of global index and accumulated requests. That is
+\[
+m_b= x*r *u*k(1-d_2)/q + r*u/q
+\]
+Thus the memory requirement for this portion can be made very small when setting a large q. On the other hand, as the system detects duplicates per hash bucket, we need to allocate buffer space for receiving  duplicate summary for each VM.  The total buffer size is $m-m_b$ which is used evenly for $v$ VMs.
+
+The size of  the duplicate summary for each bucket is
+\[
+S_{sum}= sv(1-d_1)e /(k c q)
+\]
+We can buffer the outcome of multiple buckets. The total buffer factor is 
+\[
+(m-m_b)/ S_{sum}.
+\]
+The final bucket buffer for each VM is still fairly small, and writing such a buffer to the disk may involve two I/O requests (one to fetch the old block, and one is to update). The total seek cost involved 
+\[
+2*v*\alpha_d*q/ ((m-m_b)/S_{sum})= 2v r e  \alpha_d / (m-m_b)
+\]
+Thus the total time of Step 2 takes
+\[
+( x*r *k*u*(1-d_2) + r*u) / b_d  + r* \beta+   2v *r*e \alpha_d /  (m-m_b).
+\]
+
+
+The key cost of step 3  is to read the nonduplicate parts of each VM and output the backend storage. The time of Step 3  takes:
+\[
+2 r *c* (1-d_2) /b_d
+\]
+That assumes that when a content chunk is not a duplicate, there is a significant number of non-duplicate  chunks following that  chunk. 
+
+Thus the total time to process all $v$ virtual machines after $k$ iterations are:
+\[
+k [
+r  ( c+  u) /b   +r u /m (\alpha_n  p/g  + \alpha_d q/(1-g)  )
++( x*r *k*u*(1-d_2) + r*u) / b_d  + r* \beta+   2v *r*e \alpha_d /  (m-m_b)
++2 r *c* (1-d_2) /b_d
+]
+\]
+subject to conditions that
+\[
+m - m_b> 0
+\]
+
+The total disk requirement  per machine for hosting the global index  and meta  data of  accumulated requests is:
+\[
+x*r *k*u*(1-d2) + r*u.
+\]
+That is not so big, and is acceptable as we show later.
+
+
+
+
+\subsection{A Comparison with Other Approaches}
+
+The memory  space requirement for the data domain approach with bloomer filter is:
+\[
+x*r k u (1-d2)/r
+\]
+where $r$ is the bloom filter with about  1:10 ratio in practice.  The disk space used  is 
+\[
+x*r *k *u*(1-d_2).
+\]
+
+
