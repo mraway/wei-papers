@@ -16,7 +16,7 @@ deduplication adds significant  memory cost for comparison of content fingerprin
 Since each physical machine in a cluster  hosts many VMs, memory contention happens frequently. 
 Cloud providers often wish that the backup service only consumes  the minimal resource usage without 
 impacting any existing cloud service.  Another challenge for backup with deduplication is that deletion 
-of old snapshot competes computing resource with noticable cost. That is because data dependence created 
+of old snapshot competes computing resource also. That is because data dependence created 
 by duplicate relationship among snapshots  adds processing complexity, especially when  
 VMs can migrate around in the cloud. 
 
@@ -31,18 +31,18 @@ is sufficiently scalable  for dealing with backup of a large number of virtual m
 %Our solution  only uses a very small amount of memory space during backup while completing  snapshot backup and 
 %deletion in a reasonable amount of time. 
 The traditional approach to  deduplication for backup is an inline approach which follows
-a sequence of VM block reading, duplicate detection,  and nonduplicate  block write to the 
+a sequence of VM block reading, duplicate detection,  and non-duplicate  block write to the 
 backup storage.  
 Our key idea  is to  first perform parallel duplicate pre-detection for VM content blocks 
 among all machines before performing actual data backup. Each machine
-accumulates detection requests and  then performs pre-detection   parititon by partition 
+accumulates detection requests and  then performs pre-detection   partition by partition 
 with minimal resource usage.
-Fignureprint based partitioning allows highly parallel duplicate pre-detection  and also simplifies 
+Fingerprint based partitioning allows highly parallel duplicate pre-detection  and also simplifies 
 reference counting management.  
 % as the entire process can also be divided into a
 %parition-wise  deletion. 
 With careful parallelism management and message buffering during cross-machine data exchange,
-this pre-detecton scheme can provide  a sufficient throughput for large-scale cloud data  backup.   
+this pre-detection scheme can provide  a sufficient throughput for backup.   
 
 
 

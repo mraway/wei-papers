@@ -1,22 +1,22 @@
 \begin{abstract}
 %Virtualization has became the engine behind many cloud computing platforms.
 In a virtualized cloud cluster, frequent  snapshot backup of virtual disks improves
-hosting  reliability; howver, it  takes significant 
+hosting  reliability; however, it  takes significant 
 memory and CPU resource to perform data duplication in order to remove
-excessive redudancy among snapsots.
-This paper presents a low-cost clustered deduplication soluton scalable for handling a large number 
-of virtual machines.  The key idea is to seperate duplicate detection from 
+excessive redundancy among snapshots.
+This paper presents a low-cost clustered deduplication solution scalable for handling a large number 
+of virtual machines.  The key idea is to separate duplicate detection from 
 the actual storage data backup instead of using inline deduplication, and partition
 global index and  detection requests among machines using  fingerprint values.
-Then each machine conducts duplicate pre-detection partiton by partition indepdently with a minimal memory usage.
+Then each machine conducts duplicate pre-detection partition by partition independently with a minimal memory usage.
 %in parallel among all machines and  each machine full duplication detection is 
 Another optimization is to allocate and control
 buffer space for exchanging  detection messages and duplicate summary among machines.
 %The memory requirement and disk usage for the proposed solution is very small while the overall thoughput
 %and backup process timing is not compromised. 
 Our experiments show that  the proposed scheme 
-uses a very small amount of system resources while accomplishing a satisfactory backup throughput
-in a large cloud setting.
+uses a very small amount of system resources while delivering a satisfactory backup throughput.
+%in a large cloud setting.
 %which only reqiires a very small amount of memory and CPU resource.  
 %Experimental results  show the proposed scheme  can achieve high deduplication ratio while using
 %a  small  amount of cloud resources. 

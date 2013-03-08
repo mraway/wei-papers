@@ -2,9 +2,9 @@
 \section{Evaluation}
 \label{sect:exper}
 
-We have implemented and evaluated a prototype of the parititon-based deduplication scheme on a Linux cluster
+We have implemented and evaluated a prototype of the partition-based deduplication scheme on a Linux cluster
 of AMD Bulldozer FX8120 and Intel Nehalem E5530 machines.  Objectives of our experimental evaluation are:
-1) Analyze the processing time and througput of backup for a large cluster of virtual machines.
+1) Analyze the processing time and throughput of backup for a large cluster of virtual machines.
 2) Assess the effectiveness  of partition-based duplication detection 
 backup.  3) Examine the impacts of buffering during meta data exchange.
 
@@ -34,9 +34,9 @@ a user may instruct extra snapshots to be saved.
 %Since it's impossible to perform large scale analysis without affecting the VM performance,
 %We have sampled a data set from 1323 real user VMs from a cluster with 100 nodes 
 %to measure the effectiveness of our scheme.
-We have performed a trace-driven study using a dataset containing 10 snapsots of 35 VMs.
+We have performed a trace-driven study using a dataset containing 10 snapshots of 35 VMs.
 That is part of a 1323 VM dataset  collected from 100 Aliyun's cloud nodes 
-in our earier work with  Alibaba Aliyun~\cite{WeiZhang}.
+in our earlier work with  Alibaba Aliyun~\cite{WeiZhangIEEE}.
 %In this dataset, there are 10 snapshots per each VM user and the total amount of space 
 %investigated is 17.5 terabytes.
 %This dataset contas compose of 35 VMs from 7 popular OSes: 
@@ -102,15 +102,15 @@ throughput  per node 0.090805785	0.090226551	0.088716799	0.088544242	0.088434748
 \end{verbatim}
 
 Table~\ref{tab:overall} shows the performance of partition-based deduplication when 
-the number of partitons per machine ($q$) varies from 50 to 2000.
+the number of parititons per machine ($q$) varies from 50 to 2000.
 Row 2 shows the memory usage needed to load a partition of global index and detection requests,
 varying from 161MB to 4.025MB. As we impose a constraint of 30MB, then only $q>300$ would be a viable choice.
 Row 3 shows the majority of memory usage is for global index.
 Row 4 is the total time for a 100-node cluster.
 Row 5 is  the throughput per machine reported  is the total 
 amount of virtual machine images divided by the processing time. 
-The processng time includes the first scanning time
-of dirty VM segments to generate block figureprints and the second scan time for real backup.
+The processing time includes the first scanning time
+of dirty VM segments to generate block fingerprints and the second scan time for real backup.
 
 
 %\begin{figure}
@@ -134,9 +134,9 @@ Time for two scans: 2.78 2.78 2.78 2.78 2.78
 
 Table~\ref{tab:memory} shows the performance of partition-based deduplication when 
 the memory limit imposed on each node, varying from 
-The overall processing time does not have a signficant reduction as we increase memory usage  20MB to 200MB.
+The overall processing time does not have a significant reduction as we increase memory usage  20MB to 200MB.
 As Row 2 shows, the time is mainly dominated by  the IO costs of two scans of VMs.
-Thus we conlude that using about 30MB is sufficient to have VM backup completed in parallel within about 3.11 hours.
+Thus we conclude that using about 30MB is sufficient to have VM backup completed in parallel within about 3.11 hours.
 
 
 %Combining OS disks in all the VMs, we see the overall 7.4TB of data is reduced to 512GB. 
@@ -152,13 +152,13 @@ Thus we conlude that using about 30MB is sufficient to have VM backup completed 
 %content can be eliminated using the CDS also.
 
 We have also compared our pre-detection approach with another approach by combining
-dirtybit segement  detection and  the data domain method~\cite{Zhu}. 
+dirtybit segment  detection and  the data domain method~\cite{Zhu}. 
 The bloomer filter setting  results a 1:10 ratio of index reduction for in-memory search before visiting
 the disk for the full index with 2\% false positives. The prefetching cache hit ratio is set to be 98.96\% based
 a number in ~\cite{Zhu}.
-We measure its  total time including one scan of VM dirty segemnts in about 1.38 hours.
+We measure its  total time including one scan of VM dirty segments in about 1.38 hours.
 That approach takes about 3.19 hours comparable with our pre-detection scheme while its memory cost
 includes 1GB of bloom filters and additional space for cache. That is an significant amount of space,
-compeuting with other cloud service while memory cost of our setting is  insignifcant.
+competing with other cloud service while memory cost of our setting is  insignificant.
  
 %Our actual cache hit ratio tested is close 90\%.

@@ -41,9 +41,9 @@ Zhang et al.~\cite{WeiZhangIEEE}  to reduce memory requirement with a tradeoff o
 %lookup  
 In comparison, this paper focuses on  full deduplication without approximation.
 
-Additional inline deduplications are studied in ~\cite{sparseindex09,idedup}. All of the above appraoches have focused on
-such inline duplicate detection, namely given a content chunk block, how to detect if it is duplicate instantantly
+Additional inline deduplication techniques are studied in ~\cite{sparseindex09,idedup}. All of the above approaches have focused on
+such inline duplicate detection, namely given a content chunk block, how to detect if it is duplicate instantly
 to trigger the data backup of this block or not before the detection request for the next blocks can be launched. 
 In our work, this constraint is relaxed and 
 there is a waiting time for many duplicate detection requests. Our goal is to minimizing  computing  resource without
-affeting the overall time of backup. 
+affecting the overall time of backup. 
