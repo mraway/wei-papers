@@ -3,14 +3,12 @@
 In a virtualized cloud cluster, frequent  snapshot backup of virtual disks improves
 hosting  reliability; howver, it  takes significant 
 memory and CPU resource to perform data duplication in order to remove
-excessive redudancy among image snapsots.
+excessive redudancy among snapsots.
 This paper presents a low-cost clustered deduplication soluton scalable for handling a large number 
 of virtual machines.  The key idea is to seperate duplicate detection from 
-the actual storage data backup instead of using inline deduplication.
-Global inddex and  detection requests are partitioned 
-among machines using  fingerprint values for parallel detection. 
-Each machine conducts duplicate detection partiton by partition indepdently
-with a minimal memory usage.
+the actual storage data backup instead of using inline deduplication, and partition
+global index and  detection requests among machines using  fingerprint values.
+Then each machine conducts duplicate detection partiton by partition indepdently with a minimal memory usage.
 %in parallel among all machines and  each machine full duplication detection is 
 Another optimization is to allocate and control
 buffer space for exchanging  detection messages and duplicate summary among machines.

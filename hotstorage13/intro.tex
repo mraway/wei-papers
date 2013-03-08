@@ -5,13 +5,10 @@
 %Virtualization is the engine behind many popular cloud computing platforms.
 %Amazon, Alibaba,  and many others have provided public VM clouds that host
 %tens of thousands of  virtual machines(VM) created for various active users.
-Periodic  archiving of virtual machine (VM) snaps is important for a public cloud service provider
+Periodic  archiving of virtual machine (VM) snaps is important 
 for long-term data  retention and fault recovery in case of machine failures.  
-While VM backup  may  be mainly requested by users  in some providers,  
-in the case of Alibaba which provides the largest public cloud service in China,
-daily backup of VM images  is conducted automatically for all  active users 
-to improve data reliability and availability. 
-
+For example, daily backup of VM images  is conducted automatically 
+at Alibaba which provides the largest public cloud service in China.
 The cost of frequent backup of VM snapshots is  high because of the huge storage demand.
 This issue has been addressed by   storage data deduplication ~\cite{venti02,bottleneck08} that
 identifies redundant content duplicates among snapshots.  On the other hand, performing
@@ -75,6 +72,7 @@ throughput for large-scale cloud data  backup.
 %\end{enumerate}
 
 %In this paper we intorduce the deduplication scheme of snapshot storage in Aliyun's VM cloud. We exploit the 
+\comments{
 The rest of the paper is arranged as follows. 
 Section ~\ref{sect:background}
 discusses on the background and related work.
@@ -82,5 +80,6 @@ Section ~\ref{sect:arch} presents our snapshot backup solution with request and 
 Section ~\ref{sect:analysis} summarizes  our analysis of the system performance.
 Section ~\ref{sect:exper} presents  our evaluation results on the effectiveness.
 Section ~\ref{sect:final} concludes this paper.
+}
 % talks about Aliyun's VM snapshot system and deduplication process. In section 4 we present
 %the snapshot deduplication results of our real user VMs.

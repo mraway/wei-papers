@@ -1,4 +1,4 @@
-\section{ Key Ideas and Design Architecture}
+\section{ Key Ideas and Architecture}
 \label{sect:arch}
 
 
@@ -40,11 +40,11 @@ is conducted. That does incur an extra  round of I/O reading for nonduplicate bl
 deduplication and leading to a much smaller resource requirement. 
 During duplicate detection phase, detection requests can be accmnulated on the disk 
 for a period time  in a  partitioned manner.  Aggregated duplicate requests can be processed partition by partition. 
-We also accumulate the delete requests and perform them partition by partitions. 
+%We also accumulate the delete requests and perform them partition by partitions. 
 Since each partition corresponds to a small portion of global content index, the cost to 
 process requests within a partition is significant smaller than process all the requests globally.
 
-\item {\bf Buffered data redistrubution in parallel processing of  detection  requests}.  
+\item {\bf Buffered data redistrubution in parallel duplicate detection}.  
 We let {\em global index} be the meta data containing the fingerprint values of all unique blocks
 in the entire cluster and  the reference pointers which lead to the actual location of raw data.
 A dupliate detection request for a content block needs to be compared with the global index to determine if this
@@ -214,20 +214,21 @@ and write them to the  backup storage.
 {\bf Snapshot deleteion.} Each virtual machine will keep at most $x$ snapshots of VM images and thus
 expired snapshots will be deleted unless its owern explicitly asks for its retention. 
 A block or the entire segment can be deleted if its reference counter is zero.
-As we discussed in Section~\ref{sect:data}, the reference counter is kept in the global index, partitioned among machines. 
-We deal snapshot deletion in three steps similar to the VM snapshot backup.
-Step 1 is to read  the meta data of a snapshot such as segment and block
-recipes and  accumate  deletion requests in different machines  in the fingerprint based distribution.
-The second step  is to process the deletion requests within each partition and detect those records with zero 
-reference counters. The third step is that every VM gathers the confirmed deletion requests for its cotent and sends them
+%As we discussed in Section~\ref{sect:data}, the reference counter is kept in the global index, partitioned among machines. 
+We perioidcally read all receipts of active 
+snapsots and compute the counter of all blocks while still following the fingerprint-based partitioning.
+That is based on the idea of mark-and-sweep~\cite{MarkSweep} while 
+we deal such snapshot deletion in three partition-based steps similar to the VM snapshot backup.
+Step 1 is to read  the meta data of snapshots such as segment and block
+recipes and  accumate  reference count requests in different machines  in the fingerprint based distribution.
+The second step  is to count references within each partition and detect those records with zero 
+reference. The third step is that every VM gathers the confirmed deletion requests for its cotent and sends them
 to the backup storage.
 The archival data repository may log these deletion requests,  and will periodically perform a compaction operation when 
 its deletion log is too big. 
 Due to the paper constraint, we will not discuss the deletion operations in details.
 
-The above method requires the counter information to be consistently maintained in the global index.
-Another option to avoid maitaining its consitency is to perioidcally read all receipts of active 
-snapsots and compute the counter of all blocks while still following the fingerprint-based partitioning. 
+%The above method requires the counter information to be consistently maintained in the global index.
 %Finally the deleteion summary. it will adjust the corresponding reference counts. At the end of bucket worker's operation, it outputs the unused blocks information to each VM data repository's deletion log.
 
 
