@@ -1,5 +1,5 @@
 MAIN = main
-TEX = main.tex abs.tex background.tex arch.tex eval.tex concl.tex intro.tex steps.pdf snapshotdata.pdf
+TEX = main.tex abs.tex background.tex arch.tex eval.tex concl.tex intro.tex steps.pdf snapshotdata.pdf mem_time.pdf
 FIG = 
 BIB = dedup1.bib library.bib
 
@@ -16,4 +16,4 @@ ${MAIN}.pdf: ${TEX} ${FIG} ${BIB} makefile
 
 
 clean:
-	rm -rf *.out *.aux *.log *.blg *.bbl *.pdf *.dvi *.ps ${MAIN}
+	rm -rf *.out *.aux *.log *.blg *.bbl main.pdf *.dvi *.ps ${MAIN}
