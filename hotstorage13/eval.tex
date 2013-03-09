@@ -125,15 +125,21 @@ of dirty VM segments to generate block fingerprints and the second scan time for
 %To see the impact of multi-level deduplication on different OS releases,
 %Some of  OS disks are modified frequently and in some cases,  users even store a large amount of user data on
 
+\begin{figure}
+\centering
+\includegraphics[width=0.4\textwidth]{mem_time.eps}
+\caption{Performance of partition-based deduplication under different memory limits}
+\label{fig:memory}
+\end{figure}
 
-\begin{verbatim}
-q= is chosen between 500 or 100
-Memory limit:   20 30M   50M  75M  100M  200M
-Time:          3.2  3.11   3  2.99 2.96  2.95
-Time for two scans: 2.78 2.78 2.78 2.78 2.78
-\end{verbatim}
+% \begin{verbatim}
+% q= is chosen bteween 500 or 100
+% Memory limit:   20 30M   50M  75M  100M  200M
+% Time:          3.2  3.11   3  2.99 2.96  2.95
+% Time for two scans: 2.78 2.78 2.78 2.78 2.78
+% \end{verbatim}
 
-Table~\ref{tab:memory} shows the performance of partition-based deduplication when 
+Figure~\ref{fig:memory} shows the performance of partition-based deduplication when 
 the memory limit imposed on each node, varying from 
 The overall processing time does not have a significant reduction as we increase memory usage  20MB to 200MB.
 As Row 2 shows, the time is mainly dominated by  the IO costs of two scans of VMs.
