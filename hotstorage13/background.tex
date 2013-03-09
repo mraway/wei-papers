@@ -10,13 +10,13 @@ At a cloud cluster node, each instance of a guest operating system runs on a vir
 represented as virtual disk image files in the host operating system.
 For VM snapshot backup, file-level semantics are normally not provided.
 Snapshot operations are taken place at the virtual device driver level, which means no fine-grained file system metadata can be used to determine the changed data. Only raw access information at disk block level are provided. 
-Each physical machine hosts many VMs and petabytes of data in a cloud cluster need a frequent  backup. 
-Ideally speaking, snapshot backup must not affect the normal cloud service, which means that 
-only a very small slice of cluster resource can be used for the backup purpose.
+%Each physical machine hosts many VMs and petabytes of data in a cloud cluster need a frequent  backup. 
+%Ideally speaking, snapshot backup must not affect the normal cloud service, which means that 
+%only a very small slice of cluster resource can be used for the backup purpose.
 
 
-The previous work for storage backup has extensively used  data deduplication techniques can eliminate redundancy globally among different files from different users.
-Backup systems have been developed to use content hash (finger prints) to identify duplicate
+%The previous work for storage backup has extensively used  data deduplication techniques can eliminate redundancy globally among different files from different users.
+Backup systems have been developed to use content hash (fingerprints) to identify duplicate
 content~\cite{venti02,Rhea2008}.
 %,NGmiddleware2011}.
 %Today's commercial data backup systems (e.g. from EMC and NetApp)
@@ -25,7 +25,7 @@ content~\cite{venti02,Rhea2008}.
 Several techniques have been proposed to speedup searching of duplicate
 content. For example,
 Zhu et al.~\cite{bottleneck08} tackle it
-by using an in-memory Bloom filter and prefetch groups of chunk IDs that are likely to be
+by using an in-memory Bloom filter and prefetching groups of chunk IDs that are likely to be
 accessed together with high probability. It takes significant memory resource for filtering and caching.
 %NG et al.~\cite{ NGmiddleware2011}  use
 %a related filtering technique for integrating deduplication in Linux  file system and the memory
@@ -42,9 +42,10 @@ to reduce memory requirement with a tradeoff of the reduced deduplication ratio.
 %lookup  
 In comparison, this paper focuses on  full deduplication without approximation.
 
-Additional inline deduplication techniques are studied in ~\cite{sparseindex09,idedup}. All of the above approaches have focused on
-such inline duplicate detection, namely given a content chunk block, how to detect if it is duplicate instantly
-to trigger the data backup of this block or not before the detection request for the next blocks can be launched. 
+Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,idedup}. All of the above approaches have focused on
+such inline duplicate detection in which  the duplicate detection  speed of an individual block  is critical.
 In our work, this constraint is relaxed and 
-there is a waiting time for many duplicate detection requests. Our goal is to minimizing  computing  resource without
-affecting the overall time of backup. 
+there is a waiting time for many duplicate detection requests. This relaxation is acceptable because 
+in our context, finishing the backup of required VM images within a reasonable time window is more
+important than optimizing individual content block backup requests.
+%affecting the overall time of backup. 
