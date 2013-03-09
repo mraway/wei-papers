@@ -113,14 +113,14 @@ public:
         return size_;
     }
 
-	void Save(ostream& os) {
+	void Save(ofstream& os) {
 		os.write((char *)cksum_, CKSUM_LEN);
 		os.write((char *)&file_id_, sizeof(Block::file_id_));
 		os.write((char *)&size_, sizeof(Block::size_));
 		os.write((char *)&offset_, sizeof(Block::offset_));
 	}
 
-	bool Load(istream& is) {
+	bool Load(ifstream& is) {
 		is.read((char *)cksum_, CKSUM_LEN);
 		if (is.gcount() != CKSUM_LEN)
 			return false;
@@ -233,7 +233,7 @@ public:
         return std::binary_search(blocklist_.begin(), blocklist_.end(), blk);
     }
 
-    void Save(ostream& os) 
+    void Save(ofstream& os) 
     {
         uint32_t num_blocks = blocklist_.size();
         os.write((char *)&num_blocks, sizeof(uint32_t));
@@ -241,7 +241,7 @@ public:
             blocklist_[i].Save(os);
     }
 
-	bool Load(istream& is) 
+	bool Load(ifstream& is) 
     {
 		Block blk;
         uint32_t num_blocks;
