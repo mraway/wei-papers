@@ -4,22 +4,22 @@
 
 We have implemented and evaluated a prototype of our multi-phase deduplication scheme on a Linux cluster
 of multi-core AMD Bulldozer FX8120 and Intel Nehalem E5530 machines.  Objectives of our experimental evaluation are:
-1) Analyze the throughput and effectiveness for a large number of virtual machines.
+1) Analyze the deduplication throughput and effectiveness for a large number of VMs.
 Compare with the data domain approach~\cite{bottleneck08}.
 2) Examine the impacts of buffering during metadata exchange.
 
 %\subsection{Experimental setup}
 
-Our implementation is based on Alibaba's Xen cloud platform~\cite{Aliyun,WeiZhangIEEE}.  
-At Alibaba's Aliyun, each multi-core machine   hosts  up to 25 VMs and 
+Our implementation is based on Alibaba's Xen cloud platform~\cite{Aliyun,WeiZhangIEEE}
+where each multi-core machine   hosts  up to 25 VMs. 
 %We are running our deduplication/backup  service on 100 nodes.
 %Memory usage is about 150MB space per node during backup and
 %the CPU usage is very small during the experiments. 
-based on our study of its production  data,  each VM has about  40GB of storage  data usage on average
-including OS and user data disk.  
 For each VM, the system keeps 10 automatically-backed snapshots in the storage while
 a user may instruct extra snapshots to be saved.
-The backup of VM snapshots is completed within a few  hours every night,
+The backup of VM snapshots is completed within a few  hours every night.
+Based on our study of its production  data,  each VM has about  40GB of storage  data usage on average
+including OS and user data disk. 
 %and that translates to an aggregated backup throughput of 139GB per second, or 500TB per hour.
 %  For 2 hours, every machine can do 139MB/second. For 3 hours, then 92MB/second
 
@@ -49,11 +49,10 @@ We have performed a trace-driven study using  a 1323 VM dataset  collected from 
 %
 %using a dataset containing 10 snapshots of 35 VMs.
 A VM image is  divided into 2 MB fix-sized segments and each segment is divided into 
-variable-sized content blocks ~\cite{similar94,rabin81} with an average size of 4KB.
+variable-sized content blocks ~\cite{similar94} with an average size of 4KB.
 The signature for variable-sized blocks is computed using their SHA-1 hash. 
-The final snapshots are stored in a distributed file system built on the same cluster and local I/O speed is averaged
-about 50MB/second. 
-%The seek cost of each random IO request is about  10 milliseconds.
+The final snapshots are stored in a distributed file system built on the same cluster and local I/O rate
+is averaged about 50MB/second.  The seek cost of each random IO request is about  10 milliseconds.
 %Popularity of data blocks are collected through global counting 
 %and the top 1\% will fall into CDS, as discussed in Section~\ref{sect:crossVM}.
 
@@ -95,18 +94,65 @@ CDS every 1-2 days to catch up the popularity trend.
 %\end{figure}
 
 
+
+The total local disk space usage for each machine is 8.05GB:  5.75GB for global index partitions with 10 snapshots per VM
+and 2.3GB for accumulated requests.
+Level 1 segment dirty bits can identify 78\% of duplicate blocks. For the remaining dirty segments,
+block-wise full cross-VM deduplication can remove about additional 70\% of duplicates.
+Thus the content finally copied to the backup storage is reduced by 93.4\% in total.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.4\textwidth]{mem_time.pdf}
+\caption{ Parallel time when memory limit varies.}
+\label{fig:memory}
+\end{figure}
+
+Figure~\ref{fig:memory} shows the total parallel time in hours to backup 2500 VMs on
+ a 100-node cluster a  when 
+the memory limit imposed on each node varies  from 20MB to 200MB.
+The overall processing time does not have a significant reduction as we increase to 200MB.
+The parallel time includes the first scanning time, 
+of dirty VM segments to generate block fingerprints, data redistribution for request accumulation,
+fingerprint comparison, duplicate summary distribution, and the second scan time for real backup.
+The total time is mainly dominated by  the two scans of dirty VM segments.
+The time for copying to the final backup storage is overlapped with VM scanning.
+%Each scan takes about 1.4 hours.
+The aggregated throughput is  about 8GB per second,
+which is the size of 2500 VM images divided by the parallel time. 
+The result shows the backup with multi-phase deduplication  for all VM images can be 
+completed in about 3.09 hours with the very small resource usage.
+As we vary the cluster size and the number of VMs for backup remains a constant (25),
+the processing time and throughput do not change much. Thus the aggregated throughput
+scales up linearly.
+
+ 
+Table~\ref{tab:overall} shows memory usage and performance when 30MB memory limit is imposed and
+the number of parititons per machine ($q$) varies from 50 to 1500.
+Row 2 shows the memory usage required to load a partition of global index and detection requests,
+varying from 161MB to 5.3MB. With  30MB memory limit,  $q=50$ would not be a viable choice.
+Row 3 is the total time and Row 4 is  the aggregated throughput of  100 nodes.
+%The result shows the backup with multi-phase deduplication  for all VM images can be completed in about 3.09 hours
+%with the very small resource usage.
+Row 5 is  the parallel time if  we use Option 1 with $p\times q$ send buffers 
+described in Section~\ref{sect:arch}. 
+With the large number of buffers, the available space per buffer reduces significantly as $q$ increases, which leads to
+a big increase of IO requests and seek cost.  
+
 \begin{table}[hbt]
-\caption{ Performance of multi-phase deduplication.}
+\caption{ Performance when the number of partitions varies.}
 \begin{center}
 \begin{tabular} {|c|c|c|c|c|c|}
 \hline \#Partitions  & 50 & 275  &450 &  750 &  1500 \\
 \hline Index+request & 161&  29 & 17.9 & 10.7 & 5.3 \\
   (MB)           &  &   &  & &  \\
 
-\hline Time (hrs) & N/A&  3.27 & 3.09 & 3.18 & 3.42 \\
+\hline Total Time  & N/A&  3.27 & 3.09 & 3.18 & 3.42 \\
+  (Hours)           &  &   &  & &  \\
 %\hline Throughput/node & N/A&  85MB/s& 90M & 87 & 81 \\
 \hline Throughput GB/s& N/A&  8.5& 9 & 8.7 & 8.1 \\
-\hline Option 2 time & N/A&  8& 13.3 & 18.7 & 34 \\
+\hline Total time & N/A&  8& 13.3 & 18.7 & 34 \\
+  (Option 1)           &  &   &  & &  \\
 \hline
 \end{tabular}
 \end{center}
@@ -124,25 +170,6 @@ CDS every 1-2 days to catch up the popularity trend.
 %throughput  per node 0.090805785	0.090226551	0.088716799	0.088544242	0.088434748	0.083822728	0.084251822	0.082246387	0.075281044	0.07119164
 %
 %\end{verbatim}
-
-The total local disk space usage for each machine is 8.05GB:  5.75GB for global index partitions and 2.3GB for accumulated requests.
-Table~\ref{tab:overall} shows memory usage and performance when 
-the number of parititons per machine ($q$) varies from 50 to 1500.
-Row 2 shows the memory usage needed to load a partition of global index and detection requests,
-varying from 161MB to 5.35MB. As we impose a constraint of 30MB, then $q=50$ would not be a viable choice.
-%Row 3 shows the major  memory usage is for global index.
-Row 3 is the parallel time which includes the first scanning time, 
-of dirty VM segments to generate block fingerprints, data redistribution for request accumulation,
-fingerprint comparison, duplicate summary distribution, and the second scan time for real backup.
-Row 4 is  the aggregated throughput of  100 nodes, which is  
-the size of 2500 VM images divided by the parallel time. 
-Row 5 is  the aggregated throughput of  100 nodes, which is  the size of 2500 VM images divided by the parallel time. 
-The result shows the backup with multi-phase deduplication  for all VM images can be completed in about 3.09 hours
-with the very small resource usage.
-Row 6 is  the parallel time if  we use Option 2 with $p\times q$ send buffers described in Section~\ref{sect:arch}. 
-With the large number of buffers, the available space per buffer reduces significantly as $q$ increases, which leads to
-a big increase of IO requests and seek cost.  
-
 
 %\begin{figure}
 %  \centering
@@ -163,20 +190,6 @@ a big increase of IO requests and seek cost.
 %Time for two scans: 2.78 2.78 2.78 2.78 2.78
 %\end{verbatim}
 
-\begin{figure}
-\centering
-\includegraphics[width=0.4\textwidth]{mem_time.pdf}
-\caption{ Parallel time when memory limit varies.}
-\label{fig:memory}
-\end{figure}
-
-Figure~\ref{fig:memory} shows the performance data when 
-the memory limit imposed on each node varies  from 20MB to 200MB.
-The overall processing time does not have a significant reduction as we increase to 200MB.
-As Row 2 shows, the time is mainly dominated by  the two scans of dirty VM segments.
-Each scan takes about 1.4 hours.
-Using about 30MB is sufficient to have VM backup completed in parallel 
-within about 3.09 hours.
 
 %Combining OS disks in all the VMs, we see the overall 7.4TB of data is reduced to 512GB. 
 %The extreme binning approach can reduce this data set to 542GB, which is slightly worse. As a reference, 
@@ -197,7 +210,7 @@ the disk for the full index with 2\% false positives. The prefetching cache hit 
 a number in ~\cite{bottleneck08}.
 We measure its  total time including one scan of VM dirty segments in about 1.38 hours.
 That approach takes about 3.19 hours comparable with our scheme while its memory takes
-over 1GB for bloom filters and prefetch cache. That is an significant amount of space,
+over 1GB with 575MB bloom filters and extra space for prefetching cache. That is an significant amount of space,
 competing with other cloud service while memory cost of our setting is  insignificant.
  
 %Our actual cache hit ratio tested is close 90\%.
