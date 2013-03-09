@@ -92,14 +92,14 @@ this cluster  or use another  external storage system.
 %While we assume all machines can process  independent or coordinated
 %deduplication and backup operations in parallel,  
 %our scheme uses a single-thread procedure on each machine to minimize the use of CPU, network bandwidth, and disk bandwidth.
-\subsection{Snapshot Representation}
 
 \begin{figure}
 \centering
-\includegraphics[width=0.4\textwidth]{snapshotdata.pdf}
+\includegraphics[width=0.5\textwidth]{snapshotdata.pdf}
 \caption{ Metadata structure of a VM snapshot.}
 \label{fig:snapshot}
 \end{figure}
+\subsection{Snapshot Representation}
 
 The representation of each snapshot saved in the backup storage
 has a two-level level index data structure in the form of a hierarchical
@@ -117,21 +117,24 @@ For a dirty segment, if one of its blocks is duplicate to another block in the s
 the block recipe contains a reference pointer to the earlier block.
 
 
-\subsection{Processing flow and resource usage}
 
-The data flow of our multi-step duplicate detection is depicted in Figure~\ref{fig:flow}. 
+
+
+\begin{figure*}[tbhp]
+\centering
+\includegraphics[width=0.75\textwidth]{steps.pdf}
+\caption{Processing flow in Phase 1 (VM scan/request accumulation) and Phase  2 (fingerprint comparison and duplicate summary output)
+ for duplicate detection.}
+\label{fig:flow}
+\end{figure*}
+
+\subsection{Processing flow and resource usage}
+The data flow of our multi-phase duplicate detection is depicted in Figure~\ref{fig:flow}. 
 %let $v$ be the total number of virtual machines hosted in  a cluster,  
 %we divide the backup into $k$  iterations. 
-\begin{figure}
-\centering
-\includegraphics[width=0.45\textwidth]{steps.pdf}
-\caption{ Processing steps of duplicate detection.}
-\label{fig:flow}
-\end{figure}
-
-\begin{itemize}
-\item
-The first step is that each machine independently reads  
+%\begin{itemize}
+%\item
+The first phase is that each machine independently reads  
 %$v/k$  
 virtual machine images that need a backup
 and forms duplicate  detection requests. For those segments that have been modified since last backup indicated by 
@@ -156,8 +159,8 @@ much less disk seek overhead.
 %less) than from one machine to another 
 %disk storage startup cost such as seek is much mu
 %Note that we only accumulate requests with their meta data information.
-\item
-The second step is to load disk data and perform duplicate detection at each machine for  all accumulated 
+%\item
+The second phase is to load disk data and perform duplicate detection at each machine for  all accumulated 
 requests one partition at a time.
 % in the partitions.  
 %The system maintains the index of all chunk fingerprints divided in the buckets. 
@@ -182,15 +185,16 @@ when disk buffers are full.
 %When a receive buffer for a VM is  full, the data is written to the local disk storage. 
 %These substeps are repeated as the stream of data is exchanged when each machine compares through all $q$ partitions.
 
-\item The third step is to perform real backup one VM at a time.
-The system loads the duplicate summary of a VM obtained from Step 2, 
+%\item 
+The third phase is to perform real backup one VM at a time.
+The system loads the duplicate summary of a VM obtained from Phase 2, 
 reads  dirty segments of a VM, and output non-duplicate blocks to the final backup 
 storage. Additionally, the global index on each machine is updated with the meta data of new chunk blocks. 
 In this process, if a segment is not dirty, the system only needs to output the segment meta data 
 such as reference pointers to the original segments previously saved in the backup storage.  
 %If a segment is dirty,  the system  use the duplicate summary information from Step 2 for internal 
 %duplicate blocks of this dirty segment and output the remaining non-duplicate blocks to the backup storage.
-\end{itemize}
+%\end{itemize}
 
 %          In fetching non-duplicates,    it is sometime faster that we fetch a large number of consecutive chunk blocks from an accumulated  segment which contains duplicated chunks,  to avoid the random seek overhead.
 
@@ -201,22 +205,22 @@ The  disk storage usage on each machine
 is fairly small for  storing part of global index and
 accumulating  duplicate detection requests that contain fingerprint information.   
 We impose a limit for memory allocated at each machine node to accomplish low-cost deduplication.  
-Memory usage for each step of the above scheme is carefully controlled as follows.
+Memory usage for each phase of the above scheme is carefully controlled as follows.
 \begin{itemize}
-\item For Step 1, the allocated memory for each machine is divided for 
+\item For Phase 1, the allocated memory for each machine is divided for 
 1) a disk buffer to read dirty segments; 2) $2p$ send/receive buffers and $q$ disk buffers.
 
 %1) $p$ send buffers. images, sends the fingerprint of a dirty block to a machine that is responsible for this fingerprint.
 %2) Buffer requests gathered from other machines and divide those requests into $q$ buckets. Once a buffer for each bucket is full, output to the disk storage.
 \item 
-For Step 2,  the allocated memory at each machine is divided for 1) space for hosting a global index partition and 
+For Phase 2,  the allocated memory at each machine is divided for 1) space for hosting a global index partition and 
 the corresponding request partition; 2) $p$ receive buffers and $v$ disk buffers.
 %%accumulating duplicate summary for each targeted VM.   Once  each machine processes a bucket of  duplicate detection requests, 
 %For each machine which hosts $v$  VMs, and will receive messages from many other machines, 
 %the system needs to allocate buffer space for each VM ot accumulate the duplicate summary records. 
 %When a buffer for a VM is full, the result is written to the disk.
 
-\item For Step 3 to  perform the real backup for each VM,
+\item For Phase 3 to  perform the real backup for each VM,
 the allocated memory is divided for 1) a disk buffer to read dirty segments of a VM and   
 write non-duplicate raw blocks to the  backup storage.
 2) summary of duplicate blocks within dirty segments of  a VM.
@@ -234,12 +238,12 @@ A block or a segment can be deleted if its reference count is zero.
 To delete useless  blocks or segments periodically, we read the meta data  of live 
 snapshots and compute the reference count of all blocks and segments  in parallel
 while following the fingerprint-based partitioning.
-Similar to the duplicate pre-detection process, reference counting is conducted in multi-steps. 
-Step 1 is to read  the metadata of snapshots such as segment and block
+Similar to the multi-phase duplicate detection process, reference counting is conducted in multi-phases. 
+Phase  1 is to read  the metadata of snapshots such as segment and block
 recipes and  to accumulate  reference count requests in different machines  in the fingerprint based distribution.
-Step  2 is to count references within each partition and detect those records with zero 
+Phase   2 is to count references within each partition and detect those records with zero 
 reference. 
-%Step 3 is that every VM gathers its z confirmed deletion requests for its content and sends them to the backup storage.
+%Phase 3 is that every VM gathers its z confirmed deletion requests for its content and sends them to the backup storage.
 The backup  data repository logs deletion instructions,  and will periodically perform a compaction operation when 
 its deletion log is too big. 
 %Due to the paper constraint, we will not discuss the deletion operations in details.
