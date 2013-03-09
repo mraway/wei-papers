@@ -232,7 +232,7 @@ write non-duplicate raw blocks to the  backup storage.
 
 {\bf Snapshot deletion.} Each VM will keep a limited number of  automatically-saved VM snapshots and thus
 expired snapshots will be deleted unless its owner explicitly asks for its retention.
-We adopt the idea of mark-and-sweep~\cite{MarkSweep}. 
+We adopt the idea of mark-and-sweep~\cite{Guo2011}. 
 A block or a segment can be deleted if its reference count is zero.
 %As we discussed in Section~\ref{sect:data}, the reference counter is kept in the global index, partitioned among machines. 
 To delete useless  blocks or segments periodically, we read the meta data  of live 
@@ -254,4 +254,4 @@ its deletion log is too big.
 
 %This compaction will make a copy of all the data in use, and remove the obsoleted blocks. However, after such a compaction, many block offsets will be changed, as a result, such changes are sent to the bucket job queue so that changes will be reflected upon the next bucket update.
 
-%Since we maintain a single copy of each block information in the bucket index, and there is at most one bucket worker operating the bucket index at one time, it it safe to do the simple reference counting rather than mark-and-sweep.
+%Since we maintain a single copy of each block information in the bucket index, and there is at most one bucket worker operating the bucket index at one time, it it safe to do the simple referencec ounting rather than mark-and-sweep.
