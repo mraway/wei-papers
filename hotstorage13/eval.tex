@@ -156,19 +156,26 @@ a big increase of IO requests and seek cost.
 %Some of  OS disks are modified frequently and in some cases,  users even store a large amount of user data on
 
 
-\begin{verbatim}
-q= is chosen between 500 or 100
-Memory limit:   20 30M   50M  75M  100M  200M
-Time:          3.2  3.11   3  2.99 2.96  2.95
-Time for two scans: 2.78 2.78 2.78 2.78 2.78
-\end{verbatim}
+%\begin{verbatim}
+%q= is chosen between 500 or 100
+%Memory limit:   20 30M   50M  75M  100M  200M
+%Time:          3.2  3.11   3  2.99 2.96  2.95
+%Time for two scans: 2.78 2.78 2.78 2.78 2.78
+%\end{verbatim}
 
-Table~\ref{tab:memory} shows the performance data when 
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{mem_time.pdf}
+\caption{ Parallel time when memory limit imposed varies from 20MB to 200MB.}
+\label{fig:memory}
+\end{figure}
+
+Figure~\ref{tab:memory} shows the performance data when 
 the memory limit imposed on each node varies  from 20MB to 200MB.
 The overall processing time does not have a significant reduction as we increase to 200MB.
 As Row 2 shows, the time is mainly dominated by  the two scans of dirty VM segments.
 Each scan takes about 1.4 hours.
-Thus we conclude that using about 30MB is sufficient to have VM backup completed in parallel 
+Using about 30MB is sufficient to have VM backup completed in parallel 
 within about 3.09 hours.
 
 %Combining OS disks in all the VMs, we see the overall 7.4TB of data is reduced to 512GB. 
