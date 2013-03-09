@@ -22,10 +22,8 @@ VMs can migrate around in the cloud.
 
 Among the three factors - time, cost and de-deduplication efficiency, one of them has to be compromised for the other two. For instance, if we were build a deduplication system that has a high rate of duplication detection and has a very fast response time, 
 it would need a lot of memory to hold fingerprint index and do fast comparison.  This leads to a compromise on cost. 
-The objective of our project is to lower the cost incurred while sustaining the highest de-duplication ratio. 
-%at the expense of processing latency.  
-At the same time, we ensure the aggregate read/write throughput of the system 
-is sufficiently scalable  for dealing with backup of a large number of virtual machine images. 
+The objective of our project is to lower the cost incurred while sustaining the highest de-duplication ratio
+and  the sufficient deduplication  throughput for dealing with a large number of virtual machine images. 
 % This business model partially  resembles that of Amazon Glacier.
 
 %Our solution  only uses a very small amount of memory space during backup while completing  snapshot backup and 
@@ -41,7 +39,7 @@ Fingerprint based partitioning allows highly parallel duplicate pre-detection  a
 reference counting management.  
 % as the entire process can also be divided into a
 %parition-wise  deletion. 
-With careful parallelism management and message buffering during cross-machine data exchange,
+With careful parallelism and buffer  management,
 this pre-detection scheme can provide  a sufficient throughput for backup.   
 
 

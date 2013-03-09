@@ -10,9 +10,9 @@ At a cloud cluster node, each instance of a guest operating system runs on a vir
 represented as virtual disk image files in the host operating system.
 For VM snapshot backup, file-level semantics are normally not provided.
 Snapshot operations are taken place at the virtual device driver level, which means no fine-grained file system metadata can be used to determine the changed data. Only raw access information at disk block level are provided. 
-Each physical hosts many VMs and a cloud cluster has  petabytes of data that need to be backed up at daily basis, 
-if not more frequently. But at the same time snapshot tasks must not affect the normal cloud service, 
-which means that ideally only a very small slice of CPU and memory can be used for the backup purpose.
+Each physical machine hosts many VMs and petabytes of data in a cloud cluster need a frequent  backup. 
+Ideally speaking, snapshot backup must not affect the normal cloud service, which means that 
+only a very small slice of cluster resource can be used for the backup purpose.
 
 
 The previous work for storage backup has extensively used  data deduplication techniques can eliminate redundancy globally among different files from different users.
@@ -34,8 +34,9 @@ accessed together with high probability. It takes significant memory resource fo
 %into large segments, the chunk IDs in each incoming segment are sampled and the segment is
 %deduplicated by comparing with the chunk IDs of only a few carefully selected backed up segments.
 %These are segments that share many chunk IDs with the incoming segment with high probability.
-The approximation techniques are studied in Deepavali et al.~\cite{extreme_binning09} and
-Zhang et al.~\cite{WeiZhangIEEE}  to reduce memory requirement with a tradeoff of the reduced deduplication ratio.
+The approximation techniques are studied in~\cite{extreme_binning09,WeiZhangIEEE}  
+%Deepavali et al.~\cite{extreme_binning09} and Zhang et al.~\cite{WeiZhangIEEE}  
+to reduce memory requirement with a tradeoff of the reduced deduplication ratio.
 %use fingerprint-based file similarity  and group similar files into the same physical location (bins) to deduplicate against each other.
 %That leads  to a smaller amount of memory usage for storing meta data in fingerprint
 %lookup  

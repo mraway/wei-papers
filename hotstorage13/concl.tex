@@ -8,11 +8,11 @@ nodes, and only load one partition at time at each machine for in-memory compari
 That leads to an insignificant system resource, which  does not compete with the existing cloud services.
 The tradeoff is that every machine has to read virtual machine images twice to accomplish backup. 
 When the cluster size changes, our experiment also shows a linear speedup of overall throughputs
-because highly parallel fingerprint comparisons.  The cluster  of 100 nodes can deliver about 
-8.8GB per second deduplication performance.  
-We currently assume each machine performs backup for all VMs hosted and in practice, the system only
-needs to backup active VMs and thus the overall backup time would actually be much smaller.
-Our future  work is to conduct more scalability studies and experiments with more production trace data.
+because highly parallel fingerprint comparisons.  The cluster  of 100 nodes and 2500 VMs can deliver about 
+8.8GB per second deduplication performance.  We expect the system performs well in a larger cloud 
+setting and our future work is to conduct more experiments with more production trace data.
+%We currently assume each machine performs backup for all VMs hosted and in practice, the system only
+%needs to backup active VMs and thus the overall backup time would actually be much smaller.
 
 %in parallel among all machines and  each machine full duplication detection is 
 %Another optimization is to allocate and control
@@ -34,9 +34,9 @@ Our future  work is to conduct more scalability studies and experiments with mor
 
 %The memory requirement and disk usage for the proposed solution is very small while the overall thoughput
 %and backup process timing is not compromised. 
-Our experiments show that  the proposed scheme 
-uses a very small amount of system resources while accomplishing a satisfactory backup throughput
-in a large cloud setting.
+%Our experiments show that  the proposed scheme 
+%uses a very small amount of system resources while accomplishing a satisfactory backup throughput
+%in a large cloud setting.
 %which only reqiires a very small amount of memory and CPU resource.  
 %Experimental results  show the proposed scheme  can achieve high deduplication ratio while using
 %a  small  amount of cloud resources. 
