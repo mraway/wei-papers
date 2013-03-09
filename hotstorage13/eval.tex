@@ -8,7 +8,7 @@ of multi-core AMD Bulldozer FX8120 and Intel Nehalem E5530 machines.  Objectives
 Compare with the data domain approach~\cite{bottleneck08}.
 2) Examine the impacts of buffering during metadata exchange.
 
-\subsection{Experimental setup}
+%\subsection{Experimental setup}
 
 Our implementation is based on Alibaba's Xen cloud platform~\cite{Aliyun,WeiZhangIEEE}.  
 At Alibaba's Aliyun, each multi-core machine   hosts  up to 25 VMs and 
@@ -96,7 +96,7 @@ CDS every 1-2 days to catch up the popularity trend.
 
 
 \begin{table}[hbt]
-\caption{ Performance of multi-phase backup with deduplication.}
+\caption{ Performance of multi-phase deduplication.}
 \begin{center}
 \begin{tabular} {|c|c|c|c|c|c|}
 \hline \#Partitions  & 50 & 275  &450 &  750 &  1500 \\
@@ -165,12 +165,12 @@ a big increase of IO requests and seek cost.
 
 \begin{figure}
 \centering
-\includegraphics[width=0.5\textwidth]{mem_time.pdf}
-\caption{ Parallel time when memory limit imposed varies from 20MB to 200MB.}
+\includegraphics[width=0.4\textwidth]{mem_time.pdf}
+\caption{ Parallel time when memory limit varies.}
 \label{fig:memory}
 \end{figure}
 
-Figure~\ref{tab:memory} shows the performance data when 
+Figure~\ref{fig:memory} shows the performance data when 
 the memory limit imposed on each node varies  from 20MB to 200MB.
 The overall processing time does not have a significant reduction as we increase to 200MB.
 As Row 2 shows, the time is mainly dominated by  the two scans of dirty VM segments.

@@ -99,7 +99,7 @@ this cluster  or use another  external storage system.
 \caption{ Metadata structure of a VM snapshot.}
 \label{fig:snapshot}
 \end{figure}
-\subsection{Snapshot Representation}
+%\subsection{Snapshot Representation}
 
 The representation of each snapshot saved in the backup storage
 has a two-level level index data structure in the form of a hierarchical
@@ -123,12 +123,11 @@ the block recipe contains a reference pointer to the earlier block.
 \begin{figure*}[tbhp]
 \centering
 \includegraphics[width=0.75\textwidth]{steps.pdf}
-\caption{Processing flow in Phase 1 (VM scan/request accumulation) and Phase  2 (fingerprint comparison and duplicate summary output)
- for duplicate detection.}
+\caption{Processing flow of Phases 1  and 2.}
 \label{fig:flow}
 \end{figure*}
 
-\subsection{Processing flow and resource usage}
+%\subsection{Processing flow and resource usage}
 The data flow of our multi-phase duplicate detection is depicted in Figure~\ref{fig:flow}. 
 %let $v$ be the total number of virtual machines hosted in  a cluster,  
 %we divide the backup into $k$  iterations. 
