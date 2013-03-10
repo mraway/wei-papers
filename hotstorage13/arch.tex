@@ -14,7 +14,7 @@
 We consider deduplication in two levels. The first-level of data deduplication can be accomplished efficiently and 
 inexpensively using a coarse-grain segment-level  dirty bit based detection in the OS level  to 
 identify version difference from the previous snapshot to the current snapshot.  
-Version-based detection has been used in the previous work~\cite{Clements2009,Vrable2009,TanIPDPS2011} and
+Version-based detection has been used in the previous work~\cite{Clements2009,cumulus09,TanIPDPS2011} and
 we emphasize a segment-level coarse-grain setting to reduce the efforts in detection and maintaining dirty bits. 
 Our experiment with Alibaba's production dataset shows that over 70 percentage of 
 duplicates can be detected using segment-based dirty bits when the segment size is as large as 2M bytes.  
@@ -122,7 +122,7 @@ the block recipe contains a reference pointer to the earlier block.
 
 \begin{figure*}[tbhp]
 \centering
-\includegraphics[width=0.75\textwidth]{steps.pdf}
+\includegraphics[width=0.95\textwidth]{steps.pdf}
 \caption{Processing flow of Phases 1  and 2.}
 \label{fig:flow}
 \end{figure*}
