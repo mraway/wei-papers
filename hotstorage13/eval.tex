@@ -2,10 +2,10 @@
 \section{Evaluation}
 \label{sect:exper}
 
-We have implemented and evaluated a prototype of our multi-phase deduplication scheme on a Linux cluster
+We have implemented and evaluated a prototype of our multi-stage deduplication scheme on a Linux cluster
 of multi-core AMD Bulldozer FX8120 and Intel Nehalem E5530 machines.  Objectives of our experimental evaluation are:
 1) Analyze the deduplication throughput and effectiveness for a large number of VMs.
-Compare with the data domain approach~\cite{bottleneck08}.
+%Compare with the data domain approach~\cite{bottleneck08}.
 2) Examine the impacts of buffering during metadata exchange.
 
 %\subsection{Experimental setup}
@@ -97,9 +97,9 @@ CDS every 1-2 days to catch up the popularity trend.
 
 The total local disk space usage for each machine is 8.05GB:  5.75GB for global index partitions with 10 snapshots per VM
 and 2.3GB for accumulated requests.
-Level 1 segment dirty bits can identify 78\% of duplicate blocks. For the remaining dirty segments,
-block-wise full cross-VM deduplication can remove about additional 70\% of duplicates.
-Thus the content finally copied to the backup storage is reduced by 93.4\% in total.
+Level 1 segment dirty bits identify 78\% of duplicate blocks. For the remaining dirty segments,
+block-wise full deduplication removes about additional 74.5\% of duplicates.
+The final content copied to the backup storage is reduced by 94.4\% in total.
 
 \begin{figure}
 \centering
@@ -120,7 +120,7 @@ The time for copying to the final backup storage is overlapped with VM scanning.
 %Each scan takes about 1.4 hours.
 The aggregated throughput is  about 8GB per second,
 which is the size of 2500 VM images divided by the parallel time. 
-The result shows the backup with multi-phase deduplication  for all VM images can be 
+The result shows the backup with multi-stage deduplication  for all VM images can be 
 completed in about 3.09 hours with the very small resource usage.
 As we vary the cluster size and the number of VMs for backup remains a constant (25),
 the processing time and throughput do not change much. Thus the aggregated throughput
@@ -144,13 +144,13 @@ a big increase of IO requests and seek cost.
 \begin{center}
 \begin{tabular} {|c|c|c|c|c|c|}
 \hline \#Partitions  & 50 & 275  &450 &  750 &  1500 \\
-\hline Index+request & 161&  29 & 17.9 & 10.7 & 5.3 \\
+\hline Index+request & 156&  28.4 & 17.4 & 10.7 & 5.2 \\
   (MB)           &  &   &  & &  \\
 
-\hline Total Time  & N/A&  3.27 & 3.09 & 3.18 & 3.42 \\
+\hline Total Time  & N/A&  2.9 & 2.91 & 3 & 3.1 \\
   (Hours)           &  &   &  & &  \\
 %\hline Throughput/node & N/A&  85MB/s& 90M & 87 & 81 \\
-\hline Throughput GB/s& N/A&  8.5& 9 & 8.7 & 8.1 \\
+\hline Throughput GB/s& N/A&  9.6& 9.5 & 9.3 & 8.9 \\
 \hline Total time & N/A&  8& 13.3 & 18.7 & 34 \\
   (Option 1)           &  &   &  & &  \\
 \hline
@@ -185,9 +185,11 @@ a big increase of IO requests and seek cost.
 
 %\begin{verbatim}
 %q= is chosen between 500 or 100
-%Memory limit:   20 30M   50M  75M  100M  200M
-%Time:          3.2  3.11   3  2.99 2.96  2.95
-%Time for two scans: 2.78 2.78 2.78 2.78 2.78
+%Memory limit:   20 35M   50M  75M  100M  200M
+%req buf	    30M   40M  60   90M     180M
+%q:          450     275    275   275 275   
+%Time:          3.06  2.9  2.86  2.84 2.834  2.823
+%Time for two scans: 2.63  2.63
 %\end{verbatim}
 
 
@@ -203,7 +205,8 @@ a big increase of IO requests and seek cost.
 %our CDS-based level 3 approach  can save additional 50\% storage space because many of level 2 block
 %content can be eliminated using the CDS also.
 
-We have also compared our multi-phase detection approach with an inline approach by combining
+\comments{
+We have also compared our multi-stage detection approach with an inline approach by combining
 dirtybit segment  detection and  the data domain method~\cite{bottleneck08}. 
 The bloomer filter setting  results a 1:10 ratio of index reduction for in-memory search before visiting
 the disk for the full index with 2\% false positives. The prefetching cache hit ratio is set to be 98.96\% based
@@ -212,5 +215,5 @@ We measure its  total time including one scan of VM dirty segments in about 1.38
 That approach takes about 3.19 hours comparable with our scheme while its memory takes
 over 1GB with 575MB bloom filters and extra space for prefetching cache. That is an significant amount of space,
 competing with other cloud service while memory cost of our setting is  insignificant.
- 
+} 
 %Our actual cache hit ratio tested is close 90\%.

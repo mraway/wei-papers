@@ -18,15 +18,17 @@ Snapshot operations are taken place at the virtual device driver level, which me
 %The previous work for storage backup has extensively used  data deduplication techniques can eliminate redundancy globally among different files from different users.
 Backup systems have been developed to use content hash (fingerprints) to identify duplicate
 content~\cite{venti02,Rhea2008}.
+Offline deduplication is used in ~\cite{EMC,NetAppOffline} to remove previously written duplicate blocks during idle time.
 %,NGmiddleware2011}.
 %Today's commercial data backup systems (e.g. from EMC and NetApp)
 %\cite{emc_avamar}\cite{datadomain_whitepaper}
 %use a variable-size chunking algorithm to detect duplicates in file data~\cite{similar94,hydrastor09}.
 Several techniques have been proposed to speedup searching of duplicate
 content. For example,
-Zhu et al.~\cite{bottleneck08} tackle it
-by using an in-memory Bloom filter and prefetching groups of chunk IDs that are likely to be
-accessed together with high probability. It takes significant memory resource for filtering and caching.
+The data domain method ~\cite{bottleneck08} 
+uses  in-memory Bloom filter and maintains a prefetch cache for data blocks  which may be
+accessed with high probability.  An improvement to this work with parallelization is in ~\cite{DEBAR}.
+Still such methods use  a significant amount of memory resource for filtering and caching.
 %NG et al.~\cite{ NGmiddleware2011}  use
 %a related filtering technique for integrating deduplication in Linux  file system and the memory
 %consumed is up to 2GB for a single machine. That is still too big in our context discussed below.
@@ -42,10 +44,18 @@ to reduce memory requirement with a tradeoff of the reduced deduplication ratio.
 %lookup  
 In comparison, this paper focuses on  full deduplication without approximation.
 
-Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,idedup}. All of the above approaches have focused on
-such inline duplicate detection in which  the duplicate detection  speed of an individual block  is critical.
+Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,idedup}. 
+All of the above approaches have focused on
+such inline duplicate detection in which  deduplication of an individual block  is on the critical write path.
 In our work, this constraint is relaxed and 
 there is a waiting time for many duplicate detection requests. This relaxation is acceptable because 
 in our context, finishing the backup of required VM images within a reasonable time window is more
-important than optimizing individual content block backup requests.
+important than optimizing individual VM block  backup requests.
+
+%It should be emphasized that our approach does not  accumulate raw backup data temporarily for deduplication
+%and does not require a significant amount of extra storage capacity.
+%Our strategy is to perform a drity  scan to collect
+% a small amount of disk space  to accumulate
+%deduplicate requests along with necessary meta data, and perform actual backup after deduplicate detection completes.
+  
 %affecting the overall time of backup. 
