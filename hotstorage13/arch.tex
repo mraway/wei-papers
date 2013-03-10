@@ -40,7 +40,7 @@ Our approach is to perform duplicate detection first before actual data backup.
 That requires a pre-scanning of  data  blocks in dirty VM segments  and after that, real backup  for those non-duplicates
 is conducted. That does incur an extra  round of local VM block reading while avoiding inline 
 deduplication and leading to a much smaller resource requirement.  
-During VM reading, detection requests can be accumulated on the disk 
+During VM reading, detection requests are accumulated on the disk 
 for a period time  in a  partitioned manner.  Aggregated duplicate requests can be processed partition by partition. 
 %We also accumulate the delete requests and perform them partition by partitions. 
 Since each partition corresponds to a small portion of global content index, the cost to 
@@ -58,7 +58,7 @@ Initial VM data reading follows the VM distribution among machines and the detec
 need to be collected following the VM distribution. 
 Therefore, there are two all-to-all data redistribution operations involved.
 One is to map detection requests from VM-based distribution to fingerprint based distribution.  
-One is to map duplicate summary from fingerprint-based distribution to VM based distribution.  
+Another one  is to map duplicate summary from fingerprint-based distribution to VM based distribution.  
 The redistributed data needs to be accumulated on the disk to minimize the use of memory.
 To minimize the excessive disk seek cost, outgoing or incoming data exchange messages need to be buffered to bundle small messages.
 Given there are $p\times q$ partitions where $p$ is the number of machines and $q$ is the number of fingerprint-based partitions
@@ -124,7 +124,8 @@ the block metadata contains a reference pointer to the earlier block.
 \centering
 
 \includegraphics[width=0.95\textwidth]{steps.pdf}
-\caption{Processing flow of Stages  1,  2 and 3.}
+\caption{Processing flow of Stage  1 (dirty segment scan and request accumulation), Stage 2 
+(fingerprint comparison and summary output),  and Stage 3 (non-duplicate block backup).}
 \label{fig:flow}
 \end{figure*}
 
@@ -143,16 +144,17 @@ information such as chunk fingerprints,  sends a request to a proper machine, ac
 received requests into a partition on the local temporary disk storage. 
 The partition mapping is using a hash function applied to the content fingerprint. 
 Assuming all machines have a  homogeneous resource configuration, each machine is evenly  assigned with
-$q$ parititons of content hash and accumulates corresponding requests on the disk. 
-There are two options to assign buffers in each machine to buffer requests for each partition.
+$q$ parititons of global index and accumulates corresponding requests on the disk. 
+There are two options to allocate buffers at each machine. 
 1) Each machine has  $p\times q$ send buffers corresponding to $p\times q$ partitions in the cluster
 since a content block in a VM image of this machine can be sent to any of these partitions.
-2) Each machine allocates $p$ send buffers to deliver requests to $p$ machines and 
+2) Each machine allocates $p$ send buffers to deliver requests to $p$ machines; it allocates 
 $p$ receive buffers to collect requests  from other machines.
 Then the system copies requests from each of $p$ receive buffers to  $q$ local request buffers,
 and outputs each request buffer to one of the request partitions on the disk
-when this request buffer becomes full.  Option 2 is much more efficient than Option 1 because $2p+q$ is much smaller than
-$p\times q$. As a result, each buffer has a bigger size to accumulate requests and that means
+when this request buffer becomes full.  Option 2 depicted in Figure~\ref{fig:flow}
+is much more efficient than Option 1 because $2p+q$ is much smaller than
+$p\times q$. As a result, each buffer in Option 2 has a bigger size to accumulate requests and that means
 less disk seek overhead.
 
 %We assume that the startup cost for network message sending is  much more less (e.g. an order of magnitude
@@ -186,14 +188,16 @@ when request buffers are full.
 %\item 
 Stage 3 is to perform real backup one VM at a time.
 The system loads the duplicate summary of a VM, 
-reads  dirty segments of a VM, and output non-duplicate blocks to the final backup 
+reads  dirty segments of a VM, and outputs non-duplicate blocks to the final backup 
 storage. Additionally, the global index on each machine is updated with the meta data of new chunk blocks. 
 When a segment is not dirty, the system only needs to output the segment meta data such as a reference pointer. 
 There is an option to directly read dirty blocks instead of fetching a dirty segment which can include duplicate
 blocks. Our experiment shows that it is faster to read dirty segments in the tested workload.
-Another issue is that during global index update, the system  may find some  blocks with the same fingerprint may be 
-created redundantly. For example, two different VM blocks have the same content block fingerprint while the  global 
-index does not have such a fingerprint. The redundancy is discovered and logged during the index update and can be repaired
+Another issue is that during global index update after new block creation in the backup storage,
+the system  may find some  blocks with the same fingerprint may be 
+created redundantly. For example, two different VM blocks that have the same  fingerprint are not detected
+because  the  global index has not contained such a fingerprint yet. 
+The redundancy is discovered and logged during the index update and can be repaired
 periodically when necessary.  Our experience is that there is a redundancy during the initial snapshot backup and once 
 that is repaired, the percentage of redundant blocks due to concurrent processing  is insignificant.
 

@@ -3,23 +3,32 @@
 \label{sect:exper}
 
 We have implemented and evaluated a prototype of our multi-stage deduplication scheme on a Linux cluster
-of multi-core AMD Bulldozer FX8120 and Intel Nehalem E5530 machines.  Objectives of our experimental evaluation are:
+of multi-core AMD Bulldozer FX8120 and Intel Nehalem E5530 machines.  
+Our implementation is based on Alibaba's Xen cloud platform~\cite{Aliyun,WeiZhangIEEE}.
+
+Objectives of our evaluation are:
 1) Analyze the deduplication throughput and effectiveness for a large number of VMs.
 %Compare with the data domain approach~\cite{bottleneck08}.
 2) Examine the impacts of buffering during metadata exchange.
 
 %\subsection{Experimental setup}
 
-Our implementation is based on Alibaba's Xen cloud platform~\cite{Aliyun,WeiZhangIEEE}
-where each multi-core machine   hosts  up to 25 VMs. 
 %We are running our deduplication/backup  service on 100 nodes.
 %Memory usage is about 150MB space per node during backup and
 %the CPU usage is very small during the experiments. 
+We have performed a trace-driven study using  a 1323 VM dataset  collected from 100 
+Alibaba Aliyun's cloud nodes~\cite{WeiZhangIEEE}.
+Each multi-core machine   hosts  up to 25 VMs. 
 For each VM, the system keeps 10 automatically-backed snapshots in the storage while
 a user may instruct extra snapshots to be saved.
 The backup of VM snapshots is completed within a few  hours every night.
 Based on our study of its production  data,  each VM has about  40GB of storage  data usage on average
-including OS and user data disk. 
+including OS and user data disk.
+Each VM image is  divided into 2 MB fix-sized segments and each segment is divided into 
+variable-sized content blocks ~\cite{similar94} with an average size of 4KB.
+The signature for variable-sized blocks is computed using their SHA-1 hash. 
+The final snapshots are stored in a distributed file system built on the same cluster and the average I/O bandwidth
+of local storage is about 50MB/second.  The seek cost of each random IO request is about  10 milliseconds.
 %and that translates to an aggregated backup throughput of 139GB per second, or 500TB per hour.
 %  For 2 hours, every machine can do 139MB/second. For 3 hours, then 92MB/second
 
@@ -36,7 +45,6 @@ including OS and user data disk.
 %We have sampled a data set from 1323 real user VMs from a cluster with 100 nodes 
 %to measure the effectiveness of our scheme.
 
-We have performed a trace-driven study using  a 1323 VM dataset  collected from 100 Aliyun's cloud nodes~\cite{WeiZhangIEEE}.
 %In this dataset, there are 10 snapshots per each VM user and the total amount of space 
 %investigated is 17.5 terabytes.
 %This dataset contas compose of 35 VMs from 7 popular OSes: 
@@ -48,11 +56,6 @@ We have performed a trace-driven study using  a 1323 VM dataset  collected from 
 %study the CDS deduplication against user-related data. The overall size of dataset2 is 23.5 TB.
 %
 %using a dataset containing 10 snapshots of 35 VMs.
-A VM image is  divided into 2 MB fix-sized segments and each segment is divided into 
-variable-sized content blocks ~\cite{similar94} with an average size of 4KB.
-The signature for variable-sized blocks is computed using their SHA-1 hash. 
-The final snapshots are stored in a distributed file system built on the same cluster and local I/O rate
-is averaged about 50MB/second.  The seek cost of each random IO request is about  10 milliseconds.
 %Popularity of data blocks are collected through global counting 
 %and the top 1\% will fall into CDS, as discussed in Section~\ref{sect:crossVM}.
 
@@ -110,8 +113,8 @@ The final content copied to the backup storage is reduced by 94.4\% in total.
 
 Figure~\ref{fig:memory} shows the total parallel time in hours to backup 2500 VMs on
  a 100-node cluster a  when 
-the memory limit imposed on each node varies  from 20MB to 200MB.
-The overall processing time does not have a significant reduction as we increase to 200MB.
+the memory limit $M$ imposed on each node varies  from 20MB to 200MB.
+The overall processing time does not have a significant reduction as $M$ increases to 200MB.
 The parallel time includes the first scanning time, 
 of dirty VM segments to generate block fingerprints, data redistribution for request accumulation,
 fingerprint comparison, duplicate summary distribution, and the second scan time for real backup.
@@ -121,17 +124,15 @@ The time for copying to the final backup storage is overlapped with VM scanning.
 The aggregated throughput is  about 9.6GB per second,
 which is the size of 2500 VM images divided by the parallel time. 
 The result shows the backup with multi-stage deduplication  for all VM images can be 
-completed in about 2.9 hours with the very small resource usage.
-As we vary the cluster size and the number of VMs for backup remains a constant (25),
-the processing time and throughput do not change much. Thus the aggregated throughput
-scales up linearly.
+completed in about 2.9 hours with 35MB memory and 8GB disk overhead.
+As we vary the cluster size $p$,  the parallel time does  not change much, and  the aggregated throughput
+scales up linearly since the number of VMs is  $25p$. 
 
- 
-Table~\ref{tab:overall} shows memory usage and performance when 35MB memory limit is imposed and
+Table~\ref{tab:overall} shows performance change when memory limit $M$=35MB is imposed and
 the number of parititons per machine ($q$) varies from 50 to 1500.
-Row 2 shows the memory usage required to load a partition of global index and detection requests,
-varying from 156MB to 5.2MB. With  35MB memory limit,  $q=50$ would not be a viable choice.
-Row 3 is the total time and Row 4 is  the aggregated throughput of  100 nodes.
+Row 2 is the memory space required to load a partition of global index and detection requests.
+When $q=50$, the required memory is 156MB, which  is  not  a viable choice  under  constraint $M=$35MB.  
+Row 3 is the parallel time and Row 4 is  the aggregated throughput of  100 nodes.
 %The result shows the backup with multi-phase deduplication  for all VM images can be completed in about 3.09 hours
 %with the very small resource usage.
 Row 5 is  the parallel time if  we use Option 1 with $p\times q$ send buffers 
@@ -140,7 +141,7 @@ With the large number of buffers, the available space per buffer reduces signifi
 a big increase of IO requests and seek cost.  
 
 \begin{table}[hbt]
-\caption{ Performance when the number of partitions varies.}
+\caption{ Performance when the number of partitions per machine node varies and $M$=35MB is imposed.}
 \begin{center}
 \begin{tabular} {|c|c|c|c|c|c|}
 \hline \#Partitions  & 50 & 275  &450 &  750 &  1500 \\

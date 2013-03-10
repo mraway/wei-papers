@@ -20,8 +20,8 @@ of old snapshot competes computing resource also. That is because data dependenc
 by duplicate relationship among snapshots  adds processing complexity.
 % especially when  VMs can migrate around in the cloud. 
 
-Among the three factors - time, cost and de-deduplication efficiency, one of them has to be compromised for the other two. For instance, if we were build a deduplication system that has a high rate of duplication detection and has a very fast response time, 
-it would need a lot of memory to hold fingerprint index and do fast comparison.  This leads to a compromise on cost. 
+Among the three factors - time, cost and de-deduplication efficiency, one of them has to be compromised for the other two. For instance, if we were building a deduplication system that has a high rate of duplication detection and has a very fast response time, 
+it would need a lot of memory to hold fingerprint index and cache.  This leads to a compromise on cost. 
 The objective of our project is to lower the cost incurred while sustaining the highest de-duplication ratio
 and  the sufficient deduplication  throughput for dealing with a large number of VM images. 
 % This business model partially  resembles that of Amazon Glacier.
@@ -29,7 +29,7 @@ and  the sufficient deduplication  throughput for dealing with a large number of
 %Our solution  only uses a very small amount of memory space during backup while completing  snapshot backup and 
 %deletion in a reasonable amount of time. 
 The traditional approach to  deduplication for backup is an inline approach which follows
-a sequence of VM block reading, duplicate detection,  and non-duplicate  block write to the 
+a sequence of block reading, duplicate detection,  and non-duplicate  block write to the 
 backup storage.  
 Our key idea  is to  first perform parallel duplicate detection for VM content blocks 
 among all machines before performing actual data backup. Each machine
