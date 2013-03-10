@@ -1,21 +1,21 @@
 \section{Conclusion Remarks}
 \label{sect:final}
 
-The contributing  of this work is a low-cost multi-phase parallel deduplication solution
+The contributing  of this work is a low-cost multi-stage parallel deduplication solution
 using a non-inline approach. Because of separation  of duplicate detection and actual backup,
 we are able to evenly distribute  fingerprint comparison among clustered machine
 nodes, and only load one partition at time at each machine for in-memory comparison.
 That leads to an insignificant system resource, which  does not compete with the existing cloud services.
 The tradeoff is that every machine has to read virtual machine images twice to accomplish backup
-and that some deduplication requests are delayed for phased processing.  But the overall 
+and that some deduplication requests are delayed for staged processing.  But the overall 
 deduplication time and throughput for VMs that need a night time backup are satisfactory 
-with about 9GB per second for 2500 VMs in the evaluated case.
+with about 9.6GB per second for 2500 VMs in the evaluated case.
 %When the cluster size changes, our experiment also shows a linear speedup of overall throughputs
 %because highly parallel fingerprint comparisons.  
 %The cluster  of 100 nodes and 2500 VMs can deliver about 
 %8.8GB per second deduplication performance.  We expect the system performs well in a larger cloud 
 %setting and 
-%Our future work is to conduct more experiments with more production trace data.
+Our future work is to conduct more experiments with production workloads.
 %We currently assume each machine performs backup for all VMs hosted and in practice, the system only
 %needs to backup active VMs and thus the overall backup time would actually be much smaller.
 
