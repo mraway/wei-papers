@@ -95,8 +95,8 @@ CDS every 1-2 days to catch up the popularity trend.
 
 
 
-The total local disk space usage for each machine is 8.05GB:  5.75GB for global index partitions with 10 snapshots per VM
-and 2.3GB for accumulated requests.
+The total local disk usage on
+each machine is about 8GB for duplicate detection purpose and most of them for global index. 
 Level 1 segment dirty bits identify 78\% of duplicate blocks. For the remaining dirty segments,
 block-wise full deduplication removes about additional 74.5\% of duplicates.
 The final content copied to the backup storage is reduced by 94.4\% in total.
@@ -118,19 +118,19 @@ fingerprint comparison, duplicate summary distribution, and the second scan time
 The total time is mainly dominated by  the two scans of dirty VM segments.
 The time for copying to the final backup storage is overlapped with VM scanning.
 %Each scan takes about 1.4 hours.
-The aggregated throughput is  about 8GB per second,
+The aggregated throughput is  about 9.6GB per second,
 which is the size of 2500 VM images divided by the parallel time. 
 The result shows the backup with multi-stage deduplication  for all VM images can be 
-completed in about 3.09 hours with the very small resource usage.
+completed in about 2.9 hours with the very small resource usage.
 As we vary the cluster size and the number of VMs for backup remains a constant (25),
 the processing time and throughput do not change much. Thus the aggregated throughput
 scales up linearly.
 
  
-Table~\ref{tab:overall} shows memory usage and performance when 30MB memory limit is imposed and
+Table~\ref{tab:overall} shows memory usage and performance when 35MB memory limit is imposed and
 the number of parititons per machine ($q$) varies from 50 to 1500.
 Row 2 shows the memory usage required to load a partition of global index and detection requests,
-varying from 161MB to 5.3MB. With  30MB memory limit,  $q=50$ would not be a viable choice.
+varying from 156MB to 5.2MB. With  35MB memory limit,  $q=50$ would not be a viable choice.
 Row 3 is the total time and Row 4 is  the aggregated throughput of  100 nodes.
 %The result shows the backup with multi-phase deduplication  for all VM images can be completed in about 3.09 hours
 %with the very small resource usage.
