@@ -184,15 +184,20 @@ a big increase of IO requests and seek cost.
 %Some of  OS disks are modified frequently and in some cases,  users even store a large amount of user data on
 
 
+\comments{
 %\begin{verbatim}
 %q= is chosen between 500 or 100
-%Memory limit:   20 35M   50M  75M  100M  200M
-%req buf	    30M   40M  60   90M     180M
-%q:          450     275    275   275 275   
-%Time:          3.06  2.9  2.86  2.84 2.834  2.823
-%Time for two scans: 2.63  2.63
-%\end{verbatim}
+Memory limit:   20 35M   50M  75M  100M  200M
+req buf	        15M 30M   40M  60   90M     180M
+q:           450     275    275   275 275   
+Time:         3.1  2.9  2.86  2.84 2.834  2.823
+stage 1      1.53    1.4   1.38  1.37 1.36 1.35
+stage 2	     0.23    0.17 0.15   0.15 0.15  0.15
+stage 3	     1.33    1.328  1.33  1.33 1.33  1.33
 
+Time for two scans: 2.63  2.63
+%\end{verbatim}
+}
 
 %Combining OS disks in all the VMs, we see the overall 7.4TB of data is reduced to 512GB. 
 %The extreme binning approach can reduce this data set to 542GB, which is slightly worse. As a reference, 
