@@ -1,8 +1,8 @@
 \section{Conclusion Remarks}
 \label{sect:final}
 
-The contribution  of this work is a low-cost multi-stage parallel deduplication solution
-using a non-inline approach. Because of separation  of duplicate detection and actual backup,
+The contribution  of this work is a low-cost multi-stage parallel deduplication solution.
+Because of separation  of duplicate detection and actual backup,
 we are able to evenly distribute  fingerprint comparison among clustered machine
 nodes, and only load one partition at time at each machine for in-memory comparison.
 The tradeoff is that every machine has to read dirty segments twice 
