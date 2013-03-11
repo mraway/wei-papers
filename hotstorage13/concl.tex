@@ -6,18 +6,20 @@ using a non-inline approach. Because of separation  of duplicate detection and a
 we are able to evenly distribute  fingerprint comparison among clustered machine
 nodes, and only load one partition at time at each machine for in-memory comparison.
 The tradeoff is that every machine has to read dirty segments twice 
-and that some deduplication requests are delayed for staged processing.  The overall 
-deduplication time and throughput for VMs that need a backup are satisfactory 
-with about 9.6GB per second for 2500 VMs in the evaluated case while only
-using 35MB memory and  8GB disk overhead  with a single thread  per machine. Thus th proposed  backup
-scheme does not use significant  resource to compete  with the existing cloud services.
+and that some deduplication requests are delayed for staged processing.  
+
+The evaluation shows that the overall 
+deduplication time and throughput for VMs that need a backup are satisfactory with 100 machines, delivering
+about 9.6GB per second for 2500 VMs while only
+using 35MB memory and  8GB disk overhead  with a single thread  per machine. Thus the 
+proposed  backup scheme uses a small amount of  the system resource with a minimal impact to the existing cloud services.
 %While using an insignificant system resource,
 %When the cluster size changes, our experiment also shows a linear speedup of overall throughputs
 %because highly parallel fingerprint comparisons.  
 %The cluster  of 100 nodes and 2500 VMs can deliver about 
 %8.8GB per second deduplication performance.  We expect the system performs well in a larger cloud 
 %setting and 
-%Our future work is to conduct more experiments with production workloads.
+Our future work is to conduct more investigations with production workloads.
 %We currently assume each machine performs backup for all VMs hosted and in practice, the system only
 %needs to backup active VMs and thus the overall backup time would actually be much smaller.
 
