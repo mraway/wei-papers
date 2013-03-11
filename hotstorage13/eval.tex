@@ -118,7 +118,7 @@ This figure also depicts the time breakdown for Stages 1, 2, and 3.
 %The parallel time includes the first scanning time, 
 %of dirty VM segments to generate block fingerprints, data redistribution for request accumulation,
 %fingerprint comparison, duplicate summary distribution, and the second scan time for real backup.
-The time in Stages 1 and 2  is  dominated by  the two scans of dirty VM segments
+The time in Stages 1 and 3  is  dominated by  the two scans of dirty VM segments
 and the time for copying to the final backup storage is overlapped with VM scanning.
 During dirty VM segment reading, the average number of consecutive dirty segments is 2.92. 
 %Each scan takes about 1.4 hours.
