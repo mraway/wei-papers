@@ -27,8 +27,11 @@ including OS and user data disk.
 Each VM image is  divided into 2 MB fix-sized segments and each segment is divided into 
 variable-sized content blocks ~\cite{similar94} with an average size of 4KB.
 The signature for variable-sized blocks is computed using their SHA-1 hash. 
-The final snapshots are stored in a distributed file system built on the same cluster and the average I/O bandwidth
-of local storage is about 50MB/second.  The seek cost of each random IO request is about  10 milliseconds.
+The average I/O bandwidth of local storage is about 50MB/second 
+in the presence of other I/O jobs.
+The seek cost of each random IO request is about  10 milliseconds.
+The final snapshots are stored in a distributed file system built on the same 
+cluster. 
 %and that translates to an aggregated backup throughput of 139GB per second, or 500TB per hour.
 %  For 2 hours, every machine can do 139MB/second. For 3 hours, then 92MB/second
 
@@ -125,7 +128,7 @@ During dirty VM segment reading, the average number of consecutive dirty segment
 The overall processing time does not have a significant reduction as $M$ increases to 200MB.
 The aggregated deduplication throughput is  about 9.6GB per second,
 which is the size of 2500 VM images divided by the parallel time. 
-The system runs with  a single thread and  its CPU resource usage is upto 10\% of one core. 
+The system runs with  a single thread and  its CPU resource usage is 10-13\% of one core. 
 The result shows the backup with multi-stage deduplication  for all VM images can be 
 completed in about 2.9 hours with 35MB memory,  8GB disk overhead and a small CPU usage.
 As we vary the cluster size $p$,  the parallel time does  not change much, and  the aggregated throughput
