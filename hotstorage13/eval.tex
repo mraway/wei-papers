@@ -98,8 +98,8 @@ CDS every 1-2 days to catch up the popularity trend.
 
 
 
-The total local disk usage on
-each machine is about 8GB for duplicate detection purpose and most of them for global index. 
+The total local disk usage on each machine is about 8GB for the duplicate detection purpose,
+mainly for global index. 
 Level 1 segment dirty bits identify 78\% of duplicate blocks. For the remaining dirty segments,
 block-wise full deduplication removes about additional 74.5\% of duplicates.
 The final content copied to the backup storage is reduced by 94.4\% in total.
@@ -114,17 +114,20 @@ The final content copied to the backup storage is reduced by 94.4\% in total.
 Figure~\ref{fig:memory} shows the total parallel time in hours to backup 2500 VMs on
  a 100-node cluster a  when 
 the memory limit $M$ imposed on each node varies  from 20MB to 200MB.
-The overall processing time does not have a significant reduction as $M$ increases to 200MB.
-The parallel time includes the first scanning time, 
-of dirty VM segments to generate block fingerprints, data redistribution for request accumulation,
-fingerprint comparison, duplicate summary distribution, and the second scan time for real backup.
-The total time is mainly dominated by  the two scans of dirty VM segments.
-The time for copying to the final backup storage is overlapped with VM scanning.
+This figure also depicts the time breakdown for Stages 1, 2, and 3. 
+%The parallel time includes the first scanning time, 
+%of dirty VM segments to generate block fingerprints, data redistribution for request accumulation,
+%fingerprint comparison, duplicate summary distribution, and the second scan time for real backup.
+The time in Stages 1 and 3  is  dominated by  the two scans of dirty VM segments
+and the time for copying to the final backup storage is overlapped with VM scanning.
+During dirty VM segment reading, the average number of consecutive dirty segments is 2.92. 
 %Each scan takes about 1.4 hours.
-The aggregated throughput is  about 9.6GB per second,
+The overall processing time does not have a significant reduction as $M$ increases to 200MB.
+The aggregated deduplication throughput is  about 9.6GB per second,
 which is the size of 2500 VM images divided by the parallel time. 
+The system runs with  a single thread and  its CPU resource usage is upto 10\% of one core. 
 The result shows the backup with multi-stage deduplication  for all VM images can be 
-completed in about 2.9 hours with 35MB memory and 8GB disk overhead.
+completed in about 2.9 hours with 35MB memory,  8GB disk overhead and a small CPU usage.
 As we vary the cluster size $p$,  the parallel time does  not change much, and  the aggregated throughput
 scales up linearly since the number of VMs is  $25p$. 
 
