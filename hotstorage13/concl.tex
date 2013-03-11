@@ -9,10 +9,11 @@ The tradeoff is that every machine has to read dirty segments twice
 and that some deduplication requests are delayed for staged processing.  
 
 The evaluation shows that the overall 
-deduplication time and throughput for VMs that need a backup are satisfactory with 100 machines, delivering
-about 9.6GB per second for 2500 VMs while only
-using 35MB memory and  8GB disk overhead  with a single thread  per machine. Thus the 
-proposed  scheme does not use significant  resource to compete with the existing cloud services.
+deduplication time and throughput of 100 machines  are satisfactory with 
+about 9.6GB per second for 2500 VMs. During processing, each machine uses 
+only  35MB memory, 8GB disk space, and an upto 10\% of one CPU core with a single thread  execution.
+Thus the proposed  scheme does not take a significant  amount of the resource away
+to compete with the existing cloud services.
 %While using an insignificant system resource,
 %When the cluster size changes, our experiment also shows a linear speedup of overall throughputs
 %because highly parallel fingerprint comparisons.  
