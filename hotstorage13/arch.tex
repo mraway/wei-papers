@@ -144,7 +144,7 @@ information such as chunk fingerprints,  sends a request to a proper machine, ac
 received requests into a partition on the local temporary disk storage. 
 The partition mapping is using a hash function applied to the content fingerprint. 
 Assuming all machines have a  homogeneous resource configuration, each machine is evenly  assigned with
-$q$ parititons of global index and accumulates corresponding requests on the disk. 
+$q$ partitions of global index and accumulates corresponding requests on the disk. 
 There are two options to allocate buffers at each machine. 
 1) Each machine has  $p\times q$ send buffers corresponding to $p\times q$ partitions in the cluster
 since a content block in a VM image of this machine can be sent to any of these partitions.
