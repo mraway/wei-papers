@@ -20,7 +20,7 @@ of old snapshot competes computing resource also. That is because data dependenc
 by duplicate relationship among snapshots  adds processing complexity.
 % especially when  VMs can migrate around in the cloud. 
 
-Among the three factors - time, cost and de-deduplication efficiency, one of them has to be compromised for the other two. For instance, if we were building a deduplication system that has a high rate of duplication detection and has a very fast response time, 
+Among the three factors - time, cost and deduplication efficiency, one of them has to be compromised for the other two. For instance, if we were building a deduplication system that has a high rate of duplication detection and has a very fast response time, 
 it would need a lot of memory to hold fingerprint index and cache.  This leads to a compromise on cost. 
 The objective of our project is to lower the cost incurred while sustaining the highest de-duplication ratio
 and  the sufficient deduplication  throughput for dealing with a large number of VM images. 
