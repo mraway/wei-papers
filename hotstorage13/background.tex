@@ -16,7 +16,7 @@ Snapshot operations are taken place at the virtual device driver level, which me
 
 
 %The previous work for storage backup has extensively used  data deduplication techniques can eliminate redundancy globally among different files from different users.
-Backup systems have been developed to use content hash (fingerprints) to identify duplicate
+Backup systems have been developed to use content fingerprints to identify duplicate
 content~\cite{venti02,Rhea2008}.
 Offline deduplication is used in ~\cite{EMC,NetAppOffline} to remove previously written duplicate blocks during idle time.
 %,NGmiddleware2011}.
@@ -24,10 +24,9 @@ Offline deduplication is used in ~\cite{EMC,NetAppOffline} to remove previously 
 %\cite{emc_avamar}\cite{datadomain_whitepaper}
 %use a variable-size chunking algorithm to detect duplicates in file data~\cite{similar94,hydrastor09}.
 Several techniques have been proposed to speedup searching of duplicate
-content. For example,
-The data domain method ~\cite{bottleneck08} 
-uses  in-memory Bloom filter and maintains a prefetching cache for data blocks  which may be
-accessed with high probability.  An improvement to this work with parallelization is in ~\cite{DEBAR}.
+fingerprints. For example, the data domain method ~\cite{bottleneck08} 
+uses  an in-memory Bloom filter and a prefetching cache for data blocks  which may be
+accessed.  An improvement to this work with parallelization is in ~\cite{DEBAR}.
 Still such methods use  a significant amount of memory resource for filtering and caching.
 %NG et al.~\cite{ NGmiddleware2011}  use
 %a related filtering technique for integrating deduplication in Linux  file system and the memory

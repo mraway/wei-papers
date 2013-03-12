@@ -14,16 +14,16 @@ This issue has been addressed by   storage data deduplication ~\cite{venti02,bot
 identifies redundant content duplicates among snapshots.  On the other hand, performing
 deduplication adds significant  memory cost for comparison of content fingerprints. 
 Since each physical machine in a cluster  hosts many VMs, memory contention happens frequently. 
-Cloud providers often wish that the backup service only consumes  the minimal resource usage without 
-impacting any existing cloud service.  Another challenge for backup with deduplication is that deletion 
+Cloud providers often wish that the backup service only consumes  small or modest resources 
+with a minimal impact to the existing cloud services.  Another challenge for backup with deduplication is that deletion 
 of old snapshot competes computing resource also. That is because data dependence created 
 by duplicate relationship among snapshots  adds processing complexity.
 % especially when  VMs can migrate around in the cloud. 
 
 Among the three factors - time, cost and deduplication efficiency, one of them has to be compromised for the other two. For instance, if we were building a deduplication system that has a high rate of duplication detection and has a very fast response time, 
 it would need a lot of memory to hold fingerprint index and cache.  This leads to a compromise on cost. 
-The objective of our project is to lower the cost incurred while sustaining the highest de-duplication ratio
-and  the sufficient deduplication  throughput for dealing with a large number of VM images. 
+Our objective is to lower the cost incurred while sustaining the highest de-duplication ratio
+and  a sufficient throughput in dealing with a large number of VM images. 
 % This business model partially  resembles that of Amazon Glacier.
 
 %Our solution  only uses a very small amount of memory space during backup while completing  snapshot backup and 
