@@ -27,9 +27,11 @@ including OS and user data disk.
 Each VM image is  divided into 2 MB fix-sized segments and each segment is divided into 
 variable-sized content blocks ~\cite{similar94} with an average size of 4KB.
 The signature for variable-sized blocks is computed using their SHA-1 hash. 
-The average I/O bandwidth of local storage is about 50MB/second 
-in the presence of other I/O jobs.
 The seek cost of each random IO request is about  10 milliseconds.
+The average I/O bandwidth of local storage is about 50MB/second 
+in the presence of other I/O jobs. Noted that a RAID 0 configuration can deliver
+over 300MB/second with 4 drives and our setting uses
+16.7\% or less of local storage bandwidth. 
 The final snapshots are stored in a distributed file system built on the same 
 cluster. 
 %and that translates to an aggregated backup throughput of 139GB per second, or 500TB per hour.

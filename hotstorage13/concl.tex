@@ -12,15 +12,16 @@ The evaluation shows that the overall
 deduplication time and throughput of 100 machines  are satisfactory with 
 about 9.6GB per second for 2500 VMs. During processing, each machine uses 
 35MB memory, 8GB disk space, and 10-13\% of one CPU core with a single thread  execution.
-Thus the proposed  scheme does not take a significant  amount of the resource away
-to compete with the existing cloud services.
+Thus the proposed  scheme is resource-friendly to the existing cloud services.
+%Thus the proposed  scheme does not take a significant  amount of the resource away
+%to compete with the existing cloud services.
 %While using an insignificant system resource,
 %When the cluster size changes, our experiment also shows a linear speedup of overall throughputs
 %because highly parallel fingerprint comparisons.  
 %The cluster  of 100 nodes and 2500 VMs can deliver about 
 %8.8GB per second deduplication performance.  We expect the system performs well in a larger cloud 
 %setting and 
-Our future work is to conduct more investigations with production workloads.
+Our future work is to conduct more experiments with production workloads.
 %We currently assume each machine performs backup for all VMs hosted and in practice, the system only
 %needs to backup active VMs and thus the overall backup time would actually be much smaller.
 
