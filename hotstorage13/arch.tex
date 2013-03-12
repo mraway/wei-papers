@@ -246,7 +246,7 @@ expired snapshots will be deleted unless its owner explicitly asks for its reten
 We adopt the idea of mark-and-sweep~\cite{Guo2011}. 
 A block or a segment can be deleted if its reference count is zero.
 %As we discussed in Section~\ref{sect:data}, the reference counter is kept in the global index, partitioned among machines. 
-To delete useless  blocks or segments periodically, we read the meta data  of live 
+To delete useless  blocks or segments periodically, we read the meta data  of all
 snapshots and compute the reference count of all blocks and segments  in parallel
 while following the fingerprint-based partitioning.
 Similar to the multi-stage duplicate detection process, reference counting is conducted in multi-stages. 
