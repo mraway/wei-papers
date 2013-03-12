@@ -106,7 +106,8 @@ has a two-level index structure in the form of a hierarchical
 directed acyclic graph as shown in Figure~\ref{fig:snapshot}.
 A VM image is divided into a set of segments and each  segment contains hundreds of content blocks. 
 These blocks are of variable-size, partitioned using
-the standard chunking technique~\cite{similar94} with 4KB as the average block size. 
+the standard chunking technique with 4KB as the average block size. 
+%the standard chunking technique~\cite{similar94} with 4KB as the average block size. 
 %To simplify the deduplication process, segments are aligned to fix-sized boundaries, currently using 2MB.
 The snapshot metadata  contains a list of segments and other meta data information.
 Segment metadata  contains its  content block fingerprints and reference pointers. 

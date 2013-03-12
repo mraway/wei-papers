@@ -24,7 +24,8 @@ The backup of VM snapshots is completed within a few  hours every night.
 Based on our study of its production  data,  each VM has about  40GB of storage  data usage on average
 including OS and user data disk.
 Each VM image is  divided into 2 MB fix-sized segments and each segment is divided into 
-variable-sized content blocks ~\cite{similar94} with an average size of 4KB.
+variable-sized content blocks  with an average size of 4KB.
+%variable sizes~\cite{similar94,rabin81} with an average size of 4KB. 
 The signature for variable-sized blocks is computed using their SHA-1 hash. 
 
 The seek cost of each random IO request in our test machines is about  10 milliseconds.
