@@ -18,7 +18,7 @@ Objectives of our evaluation are:
 %the CPU usage is very small during the experiments. 
 We have performed a trace-driven study using  a 1323 VM dataset  collected from 100 
 Alibaba Aliyun's cloud nodes~\cite{WeiZhangIEEE}.
-Each multi-core machine   hosts  up to 25 VMs. 
+Each machine with 16 cores and 12 drives  hosts  up to 25 VMs. 
 For each VM, the system keeps 10 automatically-backed snapshots in the storage while
 a user may instruct extra snapshots to be saved.
 The backup of VM snapshots is completed within a few  hours every night.
@@ -30,7 +30,7 @@ The signature for variable-sized blocks is computed using their SHA-1 hash.
 The seek cost of each random IO request is about  10 milliseconds.
 The average I/O bandwidth of local storage is about 50MB/second 
 in the presence of other I/O jobs. Noted that a RAID 0 configuration can deliver
-over 300MB/second with 4 drives and our setting uses
+over 300MB/second with 4 drives or more and our setting uses
 16.7\% or less of local storage bandwidth. 
 The final snapshots are stored in a distributed file system built on the same 
 cluster. 
