@@ -5,7 +5,6 @@
 We have implemented and evaluated a prototype of our multi-stage deduplication scheme on a Linux cluster
 of multi-core AMD Bulldozer FX8120 and Intel Nehalem E5530 machines.  
 Our implementation is based on Alibaba's Xen cloud platform~\cite{Aliyun,WeiZhangIEEE}.
-
 Objectives of our evaluation are:
 1) Analyze the deduplication throughput and effectiveness for a large number of VMs.
 %Compare with the data domain approach~\cite{bottleneck08}.
@@ -27,6 +26,7 @@ including OS and user data disk.
 Each VM image is  divided into 2 MB fix-sized segments and each segment is divided into 
 variable-sized content blocks ~\cite{similar94} with an average size of 4KB.
 The signature for variable-sized blocks is computed using their SHA-1 hash. 
+
 The seek cost of each random IO request in our test machines is about  10 milliseconds.
 The average I/O bandwidth of local storage is about 50MB/second 
 in the presence of other I/O jobs. Noted that a RAID 0 configuration can deliver
