@@ -141,7 +141,7 @@ In Stage 1, each machine independently reads
 VM images that need a backup
 and forms duplicate  detection requests. For those segments that have been modified since last backup indicated by 
 dirty bits,  the system divides  each segment into a sequence of chunk blocks,  computes the meta 
-information such as chunk fingerprints,  sends a request to a proper machine, accumulates  
+information such as chunk fingerprints,  sends a request to a proper machine, and accumulates  
 received requests into a partition on the local temporary disk storage. 
 The partition mapping is using a hash function applied to the content fingerprint. 
 Assuming all machines have a  homogeneous resource configuration, each machine is evenly  assigned with
@@ -153,9 +153,10 @@ since a content block in a VM image of this machine can be sent to any of these 
 $p$ receive buffers to collect requests  from other machines.
 Then the system copies requests from each of $p$ receive buffers to  $q$ local request buffers,
 and outputs each request buffer to one of the request partitions on the disk
-when this request buffer becomes full.  Option 2 depicted in Figure~\ref{fig:flow}
+when this request buffer becomes full.  Option 2, which is  depicted in Figure~\ref{fig:flow},
 is much more efficient than Option 1 because $2p+q$ is much smaller than
-$p\times q$. As a result, each buffer in Option 2 has a bigger size to accumulate requests and that means
+$p\times q$, except for the very small  values. 
+As a result, each buffer in Option 2 has a bigger size to accumulate requests and that means
 less disk seek overhead.
 
 %We assume that the startup cost for network message sending is  much more less (e.g. an order of magnitude

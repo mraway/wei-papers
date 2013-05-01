@@ -51,6 +51,18 @@ there is a waiting time for many duplicate detection requests. This relaxation i
 in our context, finishing the backup of required VM images within a reasonable time window is more
 important than optimizing individual VM block  backup requests.
 
+
+
+Noted that this paper optimizes the cost of backup when such a service runs on the existing
+cluster resource for the cloud. Another option is to attach  a separate backup storage system with deduplication
+support  the cloud cluster and every machine can periodically transfer snapshot data to
+the attached backup system.
+%One  weakness of this approach is communication bottleneck between a large number of machines
+%in a cloud to this centralized  service.
+The cost of allocating the above dedicated backup  resource can be expensive.
+Since most of backup data is not used eventually, CPU and memory resource in such a backup service may 
+not be fully utilized. This paper seeks for on a low-cost architecture option.
+
 %It should be emphasized that our approach does not  accumulate raw backup data temporarily for deduplication
 %and does not require a significant amount of extra storage capacity.
 %Our strategy is to perform a drity  scan to collect

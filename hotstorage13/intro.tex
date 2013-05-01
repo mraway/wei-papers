@@ -5,7 +5,7 @@
 %Virtualization is the engine behind many popular cloud computing platforms.
 %Amazon, Alibaba,  and many others have provided public VM clouds that host
 %tens of thousands of  virtual machines(VM) created for various active users.
-Periodic  archiving of virtual machine (VM) snaps is important 
+Periodic  archiving of virtual machine (VM) snapshots is important 
 for long-term data  retention and fault recovery in case of machine failures.  
 For example, daily backup of VM images  is conducted automatically 
 at Alibaba which provides the largest public cloud service in China.
@@ -15,8 +15,8 @@ identifies redundant content duplicates among snapshots.  On the other hand, per
 deduplication adds significant  memory cost for comparison of content fingerprints. 
 Since each physical machine in a cluster  hosts many VMs, memory contention happens frequently. 
 Cloud providers often wish that the backup service only consumes  small or modest resources 
-with a minimal impact to the existing cloud services.  Another challenge for backup with deduplication is that deletion 
-of old snapshot competes computing resource also. That is because data dependence created 
+with a minimal impact to the existing cloud services.  Another challenge for backup with deduplication is 
+that deletion of old snapshot competes for computing resource as well. That is because data dependence created 
 by duplicate relationship among snapshots  adds processing complexity.
 % especially when  VMs can migrate around in the cloud. 
 
@@ -39,6 +39,8 @@ Fingerprint based partitioning allows highly parallel duplicate detection  and a
 reference counting management.  
 % as the entire process can also be divided into a
 %parition-wise  deletion. 
+The tradeoff is that every machine has to read dirty segments twice
+and that some deduplication requests are delayed for staged parallel processing.
 With careful parallelism and buffer  management,
 this multi-stage detection scheme can provide  a sufficient throughput for VM backup.   
 
