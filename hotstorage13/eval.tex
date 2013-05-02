@@ -3,7 +3,7 @@
 \label{sect:exper}
 
 We have implemented and evaluated a prototype of our multi-stage deduplication scheme on a Linux cluster
-of multi-core AMD Bulldozer FX8120 and Intel Nehalem E5530 machines.  
+of Intel Nehalem E5530 machines.  
 Our implementation is based on Alibaba's Xen cloud platform~\cite{Aliyun,WeiZhangIEEE}.
 Objectives of our evaluation are:
 1) Analyze the deduplication throughput and effectiveness for a large number of VMs.
@@ -35,74 +35,6 @@ over 300MB/second with 4 drives or more and our setting uses
 16.7\% or less of local storage bandwidth. 
 The final snapshots are stored in a distributed file system built on the same 
 cluster. 
-%and that translates to an aggregated backup throughput of 139GB per second, or 500TB per hour.
-%  For 2 hours, every machine can do 139MB/second. For 3 hours, then 92MB/second
-
-% the system must finish saving daily snapshots of all VMs in 2 hours. In our typical 1000 nodes cluster, each node hosts 25 VMs, each VM has 40GB of data on average, that translates to backup throughput of 139GB/second, or 500TB/hour.
-
-%In our snapshot deduplication architecture, CDS is the key to achieve greater deduplication than
-%incremental backup solutions. Our basic assumption of CDS us that VM disks, especially OS disks,
-%have huge amount of data in common, and such common data can be represented by a relatively smaller data set
-%because of their high appearence frequency. As a result, the major portion of snapshot deduplication effect shall 
-%emerge from eliminating the duplication of such a small data set. In this section, we evaluate
-%the effectiveness of CDS using real user VM disks from our production VM cluster.
-
-%Since it's impossible to perform large scale analysis without affecting the VM performance,
-%We have sampled a data set from 1323 real user VMs from a cluster with 100 nodes 
-%to measure the effectiveness of our scheme.
-
-%In this dataset, there are 10 snapshots per each VM user and the total amount of space 
-%investigated is 17.5 terabytes.
-%This dataset contas compose of 35 VMs from 7 popular OSes: 
-%Debian, Ubuntu, Redhat, CentOS, Win2003 32bit, win2003 64 bit and win2008 64 bit. For each OS, 
-%5 VMs are chosen, and every VM come with 10 full snapshots of it OS and data disk. 
-%The overall data size for this 700 full snapshots is 17.6 TB.
-%This dataset  contains the snapshots of 1323 VMs.
-%Since inner-VM deduplication is not involved in the first snapshot, this data set helps us to 
-%study the CDS deduplication against user-related data. The overall size of dataset2 is 23.5 TB.
-%
-%using a dataset containing 10 snapshots of 35 VMs.
-%Popularity of data blocks are collected through global counting 
-%and the top 1\% will fall into CDS, as discussed in Section~\ref{sect:crossVM}.
-
-\comments{
-
-Each VM file is  divided into content blocks of
-variable sizes~\cite{similar94,rabin81} with an average size of 4KB. 
-The signature for variable-sized blocks is computed using  their SHA-1 hash. 
-Each segment is of size 2MB.  
-Popularity is computed by using 90\% of dataset, which reflects our setting that the system recomputes
-CDS every 1-2 days to catch up the popularity trend.
-}
-%seg, and we performed global perfect deduplication 
-%to caculate the number of duplicate copies of each individual unique block. We choose 2KB, 4KB, 16KB as the minimum, average
-%and maximum block size
-%OS data
-%user data: zipf
-%prediction
-%say something about aliyun
-
-
-%To compare the effectiveness with a full deduplication approach with an approximation,
-%we use  extreme binning and perfect deduplication~\cite{extreme_binning09}. 
-%For perfect deduplication and extreme binning, each snapshot is also divided into chunk blocks
-%using TTTD with an average size of 4KB. The original extreme binning work uses the whole file
-%as the input unit and  this size is too big in our system. 
-%Thus we split each image snapshot file into variable-sized segments base on the block hash list, 
-%using TTTD with average size of 2MB.
-
-%\subsection{Effectiveness of 3-level Deduplication}
-
-%\begin{figure}
-%  \centering
-%  \epsfig{file=images/overall_effect.eps, width=3.5in}
-%  \caption{Impacts of 3-level deduplication. The height of each bar is the data size after 
-%deduplication divided by the original data size and the unit is percentage. }
-%
-%  \label{fig:overall}
-%\end{figure}
-
-
 
 The total local disk usage on each machine is about 8GB for the duplicate detection purpose,
 mainly for global index. 
@@ -153,8 +85,8 @@ a big increase of IO requests and seek cost.
 \caption{ Performance when the number of partitions per machine node varies and $M$=35MB is imposed.}
 \begin{center}
 \begin{tabular} {|c|c|c|c|c|c|}
-\hline \#Partitions  & 50 & 275  &450 &  750 &  1500 \\
-\hline Index+request & 156&  28.4 & 17.4 & 10.7 & 5.2 \\
+\hline \#Partitions  & 100 & 250  & 500 &  750 &  1000 \\
+\hline Index+request & 100.1 &  40.1 & 20.1 & 13.4 & 10.1 \\
   (MB)           &  &   &  & &  \\
 
 \hline Total Time  & N/A&  2.9 & 2.91 & 3 & 3.1 \\
