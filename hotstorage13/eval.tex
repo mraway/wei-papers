@@ -29,12 +29,11 @@ variable-sized content blocks  with an average size of 4KB.
 The signature for variable-sized blocks is computed using their SHA-1 hash. 
 
 The seek cost of each random IO request in our test machines is about  10 milliseconds.
-The average I/O bandwidth of local storage is about 50MB/second 
-in the presence of other I/O jobs. Noted that a RAID 0 configuration can deliver
-over 300MB/second with 4 drives or more and our setting uses
-16.7\% or less of local storage bandwidth. 
-The final snapshots are stored in a distributed file system built on the same 
-cluster. 
+The average I/O usage of local storage is controlled about 50MB/second for our backup task
+in the presence of other I/O jobs. Noted that a typical 1U server can host
+6 to 8  hard drives and deliver over 300MB/second. Our setting uses 16.7\% or less of local storage bandwidth.
+The final snapshots are stored in a distributed file system built on the same
+cluster.
 
 The total local disk usage on each machine is about 8GB for the duplicate detection purpose,
 mainly for global index. 
