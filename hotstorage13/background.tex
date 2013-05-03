@@ -53,9 +53,10 @@ important than optimizing individual VM block  backup requests.
 
 
 
-Noted that this paper optimizes the cost of backup when such a service runs on the existing
-cluster resource for the cloud. Another option is to attach  a separate backup storage system with deduplication
-support  the cloud cluster and every machine can periodically transfer snapshot data to
+
+This paper considers a backup service uses the existing cluster computing resource. 
+Another option is to attach  a separate backup system with deduplication
+support the cluster, and  every machine can periodically transfer snapshots to
 the attached backup system.
 %One  weakness of this approach is communication bottleneck between a large number of machines
 %in a cloud to this centralized  service.

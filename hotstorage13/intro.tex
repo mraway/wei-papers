@@ -6,7 +6,8 @@
 %Amazon, Alibaba,  and many others have provided public VM clouds that host
 %tens of thousands of  virtual machines(VM) created for various active users.
 Periodic  archiving of virtual machine (VM) snapshots is important 
-for long-term data  retention and fault recovery in case of machine failures.  
+for long-term data  retention and fault recovery. 
+%in case of machine failures.  
 For example, daily backup of VM images  is conducted automatically 
 at Alibaba which provides the largest public cloud service in China.
 The cost of frequent backup of VM snapshots is  high because of the huge storage demand.
@@ -28,7 +29,7 @@ and  a sufficient throughput in dealing with a large number of VM images.
 
 %Our solution  only uses a very small amount of memory space during backup while completing  snapshot backup and 
 %deletion in a reasonable amount of time. 
-The traditional approach to  deduplication for backup is an inline approach which follows
+The traditional approach to  deduplication is an inline approach which follows
 a sequence of block reading, duplicate detection,  and non-duplicate  block write to the 
 backup storage.  
 Our key idea  is to  first perform parallel duplicate detection for VM content blocks 

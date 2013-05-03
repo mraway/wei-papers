@@ -13,14 +13,14 @@
 
 
 We consider deduplication in two levels. The first level
-uses coarse-grain segment  dirty bits for version-based detection~\cite{Clements2009,Vrable2009} to 
-identify difference from the previous snapshot to the current snapshot.  
+uses coarse-grain segment  dirty bits for version-based detection~\cite{Clements2009,Vrable2009}.
+% to identify difference from the previous snapshot to the current snapshot.  
 %That  can be accomplished efficiently and inexpensively in the OS level.
 %We use a segment-level coarse-grain setting to reduce the efforts in detection and maintaining dirty bits. 
 Our experiment with Alibaba's production dataset shows that over 70 percentage of 
 duplicates can be detected using segment dirty bits when the segment size is 2M bytes.  
-This setting requires OS to keep the metadata for segment dirty bits and the amount of space for such segment 
-dirty bits is negligible. In the second level of deduplication, content blocks of dirty segments at each VM 
+This setting requires OS to keep segment dirty bits and the amount of space for this purpose
+is negligible. In the second level of deduplication, content blocks of dirty segments 
 are compared with the fingerprints of unique  blocks from the previous snapshots.
 Our key strategies are explained as follows.
 \begin{itemize}
@@ -28,8 +28,7 @@ Our key strategies are explained as follows.
 
 \item {\bf Separation of duplicate detection and data backup.}
 %Request accumulation and partition-based deduplication.}
-The second level duplicate detection requires a global comparison of 
-content fingerprints.
+The second level detection requires a global comparison of fingerprints.
 % of stored chunks with the new chunks scanned during the backup process. 
 %Bloom filters and caching allows some of content 
 %fingerprints to be stored on the cheap disks~\cite{bottleneck08}. Such an optimization is good 
@@ -37,30 +36,35 @@ content fingerprints.
 %waiting while  it memory consumption is still significant in competing with stand virtual 
 %machine activities.  
 Our approach is to perform duplicate detection first before actual data backup.
-That requires a pre-scanning of  data  blocks in dirty VM segments  and after that, real backup  for those non-duplicates
-is conducted. That does incur an extra  round of local VM block reading while avoiding inline 
-deduplication and leading to a much smaller resource requirement.  
-During VM reading, detection requests are accumulated on the disk 
-for a period time  in a  partitioned manner.  Aggregated duplicate requests can be processed partition by partition. 
+That requires a prescanning of  data  blocks in dirty VM segments, which
+%  and after that, real backup  for those non-duplicates is conducted. 
+does incur an extra  round of VM reading.
+% while avoiding inline deduplication and leading to a much smaller resource requirement.  
+During VM prescanning, detection requests are accumulated.
+Aggregated duplicate requests can be processed partition by partition. 
 %We also accumulate the delete requests and perform them partition by partitions. 
-Since each partition corresponds to a small portion of global content index, the cost to 
-process detection requests within a partition is significantly smaller than processing all the requests globally.
+Since each partition corresponds to a small portion of global content index, 
+memory cost to process detection requests within a partition is small.
+%the cost to process detection requests within a partition is significantly smaller than processing all 
+%the requests globally.
 
 \item {\bf Buffered data redistribution in parallel duplicate detection}.  
 Let {\em global index} be the meta data containing the fingerprint values of unique blocks of snapshots
-in all VMs and  the reference pointers which lead to the location of raw data.
+in all VMs and  the reference pointers to the location of raw data.
 %A duplicate detection request for a content block needs to be compared with the global index to determine if this
 %block is non-duplicate. If it is a duplicate, return the corresponding reference pointer.
 %We conduct parallel processing of detection requests in all machines involved. 
-A logical way to distribute detection requests among machines is to partition based on fingerprint values of content blocks
-in a  disjointed manner.
-Initial VM data reading follows the VM distribution among machines and the detected duplicate summary results 
-need to be collected following the VM distribution. 
+A logical way to distribute detection requests among machines is to partition based on 
+fingerprint values of content blocks.
+% in a  disjointed manner.
+Initial data  blocks follows the VM distribution among machines and the detected duplicate summary 
+should be collected following the same distribution.
 Therefore, there are two all-to-all data redistribution operations involved.
 One is to map detection requests from VM-based distribution to fingerprint based distribution.  
 Another one  is to map duplicate summary from fingerprint-based distribution to VM based distribution.  
-The redistributed data needs to be accumulated on the disk to minimize the use of memory.
-To minimize the excessive disk seek cost, outgoing or incoming data exchange messages need to be buffered to bundle small messages.
+The redistributed data needs to be accumulated on the disk to reduce the use of memory.
+To minimize the disk seek cost, outgoing or incoming data exchange messages are buffered to 
+bundle small messages.
 Given there are $p\times q$ partitions where $p$ is the number of machines and $q$ is the number of fingerprint-based partitions
 at each machine, space per each buffer  is small under the memory constraint for large $p$ or $q$ values.
 This counteracts the effort of seek cost reduction.  
@@ -104,9 +108,9 @@ this cluster  or use another  external storage system.
 The representation of each snapshot in the backup storage
 has a two-level index structure in the form of a hierarchical
 directed acyclic graph as shown in Figure~\ref{fig:snapshot}.
-A VM image is divided into a set of segments and each  segment contains hundreds of content blocks. 
-These blocks are of variable-size, partitioned using
-the standard content-based chunking technique with 4KB as the average block size. 
+A VM image is divided into a set of segments and each  segment contains 
+content blocks of variable-size, partitioned using
+the standard chunking technique with 4KB as the average block size. 
 %the standard chunking technique~\cite{similar94} with 4KB as the average block size. 
 %To simplify the deduplication process, segments are aligned to fix-sized boundaries, currently using 2MB.
 The snapshot metadata  contains a list of segments and other meta data information.
@@ -139,8 +143,10 @@ The data flow of our multi-stage duplicate detection is depicted in Figure~\ref{
 In Stage 1, each machine independently reads  
 %$v/k$  
 VM images that need a backup
-and forms duplicate  detection requests. For those segments that have been modified since last backup indicated by 
-dirty bits,  the system divides  each segment into a sequence of chunk blocks,  computes the meta 
+and forms duplicate  detection requests. 
+%For those dirty segments,
+%segments that have been modified since last backup indicated by dirty bits,  
+The system divides  each dirty segment into a sequence of chunk blocks,  computes the meta 
 information such as chunk fingerprints,  sends a request to a proper machine, and accumulates  
 received requests into a partition on the local temporary disk storage. 
 The partition mapping is using a hash function applied to the content fingerprint. 
@@ -234,24 +240,25 @@ the corresponding request partition; 2) $p$ receive buffers and $v$ summary buff
 %When a buffer for a VM is full, the result is written to the disk.
 
 \item For Stage 3, $M$  is divided for 1) an I/O buffer to read dirty segments of a VM and   
-write non-duplicate content blocks to the  backup storage.
-2) summary of duplicate blocks within dirty segments of  a VM.
+write non-duplicate blocks to the  backup storage;
+2) summary of duplicate blocks within dirty segments. 
 \end{itemize}
 %We find the memory for step 2 is most critical for buffering duplicate summary in hiding the latency. 
 %Certainly most storage system can allow many IO requests issued in parallel overlapping the IO latency.  
 %Here we assume the worst case and also minimize the IO bandwidth usages by issuing 
 %one request at a time to use the minimal disk bandwidth resource.
 
-{\bf Snapshot deletion.} Each VM will keep a limited number of  automatically-saved VM snapshots and thus
-expired snapshots will be deleted unless its owner explicitly asks for its retention.
+{\bf Snapshot deletion.} Each VM will keep a limited number of  automatically-saved snapshots and 
+expired snapshots are normally deleted.
+% unless its owner explicitly asks for its retention.
 We adopt the idea of mark-and-sweep~\cite{Guo2011}. 
 A block or a segment can be deleted if its reference count is zero.
 %As we discussed in Section~\ref{sect:data}, the reference counter is kept in the global index, partitioned among machines. 
 To delete useless  blocks or segments periodically, we read the meta data  of all
-snapshots and compute the reference count of all blocks and segments  in parallel
-while following the fingerprint-based partitioning.
+snapshots and compute the reference count of all blocks and segments  in parallel.
+%while following the fingerprint-based partitioning.
 Similar to the multi-stage duplicate detection process, reference counting is conducted in multi-stages. 
-Stage  1 is to read  the segment and block  metadata of snapshots 
+Stage  1 is to read  the segment and block  metadata 
 to accumulate  reference count requests in different machines  in the fingerprint based distribution.
 Stage   2 is to count references within each partition and detect those records with zero 
 reference. 

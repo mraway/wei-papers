@@ -2,8 +2,8 @@
 \section{Evaluation}
 \label{sect:exper}
 
-We have implemented and evaluated a prototype of our multi-stage deduplication scheme on a Linux cluster
-of Intel Nehalem E5530 machines.  
+We have implemented and evaluated a prototype of our multi-stage deduplication scheme on a cluster
+of dual quad-core Intel Nehalem 2.4GHz E5530 machines with 24GB memory.  
 Our implementation is based on Alibaba's Xen cloud platform~\cite{Aliyun,WeiZhangIEEE}.
 Objectives of our evaluation are:
 1) Analyze the deduplication throughput and effectiveness for a large number of VMs.
@@ -29,10 +29,10 @@ variable-sized content blocks  with an average size of 4KB.
 The signature for variable-sized blocks is computed using their SHA-1 hash. 
 
 The seek cost of each random IO request in our test machines is about  10 milliseconds.
-The average I/O bandwidth of local storage is about 50MB/second 
-in the presence of other I/O jobs. Noted that a RAID 0 configuration can deliver
-over 300MB/second with 4 drives or more and our setting uses
-16.7\% or less of local storage bandwidth. 
+The average I/O usage of local storage is controlled about 50MB/second for backup. 
+in the presence of other I/O jobs. Noted that a typical 1U server can host
+6 to 8  hard drives and deliver over 300MB/second. Our setting uses 16.7\% or less 
+of local storage bandwidth. 
 The final snapshots are stored in a distributed file system built on the same 
 cluster. 
 
@@ -51,14 +51,15 @@ The final content copied to the backup storage is reduced by 94.4\% in total.
 
 Figure~\ref{fig:memory} shows the total parallel time in hours to backup 2500 VMs on
  a 100-node cluster a  when 
-the memory limit $M$ imposed on each node varies  from 20MB to 200MB.
+limit $M$ imposed on each node varies.
+%  from 20MB to 200MB.
 This figure also depicts the time breakdown for Stages 1, 2, and 3. 
 %The parallel time includes the first scanning time, 
 %of dirty VM segments to generate block fingerprints, data redistribution for request accumulation,
 %fingerprint comparison, duplicate summary distribution, and the second scan time for real backup.
-The time in Stages 1 and 3  is  dominated by  the two scans of dirty VM segments
-and the time for copying to the final backup storage is overlapped with VM scanning.
-During dirty VM segment reading, the average number of consecutive dirty segments is 2.92. 
+The time in Stages 1 and 3  is  dominated by  the two scans of dirty segments,
+and final data copying to the backup storage is overlapped with VM scanning.
+During dirty segment reading, the average number of consecutive dirty segments is 2.92. 
 %Each scan takes about 1.4 hours.
 The overall processing time does not have a significant reduction as $M$ increases to 200MB.
 The aggregated deduplication throughput is  about 9.6GB per second,
@@ -69,23 +70,26 @@ completed in about 2.9 hours with 35MB memory,  8GB disk overhead and a small CP
 As we vary the cluster size $p$,  the parallel time does  not change much, and  the aggregated throughput
 scales up linearly since the number of VMs is  $25p$. 
 
-Table~\ref{tab:overall} shows performance change when memory limit $M$=35MB is imposed and
-the number of partitions per machine ($q$) varies from 50 to 1500.
-Row 2 is the memory space required to load a partition of global index and detection requests.
-When $q=50$, the required memory is 156MB, which  is  not  a viable choice  under  constraint $M=$35MB.  
+Table~\ref{tab:overall} shows performance change when limit $M$=35MB is imposed and
+the number of partitions per machine ($q$) varies.
+% varies from 100 to 1000.
+Row 2 is memory space required to load a partition of global index and detection requests.
+When $q=100$, the required memory is 100.1 MB and this exceeds the limit $M=$35MB.  
 Row 3 is the parallel time and Row 4 is  the aggregated throughput of  100 nodes.
 %The result shows the backup with multi-phase deduplication  for all VM images can be completed in about 3.09 hours
 %with the very small resource usage.
-Row 5 is  the parallel time if  we use Option 1 with $p\times q$ send buffers 
+Row 5 is  the parallel time for using Option 1 with $p\times q$ send buffers 
 described in Section~\ref{sect:arch}. 
-With the large number of buffers, the available space per buffer reduces significantly as $q$ increases, which leads to
-a big increase of IO requests and seek cost.  
+When $q$ increases, the available space per buffer reduces and there is a big increase of seek cost.  
+The main network usage before performing the final data write is for request accumulation and
+summary output. It lasts about 20 minutes and each machine exchanges 
+about   8MB of metadata per second with others during that period, which is 6.25\% of the network bandwidth.
 
 \begin{table}[hbt]
-\caption{ Performance when the number of partitions per machine node varies and $M$=35MB is imposed.}
+\caption{ Performance when $M$=35MB and $q$ varies.}
 \begin{center}
 \begin{tabular} {|c|c|c|c|c|c|}
-\hline \#Partitions  & 100 & 250  & 500 &  750 &  1000 \\
+\hline \#Partitions ($q$)  & 100 & 250  & 500 &  750 &  1000 \\
 \hline Index+request & 100.1 &  40.1 & 20.1 & 13.4 & 10.1 \\
   (MB)           &  &   &  & &  \\
 
