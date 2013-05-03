@@ -221,9 +221,9 @@ The  disk storage usage on each machine
 is fairly small for  storing part of global index and
 accumulating  duplicate detection requests that contain fingerprint information.   
 We impose a memory limit $M$ allocated for each stage of processing at each machine.
-The usage of $M$ is controlled as follows and space distribution among buffers is optimized based on the relative
+The usage of $M$ is controlled as follows and space allocation among buffers is optimized based on the relative
 ratio between the cross-machine network  startup cost and disk access startup cost such as seek time.
-Slower start cost requires more buffer space.
+Using a bigger buffer  can mitigate the impact of slower start cost. 
 \begin{itemize}
 \item For Stage 1, $M$  is divided for 
 1) an I/O buffer to read dirty segments; 2) $2p$ send/receive buffers and $q$ request  buffers.
