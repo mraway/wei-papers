@@ -202,7 +202,7 @@ When a segment is not dirty, the system only needs to output the segment meta da
 There is an option to directly read dirty blocks instead of fetching a dirty segment which can include duplicate
 blocks. Our experiment shows that it is faster to read dirty segments in the tested workload.
 Another issue is that during global index update after new block creation in the backup storage,
-the system  may find some  blocks with the same fingerprint are 
+the system  may find some  blocks with the same fingerprints have been 
 created redundantly. For example, two different VM blocks that have the same  fingerprint are not detected
 because  the  global index has not contained such a fingerprint yet. 
 The redundancy is discovered and logged during the index update and can be repaired

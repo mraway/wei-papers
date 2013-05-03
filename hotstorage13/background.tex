@@ -9,7 +9,7 @@
 At a cloud cluster node, each instance of a guest operating system runs on a virtual machine, accessing virtual hard disks 
 represented as virtual disk image files in the host operating system.
 For VM snapshot backup, file-level semantics are normally not provided.
-Snapshot operations are taken place at the virtual device driver level, which means no fine-grained file system metadata can be used to determine the changed data. Only raw access information at disk block level are provided. 
+Snapshot operations take place at the virtual device driver level, which means no fine-grained file system metadata can be used to determine the changed data. Only raw access information at disk block level are provided. 
 %Each physical machine hosts many VMs and petabytes of data in a cloud cluster need a frequent  backup. 
 %Ideally speaking, snapshot backup must not affect the normal cloud service, which means that 
 %only a very small slice of cluster resource can be used for the backup purpose.
@@ -63,7 +63,7 @@ the attached backup system.
 %in a cloud to this centralized  service.
 The cost of allocating the above dedicated backup  resource can be expensive.
 Since most of backup data is not used eventually, CPU and memory resource in such a backup service may 
-not be fully utilized. This paper seeks for on a low-cost architecture option.
+not be fully utilized. This paper seeks for a low-cost architecture option.
 }
 %It should be emphasized that our approach does not  accumulate raw backup data temporarily for deduplication
 %and does not require a significant amount of extra storage capacity.
