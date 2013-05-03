@@ -19,8 +19,8 @@ uses coarse-grain segment  dirty bits for version-based detection~\cite{Clements
 %We use a segment-level coarse-grain setting to reduce the efforts in detection and maintaining dirty bits. 
 Our experiment with Alibaba's production dataset shows that over 70 percentage of 
 duplicates can be detected using segment dirty bits when the segment size is 2M bytes.  
-This setting requires OS to keep segment dirty bits and the amount of space for this purpose
-is negligible. In the second level of deduplication, content blocks of dirty segments 
+This setting requires OS to maintain segment dirty bits and 
+the amount of space for this purpose is negligible. In the second level of deduplication, content blocks of dirty segments 
 are compared with the fingerprints of unique  blocks from the previous snapshots.
 Our key strategies are explained as follows.
 \begin{itemize}
@@ -223,7 +223,7 @@ accumulating  duplicate detection requests that contain fingerprint information.
 We impose a memory limit $M$ allocated for each stage of processing at each machine.
 The usage of $M$ is controlled as follows and space allocation among buffers is optimized based on the relative
 ratio between the cross-machine network  startup cost and disk access startup cost such as seek time.
-Using a bigger buffer  can mitigate the impact of slower start cost. 
+Using a bigger buffer  can mitigate the impact of slower startup cost. 
 \begin{itemize}
 \item For Stage 1, $M$  is divided for 
 1) an I/O buffer to read dirty segments; 2) $2p$ send/receive buffers and $q$ request  buffers.
