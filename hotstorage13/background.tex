@@ -54,6 +54,7 @@ important than optimizing individual VM block  backup requests.
 
 
 
+\comments{
 This paper considers a backup service uses the existing cluster computing resource. 
 Another option is to attach  a separate backup system with deduplication
 support the cluster, and  every machine can periodically transfer snapshots to
@@ -63,7 +64,7 @@ the attached backup system.
 The cost of allocating the above dedicated backup  resource can be expensive.
 Since most of backup data is not used eventually, CPU and memory resource in such a backup service may 
 not be fully utilized. This paper seeks for on a low-cost architecture option.
-
+}
 %It should be emphasized that our approach does not  accumulate raw backup data temporarily for deduplication
 %and does not require a significant amount of extra storage capacity.
 %Our strategy is to perform a drity  scan to collect

@@ -12,7 +12,16 @@ For example, daily backup of VM images  is conducted automatically
 at Alibaba which provides the largest public cloud service in China.
 The cost of frequent backup of VM snapshots is  high because of the huge storage demand.
 This issue has been addressed by   storage data deduplication ~\cite{venti02,bottleneck08} that
-identifies redundant content duplicates among snapshots.  On the other hand, performing
+identifies redundant content duplicates among snapshots.  
+
+This paper considers a backup service uses the existing cluster computing resource.
+Another option is to attach  a separate backup system with deduplication
+support the cluster, and  every machine can periodically transfer snapshots to
+the attached backup system.
+The cost of allocating the above dedicated backup  resource can be expensive.
+Since most of backup data is not used eventually, CPU and memory resource in such a backup service may
+not be fully utilized. This paper seeks for a low-cost architecture option.
+Performing
 deduplication adds significant  memory cost for comparison of content fingerprints. 
 Since each physical machine in a cluster  hosts many VMs, memory contention happens frequently. 
 Cloud providers often wish that the backup service only consumes  small or modest resources 
