@@ -61,12 +61,12 @@ The time in Stages 1 and 3  is  dominated by  the two scans of dirty segments,
 and final data copying to the backup storage is overlapped with VM scanning.
 During dirty segment reading, the average number of consecutive dirty segments is 2.92. 
 %Each scan takes about 1.4 hours.
-The overall processing time does not have a significant reduction as $M$ increases to 200MB.
-The aggregated deduplication throughput is  about 9.6GB per second,
+The overall processing time does not have a significant reduction as $M$ increases to 95MB.
+The aggregated deduplication throughput is  about 8.76GB per second,
 which is the size of 2500 VM images divided by the parallel time. 
 The system runs with  a single thread and  its CPU resource usage is 10-13\% of one core. 
 The result shows the backup with multi-stage deduplication  for all VM images can be 
-completed in about 2.9 hours with 35MB memory,  8GB disk overhead and a small CPU usage.
+completed in about 3.1 hours with 35MB memory,  8GB disk overhead and a small CPU usage.
 As we vary the cluster size $p$,  the parallel time does  not change much, and  the aggregated throughput
 scales up linearly since the number of VMs is  $25p$. 
 
@@ -74,7 +74,7 @@ Table~\ref{tab:overall} shows performance change when limit $M$=35MB is imposed 
 the number of partitions per machine ($q$) varies.
 % varies from 100 to 1000.
 Row 2 is memory space required to load a partition of global index and detection requests.
-When $q=100$, the required memory is 100.1 MB and this exceeds the limit $M=$35MB.  
+When $q=100$, the required memory is 83.6 MB and this exceeds the limit $M=$35MB.  
 Row 3 is the parallel time and Row 4 is  the aggregated throughput of  100 nodes.
 %The result shows the backup with multi-phase deduplication  for all VM images can be completed in about 3.09 hours
 %with the very small resource usage.
@@ -90,13 +90,13 @@ about   8MB of metadata per second with others during that period, which is 6.25
 \begin{center}
 \begin{tabular} {|c|c|c|c|c|c|}
 \hline \#Partitions ($q$)  & 100 & 250  & 500 &  750 &  1000 \\
-\hline Index+request & 100.1 &  40.1 & 20.1 & 13.4 & 10.1 \\
+\hline Index+request & 83.6 &  33.5 & 16.8 & 11.2 & 8.45 \\
   (MB)           &  &   &  & &  \\
 
-\hline Total Time  & N/A&  2.9 & 2.91 & 3 & 3.1 \\
+\hline Total Time  & N/A&  3.12 & 3.15 & 3.22 & 3.29 \\
   (Hours)           &  &   &  & &  \\
 %\hline Throughput/node & N/A&  85MB/s& 90M & 87 & 81 \\
-\hline Throughput GB/s& N/A&  9.6& 9.5 & 9.3 & 8.9 \\
+\hline Throughput GB/s& N/A&  8.76 & 8.67 & 8.48 & 8.30 \\
 \hline Total time & N/A&  7.8& 11.7 & 14.8 & 26 \\
   (Option 1)           &  &   &  & &  \\
 \hline
