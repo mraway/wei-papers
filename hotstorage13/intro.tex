@@ -15,7 +15,10 @@ This issue has been addressed by   storage data deduplication ~\cite{venti02,bot
 identifies redundant content duplicates among snapshots.  
 One architectural approach is to attach  a separate backup system with deduplication
 support to the cloud cluster, and  every machine periodically transfers snapshots to
-the attached backup system.  The cost of allocating such a dedicated backup  system can be expensive.
+the attached backup system.  Such a dedicated backup  configuration can be expensive, 
+considering that significant networking  and computing resource  is required to transfer 
+raw data and conduct signature comparison. 
+
 
 This paper seeks for a low-cost architecture option and considers that
 a backup service uses the existing cloud computing resource.
