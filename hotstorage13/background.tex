@@ -36,7 +36,7 @@ Still such methods use  a significant amount of memory resource for filtering an
 %into large segments, the chunk IDs in each incoming segment are sampled and the segment is
 %deduplicated by comparing with the chunk IDs of only a few carefully selected backed up segments.
 %These are segments that share many chunk IDs with the incoming segment with high probability.
-The approximation techniques are studied in~\cite{extreme_binning09,WeiZhangIEEE}  
+The approximation techniques are studied in~\cite{extreme_binning09,Guo2011,WeiZhangIEEE}  
 %Deepavali et al.~\cite{extreme_binning09} and Zhang et al.~\cite{WeiZhangIEEE}  
 to reduce memory requirement with a tradeoff of the reduced deduplication ratio.
 %use fingerprint-based file similarity  and group similar files into the same physical location (bins) to deduplicate against each other.
