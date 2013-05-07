@@ -8,12 +8,12 @@ nodes, and only load one partition at time at each machine for in-memory compari
 %The tradeoff is that every machine has to read dirty segments twice 
 %and that some deduplication requests are delayed for staged processing.  
 
+The proposed  scheme is resource-friendly to the existing cloud services.
 The evaluation shows that the overall 
 deduplication time and throughput of 100 machines  are satisfactory with 
 about 8.76GB per second for 2500 VMs. During processing, each machine uses 
-35MB memory, 8GB disk space, 10-13\% of one CPU core with a single thread  execution,
-and a small percentage of IO and network resource.
-Thus the proposed  scheme is resource-friendly to the existing cloud services.
+35MB memory, 8GB disk space, and 10-13\% of one CPU core with a single thread  execution.
+%and a modest use of IO and network resource.
 %Thus the proposed  scheme does not take a significant  amount of the resource away
 %to compete with the existing cloud services.
 %While using an insignificant system resource,
