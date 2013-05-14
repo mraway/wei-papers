@@ -36,7 +36,7 @@ The second level detection requires a global comparison of fingerprints.
 %waiting while  it memory consumption is still significant in competing with stand virtual 
 %machine activities.  
 Our approach is to perform duplicate detection first before actual data backup.
-That requires a prescanning of  data  blocks in dirty VM segments, which
+That requires a prescanning of  dirty VM segments, which
 %  and after that, real backup  for those non-duplicates is conducted. 
 does incur an extra  round of VM reading.
 % while avoiding inline deduplication and leading to a much smaller resource requirement.  
@@ -49,15 +49,17 @@ memory cost to process detection requests within a partition is small.
 %the requests globally.
 
 \item {\bf Buffered data redistribution in parallel duplicate detection}.  
-Let {\em global index} be the meta data containing the fingerprint values of unique blocks of snapshots
+Let {\em global index} be the meta data containing the fingerprint values of unique snapshot blocks 
 in all VMs and  the reference pointers to the location of raw data.
 %A duplicate detection request for a content block needs to be compared with the global index to determine if this
 %block is non-duplicate. If it is a duplicate, return the corresponding reference pointer.
 %We conduct parallel processing of detection requests in all machines involved. 
-A logical way to distribute detection requests among machines is to partition based on 
+A logical way to distribute detection requests among machines is based on 
 fingerprint values of content blocks.
 % in a  disjointed manner.
-Initial data  blocks follows the VM distribution among machines and the detected duplicate summary 
+Initial data  blocks follows the VM distribution 
+among machines 
+and the detected duplicate summary 
 should be collected following the same distribution.
 Therefore, there are two all-to-all data redistribution operations involved.
 One is to map detection requests from VM-based distribution to fingerprint based distribution.  
@@ -194,7 +196,8 @@ when request buffers are full.
 %These substeps are repeated as the stream of data is exchanged when each machine compares through all $q$ partitions.
 
 %\item 
-Stage 3 is to perform real backup one VM at a time.
+Stage 3 is to perform real backup.
+% one VM at a time.
 The system loads the duplicate summary of a VM, 
 reads  dirty segments of a VM, and outputs non-duplicate blocks to the final backup 
 storage. Additionally, the global index on each machine is updated with the meta data of new chunk blocks. 

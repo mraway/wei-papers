@@ -16,10 +16,12 @@ Snapshot operations take place at the virtual device driver level, which means n
 %only a very small slice of cluster resource can be used for the backup purpose.
 
 
+
 %The previous work for storage backup has extensively used  data deduplication techniques can eliminate redundancy globally among different files from different users.
 Backup systems have been developed to use content fingerprints to identify duplicate
 content~\cite{venti02,Rhea2008}.
-Offline deduplication is used in ~\cite{EMC,NetAppOffline} to remove previously written duplicate blocks during idle time.
+Offline deduplication is 
+used in ~\cite{EMC,NetAppOffline} to remove previously written duplicate blocks during idle time.
 %,NGmiddleware2011}.
 %Today's commercial data backup systems (e.g. from EMC and NetApp)
 %\cite{emc_avamar}\cite{datadomain_whitepaper}
@@ -29,6 +31,10 @@ fingerprints. For example, the data domain method ~\cite{bottleneck08}
 uses  an in-memory Bloom filter and a prefetching cache for data blocks  which may be
 accessed.  An improvement to this work with parallelization is in ~\cite{MAD210,DEBAR}.
 Still such methods use  a significant amount of memory resource for filtering and caching.
+As discussed in Section~\ref{sect:intro}, 
+there is no dedicated resource for deduplication in our targeted setting and low memory usage 
+is required so that the resource impact to other cloud services is minimized. 
+
 %NG et al.~\cite{ NGmiddleware2011}  use
 %a related filtering technique for integrating deduplication in Linux  file system and the memory
 %consumed is up to 2GB for a single machine. That is still too big in our context discussed below.
@@ -43,6 +49,12 @@ to reduce memory requirement with a tradeoff of the reduced deduplication ratio.
 %That leads  to a smaller amount of memory usage for storing meta data in fingerprint
 %lookup  
 In comparison, this paper focuses on  full deduplication without approximation.
+%We also take advantages of the fact that in a VM cloud environment,
+%the virtual device driver can easily keep track if  large data
+%segments have been modified using dirty bits and such information can avoid sending
+%unmodified data segments for deduplication, which significantly saves cost.
+
+
 
 Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,idedup}. 
 All of the above approaches have focused on
