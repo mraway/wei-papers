@@ -41,9 +41,9 @@ That requires a prescanning of  dirty VM segments, which
 does incur an extra  round of VM reading.
 % while avoiding inline deduplication and leading to a much smaller resource requirement.  
 During VM prescanning, detection requests are accumulated.
-Aggregated duplicate requests can be processed partition by partition. 
+Aggregated deduplicate requests can be processed partition by partition. 
 %We also accumulate the delete requests and perform them partition by partitions. 
-Since each partition corresponds to a small portion of global content index, 
+Since each partition corresponds to a small portion of global index, 
 memory cost to process detection requests within a partition is small.
 %the cost to process detection requests within a partition is significantly smaller than processing all 
 %the requests globally.
@@ -204,7 +204,8 @@ storage. Additionally, the global index on each machine is updated with the meta
 When a segment is not dirty, the system only needs to output the segment meta data such as a reference pointer. 
 There is an option to directly read dirty blocks instead of fetching a dirty segment which can include duplicate
 blocks. Our experiment shows that it is faster to read dirty segments in the tested workload.
-Another issue is that during global index update after new block creation in the backup storage,
+Another issue is that during global index update after new block creation,
+% in the backup storage,
 the system  may find some  blocks with the same fingerprints have been 
 created redundantly. For example, two different VM blocks that have the same  fingerprint are not detected
 because  the  global index has not contained such a fingerprint yet. 
