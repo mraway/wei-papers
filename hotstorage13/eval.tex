@@ -15,9 +15,11 @@ Objectives of our evaluation are:
 %We are running our deduplication/backup  service on 100 nodes.
 %Memory usage is about 150MB space per node during backup and
 %the CPU usage is very small during the experiments. 
-We have performed a trace-driven study using  a 1323 VM dataset  collected from 100 
-Alibaba Aliyun's cloud nodes~\cite{WeiZhangIEEE} and each
-of machine nodes has 16 cores and 12 disk drives,  hosting  up to 25 VMs. 
+We have performed a trace-driven study using  a 1323 VM dataset  collected from 
+%100 Alibaba Aliyun's cloud nodes~\cite{WeiZhangIEEE}.
+a cloud cluster at Alibaba's Aliyun.
+% ~\cite{WeiZhangIEEE}.
+% and each of machine nodes has 16 cores and 12 disk drives,  hosting  up to 25 VMs. 
 For each VM, the system keeps 10 automatically-backed snapshots in the storage while
 a user may instruct extra snapshots to be saved.
 The backup of VM snapshots is completed within a few  hours every night.
@@ -61,7 +63,7 @@ The time in Stages 1 and 3  is  dominated by  the two scans of dirty segments,
 and final data copying to the backup storage is overlapped with VM scanning.
 During dirty segment reading, the average number of consecutive dirty segments is 2.92. 
 %Each scan takes about 1.4 hours.
-The overall processing time does not have a significant reduction as $M$ increases to 95MB.
+The overall processing time does not have a significant reduction as $M$ increases to 190MB.
 The aggregated deduplication throughput is  about 8.76GB per second,
 which is the size of 2500 VM images divided by the parallel time. 
 The system runs with  a single thread and  its CPU resource usage is 10-13\% of one core. 
