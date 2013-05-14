@@ -1,5 +1,5 @@
 \section{Introduction}
-
+\label{sect:intro}
 
 
 %Virtualization is the engine behind many popular cloud computing platforms.
@@ -26,8 +26,10 @@ a backup service uses the existing cloud computing resource.
 Performing deduplication adds significant  memory cost for comparison of content fingerprints. 
 Since each physical machine in a cluster  hosts many VMs, memory contention happens frequently. 
 Cloud providers often wish that the backup service only consumes  small or modest resources 
-with a minimal impact to the existing cloud services.  Another challenge for backup with deduplication is 
-that deletion of old snapshots compete for computing resource as well. That is because data dependence created 
+%with a minimal impact to the existing cloud services.  Another challenge for backup with deduplication is 
+with a minimal impact to the existing cloud services.  Another challenge is 
+%that deletion of old snapshots compete for computing resource as well. That is because data dependence created 
+that deletion of old snapshots compete for computing resource as well, because data dependence created 
 by duplicate relationship among snapshots  adds processing complexity.
 % especially when  VMs can migrate around in the cloud. 
 

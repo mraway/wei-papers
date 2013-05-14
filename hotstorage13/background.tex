@@ -29,7 +29,10 @@ fingerprints. For example, the data domain method ~\cite{bottleneck08}
 uses  an in-memory Bloom filter and a prefetching cache for data blocks  which may be
 accessed.  An improvement to this work with parallelization is in ~\cite{MAD210,DEBAR}.
 %Still such methods use a significant amount of memory resource for filtering and caching.
-Such methods use dedicated nodes for deduplication, which add cost to cloud infrastructure and is less scalable.
+%Such methods use dedicated nodes for deduplication, which add cost to cloud infrastructure and are less scalable.
+As discussed in Section~\ref{sect:intro},
+there is no dedicated resource for deduplication in our targeted setting and low memory usage
+ is required so that the resource impact to other cloud services is minimized.
 %NG et al.~\cite{ NGmiddleware2011}  use
 %a related filtering technique for integrating deduplication in Linux  file system and the memory
 %consumed is up to 2GB for a single machine. That is still too big in our context discussed below.
