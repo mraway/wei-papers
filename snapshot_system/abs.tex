@@ -1,6 +1,20 @@
 \begin{abstract}
-This paper proposes a VM snapshot storage architecture which adopts multiple-level selective deduplication to bring the benefits of fine-grained data reduction into cloud backup storage systems.
-In this work, we describe our working snapshot system implementation, and provide
-early performance measurements for both deduplication impact and
-snapshot operations.
+A cloud environment that  hosts a large number of  virtual machines has
+a high storage demand for frequent backup of system image snapshots.
+Deduplication of data blocks can lead a big reduction of redundant blocks when
+their signatures are identical. However it is expensive and less fault-resilient to perform a global comparison
+of all data block signatures and let a data block share by many virtual machines. 
+This paper studies a cluster-based design which collocates a lightweight
+backup service with the cloud service and integrates multiple duplicate detection strategies that  
+localize the deduplication as much as possible within each virtual machine.
+The optimized design only requires a small amount of memory resource to conduct duplicate detection
+and an analysis illustrates this design with deduplication localization  provides  better fault tolerance.
+This  paper  provides an evaluation that shows this  proposed scheme can accomplish a high deduplication 
+efficiency while sustaining a good backup throughput. 
+
+
+%This paper studies the      a VM snapshot storage architecture which adopts multiple-level selective deduplication to bring the benefits of fine-grained data reduction into cloud backup storage systems.
+%In this work, we describe our working snapshot system implementation, and provide
+%early performance measurements for both deduplication impact and
+%snapshot operations.
 \end{abstract}

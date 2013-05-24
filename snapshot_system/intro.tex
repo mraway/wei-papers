@@ -1,36 +1,80 @@
 \section{Introduction}
-In a virtualized cloud environment such as ones provided by Amazon EC2\cite{AmazonEC2} and Alibaba Aliyun\cite{Aliyun},
-each instance of a guest operating system runs on a virtual machine, accessing
-virtual hard disks represented as virtual disk image files in the host operating system.
+In a cluster-based cloud environment such as ones provided by Amazon EC2\cite{AmazonEC2} 
+and Alibaba Aliyun\cite{Aliyun},
+each physical machine runs a number  of virtual machines as  instances of a guest operating system 
+and their  virtual hard disks are represented as virtual disk image files in the host operating system.
 %virtual disk image files (e.g. .vhd, .vmdk) in the host operating system.
-Because these image files are stored as regular files from the external point of view,
-backing up VM's data is mainly done by taking snapshots of virtual disk images.
+%Backup  of virtual disks is relatively straightforward since
+%these image files are stored as regular files from the external point of view,
+%backing up VM's data is mainly done by taking snapshots of virtual disk images.
 
-A snapshot preserves the data of a VM's file system at a specific point in time. 
-VM snapshots can be  backed up  incrementally by comparing blocks from one version to another 
-and only the blocks that have changed from the previous version of snapshot will be saved~\cite{Clements2009,Vrable2009}. 
+%A snapshot preserves the data of a VM's file system at a specific point in time. 
+%VM snapshots can be  backed up  incrementally by comparing blocks from one version to another 
+%and only the blocks that have changed from the previous version of snapshot will be saved~\cite{Clements2009,Vrable2009}. 
+Frequent  snapshot backup of virtual disk images  can increase  the service reliability. 
+For example, the Aliyun cloud , which is  the largest cloud service provider by Alibaba in China, 
+automatically conducts  the backup of virtual disk images to all active users every day.
+The cost of supporting a large number of concurrent backup streams is high
+because of the huge storage demand and  
+Using a separate  backup service with full deduplication support~\cite{venti02,bottleneck08}
+can effectively identify content duplicates among snapshots and  remove 
+redundant storage content,  but the solution can be expensive and there is a large amount of 
+network traffic to transfer  data from the host machines to the backup facility
+before duplicates are removed.
 
-Frequent  backup of VM snapshots increases  the reliability of VM's hosted in a cloud.
-For example, Aliyun, the largest cloud service provider by Alibaba in China, 
-provides automatic frequent backup of VM images to strengthen the reliability of its service for all users.
-The cost of frequent backup of VM snapshots is  high because of the huge storage demand.
-Using a backup service with full deduplication support~\cite{venti02,bottleneck08}
-can identify content duplicates among snapshots to remove redundant storage content,  but the weakness is that it
-either adds the  extra cost significantly or competes computing resource with the existing cloud services.
-In addition, data dependence created by duplicate relationship among snapshots
-adds the complexity in fault tolerance management, especially when  VMs can migrate around in the cloud. 
 
-Unlike the previous work dealing with general file-level backup and deduplication, our problem is focused on 
-virtual disk image backup. Although we treat each virtual disk  as a file logically, its size is very large.
-On the other hand, we need to support parallel backup of a large number of virtual disks in a cloud every day. 
-One key requirement we face at Alibaba Aliyun is that VM snapshot backup should only use a minimal amount of system
-resources so that most of resources is kept for regular cloud system services or applications.
-Thus our objective is to exploit the characteristics of VM snapshot data and
-pursue a cost-effective deduplication solution. 
-Another goal  is to decentralize VM snapshot backup and  localize  deduplication as much as possible,
-which brings the benefits for increased parallelism  and fault isolation.
+This paper seeks for a low-cost architecture option and considers that
+a backup service collocates  on  the cloud cluster with a minimum resource usage. 
+%Since most of backup data is not used in practice, system resource in such a service is not fully utilized.
+The dirty bit approach~\cite{??}  which checks the version difference can effectively remove
+duplicates while using content fingerprints can significantly compress more~\cite{Bottlneck08}.
+On the other hand, comparing fingerprints  adds significant  memory cost. 
+Since each physical machine in a cluster  hosts many VMs, memory contention happens frequently.
+Cloud providers often wish that the backup service only consumes  small or modest resources
+with a minimal impact to the existing cloud services.  A 
+recent study using subsampling~\cite{Guo2011}  can significantly reduce the memory requirement.
+Another issue is that after deduplication, the most of data blocks are shared by many virtual machines.
+Failure of such blocks would  have a catastrophic effect and many snapshots of virtual machines would be affected.
+Furthermore, 
+%that deletion of old snapshots compete for computing resource as well. That is because data dependence created
+deletion of old snapshots compete for computing resource as well and that  needs
+to be considered. That is  because data dependence created
+by duplicate relationship among snapshots  adds processing complexity.
+% especially when  VMs can migrate around in the cloud.
+
+The paper proposes an integrated approach which uses  multiple duplicate detection strategies
+integrating  version  detection, small-scope inner VM duplicate comparison
+and controlled cross-VM comparison. 
+The key idea of this approach is to localize duplicate detection within each virtual machine as much as possible
+and minimize memory usage while delivering a decent deduplication efficiency. 
+That brings the benefits for parallelism  utilization and fault isolation.
+Our deletion strategy uses a double Boomer filer strategy for periodic mark-and-sweeping of expired data blocks.
+We have developed a prototype system that runs a cluster of Linux machines running Zen.
+The backup storage uses a standard distributed file system  with data replication and
+we allocate more  replicas for the commonly-shared  data blocks among VM snapshots to enhance fault tolerance.
+
+
+
+%************** Paper sections summary
+%THIS NEEDS MODIFICATION
+The rest of this paper is organized as follows.
+Section~\ref{review} reviews background and related work.
+Section~\ref{sec:framework}  discusses the  design framework and system architecture.
+Section~\ref{sec:model}  analyzes the benefit of our approach for fault isolation. 
+Section~\ref{exper} is our experimental evaluation that compare with the other approach.
+Section~\ref{conc}  concludes this paper.
+
+%We are seeking Unlike the previous work dealing with general file-level backup and deduplication, our problem is focused on 
+%virtual disk image backup. Although we treat each virtual disk  as a file logically, its size is very large.
+%On the other hand, we need to support parallel backup of a large number of virtual disks in a cloud every day. 
+%One key requirement we face at Alibaba Aliyun is that VM snapshot backup should only use a minimal amount of system
+%resources so that most of resources is kept for regular cloud system services or applications.
+%Thus our objective is to exploit the characteristics of VM snapshot data and
+%pursue a cost-effective deduplication solution. 
+%Another goal  is to decentralize VM snapshot backup and  localize  deduplication as much as possible,
 
 %,extreme_binning09,sparseindex09
+\comments{
 By observations on the VM snapshot data from production cloud, we found snapshot data duplication 
 can be easily classified into two categories: \emph{inner-VM} and \emph{cross-VM}. Inner-VM duplication
 exists between VM's snapshots, because the majority of data are unchanged during each backup period. 
@@ -60,3 +104,4 @@ The following table shows the strength and weakness of some well-know deduplicat
         \hline
     \end{tabular}
 \end{table}
+}
