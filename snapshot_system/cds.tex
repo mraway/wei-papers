@@ -1,1 +1,41 @@
 \section{CDS Analysis}
+[Purpose of using CDS]
+CDS is a small percentage of the global data index that we into DHT as a shared index. 
+With CDS as as a public data resource, each VM's snapshot backup has no need to 
+store its own copies for data that already exist in CDS, instead they can just
+store a reference. 
+We expect CDS to contain most of the data related to operating system, software and libraries.
+
+[What's the benifits]
+Using CDS as a common data source brings us several benefits: 
+First, the data we collect into CDS are commonly used in many VMs, 
+thus the CDS index, a special subset of global index, has very high deduplication efficency.
+Second, in our architecture the CDS data are the only data that can be shared between different VMs,
+by carefully control the replication degree of CDS data, we could improve the fault-tolerancy
+in such a data sharing environment. Finally, the CDS index is small enough to be put into a 
+in-memory DHT, thus it avoids the excess memory usage of global index 
+while brings us the majority of deduplication efficiency of it.
+
+[Describe how CDS is generated]
+
+[Explain why CDS scales effectively as data grow]
+Our empirical study based on VM images from production environment\cite{ieeecloud} showed that the 
+frequency of data duplication follows Zipf-like distribution\cite{zipf}, 
+with the exponent $\alpha$ between 0.65 ~ 0.70. 
+As a result, it can be proved that deduplication efficiency of CDS index is scalable:
+
+[Describe the dedup efficiency model in detail]
+Let $S_c$ be the total number of FPs in CDS, $S_g$ be the total number of FPs in global index, $F$ be the size of a FP, $N$ be the number of nodes in the cluster, $m$ be the memory on each node that are used by CDS, $D$ be the amount of data on each node, and $B$ be the average block size. The deduplication efficiency will be:
+\begin{equation}
+  E = (S_c / S_g)^{1-\alpha}
+\end{equation}
+The $S_c$ and $S_g$ can be expressed as:
+\begin{equation}
+S_c = N*m/F, S_g = N*D/B
+\end{equation}
+By replacing $S_c$ and $S_g$ in the first formula, we have:
+\begin{equation}
+  E = (\frac{m*B}{F*D})^{1-\alpha}
+\end{equation}
+
+Since $B$, $D$ and $F$ are pre-configured constants, the deduplication efficiency of CDS is only controlled by the its memory usage.
