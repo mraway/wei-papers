@@ -42,16 +42,16 @@ to be considered. That is  because data dependence created
 by duplicate relationship among snapshots  adds processing complexity.
 % especially when  VMs can migrate around in the cloud.
 
-The paper proposes an integrated approach which uses  multiple duplicate detection strategies
-integrating  version  detection, small-scope inner VM duplicate comparison
+The paper studies and evaluates  an integrated approach which uses  multiple duplicate detection strategies
+based on  version  detection, small-scope inner VM duplicate comparison
 and controlled cross-VM comparison. 
-The key idea of this approach is to localize duplicate detection within each virtual machine as much as possible
+This approach is VM centric by localizing duplicate detection within each VM  as much as possible
 and minimize memory usage while delivering a decent deduplication efficiency. 
 That brings the benefits for parallelism  utilization and fault isolation.
 Our deletion strategy uses a double Boomer filer strategy for periodic mark-and-sweeping of expired data blocks.
-We have developed a prototype system that runs a cluster of Linux machines running Zen.
-The backup storage uses a standard distributed file system  with data replication and
-we allocate more  replicas for the commonly-shared  data blocks among VM snapshots to enhance fault tolerance.
+We have developed a prototype system that runs a cluster of Linux machines with Xen.
+The backup storage uses a standard distributed file system  with data replication and block packaging,
+and we allocate more  replicas for the commonly-shared  data blocks among VM snapshots to enhance fault tolerance.
 
 
 
