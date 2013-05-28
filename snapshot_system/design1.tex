@@ -1,4 +1,20 @@
 \section{Prototype Design}
+
+The architecture of our snapshot backup service contains the following components:
+\begin{itemize}
+
+\item  The backup storage layer. 
+That stores snapshots on a distribued file system. 
+Our prototype implementtion uses the QFS.
+Since the distributed file system such as Hadoop and GFS takes the large block size such as 64MB,
+and the data blcok size for dueduplication is nonuniform with 4KB on average,
+we have added a layer to accmulate  data blocks from the deduplicated stream, and 
+package them as 64MB, and apply data compression when applicable.
+
+\item The deduplication layer.
+
+\end{itemize}
+
 Our architecture is built on the Aliyun platform which provides the largest public VM cloud in China. 
 A typical VM cluster in our cloud environment
 consists of from hundreds to thousands of physical machines, each of which can
@@ -69,6 +85,6 @@ The cross-VM deduplication is conducted by the broker to access
 a common data set (CDS) (will discuss in Section~\ref{sect:crossVM},
 whose block hash index is stored in a distributed memory cache. 
 
-\input{snapshot}
+%\input{snapshot}
 \input{append}
 \input{delete}

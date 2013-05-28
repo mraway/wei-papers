@@ -1,3 +1,212 @@
+\section{Design Consideration and Options}
+\label{sect:options}
+
+As we discuss earlier, collocating the backup service on the existing
+cloud cluster avoids the extra cost to acquire a dedicated backup facility
+and reduces the network bandwidth consumption in transferring the un-deduplicated
+raw data for backup. The running of such a service is subject to
+the resource availability of the system and we discuss the design considerations
+as follows. 
+
+% That arises mainly in Alibaba's Aliyun cloud service.
+%concerns
+%Base on Aliyun's production environment, the snapshot backup job has to satisfy 
+\begin{itemize}
+\item {\em Backup storage.}
+We use a distributed file system to cluster
+the storage  and store the backup with multiple replicas in the clustered storage.
+There can be a concern that storing many versions  of snapshots would
+require	a large amount of storage.
+The previous research shows the deduplication can compress the backup copies 
+effectively in a 10:1 or even 15:1 rage. Assume on the average the compression
+ratio is $c$:1.  When the number of versions
+saved in the backup storage is $b$  on the average, 
+the amount of storage space in the cluster allocated  for the backup would be $\frac{b}{b+c}$.
+For example, when $b=5$ and $c=10$, 33\% of the cluster storage is used for the backup.
+When $b=9$ and $c=13$, storage usage is 40\%. 
+That is acceptable given today's cheap cost for disk storage.
+In the case of Alibaba, each machine hosts 25 VMs on the average and each VM uses 40GB data
+while each machine typically can provide over 10TB storage.
+Thus the normal disk usage  is about 1TB per machine, and adding 30\% to 100\% 
+extra space for the backup is not a practical concern.
+
+\item {\em Backup throughput and computing resource}.
+As a large-scale cluster hosting tens of thousand of active VMs everyday,  the amount of data
+to be processed can be huge. 
+On the other hand, the computing resources allocated for a snapshot service is limited
+because VM performance has higher priority.  
+The key usage of resource for backup is memory for storing and comparing the fingerprints. 
+We will consider the approximation techniques with less memory consumption
+studied in~\cite{extreme_binning09,Guo2011} along with the fault isolation consideration discussed below. 
+%A snapshot backup service shall not compete cpu, memory, or I/O bandwidth with VMs. 
+%Fingerprint-based search does require a significant amount of memory for fingerprint lookup
+%and comparison.  This competes memory resource  with the existing VMs.
+%Our design is to identify a low-cost and low-profile scheme for deduplication.
+%Specifically, the memory usage of snapshot service can never exceed 500MB in any node.
+
+A  longer use of bandwidth and computing resource  for backup can create  noticeable  contention with 
+the existing cloud, which is not preferred for cloud production system operation. 
+Thus it is desirable that backup for all nodes
+can be conducted in parallel and in a short period of time,
+and any centralized or  cross-machine communication for
+deduplication should not become a bottleneck.
+For example, in an Aliyun cluster with over 1,000 nodes and each hosts over 25 VMs, The aggreated amount of data 
+the system must finish saving daily snapshots of all VMs in 2 hours. In our typical 1000 nodes cluster, each node hosts 25 VMs, each VM has 40GB of data on average, that translates to backup throughput of 139GB/second, or 
+500TB/hour.  The system must finish saving daily snapshots of all VMs in few hours. 
+Often a cloud has a few hours of light workload each day (e.g. midnight),  
+which creates an small window for automatic backup.
+
+%At Aliyun, it is required that while CPU and disk usage should be small or modest during backup time,
+%the memory footprint of snapshot service should not exceed 500MB at each node.
+
+Another consideration is backup data cleaning to delete useless blocks.
+Keeping reference counters for shared data blocks is challenging and less reliable.
+The previous work has advocated the mark-and-sweep approach  which periodically
+scans all data (or modified latest version of data)~\cite{?, Guo2011}. It first marks
+all used blocks and then sweep all chunks to reclaim unmarked blocks. 
+This approach is resilient to errors: at any time the process can simply be restarted with no 
+negative side effects.  Scalability, however, is an issue.
+To deal with 1 PB snapshots data, which may be represented by 10,000 GB FP index,
+If we account for an average deduplication factor of 10 (i.e., each chunk
+is referenced by 10 different snapshots), the total size
+of snapshot metadata that need to be read during the mark phase will
+be 100 TB.  This alone will take almost 2 hours on a
+1000-machine cloud. Furthermore, marking the in-use
+bits for 250 billion entries is no easy task. There is no
+way to put the bit map in memory. One might want
+to mitigate the poor performance of mark-and-sweep by
+doing it less frequently. But in practice this is not a viable
+option: customers always want to keep the utilization
+of the system close to its capacity so that a longer
+history can be stored. With daily snapshots taking place,
+systems rarely have the luxury to postpone deletion operations
+for a long time. In our field deployment, deletion
+is done once a day. More than 2 hours in each run is too
+much. In a large production-oriented dedupe system reference
+management needs to be very reliable and have
+good recover-ability. It should tolerate errors and always
+ensure correctness. Although mark-and-sweep provides
+these properties, its performance is proportional to the
+capacity of the system, thus limiting its scalability.
+
+
+\item {\em Fault tolerance and isolation.}
+The distributed file system~\cite{GoogleFS,Hadoop} provides the replication support
+and we can use the open-source software to implement such a layer.
+When the number of machines failed exceeds the replication degree, there will be
+ some data loss.  Storage deduplication worsens the impact of such faults
+because  the majority of data snapshots (e.g. over 90\%) is deduplicated
+and the corresponding data blocks are shared among VMs.
+
+The previous work in deduplication~\cite{extreme_binning09,sparseindex09} has
+studied the solutions  to reduce memory requirement.
+They have not considered content sharing affects
+fault isolation.
+Because a content chunk is compared with a content signature collected from other users,
+this artificially creates data dependency among different VM users.
+% since storage for shared identical content chunks can become a failure point.
+In large scale cloud, node failures happen at daily basis,
+the loss of a shared block can affect many users whose snapshots share this 
+data block. 
+Without any control of such data sharing, we can only increase  
+replication for global dataset to enhance the availability,
+but this incurs significantly more cost.
+Loss of a small number of  shared data blocks can 
+cause the unavailability of snapshots for a large number of virtual machines.
+Thus a key goal  in our design
+is restricting the impact of  data loss to a limited number of VMs. 
+It is not desirable that small scale of data failure affects the backup of many VMs.
+%when users access snapshots in a recovery process. 
+\end{itemize}
+
+
+
+%we want to isolate 
+%each VM's snapshot backup as much as possible while still enjoy the benefit of deduplication.
+%In large scale cloud, node faiures happen at daily basis, we don't want a problem at small scale
+%to affect large amount of VMs due to data sharing.
+%a key weakness of global content fingerprint comparison is that it affects fault isolation.
+
+%2) data sharing among users for accessing common signagutes causes the system less resilient to storage failures.
+%any loss of one piece of  shared data content hash and actualcontent will damange many VM snapshots, which can cause massive impacts
+%on reliability of many users.
+
+%Another point is that the previous work in signature-based comparison does not address
+%load balancing for a distributed environment during parallel access.  
+%Some content signatures can be extremely hot, but the machines  that  handle such signatures can become
+% a bottleneck. Uncoordinated signature assignment could lead to imbalanced access workload.
+
+
+%There are multiple choices of snapshot backup design for VM images and our considerations are described
+%as follows. 
+%Our design considerations
+%\begin{enumerate}
+%\item {\bf Centralized vs. decenalized} 
+%
+%It is desirable to have  a decentralized architecture.
+%Given a large amount of snapshot data communicated from each machine to the backup storage,
+%with a distributed storage architecture for backup, one could exploit  exploit data locality between
+%the source of data and storage location of data to reduce cross-platform bandwidth requirement for backup.
+
+%execute in parallel and easy to coordinate. In fact, we want to avoid cross-node dependency at scheduling VM snapshot operations, such that no global coordinator is necessary.
+%\item {Load balancing in resource consumption}: the cost of snapshot service shall be evenly distributed onto every node. We don't have a super powerful
+%or stable node that can accept extra responsibility.
+%\item {minimization of inter-user data dependency for fault tolerance}: we want to minimize the data dependency to a controllable level. Data deduplication means sharing of data, thus one failure at a single point may affect the snapshot service of hundreds of VMs, which is absolutely unacceptable.
+%\item {Resource usage modeling and control}.
+%\end{enumerate}
+
+With these considerations in mind, we propose a decentralized backup architecture with multi-level and selective 
+deduplication. This service is hosted   in the existing set of machines and resource usage is controlled
+with a minimal impact to the existing applications.
+The deduplication process is first conducted among snapshots within each VM
+and then is conducted across VMs.  
+Given the concern that searching duplicates across VMs is a global feature which can affect parallel performance
+and complicate failure management,
+we only eliminate the duplication of a small but popular data set while still maintaining a cost-effective deduplication ratio.
+For this purpose, we exploit the data characteristics of snapshots and collect most popular data.
+Data sharing across VMs is limited within this small data set such that adding replicas for it could enhance fault tolerance.
+%
+%in the  our studies show that there are a large amount of data unmodified in VM snapshots
+%and shared among many users (e.g. OS data). The sharing pattern follows a zip-like distribution.
+%With this characteristic, we can store a small amount of popular data items which coverage a large amount of
+%snapshot data blocks. 
+%We discuss our design and data analysis in the next section.
+
+
+%This method is based on the observation of two facts in Aliyun's VM cloud: first, VM's OS disks contain 
+%huge amount of operating system and software related data which is almost never modified during VM's life span. 
+%Second, the duplication pattern of user generated data follows Zipf-like law, thus a tiny set of hottest data
+%take up the majority of data duplication. As a result, if we extract these hot data as a common data set,
+%then most of data duplication will emerge by searching in this very small scope.
+
+
+%For example, In cloud storage, we are solving data deduplication problem in a different context of 
+%data stream deduplication (the D2D case): our snapshot storage service is co-located with runtime VMs,
+%thus we have very limited amount of system resource leave for data deduplication. For example,
+%in Aliyun's 8-core, 48GB memory, 12TB VM server, there lives over 20 VMs who are hungrily competing for
+%system resources: some may running map-reduce jobs, some may serving busy web requests, 
+%some may storing backend databases, any behavior that affects user VMs performance or stability is unacceptable.
+
+%To reduce the cost of deduplication, we must confine the scope of searching duplicates as much as possible,
+%thus some hints are needed to tell us where the most likely duplicates would hide. 
+%Several form of hints have been used in the past: many D2D systems exploits locality,
+%which bases on the fact that duplicates are likely to appear in the same sequence as they have arrived before.
+%Similarity is another popular hint, it suggests that two sets of data blocks may contain lots of
+%duplicates if they are indetified as similar by certain similarity detection measurements.
+
+
+
+%\section{Architecture design and Deduplication for Snapshot Support}
+%
+%\section{Popularity analysis}
+% data on what data popular.
+%
+%Analysis: modeling: singular
+%
+%Compute: Cache hit ratio vs. cache cost (memory cost).
+
+
+\comments{
 \section{Challenges}
 \subsection{Indexing}
 Most deduplication systems operate at the sub-file level:
@@ -49,6 +258,7 @@ hashes, randomly distributed in the index. Adjacent index
 entries share no locality and any kind of simple readahead
 scheme could not amortize the cost of storing index
 entries on disk.
+
 
 \subsection{Deletion}
 Contrary to a traditional backup system, a dedupe system
@@ -135,3 +345,5 @@ the loss of access to a shared chunk can affect many VMs whose snapshots share t
 Without any control of the scope of data sharing, we can only increase the level of 
 replication to enhance availability, which would significantly 
 balance out the benefits of deduplication.
+
+}
