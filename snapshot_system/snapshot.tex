@@ -2,7 +2,6 @@
 \label{sect:dedupe}
 %snapshot representation
 
-
 \subsection{Inner and corss VM deduplication}
 
 Our  deduplication scheme compares the fingerprints of the current snapshot
@@ -69,8 +68,6 @@ for the most popular items.
 \end{itemize}
 
 \subsection{Popular Chunk Management and VM-oriented Fault Isolation}
-
-
 Our objective for fault isolation is to minimize the number of VMs affected when there are failures
 in the cluster.  The inner-VM deduplication does not depend on any global service and the comparison
 for each VM is localized within the parent and the current snapshot.
@@ -106,4 +103,5 @@ By replacing $S_c$ and $S_g$ in the first formula, we have:
 Since $B$, $D$ and $F$ are pre-configured constants, the deduplication efficiency of CDS is only controlled by the its memory usage.
 
 
-{\bf Fault resilence.}
+
+
