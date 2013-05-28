@@ -78,42 +78,32 @@ Thus there is no data dependence between VMs.
 For cross-VM deduplication, there is a data dependence among VMs and we would minimize the faiulre impact
 of shared blocks by adding extra replcas of those shared blocks.
 
- 
-
- 
-{\bf Snapshot Representation}.
-The virtual device driver uses a bitmap to track the changes 
-that have been made to virtual disk.
-Every bit in the bitmap represents a fix-sized (2MB) region called \textit{segment}, indicates whether the segment
-is modified since last backup. Hence we could treat segment as the basic unit in snapshot backup similar to
-file in normal backup: a snapshot could share a segment with previous snapshot it is not changed. 
-Moreover, we break 
-segments into var-sized chunks (average 4KB) using content-based chunking algorithm,
-which brings the opportunity of fine-grained deduplication by
-allowing data sharing between segments.
-
-\begin{figure}[htbp]
-  \centering
-  \epsfig{file=images/snapshot_representation.eps, width=3.7in}
-  \caption{An example of snapshot representation.}
-  \label{fig:snapshot}
-\end{figure}
-As a result, the representation of each snapshot is designed as a two-level index data structure 
-in the form of a hierarchical directed acyclic graph as shown in Figure \ref{fig:snapshot}.
-A snapshot recipe contains a list of segments, each of which is represented as a segment recipe
-that holds the meatdata of its chunks. We choose this two-level structure because in practice we
-observe that during each backup period only a small amount of VM data are added or modified. 
-As the result, even the metadata of two snapshots can be highly similar, 
-thus aggregating a large number of chunks as one segment can significantly reduce the space cost of snapshot metadata.
-Furthermore, instead of using variables-sized segments, we use a dirty bit to capture the change status of fix-sized
-segments which greatly ease the segment-level deduplication.
-
-In both two kind of recipes, 
-they do not include the actual data but only have
- references point to the data which are either stored in append store or CDS.
-In our implementation the data reference is a 8 bytes field which is either an 
-ASID (discuss in \ref{sect:append} or an offset of 
-An additional flag indicates
+This section analyzes the choice of popular blocks and its impact on the deduplication efficiency.
+It also  compares the  fault resilience of our VM-centric deduplication approach with a standand approach using 
+global deduplication.
 
 
+{\bf Impact of CDS deduplication.}
+Our empirical study based on VM images from production environment\cite{ieeecloud} showed that the
+frequency of data duplication follows Zipf-like distribution\cite{zipf},
+with the exponent $\alpha$ between 0.65 ~ 0.70.
+As a result, it can be proved that deduplication efficiency of CDS index is scalable:
 
+[Describe the dedup efficiency model in detail]
+Let $S_c$ be the total number of FPs in CDS, $S_g$ be the total number of FPs in global index, $F$ be the size of a FP, $N$ be the number of nodes in the cluster, $m$ be the memory on each node that are used by CDS, $D$ be the amount of data on each node, and $B$ be the average block size. The deduplication efficiency will be:
+\begin{equation}
+  E = (S_c / S_g)^{1-\alpha}
+\end{equation}
+The $S_c$ and $S_g$ can be expressed as:
+\begin{equation}
+S_c = N*m/F, S_g = N*D/B
+\end{equation}
+By replacing $S_c$ and $S_g$ in the first formula, we have:
+\begin{equation}
+  E = (\frac{m*B}{F*D})^{1-\alpha}
+\end{equation}
+
+Since $B$, $D$ and $F$ are pre-configured constants, the deduplication efficiency of CDS is only controlled by the its memory usage.
+
+
+{\bf Fault resilence.}

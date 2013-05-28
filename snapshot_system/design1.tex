@@ -1,5 +1,43 @@
 \section{Prototype Design}
 
+
+ 
+{\bf Snapshot Representation}.
+The virtual device driver uses a bitmap to track the changes 
+that have been made to virtual disk.
+Every bit in the bitmap represents a fix-sized (2MB) region called \textit{segment}, indicates whether the segment
+is modified since last backup. Hence we could treat segment as the basic unit in snapshot backup similar to
+file in normal backup: a snapshot could share a segment with previous snapshot it is not changed. 
+Moreover, we break 
+segments into var-sized chunks (average 4KB) using content-based chunking algorithm,
+which brings the opportunity of fine-grained deduplication by
+allowing data sharing between segments.
+
+\begin{figure}[htbp]
+  \centering
+  \epsfig{file=images/snapshot_representation.eps, width=3.7in}
+  \caption{An example of snapshot representation.}
+  \label{fig:snapshot}
+\end{figure}
+As a result, the representation of each snapshot is designed as a two-level index data structure 
+in the form of a hierarchical directed acyclic graph as shown in Figure \ref{fig:snapshot}.
+A snapshot recipe contains a list of segments, each of which is represented as a segment recipe
+that holds the meatdata of its chunks. We choose this two-level structure because in practice we
+observe that during each backup period only a small amount of VM data are added or modified. 
+As the result, even the metadata of two snapshots can be highly similar, 
+thus aggregating a large number of chunks as one segment can significantly reduce the space cost of snapshot metadata.
+Furthermore, instead of using variables-sized segments, we use a dirty bit to capture the change status of fix-sized
+segments which greatly ease the segment-level deduplication.
+
+In both two kind of recipes, 
+they do not include the actual data but only have
+ references point to the data which are either stored in append store or CDS.
+In our implementation the data reference is a 8 bytes field which is either an 
+ASID (discuss in \ref{sect:append} or an offset of 
+An additional flag indicates
+
+
+
 The architecture of our snapshot backup service contains the following components:
 \begin{itemize}
 
