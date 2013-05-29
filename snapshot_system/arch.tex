@@ -1,25 +1,41 @@
-\section{Design Overview}
+\section{Architecture and Implementation Details}
 %[describe what is going to be presented in this section]
-We start by analyzing the main features in the design of our system.
-We first present its architecture,
-then introduce the two major contributions: the colocated deduplication 
-scheme and the snapshot deletion strategy.
-\subsection{Architecture}
+%We start by analyzing the main features in the design of our system.
+%We first present its architecture,
+%then introduce the two major contributions: the colocated deduplication 
+%scheme and the snapshot deletion strategy.
+%\subsection{Architecture}
 %[describe the cloud environment]
-Our architecture, as shown in figure.\ref{fig:arch}, is built on top of 
-Alibaba's platform which is the largest cloud service provider in China. 
-A typical VM cluster in our cloud environment
-consists of from hundreds to thousands of physical machines, each of which can
-host tens of xen-based\cite{Barham2003} VMs.
-Alibaba's cloud platform provides a hadoop-like infrastructure, 
-which includes several highly scalable distributed service:
+
+
+%Our architecture, as shown in figure.\ref{fig:arch}, is built on top of 
+%Alibaba's platform which is the largest cloud service provider in China. 
+%A typical VM cluster in our cloud environment
+%consists of from hundreds to thousands of physical machines, each of which can
+%host tens of xen-based\cite{Barham2003} VMs.
+%Alibaba's cloud platform provides a hadoop-like infrastructure, 
+%which includes several highly scalable distributed service:
+
+Our system runs on a cluster of Linux machines with Xen-based VMs.
+A distributed file system (DFS) manages  the physical disk storage and we use 
+QFS~\cite{QFS}. 
+All data needed for VM services, such as virtual disk images used by runtime VMs,
+and snapshot data for backup purposes, reside in this distributed file system. 
+One physical node hosts tens of VMs, each of which access its virtual machine disk image through the
+virtual block device driver (called TapDisk\cite{Warfield2005} in Xen).
+
+
+
+
+\comments{
 \begin{description}
 \item[Distributed file system] This is a scalable distributed file system (DFS) being optimized for many large and sequential reads or appends. DFS holds the responsibility of managing physical disk storage
-in the cloud. All data needed for VM services, such as virtual disk images used by runtime VMs,
+in the cloud. 
+All data needed for VM services, such as virtual disk images used by runtime VMs,
 and snapshot data for backup purposes, reside in this distributed file system. 
 %\item[KV]: a distributed key-value store for managing structured data.
 %\item[MapReduce]: a distributed data processing framework supports Map-Reduce\cite{Dean2004}.
-\item[Distributed memory cache]: A distributed memory object caching system helps us to hold the fingerprints of those popular data blocks for deduplication inqueries. 
+\item[Distributed memory cache]: A distributed memory object caching system helps us to hold the fingerprints of those popular data blocks for deduplication inquiries. 
 \end{description}
 In addition, our implementation also uses MapReduce to facilitate the offline
 data processing, and stores a small amount of snapshot metadata in a 
@@ -28,11 +44,12 @@ BigTable-like persistent key-value store.
 %[describe the benefits of using mature cloud technologies]
 In general, our snapshot system and the virtual machine management service 
 rely on these fundamental cloud services
-to be functional. Such a colocated deduplication architecture allow us 
+to be functional. Such a co-located deduplication architecture allow us 
 to enjoy the benefits from these mature technologies 
-such as load balancing, scalability, and fault tolerancy.
+such as load balancing, scalability, and fault tolerance.
 Moreover, all the above cloud services can easily find their open-source counterparts,
 which improves the generality of our architecture and deduplication scheme.
+
 
 {\bf Snapshot Representation}
 The virtual device driver uses a bitmap to track the changes 
@@ -41,33 +58,72 @@ Every bit in the bitmap represents a fix-sized (2MB) region called \textit{segme
 is modified since last backup. Hence we could treat segment as the basic unit 
 in snapshot backup similar to
 file in normal backup: a snapshot could share a segment with previous snapshot it is not changed. 
-Moreover, we break 
-segments into var-sized chunks (average 4KB) using content-based chunking algorithm,
+Moreover, we break segments into var-sized chunks (average 4KB) using content-based chunking algorithm,
 which brings the opportunity of fine-grained deduplication by
 allowing data sharing between segments.
+}
 
-\begin{figure}[htbp]
-  \centering
-  \epsfig{file=images/snapshot_representation.pdf, width=3in}
-  \caption{An example of snapshot representation.}
-  \label{fig:snapshot_rep}
-\end{figure}
-As a result, the representation of each snapshot is designed as a two-level index data structure 
-in the form of a hierarchical directed acyclic graph as shown in Figure \ref{fig:snapshot_rep}.
-A snapshot recipe contains a list of segments, each of which is represented as a segment recipe
-that holds the meatdata of its chunks. We choose this two-level structure because in practice we
-observe that during each backup period only a small amount of VM data are added or modified. 
-As the result, even the metadata of two snapshots can be highly similar, 
-thus aggregating a large number of chunks as one segment can significantly reduce the space cost of snapshot metadata.
-Furthermore, instead of using variables-sized segments, we use a dirty bit to capture the change status of fix-sized
-segments which greatly ease the segment-level deduplication.
+\subsection{ Components of a cluster node } 
 
-In both two kind of recipes, 
-they do not include the actual data but only have
- references point to the data which are either stored in append store or CDS.
-In our implementation the data reference is a 8 bytes field which is either an 
-ASID (discuss in \ref{sect:append}) or an offset of an additional flag indicates
-the location of CDS data.
+As  depicted in Figure~\ref{fig:arch_vm}, 
+there are four key service components running on each cluster
+node  for supporting backup and deduplication: 
+1) a virtual block device driver, 2) a snapshot deduplication component,
+3) an append store client which provides facilities to store  and access snapshot data,
+and 4)  a CDS client to support CDS index access. We will further discuss our deduplication scheme 
+in Section~\ref{sec:dedup}.
+
+
+We use the virtual device driver in Xen that employs a bitmap to track the changes 
+that have been made to virtual disk.
+%This driver maintains a map of dirty bits to record the change status of every fix-size segment of the virtual disk. 
+When the VM issue a disk write, the bits corresponding to the segments that covers 
+the modified disk region are set, thus letting snapshot deduplication component knows these
+segments must be checked during snapshot backup. After the snapshot backup is finished, 
+snapshot deduplication component acknowledges the driver to resume the dirty-bits map to
+a clean state.
+Every bit in the bitmap represents a fix-sized (2MB) region called \textit{segment}, indicates whether the segment
+is modified since last backup. Hence we could treat segment as the basic unit 
+in snapshot backup similar to
+file in normal backup: a snapshot could share a segment with previous snapshot it is not changed. 
+As a standard practice, segments are further divided into variable-sized chunks (average 4KB) 
+using content-based chunking algorithm, which brings the opportunity of fine-grained deduplication by
+allowing data sharing between segments.
+
+The representation of each snapshot has  a two-level index data structure.
+%in the form of a hierarchical directed acyclic graph as shown in Figure \ref{fig:snapshot}.
+The snapshot meta data (called snapshot recipe) contains a list of segments, each of which contains segment
+metadata of its chunks (called segment recipe).
+%\begin{figure}[htbp]
+%  \centering
+%  \epsfig{file=images/snapshot_representation.pdf, width=3in}
+%  \caption{An example of snapshot representation.}
+%  \label{fig:snapshot_rep}
+%\end{figure}
+%As a result, the representation of each snapshot is designed as a two-level index data structure 
+%in the form of a hierarchical directed acyclic graph as shown in Figure \ref{fig:snapshot_rep}.
+%A snapshot recipe contains a list of segments, each of which is represented as a segment recipe
+%that holds the meatdata of its chunks. We choose this two-level structure because in practice we
+%observe that during each backup period only a small amount of VM data are added or modified. 
+%As the result, even the metadata of two snapshots can be highly similar, 
+%thus aggregating a large number of chunks as one segment can significantly reduce the space cost of snapshot metadata.
+%Furthermore, instead of using variables-sized segments, we use a dirty bit to capture the change status of fix-sized
+%segments which greatly ease the segment-level deduplication.
+In a snapshot recipes or a segment recipe, 
+the data structures  includes reference pointers to the actual data location.
+%In our implementation the data reference is a 8 bytes field which is either an 
+%ASID (discuss in Section \ref{sect:append}) or an offset of an additional flag indicates
+%the location of CDS data.
+
+
+
+
+
+%\subsection{ Snapshot management}
+
+
+
+
 
 \begin{figure}
     \centering
@@ -82,41 +138,36 @@ the location of CDS data.
         \includegraphics[width=3in]{images/socc_arch_cluster.pdf}
         \label{fig:arch_cluster}
     }
-    \caption{System architecture}
+    \caption{System architecture.}
     \label{fig:arch}
 \end{figure}
 
 %[describe the architecture frm node side]
-{\bf Node Architecuture} 
-Our node-side architecture, depicted in figure.\ref{fig:arch_vm}, consists of
-two main entities: a virtual block device driver, and a snapshot deduplication component.
-
 %[brief the virtual device driver]
-One physical node hosts tens of VMs, each of which access its virtual machine disk image through the
-virtual block device driver (called TapDisk\cite{Warfield2005} in Xen).
-This driver maintains a map of dirty-bits to record
-the change status of every fix-size segment of the virtual disk. 
-When the VM issue a disk write, the bits coresponding to the segments that covers 
-the modified disk region are set, thus letting snapshot deduplication component knows these
-segments must be checked during snapshot backup. After the snapshot backup is finished, 
-snapshot deduplication component acknowledges the driver to resume the dirty-bits map to
-a clean state.
+%One physical node hosts tens of VMs, each of which access its virtual machine disk image through the
+%virtual block device driver (called TapDisk\cite{Warfield2005} in Xen).
+%This driver maintains a map of dirty-bits to record
+%the change status of every fix-size segment of the virtual disk. 
+%When the VM issue a disk write, the bits coresponding to the segments that covers 
+%the modified disk region are set, thus letting snapshot deduplication component knows these
+%segments must be checked during snapshot backup. After the snapshot backup is finished, 
+%snapshot deduplication component acknowledges the driver to resume the dirty-bits map to
+%a clean state.
 
 %[brief the snapshot deduplication]
-The snapshot deduplication component consists of the chunking and deduplication 
-logic of our snapshot storage system. We choose 
-
-It contains an append store client which provides facilities to manage stored snapshot data, and a CDS client to support CDS index access. We will further discuss our deduplication scheme in section\ref{sec:dedup}.
+%The snapshot deduplication component consists of the chunking and deduplication 
+%logic of our snapshot storage system. We choose 
 
 %[describe the arch from cluster side]
-{\bf Cluster Architecture}
+
 
 %[describe the data structure in underlying storage]
-{\bf Append Store}
-Append Store (AS) is our underlining storage engine for storing snapshot data after deduplication. 
-AS is built on top of our highly scalable distributed file system (DFS), 
-which is very similar to Google's file system
-in a sense that it is optimized for large files and sequential read/append operations.
+\subsection{Append store for backup data}
+The Append Store (AS) is our underlining storage engine for storing snapshot data in the distributed file system
+after deduplication.
+%AS is built on top of our highly scalable distributed file system (DFS), 
+%which is very similar to Google's file system
+%in a sense that it is optimized for large files and sequential read/append operations.
 
 \begin{figure}[htbp]
   \centering
@@ -125,7 +176,7 @@ in a sense that it is optimized for large files and sequential read/append opera
   \label{fig:as_arch}
 \end{figure}
 
-Append Store supplies three interfaces: {\em get(ref)} accepts a data reference and retrives data, 
+AS supplies three interfaces: {\em get(ref)} accepts a data reference and retrieves data, 
 {\em put(data)} accepts data and returns a reference to be stored in metadata recipes, 
 {\em delete(ref)} 
 deletes the data pointed by the reference.
@@ -160,7 +211,7 @@ container index file specified by the container ID, then search the CBlock index
 After that, it reads the whole CBlock data from DFS, decompress it, seek the exact chunk data specified by CID. 
 Finally, the client updates itws internal chunk data cache with the newly loaded contents to anticipate future sequential reads.
 
-Write requests to append store are accumlated. When the number reaches $m$, the AS client forms a CBlock by assigning 
+Write requests to append store are accumulated. When the number reaches $m$, the AS client forms a CBlock by assigning 
 every chunk a CID, compress the CBlock data, and append it to the CBlock data file. Then a new CBlock index entry is appended
 to CBlock index.
 
@@ -175,6 +226,8 @@ However, every chunk's CID is plainly copied rather than re-generated. This does
 order of CIDs in new container, but just leaving holes in CID values. As the result, all data references stored 
 in upper level recipes are unaffected, and the data reading process is as efficient as before.
 
+
+\comments{
 \subsection{Snapshot Deduplication and Fault Isolation}
 \label{sect:dedupe}
 %snapshot representation
@@ -183,7 +236,7 @@ Our  deduplication scheme compares the fingerprints of the current snapshot
 with its parent snapshot and also other snapshots in the entire cloud.
 This process performs   the duplication in two categories: \textit{Inner-VM} and \textit{Cross-VM}. 
 Inner-VM duplication exists between VM's snapshots, because the majority of data are unchanged during each backup period. 
-Such localization increases data independency between different VM backups,
+Such localization increases data independence between different VM backups,
 simplifies snapshot management and statistics collection,
 and facilitates parallel execution of snapshot operations.
 On the other hand, Cross-VM duplication is mainly due to widely-used software and libraries. 
@@ -193,14 +246,14 @@ the cost of deduplication while maximize the its efficiency at each level,
 and it is parallel since each segment is processed independently.
 
 \begin{itemize}
-\item \textbf{Dirty-based corase-grain inner-VM deduplication.}
-The first-level deduplication is to follow the standand dirty bit approach, but is conducted
+\item \textbf{Dirty-based coarse-grain inner-VM deduplication.}
+The first-level deduplication is to follow the standard dirty bit approach, but is conducted
 in the coarse grain segment level.
-We use the  Xen virtual device driver which supports dirty bits for thestorage device
-and the dirty bit setting is maintained in a corase grain level we call it a segment.
+We use the  Xen virtual device driver which supports dirty bits for the storage device
+and the dirty bit setting is maintained in a coarse grain level we call it a segment.
 In our implementation, the segment size is 2MB. 
-Since every write for a block will touch a dirty bit, the device driver maintains dirtybits in memory
-and cannot affort a small segment  size.
+Since every write for a block will touch a dirty bit, the device driver maintains dirty bits in memory
+and cannot afford a small segment  size.
 
 \item \textbf{Chunk-level fine-grain nearby duplicate detection.}
 
@@ -209,7 +262,7 @@ in the average of 4K or 8K~\cite{??}.
 Thus the second-level inner-VM deduplication is to assess in this
 level, but only for those dirty  segments. 
 We load the fingerprints of block chunks of the corresponding segment from the
-parent for a comparisons and compare near-by fingerprint matching within this segement.
+parent for a comparisons and compare near-by fingerprint matching within this segment.
 The amount of memory for maintaining those fingerprints  is small.
 For example, with a 2MB segment, there are about 500 fingerprints to compare.
 
@@ -232,7 +285,7 @@ For example, with a 2MB segment, there are about 500 fingerprints to compare.
 %and a tiny amount of memory to hold it in main memory.
 
 \item \textbf{Cross-VM deduplication.}
-This step accomplishes the standand global fingerprint  comparison as conducted
+This step accomplishes the standard global fingerprint  comparison as conducted
 in the previous work~\cite{??}.
 One key observation is that the inner deduplication has removed many of duplicates.
 There are not lot of deduplication opportunities cross VMs while the memory
@@ -247,11 +300,11 @@ Our objective for fault isolation is to minimize the number of VMs affected when
 in the cluster.  The inner-VM deduplication does not depend on any global service and the comparison
 for each VM is localized within the parent and the current snapshot.
 Thus there is no data dependence between VMs.
-For cross-VM deduplication, there is a data dependence among VMs and we would minimize the faiulre impact
-of shared blocks by adding extra replcas of those shared blocks.
+For cross-VM deduplication, there is a data dependence among VMs and we would minimize the failure impact
+of shared blocks by adding extra replicas of those shared blocks.
 
 This section analyzes the choice of popular blocks and its impact on the deduplication efficiency.
-It also  compares the  fault resilience of our VM-centric deduplication approach with a standand approach using 
+It also  compares the  fault resilience of our VM-centric deduplication approach with a standard approach using 
 global deduplication.
 
 
@@ -288,3 +341,4 @@ By replacing $S_c$ and $S_g$ in the first formula, the deduplication efficiency 
 Since $B$, $D$ and $F$ are pre-configured constants, the deduplication efficiency of CDS is only controlled by the its memory usage.
 
 \subsection{Snapshot Summaries for Deletion}
+}

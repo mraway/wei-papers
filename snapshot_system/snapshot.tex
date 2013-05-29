@@ -1,4 +1,4 @@
-\section{Snapshot Deduplication and Fault Isolation}
+\section{Snapshot Deduplication}
 \label{sect:dedupe}
 %snapshot representation
 
@@ -90,28 +90,36 @@ It also  compares the  fault resilience of our VM-centric deduplication approach
 global deduplication.
 
 \subsubsection{Impact of CDS deduplication}
+
 Our empirical study based on VM images from production environment\cite{ieeecloud} showed that the
 frequency of data duplication follows Zipf-like distribution\cite{zipf},
 with the exponent $\alpha$ between 0.65 ~ 0.70.
 As a result, it can be proved that deduplication efficiency of CDS index is scalable:
 
-[Describe the dedup efficiency model in detail]
-Let $S_c$ be the total number of FPs in CDS, $S_g$ be the total number of FPs in global index, $F$ be the size of a FP, $N$ be the number of nodes in the cluster, $m$ be the memory on each node that are used by CDS, $D$ be the amount of data on each node, and $B$ be the average block size. The deduplication efficiency will be:
+For the Zipf-like distribution, an approximation to the sum of the first $n$ 
+elements of the distribution can be derived as follows:
 \begin{equation}
-  E = (S_c / S_g)^{1-\alpha}
+\sum_{i=1}^{n}\frac{1}{i^\alpha}\approx \int_{1}^{n}\frac{1}{x^\alpha}\mathrm{d}x=\frac{x^{1-\alpha}}{1-\alpha}=\frac{n^{1-\alpha}}{1-\alpha}\;  for\;  \alpha<1
 \end{equation}
-{\bf How this is derived?} 
-The $S_c$ and $S_g$ can be expressed as:
+
+So the cumulative distribution function for a CDS holding top $S_c$ fingerprints
+of global index with size $S_g$ is:
+
+\begin{equation}
+  E = (S_c / S_g)^{1-\alpha} \;  for\;  \alpha<1
+\end{equation}
+
+%[Describe the dedup efficiency model in detail]
+Let $N$ be the number of nodes in the cluster, $m$ be the memory on each node that are used by CDS, $D$ be the amount of data on each node, and $B$ be the average block size. Then $S_c$ and $S_g$ can be expressed as:
 \begin{equation}
 S_c = N*m/F, S_g = N*D/B
 \end{equation}
-By replacing $S_c$ and $S_g$ in the first formula, we have:
+
+By replacing $S_c$ and $S_g$ in the first formula, the deduplication efficiency becomes:
 \begin{equation}
   E = (\frac{m*B}{F*D})^{1-\alpha}
 \end{equation}
 
 Since $B$, $D$ and $F$ are pre-configured constants, the deduplication efficiency of CDS is only controlled by the its memory usage.
-
-
 
 
