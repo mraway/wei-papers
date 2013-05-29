@@ -40,7 +40,6 @@ Since every write for a block will touch a dirty bit, the device driver maintain
 and cannot affort a small segment  size.
 
 \item \textbf{Chunk-level fine-grain nearby duplicate detection.}
-
 The best deduplication uses a nonuniform chunk size 
 in the average of 4K or 8K~\cite{??}.
 Thus the second-level inner-VM deduplication is to assess in this
@@ -101,6 +100,7 @@ Let $S_c$ be the total number of FPs in CDS, $S_g$ be the total number of FPs in
 \begin{equation}
   E = (S_c / S_g)^{1-\alpha}
 \end{equation}
+{\bf How this is derived?} 
 The $S_c$ and $S_g$ can be expressed as:
 \begin{equation}
 S_c = N*m/F, S_g = N*D/B
