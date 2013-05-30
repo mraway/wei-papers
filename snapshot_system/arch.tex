@@ -277,7 +277,7 @@ of global index with size $S_g$ is:
 %[Describe the dedup efficiency model in detail]
 Let $N$ be the number of nodes in the cluster, $m$ be the memory on each node that are used by CDS, $D$ be the amount of data on each node, and $B$ be the average block size. Then $S_c$ and $S_g$ can be expressed as:
 \begin{equation}
-S_c = N*m/F, S_g = N*D/B
+S_c = N*m/F, \; S_g = N*D/B
 \end{equation}
 By replacing $S_c$ and $S_g$ in the first formula, the deduplication efficiency becomes:
 \begin{equation}
@@ -329,22 +329,32 @@ We cannot simply repeat the phase 1 multiple times to reduce temporary storage l
 
 %uses the logical a bloom filter to check if a data are still referenced by living snapshots. 
 {\bf Discussion}
-For one VM's snapshots, let $D_{leak}$ be the amount of storage leakage, 
+For one VM's snapshots, let $L_{temp}$ be the amount of temporary storage leakage, 
 $D_{del}$ be the average amount of data that should be physically deleted in one snapshot deletion,
 $P_{1}$ be the false-positive rate of merged bloom filter type-1,
-$N_1$ be the number of runs of approximate deletion phase-1, then we have:
+$N_1$ be the number of runs of deletion phase-1 during the gap of two deletion phase-2 operations, then we have:
 \begin{equation}
-D_{leak} = N_1 * P_b * D_{del}
+L_{temp} = N_1 * P_b * D_{del}
 \end{equation}
 
-We let approxmite deletion phase-2 be triggered  
-when $D_{leak}/D_{del}$ is accmulated to exceed certain threshold $t$:
+If we let approxmite deletion phase-2 be triggered  
+when $L_{temp}/D_{del}$ is accmulated to exceed certain threshold $t$, then:
 \begin{equation}
-\frac{D_{leak}}{D_{del}} = N_1 * P_1 > t \Rightarrow N_{1} > \frac{t}{P_1}
+\frac{L_{temp}}{D_{del}} = N_1 * P_1 > t \Rightarrow N_{1} > \frac{t}{P_1}
 \end{equation}
+
+Let $P_{2}$ be the false-positive rate of merged snapshot summaries type-2,
+$L_{perm}$ be the permanent storage leakage resulting from the approxmite deletion phase-2,
+it can be calculated as follows: 
+\begin{equation}
+L_{perm} = 
+\end{equation}
+
 For example, letting $P_1 = 0.01$ and $t=1.0$, 
 we would expect deletion phase-2 be triggered once for 
 every $T/P_{bl} = 100$ runs of deletion phase-1.
 On a node that hosts 20 VMs and each VM deletes one snapshot per day, there would be 
 only 1 deletion phase-2 scheduled for every 5 days, which is sufficiently small to prevent the 
 heavy I/O workload of deletion phase-2 from disturbing normal VM opeations.
+
+

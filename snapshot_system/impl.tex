@@ -2,24 +2,6 @@
 \subsection{Snapshot Backup}
 \subsection{Snapshot Read}
 \subsection{Snapshot Deletion}
-In a mature VM cluster, snapshot deletions are as frequent as snapshot creations.
-Our system adopts lazy delete strategy so that all snapshot deletions are scheduled
-in the backup time window at midnight. 
-Therefore, snapshot deletions must be fast enough to fit in time window and
-efficient enough to satisfy our resource constraints.
-However, there is no simple solution can achieve these goals with high reliability.
-In Aliyun's cloud, we use a {\em fuzzy deletion} method to trade deletion accuracy for
-speed and resource usage. This method tolerates a tiny percentage of storage leakage
-to make the deletion operation faster and efficient by an order of magnitude,
-yet we still adopt an slow but accurate deletion method to fix such leakage in the long-term.
-Our hybrid deletion strategy, using fuzzy deletion regularly and accurate deletion periodically,
-accomplishs our speed, resource usage and relibility goals very well.
-
-{\bf Approximate Deletion}
-We design approximate deletion to fast identify unused data in the append store.
-Instead of scanning the whold append store, it uses a bloom filter to check 
-if a data are still referenced by living snapshots. However, there is a small false-positive probility which
-would indetify unused data as in use, i.e., storage leakage.
 The following steps would take place during an approximate deletion:
 
 \begin{enumerate}
@@ -40,48 +22,3 @@ T = (N_{SS} + 1) * T_{scan\_recipes}
 Using the example and analysis in previous section, this approximate deletion can be done in 5 minutes. 
 Memory usage of the bloom filter depends on its false-positive probility $P_{bl}$,
 when set $P_{bl}$ to 0.01, the memory footprint of approximate deletion is about 15 MB.
-
-The design goal of approximate deletion is to reduce the frequency of running accurate deletion.
-For one VM's snapshots, let $D_{leakage}$ be the amount of storage leakage, $D_{del}$ be the average amount of data
-to be deleted in one snapshot deletion, 
-then we have:
-\begin{equation}
-D_{leakage} = N_{approximate} * P_{bl} * D_{del}
-\end{equation}
-where $N_{approximate}$ is the number of runs of approximate deletion. 
-An accurate deletion is triggered to fix the storage leakage
-when $D_{leakage}/D_{del}$ is accmulated to exceed certain threshold $T$:
-\begin{equation}
-D_{leakage} / D_{del} = N_{approximate} * P_{bl} > T \Rightarrow N_{approximate} > T/P_{bl}
-\end{equation}
-Therefore, when $P_{bl} = 0.01$ and $T=1$, 
-there would be a run of accurate deletion for every $T/P_{bl} = 100$ runs of approximate deletion.
-On a machine that hosts 20 VMs and each VM deletes snapshot daily, there would be less than
-one accurate deletion scheduled per day.
-
-{\bf Append Store Cleanup}
-Our accurate deletion uses mark-and-sweep to find all the unused chunks in a VM's append store.
-The following steps would take place during an accurate deletion:
-
-\begin{enumerate}
-\item Scan all the containers. For each container, extract full list of existing data references and allocate a bitmap. 
-(Notice this list is self sorted.)
-\item Scan all the snapshot recipes and segment recipes. For every data reference pointing to append store,
-find it in the above lists and mark the corresponding position in bitmaps.
-\item Scan the bitmaps, for every bit that are not marked, tell append store the corresponding data reference can be deleted.
-\end{enumerate}
-
-Although accurate deletion guarantees reliability and correctness, its speed and resource usage are big problems to our VM cloud.
-Let $T_{scan\_AS}$ be the time to scan the VM's append store, $T_{scan\_recipes}$ be the time to scan one snapshot recipe
-and its segment recipes, $T_{mark}$ be the time of finding a data reference in the list and mark bitmap, 
-$N_{SS}$ be the number of snapshots and $N_c$ be the number of chunks in one snapshot.
-The overall time of running an accurate deletion for one VM is:
-\begin{equation}
-T = T_{scan\_AS} + N_{SS} * T_{scan\_recipes} + N_{SS} * N_c * T_{mark}
-\end{equation}
-
-For a virtual disk that has 10 snapshots, 50 GB of data in the append store, $T_{scan\_AS}$ would have cost half an hour already.
-In addition, scanning recipes of 10 snapshots cost another 5 minutes.
-Furthermore, maintaining the full lists of data references and bitmaps costs about 100 MB of memory. Having tens of VMs
-co-lived in one physical machine and deleting snapshot on a daily basis, 
-it's infeasible to run accurate deletion as frequent as snapshot deletions.
