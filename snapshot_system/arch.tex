@@ -1,3 +1,52 @@
+\comments{
+\section{Design Overview}
+\label{sect:design}
+%[describe what is going to be presented in this section]
+We start by analyzing the main features in the design of our system.
+We first present its architecture,
+then introduce the two major contributions: the colocated deduplication 
+scheme and the snapshot deletion strategy.
+
+\begin{figure}
+    \centering
+    \subfigure[Cluster architecture]
+    {
+        \includegraphics[width=3in]{images/socc_arch_cluster.pdf}
+        \label{fig:arch_cluster}
+    }
+    \\
+    \subfigure[Node architecture from VM point of view]
+    {
+        \includegraphics[width=3in]{images/socc_arch_vm.pdf}
+        \label{fig:arch_vm}
+    }
+    \caption{System architecture}
+    \label{fig:arch}
+\end{figure}
+
+\subsection{Architecture}
+\label{sect:arch}
+%[describe the cloud environment]
+Our architecture, as shown in figure.\ref{fig:arch}, is built on top of 
+Alibaba's platform which is the largest cloud service provider in China. 
+
+%[describe the arch from cluster side]
+{\bf Cluster Architecture}
+A typical VM cluster in our cloud environment
+consists of from hundreds to thousands of physical machines, each of which can
+host tens of xen-based\cite{Barham2003} VMs.
+Alibaba's cloud platform provides a hadoop-like infrastructure, 
+which includes several highly scalable distributed service:
+\begin{enumerate}
+\item {\bf Distributed file system} This is a scalable distributed file system (DFS) being optimized for many large and sequential reads or appends. DFS holds the responsibility of managing physical disk storage
+in the cloud. All data needed for VM services, such as virtual disk images used by runtime VMs,
+and snapshot data for backup purposes, reside in this distributed file system. 
+%\item[KV]: a distributed key-value store for managing structured data.
+%\item[MapReduce]: a distributed data processing framework supports Map-Reduce\cite{Dean2004}.
+\item {\bf Distributed memory cache} A distributed memory object caching system helps us to hold the fingerprints of those popular data blocks for deduplication inqueries. 
+\end{enumerate}
+}
+
 \section{Architecture and Implementation Details}
 %[describe what is going to be presented in this section]
 %We start by analyzing the main features in the design of our system.
@@ -24,9 +73,6 @@ and snapshot data for backup purposes, reside in this distributed file system.
 One physical node hosts tens of VMs, each of which access its virtual machine disk image through the
 virtual block device driver (called TapDisk\cite{Warfield2005} in Xen).
 
-
-
-
 \comments{
 \begin{description}
 \item[Distributed file system] This is a scalable distributed file system (DFS) being optimized for many large and sequential reads or appends. DFS holds the responsibility of managing physical disk storage
@@ -37,6 +83,7 @@ and snapshot data for backup purposes, reside in this distributed file system.
 %\item[MapReduce]: a distributed data processing framework supports Map-Reduce\cite{Dean2004}.
 \item[Distributed memory cache]: A distributed memory object caching system helps us to hold the fingerprints of those popular data blocks for deduplication inquiries. 
 \end{description}
+
 In addition, our implementation also uses MapReduce to facilitate the offline
 data processing, and stores a small amount of snapshot metadata in a 
 BigTable-like persistent key-value store. 
@@ -49,6 +96,29 @@ to enjoy the benefits from these mature technologies
 such as load balancing, scalability, and fault tolerance.
 Moreover, all the above cloud services can easily find their open-source counterparts,
 which improves the generality of our architecture and deduplication scheme.
+
+
+%[describe the architecture frm node side]
+{\bf Node Architecuture} 
+Our node-side architecture, depicted in figure.\ref{fig:arch_vm}, consists of
+two main entities: a virtual block device driver, and snapshot deduplication component.
+
+%[brief the virtual device driver]
+In Alibaba's VM cloud, every VM access its virtual machine disk image through the
+virtual block device driver (called TapDisk\cite{Warfield2005} in Xen).
+This driver maintains a map of dirty-bits to record
+the change status of every fix-size segment of the virtual disk. 
+When the VM issue a disk write, the bits coresponding to the segments that covers 
+the modified disk region are set, thus letting snapshot deduplication component knows these
+segments must be checked during snapshot backup. After the snapshot backup is finished, 
+snapshot deduplication component acknowledges the driver to resume the dirty-bits map to
+a clean state.
+
+%[brief the snapshot deduplication]
+The snapshot deduplication component consists of the chunking and deduplication 
+logic of our snapshot storage system. We choose 
+
+It contains an append store client which provides facilities to manage stored snapshot data, and a CDS client to support CDS index access. We will further discuss our deduplication scheme in section\ref{sect:dedupe}.
 
 
 {\bf Snapshot Representation}
@@ -119,7 +189,7 @@ the data structures  includes reference pointers to the actual data location.
 
 
 
-%\subsection{ Snapshot management}
+%\subsection{Snapshot management}
 
 
 
@@ -171,7 +241,7 @@ after deduplication.
 
 \begin{figure}[htbp]
   \centering
-  \epsfig{file=images/append_store_arch.pdf, width=3.5in}
+  \epsfig{file=images/append_store_arch.pdf, width=3in}
   \caption{Architecture of Append Store}
   \label{fig:as_arch}
 \end{figure}
@@ -227,7 +297,6 @@ order of CIDs in new container, but just leaving holes in CID values. As the res
 in upper level recipes are unaffected, and the data reading process is as efficient as before.
 
 
-\comments{
 \subsection{Snapshot Deduplication and Fault Isolation}
 \label{sect:dedupe}
 %snapshot representation
@@ -319,26 +388,104 @@ elements of the distribution can be derived as follows:
 \begin{equation}
 \sum_{i=1}^{n}\frac{1}{i^\alpha}\approx \int_{1}^{n}\frac{1}{x^\alpha}\mathrm{d}x=\frac{x^{1-\alpha}}{1-\alpha}=\frac{n^{1-\alpha}}{1-\alpha}\;  for\;  \alpha<1
 \end{equation}
-
 So the cumulative distribution function for a CDS holding top $S_c$ fingerprints
 of global index with size $S_g$ is:
-
 \begin{equation}
   E = (S_c / S_g)^{1-\alpha} \;  for\;  \alpha<1
 \end{equation}
-
 %[Describe the dedup efficiency model in detail]
 Let $N$ be the number of nodes in the cluster, $m$ be the memory on each node that are used by CDS, $D$ be the amount of data on each node, and $B$ be the average block size. Then $S_c$ and $S_g$ can be expressed as:
 \begin{equation}
-S_c = N*m/F, S_g = N*D/B
+S_c = N*m/F, \; S_g = N*D/B
 \end{equation}
-
 By replacing $S_c$ and $S_g$ in the first formula, the deduplication efficiency becomes:
 \begin{equation}
   E = (\frac{m*B}{F*D})^{1-\alpha}
 \end{equation}
-
 Since $B$, $D$ and $F$ are pre-configured constants, the deduplication efficiency of CDS is only controlled by the its memory usage.
 
-\subsection{Snapshot Summaries for Deletion}
-}
+\begin{table}
+    \begin{tabular}{llll}
+    Data size (GB) & 1\%    & 2\%    & 4\%    \\
+    14.6           & 18.6\% & 22.1\% & 31.4\% \\
+    28.1           & 19.5\% & 26.2\% & 38.8\% \\
+    44.2           & 21.7\% & 26.5\% & 36\%   \\
+    61.6           & 23.2\% & 32.9\% & 35\%   \\
+    74.2           & 23.6\% & 33.6\% & 37.5\% \\
+    \end{tabular}
+    \caption{Deduplication effectiveness of top k\% of global index}
+    \label{tab:cds}
+\end{table}
+
+\subsection{Snapshot Summaries for Approximate Deletion}
+In a busy VM cluster, snapshot deletions are as frequent as snapshot creations.
+Our system adopts lazy delete strategy so that all snapshot deletions are scheduled
+in the backup time window at midnight. 
+Therefore, snapshot deletions must be fast enough to fit in time window and
+efficient enough to satisfy our resource constraints.
+However, there is no simple solution can achieve these goals with high reliability.
+Hence we designed a two-phase {\em approximate deletion} strategy to trade deletion accuracy for
+speed and resource usage. Our method sacrifaces a tiny percentage of storage leakage
+to effectively identify unused blocks in $O(n)$ speed, with $n$ being the logical amount of blocks 
+to be deleted.
+%Our hybrid deletion strategy, using fuzzy deletion regularly and accurate deletion periodically,
+%accomplishs our speed, resource usage and relibility goals very well.
+
+{\bf Snapshot Summaries}
+
+{\bf Approximate Deletion Phase-1}
+The goal of approximate deletion phase-1 to fast identify unused blocks 
+which are no longer referenced by other snapshots after a snapshot deletion.
+Instead of scanning the entire append store indices, we merge the type-1 summaries of all
+valid snapshots. Since each VM has uniform bloom filter parameters to create snapshot summaries, 
+such merged summeries give us a compact representation of
+all block fingerprints that are still in use.
+Thus by the property of bloom filter, if a fingerprint is not found in merged summaries, 
+we are certain that block is no longer used by any valid snapshot, it would be then added
+to append store's deletion log.
+However, there is a small false-positive probility which
+would indetify unused data as in use, resulting in temporary storage leakage.
+
+{\bf Approximate Deletion Phase-2}
+%[exlpain why second bloom filter, why scan append store]
+We designed the second phase of approxmite deletion to solve the 
+temporary storage leakage problem mentioned above.
+In this phase we scan the entire append store indices, 
+using the merged type-2 snapshot summaries to check if any of them are not
+referenced by existing snapshots.
+We cannot simply repeat the phase 1 multiple times to reduce temporary storage leakage, because:
+\begin{enumerate} 
+\item After several runs of phase-1, it is proven that the merged type-1 summaries cannot sieve remaining unused blocks, due to the false-positive property of bloom filter.
+\item The recipes of deleted snapshots have been removed from the system, thus we are not able to obtain the deleted block fingerprints from any metadata, the only way to discover them is to scan the append store indices.
+\end{enumerate}
+
+{\bf Discussion}
+For one VM's snapshots, let $L_{temp}$ be the amount of temporary storage leakage, 
+$D_{del}$ be the average amount of data that should be physically deleted in one snapshot deletion,
+$P_{1}$ be the false-positive rate of merged bloom filter type-1,
+$N_1$ be the number of runs of deletion phase-1 during the gap of two deletion phase-2 operations, then we have:
+\begin{equation}
+L_{temp} = N_1 * P_1 * D_{del}
+\end{equation}
+
+If we let approxmite deletion phase-2 be triggered  
+when $L_{temp}/D_{del}$ is accmulated to exceed certain threshold $t$, then:
+\begin{equation}
+\frac{L_{temp}}{D_{del}} = N_1 * P_1 > t \Rightarrow N_{1} > \frac{t}{P_1}
+\end{equation}
+
+Let $P_2$ be the false-positive rate of merged snapshot type-2 summaries,
+$N_2$ be the number of runs of deletion phase-2,
+$L_{perm}$ be the permanent storage leakage resulting from the approxmite deletion phase-2,
+it can be calculated as follows: 
+\begin{equation}
+L_{perm} = N_2 * P_1 * P_2 * D_{del}
+\end{equation}
+
+For example, letting $P_1 = 0.01$ and $t=1.0$, 
+we would expect deletion phase-2 be triggered once for 
+every $T/P_{bl} = 100$ runs of deletion phase-1.
+On a node that hosts 20 VMs and each VM deletes one snapshot per day, there would be 
+only 1 deletion phase-2 scheduled for every 5 days, which is sufficiently small to prevent the 
+heavy I/O workload of deletion phase-2 from disturbing normal VM opeations.
+
