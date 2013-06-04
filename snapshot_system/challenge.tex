@@ -4,33 +4,38 @@
 As we discuss earlier, collocating the backup service on the existing
 cloud cluster avoids the extra cost to acquire a dedicated backup facility
 and reduces the network bandwidth consumption in transferring the un-deduplicated
-raw data for backup. The running of such a service is subject to
-the resource availability of the system and we discuss the design considerations
-as follows. 
+raw data for backup. 
+%The running of such a service is subject to the resource availability of the system and 
+We discuss the design considerations as follows. 
 
 % That arises mainly in Alibaba's Aliyun cloud service.
 %concerns
 %Base on Aliyun's production environment, the snapshot backup job has to satisfy 
 \begin{itemize}
-\item {\em Backup storage.}
-We use a distributed file system to cluster
+\item {\em Cluster-based backup storage.}
+We use a distributed file system~\cite{GFS2004,Hadoop}  to cluster
 the storage  and store the backup with multiple replicas in the clustered storage.
 There can be a concern that storing many versions  of snapshots would
 require	a large amount of storage.
 The previous research shows the deduplication can compress the backup copies 
 effectively in a 10:1 or even 15:1 rage. Assume on the average the compression
 ratio is $c$:1.  When the number of versions
-saved in the backup storage is $b$  on the average, 
-the amount of storage space in the cluster allocated  for the backup would be $\frac{b}{b+c}$.
-For example, when $b=5$ and $c=10$, 33\% of the cluster storage is used for the backup.
-When $b=9$ and $c=13$, storage usage is 40\%. 
+saved in the backup storage is $l$  on the average, 
+the amount of storage space in the cluster allocated  for the backup would be $\frac{l}{l+c}$.
+For example, when $l=5$ and $c=10$, 33\% of the cluster storage is used for the backup.
+When $l=9$ and $c=13$, storage usage is 40\%. 
 That is acceptable given today's cheap cost for disk storage.
 In the case of Alibaba, each machine hosts 25 VMs on the average and each VM uses 40GB data
 while each machine typically can provide over 10TB storage.
 Thus the normal disk usage  is about 1TB per machine, and adding 30\% to 100\% 
 extra space for the backup is not a practical concern.
 
-\item {\em Backup throughput and computing resource}.
+Since the block size in the Hadoop and GFS is uniform and large with 64MB as a default setting,
+the content block in a deduplication system is of nonuniform size with 4KB or 8KB on average.
+We need to build an intermediate layer that supports large snapshot writing with append operations
+and infrequent snapshot access.
+
+\item {\em Requirement for backup throughput and low computing resource usage}.
 As a large-scale cluster hosting tens of thousand of active VMs everyday,  the amount of data
 to be processed can be huge. 
 On the other hand, the computing resources allocated for a snapshot service is limited
@@ -155,16 +160,19 @@ It is not desirable that small scale of data failure affects the backup of many 
 %\item {Resource usage modeling and control}.
 %\end{enumerate}
 
-With these considerations in mind, we propose a decentralized backup architecture with multi-level and selective 
-deduplication. This service is hosted   in the existing set of machines and resource usage is controlled
-with a minimal impact to the existing applications.
-The deduplication process is first conducted among snapshots within each VM
-and then is conducted across VMs.  
-Given the concern that searching duplicates across VMs is a global feature which can affect parallel performance
-and complicate failure management,
-we only eliminate the duplication of a small but popular data set while still maintaining a cost-effective deduplication ratio.
-For this purpose, we exploit the data characteristics of snapshots and collect most popular data.
-Data sharing across VMs is limited within this small data set such that adding replicas for it could enhance fault tolerance.
+With these considerations in mind, we study a cluster-based backup service 
+VM-centric deduplication. This service is co-hosted   in the existing set of machines and resource usage is friendly
+to the existing applications.  
+We will first discuss and analyze the integration of the VM-centric deduplication strategies with fault isolation, and then present
+an architecture and implementation design with deletion support.
+
+%The deduplication process is first conducted among snapshots within each VM
+%and then is conducted across VMs.  
+%Given the concern that searching duplicates across VMs is a global feature which can affect parallel performance
+%and complicate failure management,
+%we only eliminate the duplication of a small but popular data set while still maintaining a cost-effective deduplication ratio.
+%For this purpose, we exploit the data characteristics of snapshots and collect most popular data.
+%Data sharing across VMs is limited within this small data set such that adding replicas for it could enhance fault tolerance.
 %
 %in the  our studies show that there are a large amount of data unmodified in VM snapshots
 %and shared among many users (e.g. OS data). The sharing pattern follows a zip-like distribution.
