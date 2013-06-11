@@ -33,11 +33,22 @@ We integrate those strategies together as follows.
 \item \textbf{Dirtybit-based corase-grain inner-VM deduplication.}
 The first-level deduplication is to follow the standand dirty bit approach, but is conducted
 in the coarse grain segment level.
-We use the  Xen virtual device driver which supports dirty bits for thestorage device
+We use the  Xen virtual device driver which supports changed block tracking
+for the storage device
 and the dirty bit setting is maintained in a corase grain level we call it a segment.
 In our implementation, the segment size is 2MB. 
 Since every write for a block will touch a dirty bit, the device driver maintains dirtybits in memory
 and cannot affort a small segment  size.
+
+It should be noted that changed block tracking is supported or can be easily implemented in several 
+major virtualization solution vendors. 
+%(VMware, Xen, Microsoft).  
+VMware support it directly. Their hypervisor has API to let external backup application know 
+the changed areas since last backup.  Xen doesn't directly support it. However, their open-source 
+architecture allows anyone to extend the device driver, thus enabling changed block tracking. 
+We implements this way in the Alibaba's platform.  
+Microsoft SDK provides an API that allows external application monitor 
+the VM's I/O traffic.  Therefore changed block tracking can be implemented externally. 
 
 \item \textbf{Chunk-level fine-grain nearby duplicate detection.}
 The best deduplication uses a nonuniform chunk size 
