@@ -115,6 +115,34 @@ L_o = (1-s_o) + s_o \sum_1^b  P(1)^2 *  (x')^{-2\alpha'} *V.
   
 ----------------------------------------------------------------------       
 
+\subsection{Empirical Validation}
+To validate our theoritical model for the probability of data loss, we computed
+the number of VMs using each block in a global index for the 350 VM traces.
+As you can see in Fig.~\ref{??}, The average number of VMs sharing a block
+%TODO: insert figure generated from data/links_no_cds.dat
+increases linearly with the number of snapshots. For 350 snapshots there are an
+average of 13.1 links to a given block in the global index.
+%What else do we need from the simulation to validate the model?
+
+\subsubsection{CDS and Fault Tolerance}
+%all numbers in this paragraph need to be corrected after I re-run the tests
+%using the actual cds generator code
+As part of our emprirical validation of our model, we also computed the effects
+of the CDS on fault tolerance. If we exclude the top 5\% most popular blocks
+and set aside those in the CDS, the average number of links to a non-CDS block
+%TODO: insert figure generated from data/links_cds.dat and data/links_wo_cds.dat
+drops to 10.3 for 350 snapshots. This means that on average, \~3 fewer
+snapshots will be affected by a lost data block in the general data store.
+The average number of links to a CDS block however, for 350 snapshots, is
+65.7. This suggests that a much higher replication factor is warranted for
+the CDS, as on average, a CDS block appears in 19\% of all the snapshots.
+
+The CDS gives a clear boundary for setting different replication factors,
+And our tests suggest that by separating the replication factor for the CDS
+and non-CDS blocks, greater fault tolerance can be acheived.
+
+----------------------------------------------------------------------
+
 For CDS model, 85% blocks are using the data from the same VM while upto 10% data is for CDS (we actually only use 5% perhaps).  Thus the overall speaking, at most 10% of data are shared.
 Thus  for CDS approach,   the # VM failure caused by k machines is at most  [ 1-  C(r, k) /C(n,r)] * b* [ 1+ 0.10 *V(1-1/ln V)].
 For original approach,  [ 1-  C(r, k) /C(n,r)] * b* [ 1+ 0.90 *V(1-1/ln V)].
