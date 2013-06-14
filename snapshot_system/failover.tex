@@ -106,6 +106,10 @@ where
 L_o = (1-s_o) + s_o \sum_1^b  P(1)^2 *  (x')^{-2\alpha'} *V.  
 \]
 
+%the above model assumes uniform distribution of blocks and doesn't provide compelling numbers
+%with 3 replicas, 100 machines, and only 3 failures the chance of a single 10GB VM surviving is 9.11*10^-8
+%if we wanted to include it we probably want a model that includes containers, but that might be too complex
+%to be useful.
 
 \comments{
 	=  sum _for_all_block(   Probablity (a block fails) *number of VM sharing this block ))
@@ -116,12 +120,20 @@ L_o = (1-s_o) + s_o \sum_1^b  P(1)^2 *  (x')^{-2\alpha'} *V.
 ----------------------------------------------------------------------       
 
 \subsection{Empirical Validation}
-To validate our theoritical model for the probability of data loss, we computed
-the number of VMs using each block in a global index for the 350 VM traces.
-As you can see in Fig.~\ref{??}, The average number of VMs sharing a block
-%TODO: insert figure generated from data/links_no_cds.dat
-increases linearly with the number of snapshots. For 350 snapshots there are an
-average of 13.1 links to a given block in the global index.
+%To validate our theoritical model for the probability of data loss, we computed
+%the number of snapshots using each block in a global index for the 350 snapshot
+%traces. As you can see in Fig.~\ref{??}, The average number of VMs sharing a block
+%%TODO: insert figure generated from data/links_no_cds.dat
+%increases linearly with the number of snapshots. For 350 snapshots there are an
+%average of 13.1 links to a given block in the global index.
+To validate our theoretical model for the probability of data loss, we measured
+the number of snapshots and VMs sharing data blocks for our 350 snapshot
+dataset. As you can see in Fig.~\ref{??}, the average number of snapshots sharing
+a block increases linearly with the number of snapshots. For 350 snapshots
+there are an average of 13.1 incoming links to a given data block in the global
+index. If we look at the number of VMs sharing a data block rather than
+snapshots, in the full dataset on average 1.47 VMs point to a data block in the
+index.
 %What else do we need from the simulation to validate the model?
 
 \subsubsection{CDS and Fault Tolerance}
@@ -135,7 +147,15 @@ drops to 10.3 for 350 snapshots. This means that on average, \~3 fewer
 snapshots will be affected by a lost data block in the general data store.
 The average number of links to a CDS block however, for 350 snapshots, is
 65.7. This suggests that a much higher replication factor is warranted for
-the CDS, as on average, a CDS block appears in 19\% of all the snapshots.
+the CDS, as on average, a CDS block appears in \~20\% of all the snapshots.
+These measured numbers are different from our theoritical model due to the fact
+that duplicate data blocks are not uniformly distributed across all VMs.
+With uniform distribution of duplicates (and a zipf distribution on the number
+of duplicates), there should be on average 2.55 incoming VM links to each
+block. Since we show the average number of links to be 1.47 in our actual
+traces, the duplicates are
+more tighly grouped than the uniform model would predict. This supports
+the benefits of using a CDS plus more localized deduplication.
 
 The CDS gives a clear boundary for setting different replication factors,
 And our tests suggest that by separating the replication factor for the CDS
