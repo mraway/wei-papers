@@ -107,30 +107,66 @@ frequency of data duplication follows Zipf-like distribution\cite{zipf},
 with the exponent $\alpha$ between 0.65 ~ 0.70.
 As a result, it can be proved that deduplication efficiency of CDS index is scalable:
 
-For the Zipf-like distribution, an approximation to the sum of the first $n$ 
-elements of the distribution can be derived as follows:
+Let $b$ be the total amount of data blocks after localized deduplication, $b_u$ be the total amount of fingerprints 
+in the global index after complete deduplication, $C_i$ be the frequency for the $i$th most popular fingerprint. 
+By Zipf-like distribution we know an fingerprint's frequency is inversely proportional to its rank:
+\begin{equation*}
+C_i = X\frac{1}{i^\alpha},\; \sum_{i=1}^{b_u}C_i = X\sum_{i=1}^{b_u}\frac{1}{i^\alpha} = b
+\end{equation*}
+
+Thus $C_i$ can be expressed as:
 \begin{equation}
-\sum_{i=1}^{n}\frac{1}{i^\alpha}\approx \int_{1}^{n}\frac{1}{x^\alpha}\mathrm{d}x=\frac{x^{1-\alpha}}{1-\alpha}=\frac{n^{1-\alpha}}{1-\alpha}\;  for\;  \alpha<1
+C_i=\frac{b(1-\alpha)}{b_u^{1-\alpha}i^\alpha}
 \end{equation}
 
-So the cumulative distribution function for a CDS holding top $S_c$ fingerprints
-of global index with size $S_g$ is:
-
+We define deduplication efficiency $e$ to be the proportion of raw data that can be deduplicated,
+In complete deduplication scenario, it deduplication efficiency $e_c$ is:
 \begin{equation}
-  E = (S_c / S_g)^{1-\alpha} \;  for\;  \alpha<1
+e_c = \frac{b-b_u}{b} = 1 - \frac{b_u}{b}
 \end{equation}
+
+If we only select the top $k$ most popular fingerprints from global index and remove only their duplicates,
+the deduplication efficiency will be:
+\begin{equation}
+\begin{split}
+e_k &= (\sum_{i=1}^{k}C_i - k)/{b} = (b * \frac{1-\alpha}{b_u^{1-\alpha}} * \sum_{i=1}^{k}\frac{1}{i^\alpha} - k)/b \\
+%&\approx \frac{b*\frac{1-\alpha}{b_u^{1-\alpha}}*\frac{k^{1-alpha}}{1-\alpha} - k}{b}
+&\approx (\frac{k}{b_u})^{1-\alpha} - \frac{k}{b} \approx (\frac{k}{b_u})^{1-\alpha},\; (since\; k \ll b)
+\end{split}
+\end{equation}
+
+% For the Zipf-like distribution, an approximation to the sum of the first $n$ 
+% elements of the distribution can be derived as follows:
+% \begin{equation}
+% \sum_{i=1}^{n}\frac{1}{i^\alpha}\approx \int_{1}^{n}\frac{1}{x^\alpha}\mathrm{d}x=\frac{x^{1-\alpha}}{1-\alpha}=\frac{n^{1-\alpha}}{1-\alpha}\;  for\;  \alpha<1
+% \end{equation}
+
+% So the cumulative distribution function for a CDS holding top $S_c$ fingerprints
+% of global index with size $S_g$ is:
+
+% \begin{equation}
+%   E = (S_c / S_g)^{1-\alpha} \;  for\;  \alpha<1
+% \end{equation}
 
 %[Describe the dedup efficiency model in detail]
-Let $N$ be the number of nodes in the cluster, $m$ be the memory on each node that are used by CDS, $D$ be the amount of data on each node, and $B$ be the average block size. Then $S_c$ and $S_g$ can be expressed as:
+Let $N$ be the number of nodes in the cluster, $m$ be the memory on each node used by CDS, 
+$F$ be the size of an CDS index entry,
+$D$ be the amount of unique data on each node, and $B$ be the average block size. Then $k$ and $b_u$ can be expressed as:
+\begin{equation*}
+k = N*m/F,\; b_u = N*D/B
+\end{equation*}
+
+Then the deduplication efficiency of CDS approach using top k most popular fingerprints is:
 \begin{equation}
-S_c = N*m/F, S_g = N*D/B
+  e_k = (\frac{m*B}{F*D})^{1-\alpha}
 \end{equation}
 
-By replacing $S_c$ and $S_g$ in the first formula, the deduplication efficiency becomes:
-\begin{equation}
-  E = (\frac{m*B}{F*D})^{1-\alpha}
-\end{equation}
-
-Since $B$, $D$ and $F$ are pre-configured constants, the deduplication efficiency of CDS is only controlled by the its memory usage.
+Since $B$, $D$ and $F$ are environment constants, the deduplication efficiency of CDS is mainly affected by the its memory usage,
+and the Zipf-like distribution parameter $\alpha$.
+From the memory usage perspective, the more memory we give to CDS index, the more duplicates it can found.
+From the data characteristics perspective, if the system tends to backup arbitrarily random data, 
+$\alpha$ would be small and thus CDS approach would not be effective. But in a VM cluster all VMs
+have a large portion of similar data, thus leading to a bigger $\alpha$. The more VM join the cluster,
+the better deduplication efficiency our CDS deduplication approach will have.
 
 
