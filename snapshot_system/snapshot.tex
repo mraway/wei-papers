@@ -259,6 +259,17 @@ a constant.
 
 
 
+\comments{
+Since $B$, $D$ and $F$ are environment constants, the deduplication efficiency of CDS is mainly affected by its memory usage,
+and the Zipf-like distribution parameter $\alpha$.
+From the memory usage perspective, the more memory we give to CDS index, the more duplicates it can found.
+From the data characteristics perspective, if the system tends to backup arbitrarily random data, 
+$\alpha$ would be small and thus CDS approach would not be effective. But in a VM cluster all VMs
+have a large portion of similar data, thus leading to a bigger $\alpha$. The more VM join the cluster,
+the better deduplication efficiency our CDS deduplication approach will have.
+}
+
+
 \begin{table}
     \begin{tabular}{llll}
     Data size (GB) & 1\%    & 2\%    & 4\%    \\
