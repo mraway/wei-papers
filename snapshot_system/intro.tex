@@ -16,8 +16,8 @@ automatically conducts  the backup of virtual disk images to all active users ev
 The cost of supporting a large number of concurrent backup streams is high
 because of the huge storage demand and  
 Using a separate  backup service with full deduplication support~\cite{venti02,bottleneck08}
-can effectively identify content duplicates among snapshots and  remove 
-redundant storage content,  but the solution can be expensive and there is a large amount of 
+can effectively identify and remove content duplicates among snapshots, 
+but the solution can be expensive and there is a large amount of 
 network traffic to transfer  data from the host machines to the backup facility
 before duplicates are removed.
 
@@ -47,7 +47,7 @@ by duplicate relationship among snapshots  adds processing complexity.
 % especially when  VMs can migrate around in the cloud.
 
 The paper studies and evaluates  an integrated approach which uses  multiple duplicate detection strategies
-based on  version  detection, small-scope inner VM duplicate comparison
+based on  version  detection, inner VM duplicate search,
 and controlled cross-VM comparison. 
 This approach is VM centric by localizing duplicate detection within each VM  as much as possible
 and minimize memory usage while delivering a decent deduplication efficiency. 

@@ -1,4 +1,4 @@
-\section{Snapshot Deduplication}
+\section{VM-centric Snapshot Deduplication}
 \label{sect:dedupe}
 %snapshot representation
 
@@ -10,15 +10,20 @@
 %For this purpose, we exploit the data characteristics of snapshots and collect most popular data.
 %Data sharing across VMs is limited within this small data set such that adding replicas for it could enhance fault tolerance
 
-Our  deduplication scheme compares the fingerprints of the current snapshot
+A deduplication scheme compares the fingerprints of the current snapshot
 with its parent snapshot and also other snapshots in the entire cloud.
-This process performs   the duplication in two categories: \textit{Inner-VM} and \textit{Cross-VM}. 
-We discuss the integration of several strategies as follows and analyze its effectiveness.
+The tradition approach compares all fingerprints and 
+reserve one copy for all of its deduplicates.
+We call this as  the VM-oblivious (VO) approach.
+In comparison, we analyze the design of
+a VM-centric approach (VC) which differenates duplicates within a VM and cross VMs,
+and conducts \textit{Inner-VM} and \textit{cross-VM} detection. 
 
 \subsection{Inner and cross VM deduplication}
 
-Inner-VM duplication can be effecive within  VM's snapshots because the majority of data are unchanged during each backup period. 
-Localizing the snapshot data deduplication witin  a VM first
+Inner-VM duplication can be effecive within  VM's snapshots there
+are a large amount of duplicates existing among the snapshots within
+each VM.  Localizing the snapshot data deduplication witin  a VM first
 increases data independency between different VM backups,
 simplifies snapshot management and statistics collection,
 and facilitates parallel execution of snapshot operations.
@@ -88,52 +93,119 @@ Thus our approximation is that the global fingerprint  comparison  only searches
 %Since duplicate sharing patterns among  VM follows a zip-like distribution,  
 \end{itemize}
 
-\subsection{Popular Chunk Management and VM-oriented Fault Isolation}
-Our objective for fault isolation is to minimize the number of VMs affected when there are failures
-in the cluster.  The inner-VM deduplication does not depend on any global service and the comparison
-for each VM is localized within the parent and the current snapshot.
-Thus there is no data dependence between VMs.
-For cross-VM deduplication, there is a data dependence among VMs and we would minimize the faiulre impact
-of shared blocks by adding extra replcas of those shared blocks.
+\subsection{Popular Chunk Management}
+%VM-oriented Fault Isolation}
+%Our objective for fault isolation is to minimize the number of VMs affected when there are failures
+%in the cluster.  
+%The inner-VM deduplication does not depend on any global service and the comparison
+%for each VM is localized within the parent and the current snapshot.
+%Lack of data dependence between VMs brings 
+With cross-VM deduplication, shared data blocks
+create an artifical dependence  among VMs and failure of one shared block
+affects many VMs. Thus we only maintain the index for a small set of popular chunks.
+The mnagement for popular data chunks contains two aspects.
+\begin{itemize}
+\item Compute and select top-$k$ most popular chunks.
+The popularity of a chunk is the number  of data blocks from different VMs
+that are duplicates of this block after the inner VM deduplication.
+This number can be computed perioidically in a weekly basis.
+Once the popularity of all data blocks is collected, the system only maintains the top $k$
+most popular blocks.
+\item  Top $k$ number is chosen to be small while 
+our analysis belows will show that the algorithm can still deliver competitive deduplication effiency.
+Since $k$ is small and these top $k$ blocks are shared among multiple VMs, 
+we can afford to provide extra replicas for these popular blocks to enhanace the fault resilence.
+We will provide an alaysis in the next subsection.
+\end{itemize} 
 
-This section analyzes the choice of popular blocks and its impact on the deduplication efficiency.
-It also  compares the  fault resilience of our VM-centric deduplication approach with a standand approach using 
-global deduplication.
+This section analyzes how value   $k$ impacts on the deduplication efficiency.
+%It also  compares the  fault resilience of our VM-centric deduplication approach with a standand approach using 
+%global deduplication.
+%\subsubsection{Impact of CDS deduplication}
+The analysis is based on the our study 
+using Alibaba's production user data~\cite{ieeecloud} 
+which shows that the popularity of data blocks after inner VM deduplication follows 
+a Zipf-like distribution\cite{zipf} and its
+exponent $\alpha$ is ranged between 0.65  and  0.70.
+%As a result, it can be proved that deduplication efficiency of CDS index is scalable:
 
-\subsubsection{Impact of CDS deduplication}
+\begin{table}[ht]
+\centering
+\begin{tabular}{|p{1.25cm}|p{6.5cm}|}
+\hline
+$b$ &  the total amount of data blocks\\ 
+\hline
+$b_u$ &  the total amount of unique fingerprints after inner VM  deduplication\\
+\hline
+$C_i$ &  the frequency for the $i$th most popular fingerprint\\
+\hline
+$s$ &  the percentage of duplicates detected in inner VM deduplication\\
+\hline
+$s$ &  the percentage of duplicates detected in inner VM deduplication\\
+\hline
+$p$ & the number of nodes in the cluster\\
+\hline
+$D$ & the amount of unique data on each node\\
+\hline
+$B$ & the average block size\\
+\hline
+$m$ & memory size on each node used by VC\\ 
+\hline
+$F$ & the size of an polular data index entry\\
+\hline
+\end{tabular}
+\caption{Modeling  symbols.}
+\label{tab:symbol}
+\end{table}
 
-Our empirical study based on VM images from production environment\cite{ieeecloud} showed that the
-frequency of data duplication follows Zipf-like distribution\cite{zipf},
-with the exponent $\alpha$ between 0.65 ~ 0.70.
-As a result, it can be proved that deduplication efficiency of CDS index is scalable:
 
-Let $b$ be the total amount of data blocks after localized deduplication, $b_u$ be the total amount of fingerprints 
-in the global index after complete deduplication, $C_i$ be the frequency for the $i$th most popular fingerprint. 
-By Zipf-like distribution we know an fingerprint's frequency is inversely proportional to its rank:
-\begin{equation*}
-C_i = X\frac{1}{i^\alpha},\; \sum_{i=1}^{b_u}C_i = X\sum_{i=1}^{b_u}\frac{1}{i^\alpha} = b
-\end{equation*}
-
-Thus $C_i$ can be expressed as:
+Let $b$ be the total amount of data blocks after localized deduplication, 
+$b_u$ be the total amount of fingerprints 
+in the global index after complete deduplication, 
+$C_i$ be the frequency for the $i$th most popular fingerprint. 
+By Zipf-like distribution, $C_i = \frac{C_1}{i^\alpha}.$
+Since $ \sum_{i=1}^{b_u}C_i = b$,
+\[
+C_1 \sum_{i=1}^{b_u}\frac{1}{i^\alpha} = b
+\]
+Given $\alpha <1$, $C_1$ can be approximated with integration:
 \begin{equation}
-C_i=\frac{b(1-\alpha)}{b_u^{1-\alpha}i^\alpha}
+C_1=\frac{b(1-\alpha)}{b_u^{1-\alpha}}.
 \end{equation}
 
-We define deduplication efficiency $e$ to be the proportion of raw data that can be deduplicated,
-In complete deduplication scenario, it deduplication efficiency $e_c$ is:
-\begin{equation}
-e_c = \frac{b-b_u}{b} = 1 - \frac{b_u}{b}
-\end{equation}
+%We define deduplication efficiency $e$ to be the proportion of raw data that can be deduplicated,
+%In complete deduplication scenario, it deduplication efficiency $e_c$ is:
+%\begin{equation}
+%e_c = \frac{b-b_u}{b} = 1 - \frac{b_u}{b}
+%\end{equation}
 
-If we only select the top $k$ most popular fingerprints from global index and remove only their duplicates,
-the deduplication efficiency will be:
+The  $k$ most popular fingerprints can cover the following number of blocks.
+\[
+C_1 \sum_{i=1}^{k}\frac{1}{i^\alpha} \approx  
+C_1 \int_{1}^{k}\frac{1}{x^\alpha} dx  \approx  C_1\frac{  k^{1-\alpha}} {1-\alpha}.
+\]
+
+Deduplication efficiency of VC using top $k$ popular blocks
+is the percentage of duplicates that can be detected:  
 \begin{equation}
 \begin{split}
-e_k &= (\sum_{i=1}^{k}C_i - k)/{b} = (b * \frac{1-\alpha}{b_u^{1-\alpha}} * \sum_{i=1}^{k}\frac{1}{i^\alpha} - k)/b \\
-%&\approx \frac{b*\frac{1-\alpha}{b_u^{1-\alpha}}*\frac{k^{1-alpha}}{1-\alpha} - k}{b}
-&\approx (\frac{k}{b_u})^{1-\alpha} - \frac{k}{b} \approx (\frac{k}{b_u})^{1-\alpha},\; (since\; k \ll b)
+e_k &= 
+\frac{ b(1-s) + C_1\frac{  k^{1-\alpha}} {1-\alpha}} 
+{b(1-s)  + sb - b_u }\\
+&= 
+\frac{ (1-s) + s (\frac{k}{b_u})^{1-\alpha}}
+{ 1- \frac{b_u}{b} }.
 \end{split}
 \end{equation}
+
+
+%\begin{equation}
+%\begin{split}
+%e_k &= (\sum_{i=1}^{k}C_i - k)/{b} = (b * \frac{1-\alpha}{b_u^{1-\alpha}} * \sum_{i=1}^{k}\frac{1}{i^\alpha} - k)/b \\
+%&\approx \frac{b*\frac{1-\alpha}{b_u^{1-\alpha}}*\frac{k^{1-alpha}}{1-\alpha} - k}{b}
+%&\approx (\frac{k}{b_u})^{1-\alpha} - \frac{k}{b} \approx (\frac{k}{b_u})^{1-\alpha},\; (since\; k \ll b)
+%\end{split}
+%\end{equation}
 
 % For the Zipf-like distribution, an approximation to the sum of the first $n$ 
 % elements of the distribution can be derived as follows:
@@ -149,24 +221,54 @@ e_k &= (\sum_{i=1}^{k}C_i - k)/{b} = (b * \frac{1-\alpha}{b_u^{1-\alpha}} * \sum
 % \end{equation}
 
 %[Describe the dedup efficiency model in detail]
-Let $N$ be the number of nodes in the cluster, $m$ be the memory on each node used by CDS, 
-$F$ be the size of an CDS index entry,
-$D$ be the amount of unique data on each node, and $B$ be the average block size. Then $k$ and $b_u$ can be expressed as:
-\begin{equation*}
-k = N*m/F,\; b_u = N*D/B
-\end{equation*}
+Let $p$ be the number of physical machines in the cluster, $m$ be the memory on each node used by the popular
+index, $F$ be the size of an index entry,
+$D$ be the amount of unique data on each phyiscal machine, and 
+$B$ be the average block size. We store the popular index using a distribued shared memory hashtable
+such as MemCacheD.  Then $k$ and $b_u$ can be expressed as:
+$
+k = p*m/F$, and $b_u = p*D/B.
+$
 
-Then the deduplication efficiency of CDS approach using top k most popular fingerprints is:
-\begin{equation}
-  e_k = (\frac{m*B}{F*D})^{1-\alpha}
-\end{equation}
+The overall deduplication effiency is
+\[
+\frac{ (1-s) + s (\frac{m*B}{D*F})^{1-\alpha}}
+{ 1- \frac{b_u}{b} }.
+\]
+where $(\frac{m*B}{D*F})^{1-\alpha}$ represents the percentage of the remaining blocks detected as duplicates
+after inner VM deduplication. 
+%Then the deduplication efficiency of CDS approach using top k most popular fingerprints is:
+%\begin{equation}
+%  e_k = (\frac{m*B}{F*D})^{1-\alpha}
+%\end{equation}
 
-Since $B$, $D$ and $F$ are environment constants, the deduplication efficiency of CDS is mainly affected by the its memory usage,
-and the Zipf-like distribution parameter $\alpha$.
-From the memory usage perspective, the more memory we give to CDS index, the more duplicates it can found.
-From the data characteristics perspective, if the system tends to backup arbitrarily random data, 
-$\alpha$ would be small and thus CDS approach would not be effective. But in a VM cluster all VMs
-have a large portion of similar data, thus leading to a bigger $\alpha$. The more VM join the cluster,
-the better deduplication efficiency our CDS deduplication approach will have.
+When the number of machines at each cluster increases, the number of total VMs increases.
+Then $k$ increases since more memory is available to host the popular block index.
+But for each physical machine, the number of VMs remains the same, and thus
+$D$ is  a constant. Then  the overall deduplication efficiency of VC remains
+a constant.
 
+% is mainly affected by the its memory usage,
+%and the Zipf-like distribution parameter $\alpha$.
+%From the memory usage perspective, the more memory we give to CDS index, the more duplicates it can found.
+%From the data characteristics perspective, if the system tends to backup arbitrarily random data, 
+%$\alpha$ would be small and thus CDS approach would not be effective. But in a VM cluster all VMs
+%have a large portion of similar data, thus leading to a bigger $\alpha$. The more VM join the cluster,
+%the better deduplication efficiency our CDS deduplication approach will have.
+
+
+
+
+\begin{table}
+    \begin{tabular}{llll}
+    Data size (GB) & 1\%    & 2\%    & 4\%    \\
+    14.6           & 18.6\% & 22.1\% & 31.4\% \\
+    28.1           & 19.5\% & 26.2\% & 38.8\% \\
+    44.2           & 21.7\% & 26.5\% & 36\%   \\
+    61.6           & 23.2\% & 32.9\% & 35\%   \\
+    74.2           & 23.6\% & 33.6\% & 37.5\% \\
+    \end{tabular}
+    \caption{Deduplication effectiveness of top k\% of global index}
+    \label{tab:cds}
+\end{table}
 

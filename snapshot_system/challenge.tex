@@ -35,66 +35,6 @@ the content block in a deduplication system is of nonuniform size with 4KB or 8K
 We need to build an intermediate layer that supports large snapshot writing with append operations
 and infrequent snapshot access.
 
-\item {\em Requirement for backup throughput and low computing resource usage}.
-As a large-scale cluster hosting tens of thousand of active VMs everyday,  the amount of data
-to be processed can be huge. 
-On the other hand, the computing resources allocated for a snapshot service is limited
-because VM performance has higher priority.  
-The key usage of resource for backup is memory for storing and comparing the fingerprints. 
-We will consider the approximation techniques with less memory consumption
-studied in~\cite{extreme_binning09,Guo2011} along with the fault isolation consideration discussed below. 
-%A snapshot backup service shall not compete cpu, memory, or I/O bandwidth with VMs. 
-%Fingerprint-based search does require a significant amount of memory for fingerprint lookup
-%and comparison.  This competes memory resource  with the existing VMs.
-%Our design is to identify a low-cost and low-profile scheme for deduplication.
-%Specifically, the memory usage of snapshot service can never exceed 500MB in any node.
-
-A  longer use of bandwidth and computing resource  for backup can create  noticeable  contention with 
-the existing cloud, which is not preferred for cloud production system operation. 
-Thus it is desirable that backup for all nodes
-can be conducted in parallel and in a short period of time,
-and any centralized or  cross-machine communication for
-deduplication should not become a bottleneck.
-For example, in an Aliyun cluster with over 1,000 nodes and each hosts over 25 VMs, The aggreated amount of data 
-the system must finish saving daily snapshots of all VMs in 2 hours. In our typical 1000 nodes cluster, each node hosts 25 VMs, each VM has 40GB of data on average, that translates to backup throughput of 139GB/second, or 
-500TB/hour.  The system must finish saving daily snapshots of all VMs in few hours. 
-Often a cloud has a few hours of light workload each day (e.g. midnight),  
-which creates an small window for automatic backup.
-
-%At Aliyun, it is required that while CPU and disk usage should be small or modest during backup time,
-%the memory footprint of snapshot service should not exceed 500MB at each node.
-
-Another consideration is backup data cleaning to delete useless blocks.
-Keeping reference counters for shared data blocks is challenging and less reliable.
-The previous work has advocated the mark-and-sweep approach  which periodically
-scans all data (or modified latest version of data)~\cite{?, Guo2011}. It first marks
-all used blocks and then sweep all chunks to reclaim unmarked blocks. 
-This approach is resilient to errors: at any time the process can simply be restarted with no 
-negative side effects.  Scalability, however, is an issue.
-To deal with 1 PB snapshots data, which may be represented by 10,000 GB FP index,
-If we account for an average deduplication factor of 10 (i.e., each chunk
-is referenced by 10 different snapshots), the total size
-of snapshot metadata that need to be read during the mark phase will
-be 100 TB.  This alone will take almost 2 hours on a
-1000-machine cloud. Furthermore, marking the in-use
-bits for 250 billion entries is no easy task. There is no
-way to put the bit map in memory. One might want
-to mitigate the poor performance of mark-and-sweep by
-doing it less frequently. But in practice this is not a viable
-option: customers always want to keep the utilization
-of the system close to its capacity so that a longer
-history can be stored. With daily snapshots taking place,
-systems rarely have the luxury to postpone deletion operations
-for a long time. In our field deployment, deletion
-is done once a day. More than 2 hours in each run is too
-much. In a large production-oriented dedupe system reference
-management needs to be very reliable and have
-good recover-ability. It should tolerate errors and always
-ensure correctness. Although mark-and-sweep provides
-these properties, its performance is proportional to the
-capacity of the system, thus limiting its scalability.
-
-
 \item {\em Fault tolerance and isolation.}
 The distributed file system~\cite{GoogleFS,Hadoop} provides the replication support
 and we can use the open-source software to implement such a layer.
@@ -122,7 +62,76 @@ Thus a key goal  in our design
 is restricting the impact of  data loss to a limited number of VMs. 
 It is not desirable that small scale of data failure affects the backup of many VMs.
 %when users access snapshots in a recovery process. 
+
 \end{itemize}
+
+%\item {\em Requirement for backup throughput and low computing resource usage}.
+Because of collocation of this snapshot service with other existing cloud services, 
+%As a large-scale cluster hosting tens of thousand of active VMs everyday,  the amount of data
+%to be processed can be huge. 
+the computing resources allocated for a snapshot service is limited
+because of its lower priority.  
+The key usage of resource for backup is memory for storing and comparing the fingerprints. 
+We will consider the approximation techniques with less memory consumption
+studied in~\cite{extreme_binning09,Guo2011} along with the fault isolation consideration discussed below. 
+%A snapshot backup service shall not compete cpu, memory, or I/O bandwidth with VMs. 
+%Fingerprint-based search does require a significant amount of memory for fingerprint lookup
+%and comparison.  This competes memory resource  with the existing VMs.
+%Our design is to identify a low-cost and low-profile scheme for deduplication.
+%Specifically, the memory usage of snapshot service can never exceed 500MB in any node.
+
+A  longer use of bandwidth and computing resource  for backup can create  noticeable  contention with 
+the existing cloud, which is not preferred for cloud production system operation. 
+Thus it is desirable that backup for all nodes
+can be conducted in parallel and in a short period of time,
+and any centralized or  cross-machine communication for
+deduplication should not become a bottleneck.
+For example, in an Aliyun cluster with over 1,000 nodes and each hosts over 25 VMs, 
+the system must finish saving daily snapshots of all VMs in a few hours. 
+Often a cloud has a few hours of light workload each day (e.g. midnight),  
+which creates an small window for automatic backup.
+The backup service can generate hundreds of terabytes of data in such a time window
+without optimization and thus the resource content is considered carefully as we design
+a fault-resilient cluster-based solution. 
+%In our typical 1000 nodes cluster, each node hosts 25 VMs, each VM has 40GB of data on average, that translates to backup throughput of 139GB/second, or 
+%500TB/hour.  The system must finish saving daily snapshots of all VMs in few hours. 
+
+%At Aliyun, it is required that while CPU and disk usage should be small or modest during backup time,
+%the memory footprint of snapshot service should not exceed 500MB at each node.
+
+
+\comments{
+Another consideration is backup data cleaning to delete useless blocks.
+Keeping reference counters for shared data blocks is challenging and less reliable.
+The previous work has advocated the mark-and-sweep approach  which periodically
+scans all data (or modified latest version of data)~\cite{?, Guo2011}. It first marks
+all used blocks and then sweep all chunks to reclaim unmarked blocks. 
+This approach is resilient to errors: at any time the process can simply be restarted with no 
+negative side effects.  Scalability, however, is an issue.
+To deal with 1 PB snapshots data, which may be represented by 10,000 GB FP index,
+If we account for an average deduplication factor of 10 (i.e., each chunk
+is referenced by 10 different snapshots), the total size
+of snapshot metadata that need to be read during the mark phase will
+be 100 TB.  This alone will take almost 2 hours on a
+1000-machine cloud. Furthermore, marking the in-use
+bits for 250 billion entries is no easy task. There is no
+way to put the bit map in memory. One might want
+to mitigate the poor performance of mark-and-sweep by
+doing it less frequently. But in practice this is not a viable
+option: customers always want to keep the utilization
+of the system close to its capacity so that a longer
+history can be stored. With daily snapshots taking place,
+systems rarely have the luxury to postpone deletion operations
+for a long time. In our field deployment, deletion
+is done once a day. More than 2 hours in each run is too
+much. In a large production-oriented deduplication system reference
+management needs to be very reliable and have
+good recover-ability. It should tolerate errors and always
+ensure correctness. Although mark-and-sweep provides
+these properties, its performance is proportional to the
+capacity of the system, thus limiting its scalability.
+
+}
 
 
 
@@ -223,7 +232,7 @@ or variable sized segments. For each segment, a cryptographic
 hash (MD5, SHA-1/2, etc.) is calculated as its
 fingerprint (FP), and it is used to uniquely identify that
 particular segment. A fingerprint index is used as a catalog
-of FPs stored in the system, allowing the detection
+of fingerprints stored in the system, allowing the detection
 of duplicates: during backup, if a tuple of the form <
 FP, location > exists in the index for a particular
 FP, then a reference to the existing copy of the chunk
@@ -248,7 +257,7 @@ an index is impossible to maintain in memory. Storing it
 on disk, however, would greatly reduce query throughput.
 To support 1000 concurrent snapshot backup tasks, 
 an aggregate throughput of 20 GB/sec, would require the
-index and the whole dedupe system for that matter
+index and the whole deduplication system for that matter
 to provide a query service throughput of at least 5,000
 Kops/sec. Trying to scale to 1 PB by storing the index
 on disk would make it impossible to achieve this level

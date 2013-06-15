@@ -1,15 +1,20 @@
-\subsubsection{Fault Analysis }
+\subsection{Fault Analysis }
 
-We  compare the impact of losing $d$ machines using the following two approaches:
-\begin{itemize}
-\item The VM-centric approach (VC).  The replication degree of the backup storage 
-is $r$ for regular content blocks and $r_c$ for CDS blocks where $r_c>r$. 
-\item The VM-oblivious (VO) approach.
-All chunk  blocks are treated uniformly and global comparison is conducted.
-\end{itemize} 
+We  compare the impact of losing $d$ machines 
+to the the VC and VO approaches.  
+The replication degree of the backup storage 
+is $r$ for regular content blocks and $r=3$ is a typical setting in the distributed
+file system~\cite{Hadoop,GFS}.
+in The VC approach, a special replica degree $r_c$ used for CDS blocks where $r_c>r$. 
+Noted that the storage cost for VO with full deduplication is $b_u *r$
+while it is
+\[ r*b*s(1 -   (\frac{k}{b_u})^{1-\alpha}) +k*(r-r_c).
+\]
+
+
  
 When $d<r$, there is no loss of data in the snapshot storage.
-When $d \ge r$, some of data blocks in the storage are loss, and we compute the number of VMs that could
+When $d \ge r$, some of data blocks in the storage are lost, and we compute the number of VMs that could
 suffer the loss of their snapshots.
 We use the following parameters  during the analysis
 \begin{itemize}
