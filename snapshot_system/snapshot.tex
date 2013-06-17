@@ -139,15 +139,15 @@ $b_u$ &  the total amount of unique fingerprints after inner VM  deduplication\\
 \hline
 $C_i$ &  the frequency for the $i$th most popular fingerprint\\
 \hline
-$s$ &  the percentage of duplicates detected in inner VM deduplication\\
-\hline
-$s$ &  the percentage of duplicates detected in inner VM deduplication\\
+$\delta$ &  the percentage of duplicates detected in inner VM deduplication\\
 \hline
 $p$ & the number of nodes in the cluster\\
 \hline
 $D$ & the amount of unique data on each node\\
 \hline
-$B$ & the average block size\\
+$B$ & the average block size. Our setting is  4K.\\
+\hline
+$s$ & the average size of data containers stored in the distributed file system . Our setting is  64MB.\\
 \hline
 $m$ & memory size on each node used by VC\\ 
 \hline
@@ -190,10 +190,10 @@ is the percentage of duplicates that can be detected:
 \begin{equation}
 \begin{split}
 e_k &= 
-\frac{ b(1-s) + C_1\frac{  k^{1-\alpha}} {1-\alpha}} 
-{b(1-s)  + sb - b_u }\\
+\frac{ b(1-\delta) + C_1\frac{  k^{1-\alpha}} {1-\alpha}} 
+{b(1-\delta)  + sb - b_u }\\
 &= 
-\frac{ (1-s) + s (\frac{k}{b_u})^{1-\alpha}}
+\frac{ (1-\delta) + s (\frac{k}{b_u})^{1-\alpha}}
 { 1- \frac{b_u}{b} }.
 \end{split}
 \end{equation}
@@ -232,7 +232,7 @@ $
 
 The overall deduplication effiency is
 \[
-\frac{ (1-s) + s (\frac{m*B}{D*F})^{1-\alpha}}
+\frac{ (1-\delta) + \delta (\frac{m*B}{D*F})^{1-\alpha}}
 { 1- \frac{b_u}{b} }.
 \]
 where $(\frac{m*B}{D*F})^{1-\alpha}$ represents the percentage of the remaining blocks detected as duplicates
