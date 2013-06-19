@@ -7,7 +7,8 @@
 At a cloud cluster node, each instance of a guest operating system runs on a virtual machine, accessing virtual hard disks 
 represented as virtual disk image files in the host operating system.
 For VM snapshot backup, file-level semantics are normally not provided.
-Snapshot operations take place at the virtual device driver level, which means no fine-grained file system metadata can be used to determine the changed data. 
+Snapshot operations take place at the virtual device driver level, which
+means no fine-grained file system metadata can be used to determine the changed data. 
 %Only raw access information at disk block level are provided. 
 %Each physical machine hosts many VMs and petabytes of data in a cloud cluster need a frequent  backup. 
 %Ideally speaking, snapshot backup must not affect the normal cloud service, which means that 
@@ -40,7 +41,7 @@ there is no dedicated resource for deduplication in our targeted setting and low
 %These are segments that share many chunk IDs with the incoming segment with high probability.
 The approximation techniques are studied in~\cite{extreme_binning09,Guo2011,WeiZhangIEEE}  
 %Deepavali et al.~\cite{extreme_binning09} and Zhang et al.~\cite{WeiZhangIEEE}  
-to reduce memory requirement with a tradeoff of the reduced deduplication ratio.
+to reduce memory requirements with the tradeoff of a reduced deduplication ratio.
 %use fingerprint-based file similarity  and group similar files into the same physical location (bins) to deduplicate against each other.
 %That leads  to a smaller amount of memory usage for storing meta data in fingerprint
 %lookup  
@@ -51,9 +52,9 @@ to reduce memory requirement with a tradeoff of the reduced deduplication ratio.
 %unmodified data segments for deduplication, which significantly saves cost.
 
 Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,idedup}. 
-All of the above approaches have focused on
-optimization of deduplication efficiency, and none of them have considered the impact
-of deduplication for the fault tolerance in the cluster-based environment that we have considered
+All of the above approaches have focused on optimization of deduplication
+efficiency, and none of them have considered the impact
+of deduplication on fault tolerance in the cluster-based environment that we have considered
 in this paper.
 We will describe the motivation of using the cluster-based   approach
 for running the backup service and then present our solution  with fault isolation.

@@ -12,8 +12,8 @@
 
 A deduplication scheme compares the fingerprints of the current snapshot
 with its parent snapshot and also other snapshots in the entire cloud.
-The tradition approach compares all fingerprints and 
-reserve one copy for all of its deduplicates.
+The traditional approach compares all fingerprints and 
+stores one copy for all of a block's duplicates.
 We call this as  the VM-oblivious (VO) approach.
 In comparison, we analyze the design of
 a VM-centric approach (VC) which differenates duplicates within a VM and cross VMs,
@@ -21,12 +21,13 @@ and conducts \textit{Inner-VM} and \textit{cross-VM} detection seperately.
 
 \subsection{Inner and cross VM deduplication}
 
-Inner-VM duplication can be effecive within  VM's snapshots there
-are a large amount of duplicates existing among the snapshots within
-each VM.  Localizing the snapshot data deduplication witin  a VM first
-increases data independency between different VM backups,
-simplifies snapshot management and statistics collection,
-and facilitates parallel execution of snapshot operations.
+Inner-VM duplication can be very effecive within VM's snapshots. There
+are typically a large number of duplicates existing among the snapshots
+for a single VM.  Localizing the snapshot data deduplication witin a VM
+improves the system by:
+increasing data independency between different VM backups,
+simplifying snapshot management and statistics collection,
+and facilitating parallel execution of snapshot operations.
 On the other hand, cross-VM duplication can also be desirable mainly due to widely-used software and libraries. 
 As the result, different VMs tend to backup large amount of highly similar data.
 We integrate those strategies together as follows.
@@ -45,24 +46,27 @@ In our implementation, the segment size is 2MB.
 Since every write for a block will touch a dirty bit, the device driver maintains dirtybits in memory
 and cannot affort a small segment  size.
 
-It should be noted that changed block tracking is supported or can be easily implemented in several 
+It should be noted that changed block tracking is supported or can be easily implemented in many 
 major virtualization solution vendors. 
 %(VMware, Xen, Microsoft).  
-VMware support it directly. Their hypervisor has API to let external backup application know 
-the changed areas since last backup.  Xen doesn't directly support it. However, their open-source 
+VMware support it directly; the VMWare hypervisor has an API to let external backup application know 
+the changed areas since last backup. Xen doesn't directly support it, However, their open-source 
 architecture allows anyone to extend the device driver, thus enabling changed block tracking. 
-We implements this way in the Alibaba's platform.  
-Microsoft SDK provides an API that allows external application monitor 
-the VM's I/O traffic.  Therefore changed block tracking can be implemented externally. 
+We implement dirty bit tracking this way in Alibaba's platform.  
+The Microsoft SDK provides an API that allows external applications to monitor 
+the VM's I/O traffic, therefore changed block tracking can be implemented externally. 
 
 \item \textbf{Chunk-level fine-grain inner-VM detection.}
 The best deduplication uses a nonuniform chunk size 
-in the average of 4K or 8K~\cite{??}.
-Thus the second-level inner-VM deduplication is to assess in this
-level, but only for those dirty  segments. 
+in the average of 4K or 8K~\cite{??}. This allows the system to
+achieve deduplication even when there are insertions/deletions which would
+affect many fixed-size blocks.
+Thus the second-level inner-VM deduplication is to perform this chunking for
+dirty segments, and to compare the snapshot with its parent. 
 We load the fingerprints of block chunks of the corresponding segment from the
-parent for a comparisons and compare near-by fingerprint matching within this segement.
-The amount of memory for maintaining those fingerprints  is small.
+parent and perform fingerprint matching for further inner-VM deduplication.
+The amount of memory for maintaining those fingerprints  is small, as we only
+load one segment at a time.
 For example, with a 2MB segment, there are about 500 fingerprints to compare.
 
 
@@ -86,16 +90,16 @@ For example, with a 2MB segment, there are about 500 fingerprints to compare.
 \item \textbf{Cross-VM deduplication.}
 This step accomplishes the standand global fingerprint  comparison as conducted
 in the previous work~\cite{??}.
-One key observation is that the inner deduplication has removed many of duplicates.
-There are not lot of deduplication opportunities cross VMs while the memory
-consumption for global comparison is expensive.
-Thus our approximation is that the global fingerprint  comparison  only searches for the most popular items. 
+One key observation is that the inner deduplication has removed many of the duplicates.
+There are fewer deduplication opportunities across VMs while the memory and network
+consumption for global comparison is more expensive.
+Thus our approximation is that the global fingerprint comparison only searches for the most popular items. 
 %Since duplicate sharing patterns among  VM follows a zip-like distribution,  
 \end{itemize}
 
 When a block is not detected as a duplicate to any existing block, this block will be written
 to the file system. Since the backend file system typically uses a large block size such as 64MB, each VM will 
-accumnulate small local blocks. We manage  this accmulation process using an apendstore  scheme
+accululate small local blocks. We manage this accumulation process using an apendstore  scheme
 and discuss this in details in Section~\ref{sect:arch}.
 
 
@@ -109,7 +113,7 @@ and discuss this in details in Section~\ref{sect:arch}.
 With cross-VM deduplication, shared data blocks
 create an artifical dependence  among VMs and failure of one shared block
 affects many VMs. Thus we only maintain the index for a small set of popular chunks.
-The mnagement for popular data chunks contains two aspects.
+The management for popular data chunks contains two aspects.
 \begin{itemize}
 \item Compute and select top-$k$ most popular chunks.
 The popularity of a chunk is the number  of data blocks from different VMs
@@ -117,18 +121,19 @@ that are duplicates of this block after the inner VM deduplication.
 This number can be computed perioidically in a weekly basis.
 Once the popularity of all data blocks is collected, the system only maintains the top $k$
 most popular blocks.  For cross-VM comparison,
-we only store  top $k$ items and $k$ is  chosen to be small while 
-our analysis belows will show that the algorithm can still deliver competitive deduplication effiency.
+we only store  top $k$ items and $k$ is chosen to be relatively small.
+Our analysis below will show that the algorithm can still deliver competitive
+deduplication effiency after making these approximations.
 \item  Since $k$ is small and these top $k$ blocks are shared among multiple VMs, 
 we can afford to provide extra replicas for these popular blocks to enhanace the fault resilence.
-We will provide an alaysis in the next subsection.
+We will provide an analysis of the fault tolerance in the next subsection.
 \end{itemize} 
 
-This section analyzes how value   $k$ impacts on the deduplication efficiency.
+This section analyzes how value   $k$ impacts the deduplication efficiency.
 %It also  compares the  fault resilience of our VM-centric deduplication approach with a standand approach using 
 %global deduplication.
 %\subsubsection{Impact of CDS deduplication}
-The analysis is based on the our study 
+The analysis is based on VM traces collected
 using Alibaba's production user data~\cite{ieeecloud} 
 which shows that the popularity of data blocks after inner VM deduplication follows 
 a Zipf-like distribution\cite{zipf} and its
@@ -165,9 +170,9 @@ $F$ & the size of an polular data index entry\\
 \end{table}
 
 
-Let $b$ be the total amount of data blocks after localized deduplication, 
-$b_u$ be the total amount of fingerprints 
-in the global index after complete deduplication, 
+Let $b$ be the total number of data blocks after localized deduplication, 
+$b_u$ be the total number of fingerprints 
+in the global index after complete deduplication, and
 $C_i$ be the frequency for the $i$th most popular fingerprint. 
 By Zipf-like distribution, $C_i = \frac{C_1}{i^\alpha}.$
 Since $ \sum_{i=1}^{b_u}C_i = b$,
