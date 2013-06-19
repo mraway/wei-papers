@@ -173,6 +173,25 @@ L_o = (1-s_o) + s_o \sum_1^b  P(1)^2 *  (x')^{-2\alpha'} *V.
 %if we wanted to include it we probably want a model that includes containers, but that might be too complex
 %to be useful.
 }
+\begin{figure}[ht]
+  \centering
+  %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
+	\begin{tikzpicture}
+		\begin{axis}[
+		title={VO Block links},
+		xlabel={Number of VMs added},
+		ylabel={Avg. Block Links},
+		%extra y ticks={4.5,5.5,6.5} %because it only shows 4,5,6,7
+		legend pos=south east
+		]
+		\addplot[color=blue,mark=*] table[x=VMs,y=Measured] {figures/vo_links.txt};
+		\addplot[color=red,mark=square*] table[x=VMs,y=Theoretical] {figures/vo_links.txt};
+		\legend{Measured,Theoretical};
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Average number of VMs sharing a block in the global index}
+  \label{fig-vo-links}
+\end{figure}
 \comments{
 	=  sum _for_all_block(   Probablity (a block fails) *number of VM sharing this block ))
                = Probability(a block fails) * sum_for_all_blocks (numb of VM shared)
