@@ -17,7 +17,7 @@ reserve one copy for all of its deduplicates.
 We call this as  the VM-oblivious (VO) approach.
 In comparison, we analyze the design of
 a VM-centric approach (VC) which differenates duplicates within a VM and cross VMs,
-and conducts \textit{Inner-VM} and \textit{cross-VM} detection. 
+and conducts \textit{Inner-VM} and \textit{cross-VM} detection seperately. 
 
 \subsection{Inner and cross VM deduplication}
 
@@ -55,7 +55,7 @@ We implements this way in the Alibaba's platform.
 Microsoft SDK provides an API that allows external application monitor 
 the VM's I/O traffic.  Therefore changed block tracking can be implemented externally. 
 
-\item \textbf{Chunk-level fine-grain nearby duplicate detection.}
+\item \textbf{Chunk-level fine-grain inner-VM detection.}
 The best deduplication uses a nonuniform chunk size 
 in the average of 4K or 8K~\cite{??}.
 Thus the second-level inner-VM deduplication is to assess in this
@@ -93,7 +93,13 @@ Thus our approximation is that the global fingerprint  comparison  only searches
 %Since duplicate sharing patterns among  VM follows a zip-like distribution,  
 \end{itemize}
 
-\subsection{Popular Chunk Management}
+When a block is not detected as a duplicate to any existing block, this block will be written
+to the file system. Since the backend file system typically uses a large block size such as 64MB, each VM will 
+accumnulate small local blocks. We manage  this accmulation process using an apendstore  scheme
+and discuss this in details in Section~\ref{sect:arch}.
+
+
+ \subsection{Popular Chunk Management}
 %VM-oriented Fault Isolation}
 %Our objective for fault isolation is to minimize the number of VMs affected when there are failures
 %in the cluster.  
@@ -110,10 +116,10 @@ The popularity of a chunk is the number  of data blocks from different VMs
 that are duplicates of this block after the inner VM deduplication.
 This number can be computed perioidically in a weekly basis.
 Once the popularity of all data blocks is collected, the system only maintains the top $k$
-most popular blocks.
-\item  Top $k$ number is chosen to be small while 
+most popular blocks.  For cross-VM comparison,
+we only store  top $k$ items and $k$ is  chosen to be small while 
 our analysis belows will show that the algorithm can still deliver competitive deduplication effiency.
-Since $k$ is small and these top $k$ blocks are shared among multiple VMs, 
+\item  Since $k$ is small and these top $k$ blocks are shared among multiple VMs, 
 we can afford to provide extra replicas for these popular blocks to enhanace the fault resilence.
 We will provide an alaysis in the next subsection.
 \end{itemize} 
