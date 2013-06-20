@@ -1,1 +1,16 @@
 \section{Experiments}
+Our main test-bed is an cluster of 6 machines,
+each of which is equiped with a 8-core AMD FX-8120 at 3.1 GHz
+with 16 GB RAM, running Linux. 
+A distributed file system (QFS) runs
+
+We used two main data sets for testing. Our synthetic
+data set consists of multiple 3 GB files, each with globally
+unique data segments. Our second data set consists
+of virtual machine images, which are a very common
+real-world enterprise use-case, that takes advantage
+of deduplication. We use a VMware “gold” disk image
+(VM0), hosting a Microsoft Windows XP installation,
+and created three additional versions of it (VM1, VM2,
+and VM3), each with incremental changes: VM1 is VM0
+with all Microsoft updates and service packs, VM2 is
