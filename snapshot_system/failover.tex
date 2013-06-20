@@ -80,6 +80,27 @@ By comparison, the probability that a VM has data loss is close to
 1 once  there are  $d \ge r$ failed machines. That is because there are more data blocks
 shared among VMs. Any failure of these blocks causes many more VMs to fail.
 
+The rate of increase in node failures can be seen in Figure~\ref{fig-vm-failue}.
+The graph assumes 10X40GB snapshots per VM with 20\% unique data after local
+dedup and 64MB filesytem chunks (which results in 1792 filesystem chunks per
+VM).
+
+\begin{figure}[ht]
+  \centering
+  %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
+	\begin{tikzpicture}
+		\begin{axis}[
+		title={Node failure affect on VMs},
+		xlabel={Number of nodes failed},
+		ylabel={chance that a VM is affected (\%)},
+		%extra y ticks={4.5,5.5,6.5} %because it only shows 4,5,6,7
+		]
+		\addplot[color=blue,mark=*] table{figures/vm_failure.txt};
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Percent chance that a VM is affected as storage nodes fail}
+  \label{fig-vm-failure}
+\end{figure}
 
 \comments{
 We use the following parameters  during the analysis
