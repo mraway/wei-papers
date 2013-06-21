@@ -1,19 +1,90 @@
-\subsubsection{Fault Analysis }
+\subsection{Fault Analysis }
 
-We  compare the impact of losing $d$ machines using the following two approaches:
-\begin{itemize}
-\item The VM-centric approach (VC).  The replication degree of the backup storage 
-is $r$ for regular content blocks and $r_c$ for CDS blocks where $r_c>r$. 
-\item The VM-oblivious (VO) approach.
-All chunk  blocks are treated uniformly and global comparison is conducted.
-\end{itemize} 
- 
+We  compare the impact of losing $d$ machines 
+to the the VC and VO approaches.  
+The replication degree of the backup storage 
+is $r$ for regular content blocks and $r=3$ is a typical setting in the distributed
+file system~\cite{Hadoop,GFS}.
+in The VC approach, a special replica degree $r_c$ used for CDS blocks where $r_c>r$. 
+Noted that the storage cost for VO with full deduplication is $b_u *r$
+while it is
+\[ r*b*\delta(1 -   (\frac{k}{b_u})^{1-\alpha}) +k*(r-r_c).
+\]
+
+For each rank $i$ block which appears $C_i$ times  among $V$ virtual machines.
+Assigning this block to virtual machines can be viewed as a classical ball-bin assignment
+approximated by a Poisson distribution. Namely the virtual machines that share this block
+is approximated as $1 -  e^{C_i/V}$.
+Thus the average number of VMs that share a block is:
+\[
+(1-\delta) + \delta \sum_1^{u_b} \frac{1 -  e^{C_i/V}}{u_b}.
+\]
+Any failure of a block would impact the above number of virtual machines.
+In VO, the number of VMs that share a block is:
+\[
+\sum_1^{u_b'} \frac{1 -  e^{C_i'/V}}{u_b'}.
+\]
+
+Next we discuss how a failure of $d$ machines impacts the VM snapshots in VC.
 When $d<r$, there is no loss of data in the snapshot storage.
-When $d \ge r$, some of data blocks in the storage are loss, and we compute the number of VMs that could
+When $r_c> d \ge r$, some of data blocks in the storage are lost, and we compute the number of VMs that could
 suffer the loss of their snapshots.
+When $d \ge r_c$, some of CDS blocks are affected.
+In VC, the blocks in CDS are stored in a container manner (superblock), and they are shared by many VMs.
+The number of data containers stored with replication degree $r$ for
+referenced by each VM is:
+\[
+N_1= \frac{b}{v*s} (1-\delta) +b/(v*s)\delta (1 -  (\frac{k}{b_u})^{1-\alpha})
+\]
+The number of CDS data containers stored with replication degree $r_c$ for
+referenced by each VM is:
+\[
+N_2= \frac{b}{v*s}\delta (\frac{k}{b_u})^{1-\alpha}.
+\]
+
+
+
+%Thus the number of VMs using a block =    $(1-s_c)  + s_c *L$.
+
+When there are $r \le d<r_c$ machines failed and the probability of
+a container failure depends on if all replicas of this container reside in the failed machines.
+\begin{multline}
+Probability (\mbox{ a VM fails in VC})\\
+= 1- Probability (\mbox{ a VM has no data container loss}) \\
+= 1-  Probability(\mbox{ A container has no data loss})^{N_1}
+%\end{split}
+\end{multline}
+
+%Probablity(\mbox { no loss for this  block}) = 1 - Probability (\mbox{ this block in d failed machiens})
+\begin{multline}
+%\begin{split}
+Probability(\mbox{A container no data loss})\\
+= 1- Probability (\mbox{ this container is in d failed machines})\\
+=  1- \frac{\binom{d}{r}} { \binom{p}{r} }.
+%\end{split}
+\end{multline}
+
+When $r_c \leq d$, the CDS data containers in VC can also have a loss. 
+\begin{multline}
+Probability (\mbox{ a VM fails in VC})\\
+= 1-  Probability(\mbox{ A container has no data loss})^{N_1}* \\
+Probability(\mbox{ A CDS container has no data loss})^{N_2}\\
+= 1 - 
+(\frac{ \binom{d}{r}} { \binom{p}{r} })^{N_1} 
+*
+(\frac{ \binom{d}{r_c}} { \binom{p}{r_c} })^{N_2} 
+%\end{split}
+\end{multline}
+
+By comparison, the probability that a VM has data loss is close to
+1 once  there are  $d \ge r$ failed machines. That is because there are more data blocks
+shared among VMs. Any failure of these blocks causes many more VMs to fail.
+
+
+\comments{
 We use the following parameters  during the analysis
 \begin{itemize}
-\item 	$V$ is the number of VMs. $m$ is the number of physical machines hosting the bakcup storage.
+\item 	$V$ is the number of VMs. $m$ is the number of physical machines hosting the backup storage.
 $d$ is the number of machines failed.
 \item In the VC approach, $s_c$  of them in the backup storage
 are shared by others with a zipf distribution. $(1-s_c)$ 
@@ -47,14 +118,14 @@ if this block is used by this VM,
 The average incoming degree of VM nodes is equal to
 the average outgoing degree of data blocks, which is $L_c$. 
 
-\comments{
+
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.45\textwidth]{shared.pdf}
 \caption{Assoication of data blocks to VMs.}
 \label{fig:shared}
 \end{figure}
-}
+
 
 Under $d$ failed machines, the  expected number of VMs 
 which suffer from data loss in VC is
@@ -65,15 +136,6 @@ which suffer from data loss in VC is
 = V ( 1-  Probability(\mbox{ A block has no data loss} )^{L_c} ).
 %\end{split}
 \end{multline}
-
-\comments{
-Prob(i-th block shared by (V-i+1) machines = X/i.
-b
-Sum (X/i) =1.      Thus       X= 1/ ln (V).
-Length of sharing=  Probality(this block is shared with 1 VM) 1 + Probablity(this block shared by 2 VM) 2+..] =  X *V +X*(V-1)/2+ X*(V-2)/3 +..
-=  X * sum (V-i+1)/I   for I from 1 to V.
-=  (V+1) sum (X/i) . Sum(X) =  (V+1) -  X*V= V(1- 1/lnV) +1.
-}
 
 %Thus the number of VMs using a block =    $(1-s_c)  + s_c *L$.
 
@@ -110,7 +172,26 @@ L_o = (1-s_o) + s_o \sum_1^b  P(1)^2 *  (x')^{-2\alpha'} *V.
 %with 3 replicas, 100 machines, and only 3 failures the chance of a single 10GB VM surviving is 9.11*10^-8
 %if we wanted to include it we probably want a model that includes containers, but that might be too complex
 %to be useful.
-
+}
+\begin{figure}[ht]
+  \centering
+  %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
+	\begin{tikzpicture}
+		\begin{axis}[
+		title={VO Block links},
+		xlabel={Number of VMs added},
+		ylabel={Avg. Block Links},
+		%extra y ticks={4.5,5.5,6.5} %because it only shows 4,5,6,7
+		legend pos=south east
+		]
+		\addplot[color=blue,mark=*] table[x=VMs,y=Measured] {figures/vo_links.txt};
+		\addplot[color=red,mark=square*] table[x=VMs,y=Theoretical] {figures/vo_links.txt};
+		\legend{Measured,Theoretical};
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Average number of VMs sharing a block in the global index}
+  \label{fig-vo-links}
+\end{figure}
 \comments{
 	=  sum _for_all_block(   Probablity (a block fails) *number of VM sharing this block ))
                = Probability(a block fails) * sum_for_all_blocks (numb of VM shared)

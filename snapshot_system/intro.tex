@@ -14,16 +14,17 @@ Frequent  snapshot backup of virtual disk images  can increase  the service reli
 For example, the Aliyun cloud, which is  the largest cloud service provider by Alibaba in China, 
 automatically conducts  the backup of virtual disk images to all active users every day.
 The cost of supporting a large number of concurrent backup streams is high
-because of the huge storage demand and  
+because of the huge storage demand. 
 Using a separate  backup service with full deduplication support~\cite{venti02,bottleneck08}
-can effectively identify content duplicates among snapshots and  remove 
-redundant storage content,  but the solution can be expensive and there is a large amount of 
+can effectively identify and remove content duplicates among snapshots, 
+but the solution can be expensive. There is also a large amount of 
 network traffic to transfer  data from the host machines to the backup facility
 before duplicates are removed.
 
 
-This paper seeks for a low-cost architecture option and considers that
-a backup service collocates  on  the cloud cluster with a minimum resource usage. 
+This paper seeks for a low-cost architecture option and takes advantage of the
+fact that the
+backup service collocates on the cloud cluster with a minimum resource usage. 
 %Since most of backup data is not used in practice, system resource in such a service is not fully utilized.
 %The dirty bit approach~\cite{??}  which checks the version difference can effectively remove
 %duplicates while using content fingerprints can significantly compress more~\cite{Bottlneck08}.
@@ -35,26 +36,29 @@ We study and evaluate the integration of several deduplication strategies to mee
 the low-cost collocation requirement. In parallel, we identify deduplication options that yield
 better fault isolation.
 %A recent study using subsampling~\cite{Guo2011}  can significantly reduce the memory requirement.
-This is because  after deduplication, the most of data blocks are shared by many virtual machines.
-Failure of such blocks would  have a catastrophic effect and many snapshots of virtual machines would be affected.
-The previous work in deduplication focuses on the efficiency and approximation of
-finger print comparison, and has not addressed the  fault tolerance along with a low-cost solution.
+We achieve improved fault isolation by accounting for the fact that after
+deduplication most data blocks are shared by several to many virtual machines.
+Failure of such popluar blocks would have a catastrophic effect and many
+snapshots of virtual machines would be affected.
+The previous work in deduplication focuses mainly on the efficiency and approximation of
+finger print comparison, and has not addressed fault tolerance along with a low-cost solution.
 Another issue considered is that
 %that deletion of old snapshots compete for computing resource as well. That is because data dependence created
-deletion of old snapshots compete for computing resource as well and that  needs
-to be considered. That is  because data dependence created
-by duplicate relationship among snapshots  adds processing complexity.
+deletion of old snapshots compete for computing resources as well so deletion needs
+to be considered in system design. The additional complexity for deletions
+come from the dependencies created by multiple links to the same problem, so
+some solution is needed to determine blocks with no dependent snapshots after deletion.
 % especially when  VMs can migrate around in the cloud.
 
 The paper studies and evaluates  an integrated approach which uses  multiple duplicate detection strategies
-based on  version  detection, small-scope inner VM duplicate comparison
+based on  version  detection, inner VM duplicate search,
 and controlled cross-VM comparison. 
 This approach is VM centric by localizing duplicate detection within each VM  as much as possible
 and minimize memory usage while delivering a decent deduplication efficiency. 
-That brings the benefits for parallelism  utilization and fault isolation.
-Our deletion strategy uses a double Boomer filer strategy for periodic mark-and-sweeping of expired data blocks.
+Our partially localized solution also brings the benefits of parallelism, utilization, and fault isolation.
+Our deletion strategy uses a double Bloom filter strategy for periodic mark-and-sweeping of expired data blocks.
 We have developed a prototype system that runs a cluster of Linux machines with Xen.
-The backup storage uses a standard distributed file system  with data replication and block packaging,
+The backup storage uses a standard distributed file system with data replication and block packaging,
 and we allocate more  replicas for the commonly-shared  data blocks among VM snapshots to enhance fault tolerance.
 
 
