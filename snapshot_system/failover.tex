@@ -80,12 +80,13 @@ By comparison, the probability that a VM has data loss is close to
 1 once  there are  $d \ge r$ failed machines. That is because there are more data blocks
 shared among VMs. Any failure of these blocks causes many more VMs to fail.
 
-The rate of increase in node failures can be seen in Figure~\ref{fig-vm-failure}
-(for a 100 node cluster).
-The graph assumes 10X40GB snapshots per VM with 18\% unique data after local
-dedup and 64MB filesytem chunks (which results in 1792 filesystem chunks per
-VM). We assume 18\% unique data after local dedup because that is what our
-snapshots have shown.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%OLD MODEL START%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%The rate of increase in node failures can be seen in Figure~\ref{fig-vm-failure}
+%(for a 100 node cluster).
+%The graph assumes 10X40GB snapshots per VM with 18\% unique data after local
+%dedup and 64MB filesytem chunks (which results in 1792 filesystem chunks per
+%VM). We assume 18\% unique data after local dedup because that is what our
+%snapshots have shown.
 
 \comments{\begin{figure}[ht]
   \centering
@@ -104,7 +105,7 @@ snapshots have shown.
   \label{fig-vm-failure}
 \end{figure}}
 
-\begin{figure}[ht]
+\comments{\begin{figure}[ht]
   \centering
   %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
 	\begin{tikzpicture}
@@ -125,7 +126,11 @@ snapshots have shown.
 	\end{tikzpicture}
   \caption{Percent chance that a VM is affected as storage nodes fail}
   \label{fig-vm-failure}
-\end{figure}
+\end{figure}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%OLD MODEL END%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%NEW MODEL START%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{figure}[ht]
   \centering
@@ -134,25 +139,54 @@ snapshots have shown.
 		\begin{axis}[
 		%title={Node failure affect on VMs},
 		xlabel={Failed storage nodes},
-		ylabel={Chance VM is affected (\%)},
+		ylabel={VM Availability (\%)},
 		%extra y ticks={4.5,5.5,6.5} %if important numbers are missing
                 mark options=solid,
-                legend pos=north west
+                legend style={
+                    cells={anchor=west}, %legend entry alignment
+                    legend pos=south west %legend position
+                }
 		]
-                \addplot[densely dashed,color=blue,mark=*] table[x=NodesFailed,y=VO1]{figures/vm_failure_2.txt};
                 \addplot[densely dashed,color=blue,mark=square*] table[x=NodesFailed,y=VO2]{figures/vm_failure_2.txt};
-                \addplot[densely dashed,color=blue,mark=triangle*,mark size=3] table[x=NodesFailed,y=VO3]{figures/vm_failure_2.txt};
-                \addplot[densely dashed,color=blue,mark=diamond*,mark size=3] table[x=NodesFailed,y=VO4]{figures/vm_failure_2.txt};
-                \addplot[color=red,mark=*] table[x=NodesFailed,y=VC1]{figures/vm_failure_2.txt};
+                \addplot[densely dashed,color=blue,mark=*] table[x=NodesFailed,y=VO1]{figures/vm_failure_2.txt};
+                %\addplot[densely dashed,color=blue,mark=triangle*,mark size=3] table[x=NodesFailed,y=VO3]{figures/vm_failure_2.txt};
+                %\addplot[densely dashed,color=blue,mark=diamond*,mark size=3] table[x=NodesFailed,y=VO4]{figures/vm_failure_2.txt};
                 \addplot[color=red,mark=square*] table[x=NodesFailed,y=VC2]{figures/vm_failure_2.txt};
-                \addplot[color=red,mark=triangle*,mark size=3] table[x=NodesFailed,y=VC3]{figures/vm_failure_2.txt};
-                \addplot[color=red,mark=diamond*,mark size=3] table[x=NodesFailed,y=VC4]{figures/vm_failure_2.txt};
-                \legend{$VO_{C=5}$,$VO_{C=10}$,$VO_{C=20}$,$VO_{C=40}$,$VC_{C=100}$,$VC_{C=200}$,$VC_{C=400}$,$VC_{C=800}$}
+                \addplot[color=red,mark=*] table[x=NodesFailed,y=VC1]{figures/vm_failure_2.txt};
+                %\addplot[color=red,mark=triangle*,mark size=3] table[x=NodesFailed,y=VC3]{figures/vm_failure_2.txt};
+                %\addplot[color=red,mark=diamond*,mark size=3] table[x=NodesFailed,y=VC4]{figures/vm_failure_2.txt};
+            \legend{$VO\,10$,$VO\,5$,$VC\,1000$,$VC\,11$}
 		\end{axis}
 	\end{tikzpicture}
-  \caption{Percent chance that a VM is affected as storage nodes fail}
-  \label{fig-vm-failure}
+  \caption{Availability of VM backups as nodes fail for VO and VC models for varying average block link counts (i.e. average number of VMs that use a block)}
+  \label{fig-vm-availability}
 \end{figure}
+
+\begin{figure}[ht]
+  \centering
+	\begin{tikzpicture}
+		\begin{axis}[
+		%title={CDS Replication affect on availability},
+		xlabel={Failed storage nodes},
+		ylabel={VM Availability (\%)},
+		%extra y ticks={4.5,5.5,6.5} %if important numbers are missing
+                mark options=solid,
+                legend style={
+                    cells={anchor=west}, %legend entry alignment
+                    legend pos=south west %legend position
+                }
+		]
+                \addplot[color=blue,mark=*] table[x=NodesFailed,y=VC1]{figures/cds_replication.txt};
+                \addplot[color=blue,mark=square*] table[x=NodesFailed,y=VC2]{figures/cds_replication.txt};
+                \addplot[color=blue,mark=triangle*,mark size=3] table[x=NodesFailed,y=VC3]{figures/cds_replication.txt};
+                \addplot[color=blue,mark=diamond*,mark size=3] table[x=NodesFailed,y=VC4]{figures/cds_replication.txt};
+            \legend{$R_C=3$,$R_C=4$,$R_C=5$,$R_C=7$}
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Availability of VM backups as nodes fail in the VC model for different CDS Replication factors (Non-CDS replication fixed at 3, and average CDS block links set to 1000)}
+  \label{fig-cds-replication}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%NEW MODEL END%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \comments{
 We use the following parameters  during the analysis
@@ -269,6 +303,25 @@ Figure~\ref{fig-vo-links} shows the average number of links to a given block in 
   \caption{Average number of VMs sharing a block in the global index}
   \label{fig-vo-links}
 \end{figure}
+
+\begin{figure}[ht]
+  \centering
+	\begin{tikzpicture}
+		\begin{axis}[
+		%title={VO Container links},
+		xlabel={Number of VMs},
+		ylabel={Avgerage Container links},
+		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
+		]
+		\addplot[color=blue,mark=*] table[x=VMs,y=ContainerLinks] {figures/vo_container_links.txt};
+		%\legend{Measured,Theoretical};
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Measured Average number of VMs sharing a container in the global index (for VO)}
+  \label{fig-vo-container-links}
+\end{figure}
+
+
 \comments{
 	=  sum _for_all_block(   Probablity (a block fails) *number of VM sharing this block ))
                = Probability(a block fails) * sum_for_all_blocks (numb of VM shared)
