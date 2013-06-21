@@ -8,18 +8,18 @@ in a sense that it is optimized for large files and sequential read/append opera
 
 \subsection{Design considerations}
 While scalability has been handled by the DFS, there are still several challenges in 
-storing billions of var-sized small data chunks:
+storing billions of variable-sized small data chunks:
 \begin{description}
 \item[Locality perseveration] Chunk data must be placed next to each other in the order of their writing sequence,
 because reading a snapshot incurs large sequential reads of chunks under their logical sequence in the snapshot.
 \item[Flexible referencing] To avoid overwhelming metadata operation capbility of DFS's master, 
 we have to group small chunks into large data files in DFS.
-However, snapshot deletion brings chunk data deletion, and reclaiming disk space would require many chunk data being moved.
+However, snapshot deletion brings chunk data deletion, and reclaiming disk space would require many chunks being moved.
 If such chunk movement incurs updates of data referencing in snapshot and segment recipes, then the cost of deleting 
 a snapshot would be extremely high.
 \item[Efficient chunk lookup] The translation from data reference to data location must be very efficient in two ways: 
-first, a sorted index is necessary to fast locate the data location in $O(log(n)$ time; 
-second, the size of index must be optimized to minimized its memory footprint and the cost of fetching index. 
+first, a sorted index is necessary to quickly find the data location in $O(log(n)$ time; 
+second, the size of the index must be optimized to minimize its memory footprint and the cost of fetching index. 
 \end{description}
 
 
