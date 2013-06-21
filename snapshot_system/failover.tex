@@ -87,17 +87,67 @@ dedup and 64MB filesytem chunks (which results in 1792 filesystem chunks per
 VM). We assume 18\% unique data after local dedup because that is what our
 snapshots have shown.
 
-\begin{figure}[ht]
+\comments{\begin{figure}[ht]
   \centering
   %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
 	\begin{tikzpicture}
 		\begin{axis}[
 		%title={Node failure affect on VMs},
 		xlabel={Number of nodes failed},
-		ylabel={chance that a VM is affected (\%)},
+		ylabel={chance that a VM is affected (\%) in VO},
 		%extra y ticks={4.5,5.5,6.5} %because it only shows 4,5,6,7
 		]
 		\addplot[color=blue,mark=*] table{figures/vm_failure.txt};
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Percent chance that a VM is affected as storage nodes fail}
+  \label{fig-vm-failure}
+\end{figure}}
+
+\begin{figure}[ht]
+  \centering
+  %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
+	\begin{tikzpicture}
+		\begin{axis}[
+		%title={Node failure affect on VMs},
+		xlabel={Failed storage nodes},
+		ylabel={Chance VM is affected (\%)},
+		%extra y ticks={4.5,5.5,6.5} %if important numbers are missing
+                mark options=solid,
+                legend pos=north west
+		]
+                \addplot[densely dashed,color=blue,mark=*] table[x=NodesFailed,y=VO]{figures/vm_failure_1.txt};
+                \addplot[color=red,mark=*] table[x=NodesFailed,y=VC1]{figures/vm_failure_1.txt};
+                \addplot[color=red,mark=square*] table[x=NodesFailed,y=VC2]{figures/vm_failure_1.txt};
+                \addplot[color=red,mark=triangle*,mark size=3] table[x=NodesFailed,y=VC3]{figures/vm_failure_1.txt};
+                \legend{$VO$,$VC_{C_R=3}$,$VC_{C_R=4}$,$VC_{C_R=5}$,$VC_{C_R=6}$,$VC_{C_R=7}$}
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Percent chance that a VM is affected as storage nodes fail}
+  \label{fig-vm-failure}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
+	\begin{tikzpicture}
+		\begin{axis}[
+		%title={Node failure affect on VMs},
+		xlabel={Failed storage nodes},
+		ylabel={Chance VM is affected (\%)},
+		%extra y ticks={4.5,5.5,6.5} %if important numbers are missing
+                mark options=solid,
+                legend pos=north west
+		]
+                \addplot[densely dashed,color=blue,mark=*] table[x=NodesFailed,y=VO1]{figures/vm_failure_2.txt};
+                \addplot[densely dashed,color=blue,mark=square*] table[x=NodesFailed,y=VO2]{figures/vm_failure_2.txt};
+                \addplot[densely dashed,color=blue,mark=triangle*,mark size=3] table[x=NodesFailed,y=VO3]{figures/vm_failure_2.txt};
+                \addplot[densely dashed,color=blue,mark=diamond*,mark size=3] table[x=NodesFailed,y=VO4]{figures/vm_failure_2.txt};
+                \addplot[color=red,mark=*] table[x=NodesFailed,y=VC1]{figures/vm_failure_2.txt};
+                \addplot[color=red,mark=square*] table[x=NodesFailed,y=VC2]{figures/vm_failure_2.txt};
+                \addplot[color=red,mark=triangle*,mark size=3] table[x=NodesFailed,y=VC3]{figures/vm_failure_2.txt};
+                \addplot[color=red,mark=diamond*,mark size=3] table[x=NodesFailed,y=VC4]{figures/vm_failure_2.txt};
+                \legend{$VO_{C=5}$,$VO_{C=10}$,$VO_{C=20}$,$VO_{C=40}$,$VC_{C=100}$,$VC_{C=200}$,$VC_{C=400}$,$VC_{C=800}$}
 		\end{axis}
 	\end{tikzpicture}
   \caption{Percent chance that a VM is affected as storage nodes fail}

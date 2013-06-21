@@ -303,6 +303,7 @@ the better deduplication efficiency our CDS deduplication approach will have.
             xlabel={Total Data Stored (GB)},
             ylabel={CDS Coverage (\%)},
             %extra y ticks={4.5,5.5,6.5} %to add extra ticks
+            mark options=solid,
             %legend pos=outer north east,
             legend columns=2,
             legend style={
@@ -311,7 +312,7 @@ the better deduplication efficiency our CDS deduplication approach will have.
             ]
             \addplot[color=blue,mark=*] table[x=InputSize,y=A1] {figures/cds_coverage.txt};
             \addplot[color=blue,mark=square*] table[x=InputSize,y=A2] {figures/cds_coverage.txt};
-            \addplot[color=blue,mark=triangle*] table[x=InputSize,y=A4] {figures/cds_coverage.txt};
+            \addplot[color=blue,mark=triangle*,mark size=3] table[x=InputSize,y=A4] {figures/cds_coverage.txt};
             \addplot[densely dashed,color=red,mark=*] table[x=InputSize,y=T1] {figures/cds_coverage.txt};
             \addplot[densely dashed,color=red,mark=square*] table[x=InputSize,y=T2] {figures/cds_coverage.txt};
             \addplot[densely dashed,color=red,mark=triangle*] table[x=InputSize,y=T4] {figures/cds_coverage.txt};
