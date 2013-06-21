@@ -1,8 +1,16 @@
 \section{Experiments}
+Our main test-bed is an cluster of 6 machines,
+each of which is equiped with a 8-core AMD FX-8120 at 3.1 GHz
+with 16 GB RAM, running Linux.
+A distributed file system (QFS) runs in the cluster manages six 3TB disks
+ with default replication degree set to 3.
+Our data set consists of 350 virtual machine image snapshots taken from Alibaba.com's
+public VM cloud in China. We select 35 VMs from the most popular 7 OSes: 
+Debian, Ubuntu, Redhat, CentOS, Win2003 32bit, win2003 64 bit and win2008 64 bit. 
+For each OS, 5 VMs are chosen, and every VM come with 10 full snapshots.
 
-
-
-\subsection{Sampled Index}
+\subsection{Comparison with Other Approaches}
+\subsubsection{Sampled Index}
 One alternative approach to avoiding a single global index is to use a sampled
 index. This is the approach taken by Guo and Efstathopoulos\cite{Guo2011}. We
 compare their solution to ours by running their algorithm on our 350 traces
@@ -33,7 +41,7 @@ algorithm which requires significant network traffic is the CDS deduplication,
 but this is done after Levels 1 and 2 (dirty bits and comparison to parent), and
 so is only done for a small percent of blocks (?? 5-10\% ??).
 
-\subsection{Scalable Data Routing}
+\subsubsection{Scalable Data Routing}
 Another approach to avoiding a global index is to use a content-based hash
 partitioning algorithm to break up the deduplication work. This approach is
 taken by Dong et al. in their Scalable Data Routing paper, and is similar to
