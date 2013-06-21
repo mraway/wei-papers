@@ -132,6 +132,43 @@ shared among VMs. Any failure of these blocks causes many more VMs to fail.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%NEW MODEL START%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+To consider the reliability of VM backups in our model, we can consider the likely hood that a data chunk will fail,
+given some number of storage node failures. Every time a filesystem chunk fails,
+we say that we have lost data for that virtual machine, so it is no longer
+available. (in reality it may be only one snapshot that is affected, but it is the user
+who must decide which snapshots are important, so we consider the worst case). We use
+filesystem chunks rather than data blocks as our unit of failure because the DFS keeps
+filesystem chunks as its base unit of storage (in our case there are 16384 blocks in a
+filesytem chunk, with 4KB block size and a 64MB chunk size).
+
+We take the likelyhood of VM failure to be the same as the likelyhood of chunk failure,
+so
+\[
+    P_{VMfailure}=\frac{\binom{d}{r}}{\binom{p}{r}}
+\]
+
+Since both in the CDS and in the VO approach a single filesystem chunk may be used by many VMs,
+we must multiply the block failure ratio by the number of outgoing links for the block to get
+the expected impact on the system.
+\[
+    E_{VMfailure}=L\frac{\binom{d}{r}}{\binom{p}{r}}
+\]
+
+in our current testbed we have measured the average number of links
+per block (Figure~\ref{vo-links}) and number of links per chunk (Figure~\ref{vo-container-links})
+in our dataset. For the complete dataset, we also found the average number of links to CDS chunks, which
+was 11 using a 5\% CDS. From Figure~\ref{vo-container-links} you can see that as you add VMs, the average
+number of links to a chunk increases. We expect that this trend will level out with larger datasets, but
+should continue to increase at a slower rate. For the VC model, we have to consider both CDS chunks and 
+Non-CDS chunks. In the VO model all data is shared, but in VC only the CDS data is shared, but at a much
+higher rate. This gives a strong advantage to VC, in that for a large percent of the data (95-99\%), there
+is only one VM pointing to each Non-CDS chunk. You can see the increase in reliability in Figure~\ref{fig-vm-availability}.
+The figure shows that even as the number of links to a CDS chunk increase by 100 times, the availability only decreases
+slightly, while in VO even small increases in $L$ causes a large decrease in availability. Figure~\ref{fig-cds-replication}
+shows the advantages of increasing the replication factor for CDS blocks. These figures together show
+the advantages of the VM-centric model, and the advantages that separating the replication factor for popular blocks
+can have on reliability.
+
 \begin{figure}[ht]
   \centering
   %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
@@ -139,8 +176,8 @@ shared among VMs. Any failure of these blocks causes many more VMs to fail.
 		\begin{axis}[
 		%title={Node failure affect on VMs},
 		xlabel={Failed storage nodes},
-		ylabel={VM Availability (\%)},
-		%extra y ticks={4.5,5.5,6.5} %if important numbers are missing
+		ylabel={VM Snapshot Availability (\%)},
+		extra y ticks={99.9}, %if important numbers are missing
                 mark options=solid,
                 legend style={
                     cells={anchor=west}, %legend entry alignment
@@ -168,8 +205,8 @@ shared among VMs. Any failure of these blocks causes many more VMs to fail.
 		\begin{axis}[
 		%title={CDS Replication affect on availability},
 		xlabel={Failed storage nodes},
-		ylabel={VM Availability (\%)},
-		%extra y ticks={4.5,5.5,6.5} %if important numbers are missing
+		ylabel={VM Snapshot Availability (\%)},
+		extra y ticks={99.9}, %if important numbers are missing
                 mark options=solid,
                 legend style={
                     cells={anchor=west}, %legend entry alignment
@@ -177,9 +214,9 @@ shared among VMs. Any failure of these blocks causes many more VMs to fail.
                 }
 		]
                 \addplot[color=blue,mark=*] table[x=NodesFailed,y=VC1]{figures/cds_replication.txt};
-                \addplot[color=blue,mark=square*] table[x=NodesFailed,y=VC2]{figures/cds_replication.txt};
-                \addplot[color=blue,mark=triangle*,mark size=3] table[x=NodesFailed,y=VC3]{figures/cds_replication.txt};
-                \addplot[color=blue,mark=diamond*,mark size=3] table[x=NodesFailed,y=VC4]{figures/cds_replication.txt};
+                \addplot[color=red,mark=square*] table[x=NodesFailed,y=VC2]{figures/cds_replication.txt};
+                \addplot[color=brown,mark=triangle*,mark size=3] table[x=NodesFailed,y=VC3]{figures/cds_replication.txt};
+                \addplot[color=black,mark=diamond*,mark size=3] table[x=NodesFailed,y=VC4]{figures/cds_replication.txt};
             \legend{$R_C=3$,$R_C=4$,$R_C=5$,$R_C=7$}
 		\end{axis}
 	\end{tikzpicture}
