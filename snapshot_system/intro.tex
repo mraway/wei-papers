@@ -16,15 +16,24 @@ automatically conducts  the backup of virtual disk images to all active users ev
 The cost of supporting a large number of concurrent backup streams is high
 because of the huge storage demand. 
 Using a separate  backup service with full deduplication support~\cite{venti02,bottleneck08}
+(Figure~\ref{fig-traditional-arch})
 can effectively identify and remove content duplicates among snapshots, 
 but the solution can be expensive. There is also a large amount of 
 network traffic to transfer  data from the host machines to the backup facility
 before duplicates are removed.
 
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=3in]{images/traditional-arch.pdf}
+    \label{fig-traditional-arch}
+    \caption{Traditional VM Backup System}
+\end{figure}
+
 
 This paper seeks for a low-cost architecture option and takes advantage of the
 fact that the
-backup service collocates on the cloud cluster with a minimum resource usage. 
+backup service collocates on the cloud cluster with a minimum resource usage
+(Figure~\ref{fig-colocated-arch})
 %Since most of backup data is not used in practice, system resource in such a service is not fully utilized.
 %The dirty bit approach~\cite{??}  which checks the version difference can effectively remove
 %duplicates while using content fingerprints can significantly compress more~\cite{Bottlneck08}.
@@ -49,6 +58,13 @@ to be considered in system design. The additional complexity for deletions
 come from the dependencies created by multiple links to the same problem, so
 some solution is needed to determine blocks with no dependent snapshots after deletion.
 % especially when  VMs can migrate around in the cloud.
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=3in]{images/colocated-arch.pdf}
+    \label{fig-colocated-arch}
+    \caption{Colocated VM Backup System}
+\end{figure}
 
 The paper studies and evaluates  an integrated approach which uses  multiple duplicate detection strategies
 based on  version  detection, inner VM duplicate search,
