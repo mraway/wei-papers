@@ -152,9 +152,11 @@ $C_i$ &  the frequency for the $i$th most popular fingerprint\\
 \hline
 $\delta$ &  the percentage of duplicates detected in inner VM deduplication\\
 \hline
-$p$ & the number of nodes in the cluster\\
+$\sigma$ &  the percentage of $b_u$ unique items  stored in CDS.\\
 \hline
-$D$ & the amount of unique data on each node\\
+$p$ & the number of machines in the cluster\\
+\hline
+$D$ & the amount of unique data on each machine\\
 \hline
 $B$ & the average block size. Our setting is  4K.\\
 \hline
@@ -190,7 +192,8 @@ C_1=\frac{b(1-\alpha)}{b_u^{1-\alpha}}.
 %e_c = \frac{b-b_u}{b} = 1 - \frac{b_u}{b}
 %\end{equation}
 
-The  $k$ most popular fingerprints can cover the following number of blocks.
+The  $k$ most popular fingerprints can cover the following number of blocks after inner VM 
+deduplication.
 \[
 C_1 \sum_{i=1}^{k}\frac{1}{i^\alpha} \approx  
 C_1 \int_{1}^{k}\frac{1}{x^\alpha} dx  \approx  C_1\frac{  k^{1-\alpha}} {1-\alpha}.
@@ -202,9 +205,9 @@ is the percentage of duplicates that can be detected:
 \begin{split}
 e_k &= 
 \frac{ b(1-\delta) + C_1\frac{  k^{1-\alpha}} {1-\alpha}} 
-{b(1-\delta)  + sb - b_u }\\
+{b(1-\delta)  + \delta b - b_u }\\
 &= 
-\frac{ (1-\delta) + s (\frac{k}{b_u})^{1-\alpha}}
+\frac{ (1-\delta) + \delta  (\frac{k}{b_u})^{1-\alpha}}
 { 1- \frac{b_u}{b} }.
 \end{split}
 \end{equation}
@@ -241,7 +244,7 @@ $
 k = p*m/F$, and $b_u = p*D/B.
 $
 
-The overall deduplication effiency is
+The overall deduplication effiency of VC is
 \[
 \frac{ (1-\delta) + \delta (\frac{m*B}{D*F})^{1-\alpha}}
 { 1- \frac{b_u}{b} }.

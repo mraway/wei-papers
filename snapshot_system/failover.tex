@@ -5,12 +5,28 @@ to the the VC and VO approaches.
 The replication degree of the backup storage 
 is $r$ for regular content blocks and $r=3$ is a typical setting in the distributed
 file system~\cite{Hadoop,GFS}.
-in The VC approach, a special replica degree $r_c$ used for CDS blocks where $r_c>r$. 
-Noted that the storage cost for VO with full deduplication is $b_u *r$
-while it is
-\[ r*b*\delta(1 -   (\frac{k}{b_u})^{1-\alpha}) +k*(r-r_c).
+In the VC approach, a special replica degree $r_c$ used for CDS blocks where $r_c>r$. 
+Notice that the ratio of non CSD data size vs CDS data size for each VM is
+\[
+\sigma=  \frac{b*\delta(1 -   (\frac{k}{b_u})^{1-\alpha})} {k}.
 \]
 
+Thus  storage cost for VO with full deduplication is $b_u *r$ and for VC, it is
+\[ k*r_c  + k*\sigma *r
+\]
+
+In our experiment with Alibaba data, the ratio $\sigma$ 
+is 162. Thus allocation of extra replicas for CDS only introduces a small amount of extra space
+cost.  Figure~\ref{fig:storageCDS} shows the storage cost ratio of VC and VO when 
+$r$=3, and $r_c$ varies from 3 to 10.
+The result shows that the storage cost for adding extra replication for CDS
+is insignificant.
+Now we compare the fault resilience of VC and VO.
+
+
+
+
+\comments{
 For each rank $i$ block which appears $C_i$ times  among $V$ virtual machines.
 Assigning this block to virtual machines can be viewed as a classical ball-bin assignment
 approximated by a Poisson distribution. Namely the virtual machines that share this block
@@ -41,44 +57,159 @@ referenced by each VM is:
 \[
 N_2= \frac{b}{v*s}\delta (\frac{k}{b_u})^{1-\alpha}.
 \]
+}
 
 
 
 %Thus the number of VMs using a block =    $(1-s_c)  + s_c *L$.
+In characterizing the reliability of VM backups in our model, 
+we consider the likely hood that a file system block fails,
+given some number of storage node failures. 
+Every time a filesystem block fails,
+we say that we have lost data for that virtual machine, so it is no longer
+available. 
+(in reality it may be only one snapshot that is affected, but it is the user
+who must decide which snapshots are important, so we consider the worst case). 
+We use filesystem blocks rather than a deduplication
+data chunk as our unit of failure because the DFS keeps
+filesystem blocks as its base unit of storage (in our case there are 
+16384 blocks in a filesytem block on average, with 4KB block size and 
+a 64MB block size).
 
-When there are $r \le d<r_c$ machines failed and the probability of
-a container failure depends on if all replicas of this container reside in the failed machines.
-\begin{multline}
-Probability (\mbox{ a VM fails in VC})\\
-= 1- Probability (\mbox{ a VM has no data container loss}) \\
-= 1-  Probability(\mbox{ A container has no data loss})^{N_1}
+To  compute the probablity of losing a virtual machine, 
+we estimate the number of file system blocks per VM in each apporach.
+We can build a bipartite graph representing the association from unique file system blocks
+to their corresponding VMs. An association edge is  drawn  from a file block  to a VM 
+if this file is used by this VM. 
+For VC, let $N_1$ be the averge number of file system blocks for non-CDS data for each VM
+and  $N_2$ be the averge number of file system blocks for CDS data for each VM.
+For VO, let $N_o$ be the averge number of file system blocks for each VM
+and  let $V_o$ be the averge number of VMs shared by each file system block.
+Figure~\ref{fig:shared} illustates the bipartite association.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{shared.pdf}
+\caption{Assoication of data blocks to VMs.}
+\label{fig:shared}
+\end{figure}
+
+Each non-CDS file system block is associated with one VM while CDS file system blocks are
+shared among VMs. 
+\[
+V *N_1 *s  = pD  \frac{\delta} {\delta +1}
+\]
+For CDS file blocks, there are at most $V$ VMs sharing, thus
+\[
+V *N_2 *s  \leq pD  \frac{1} {\delta +1} *V
+\]
+For the VO approach, 
+\[
+V *N_o *s  = pD  V_o.
+\]
+Then
+\[
+N_1= \frac{pD \delta} {V s (\delta +1)},\; 
+N_2 \leq \frac{pD } {s (\delta +1)}, \; 
+\mbox{and} N_o = \frac{pD V_o } {s V}.
+\]
+Since each file block (with default size $s=64MB$) contains many chunks (on average 4KB),
+each file block contains the hot low-level chunks shared by many VMs, and it also contains
+rare chunks which are not shared.
+Figure~\ref{fig:VOshared} shows the number of VMs shared by each file block.
+In our experiment, we find that $V_o \approx 0.2 V$ when backuping up VMs one by one.
+We can observe that $N_1 +N_2 << N_o$.
+If  the backup for multiple VMs is conducted concurrently, there would be more
+VMs sharing for each file block on average.
+
+Figure~\ref{fig-vo-links} shows the average number of links to 
+a given block in the global index as more VMs are added. 
+The first 15 VMs are all windows machines, so that explains the initial 
+higher values, but for the most part the average number of 
+links is between 1.5 and 2.
+
+\begin{figure}[ht]
+  \centering
+  %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
+	\begin{tikzpicture}
+		\begin{axis}[
+		%title={VO Block links},
+		xlabel={Number of VMs added},
+		ylabel={Avg. Links to a Block},
+		%extra y ticks={4.5,5.5,6.5} %because it only shows 4,5,6,7
+		legend pos=south east
+		]
+		\addplot[color=blue,mark=*] table[x=VMs,y=Measured] {figures/vo_links.txt};
+		\addplot[color=red,mark=square*] table[x=VMs,y=Theoretical] {figures/vo_links.txt};
+		\legend{Measured,Theoretical};
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Average number of VMs sharing a block in the global index}
+  \label{fig-vo-links}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+	\begin{tikzpicture}
+		\begin{axis}[
+		%title={VO Container links},
+		xlabel={Number of VMs},
+		ylabel={Avgerage Container links},
+		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
+		]
+		\addplot[color=blue,mark=*] table[x=VMs,y=ContainerLinks] {figures/vo_container_links.txt};
+		%\legend{Measured,Theoretical};
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Measured Average number of VMs sharing a container in the global index (for VO)}
+  \label{fig-vo-container-links}
+\end{figure}
+
+
+
+The availability of is a VM is the likelyhood that
+there is no  data loss for all its file blocks.
+With replication degree $r$, the likelyhood of
+a file block block is the probability that  
+all of its replicas appear in $d$ failed machines. 
+Namely, $\binom{d}{r}/ \binom{p}{r}$.
+
+
+When there are $r \le d<r_c$ machines failed, 
+%a file block failure depends on if all replicas of this container reside in the failed machines.
+the avaiability of a VM in the VC approach is
+\[
+(1-\frac{\binom{d}{r}} { \binom{p}{r} })^{N_1}.
+\]
+%\begin{multline}
+%= Probability (\mbox{ There is no file block loss in this VM}) \\
+%= Probability(\mbox{ A file block has file data loss})^{N_1}\\
+%= (1- Probability (\mbox{all replicas of its block fail}))^{N_1}\\
+%\end{multline}
 %\end{split}
-\end{multline}
 
-%Probablity(\mbox { no loss for this  block}) = 1 - Probability (\mbox{ this block in d failed machiens})
-\begin{multline}
-%\begin{split}
-Probability(\mbox{A container no data loss})\\
-= 1- Probability (\mbox{ this container is in d failed machines})\\
-=  1- \frac{\binom{d}{r}} { \binom{p}{r} }.
-%\end{split}
-\end{multline}
-
-When $r_c \leq d$, the CDS data containers in VC can also have a loss. 
-\begin{multline}
-Probability (\mbox{ a VM fails in VC})\\
-= 1-  Probability(\mbox{ A container has no data loss})^{N_1}* \\
-Probability(\mbox{ A CDS container has no data loss})^{N_2}\\
-= 1 - 
-(\frac{ \binom{d}{r}} { \binom{p}{r} })^{N_1} 
+When $r_c \leq d$, the CDS file block in VC can also have a loss.
+The availability of  a VM in the VC approach is
+\[
+(1-\frac{ \binom{d}{r}} { \binom{p}{r} })^{N_1} 
 *
-(\frac{ \binom{d}{r_c}} { \binom{p}{r_c} })^{N_2} 
+(1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} })^{N_2}.
+\]
+%= Probability(\mbox{ No non-CDS file block loss})^{N_1}
+%Probability(\mbox{ No CDS file block loss})^{N_2}\\
+%\begin{multline}
 %\end{split}
-\end{multline}
+%\end{multline}
 
-By comparison, the probability that a VM has data loss is close to
-1 once  there are  $d \ge r$ failed machines. That is because there are more data blocks
-shared among VMs. Any failure of these blocks causes many more VMs to fail.
+The availability of its VM  mbox in the VO approach is
+\[ 
+(1-\frac{ \binom{d}{r}} { \binom{p}{r} })^{N_o}. 
+\]
+
+
+
+%By comparison, the probability that a VM has data loss is close to
+%1 once  there are  $d \ge r$ failed machines. That is because there are more data blocks
+%shared among VMs. Any failure of these blocks causes many more VMs to fail.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%OLD MODEL START%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %The rate of increase in node failures can be seen in Figure~\ref{fig-vm-failure}
@@ -132,15 +263,8 @@ shared among VMs. Any failure of these blocks causes many more VMs to fail.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%NEW MODEL START%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-To consider the reliability of VM backups in our model, we can consider the likely hood that a data chunk will fail,
-given some number of storage node failures. Every time a filesystem chunk fails,
-we say that we have lost data for that virtual machine, so it is no longer
-available. (in reality it may be only one snapshot that is affected, but it is the user
-who must decide which snapshots are important, so we consider the worst case). We use
-filesystem chunks rather than data blocks as our unit of failure because the DFS keeps
-filesystem chunks as its base unit of storage (in our case there are 16384 blocks in a
-filesytem chunk, with 4KB block size and a 64MB chunk size).
 
+\comments{
 We take the likelyhood of VM failure to be the same as the likelyhood of chunk failure,
 so
 \[
@@ -159,12 +283,24 @@ per block (Figure~\ref{vo-links}) and number of links per chunk (Figure~\ref{vo-
 in our dataset. For the complete dataset, we also found the average number of links to CDS chunks, which
 was 11 using a 5\% CDS. From Figure~\ref{vo-container-links} you can see that as you add VMs, the average
 number of links to a chunk increases. We expect that this trend will level out with larger datasets, but
-should continue to increase at a slower rate. For the VC model, we have to consider both CDS chunks and 
+should continue to increase at a slower rate. 
+For the VC model, we have to consider both CDS chunks and 
 Non-CDS chunks. In the VO model all data is shared, but in VC only the CDS data is shared, but at a much
 higher rate. This gives a strong advantage to VC, in that for a large percent of the data (95-99\%), there
 is only one VM pointing to each Non-CDS chunk. You can see the increase in reliability in Figure~\ref{fig-vm-availability}.
-The figure shows that even as the number of links to a CDS chunk increase by 100 times, the availability only decreases
-slightly, while in VO even small increases in $L$ causes a large decrease in availability. Figure~\ref{fig-cds-replication}
+}
+
+The figure shows that even as the number of VMs sharing a CDS file block 
+increase by 100 times, the availability only decreases
+slightly.
+The key factor placed is that  $N_1 +N_2 << N_o$.
+The VM-centric approach packs  data blocks under one VM as much as possible
+and performs deduplication mainly within the same VM. The sharing part in CDS is replicated
+with a higher degree, which also signficantly increses the availability even a CDS file blcok
+is shared by every VM.
+
+% while in VO even small increases in $L$ causes a large decrease in availability. 
+Figure~\ref{fig-cds-replication}
 shows the advantages of increasing the replication factor for CDS blocks. These figures together show
 the advantages of the VM-centric model, and the advantages that separating the replication factor for popular blocks
 can have on reliability.
@@ -256,19 +392,6 @@ L_c& =  (1-s_c)*1 + s_c \sum_1^{b_c} P(x) * y \\
 %\end{align}
 \end{equation}
 
-We can build a bipartite graph representing the association from unique data blocks
-to their corresponding VMs. An association edge is  drawn  from a data block  to a VM 
-if this block is used by this VM, 
-The average incoming degree of VM nodes is equal to
-the average outgoing degree of data blocks, which is $L_c$. 
-
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.45\textwidth]{shared.pdf}
-\caption{Assoication of data blocks to VMs.}
-\label{fig:shared}
-\end{figure}
 
 
 Under $d$ failed machines, the  expected number of VMs 
@@ -317,46 +440,6 @@ L_o = (1-s_o) + s_o \sum_1^b  P(1)^2 *  (x')^{-2\alpha'} *V.
 %if we wanted to include it we probably want a model that includes containers, but that might be too complex
 %to be useful.
 }
-
-Figure~\ref{fig-vo-links} shows the average number of links to a given block in the global index as more VMs are added. The first 15 VMs are all windows machines, so that explains the initial higher values, but for the most part the average number of links is between 1.5 and 2.
-
-
-\begin{figure}[ht]
-  \centering
-  %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
-	\begin{tikzpicture}
-		\begin{axis}[
-		%title={VO Block links},
-		xlabel={Number of VMs added},
-		ylabel={Avg. Links to a Block},
-		%extra y ticks={4.5,5.5,6.5} %because it only shows 4,5,6,7
-		legend pos=south east
-		]
-		\addplot[color=blue,mark=*] table[x=VMs,y=Measured] {figures/vo_links.txt};
-		\addplot[color=red,mark=square*] table[x=VMs,y=Theoretical] {figures/vo_links.txt};
-		\legend{Measured,Theoretical};
-		\end{axis}
-	\end{tikzpicture}
-  \caption{Average number of VMs sharing a block in the global index}
-  \label{fig-vo-links}
-\end{figure}
-
-\begin{figure}[ht]
-  \centering
-	\begin{tikzpicture}
-		\begin{axis}[
-		%title={VO Container links},
-		xlabel={Number of VMs},
-		ylabel={Avgerage Container links},
-		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
-		]
-		\addplot[color=blue,mark=*] table[x=VMs,y=ContainerLinks] {figures/vo_container_links.txt};
-		%\legend{Measured,Theoretical};
-		\end{axis}
-	\end{tikzpicture}
-  \caption{Measured Average number of VMs sharing a container in the global index (for VO)}
-  \label{fig-vo-container-links}
-\end{figure}
 
 
 \comments{
