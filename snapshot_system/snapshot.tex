@@ -152,19 +152,22 @@ $C_i$ &  the frequency for the $i$th most popular fingerprint\\
 \hline
 $\delta$ &  the percentage of duplicates detected in inner VM deduplication\\
 \hline
-$\sigma$ &  the percentage of $b_u$ unique items  stored in CDS.\\
+$\sigma$ &  the number of uniqie non-CDS chunks over  the number of the CDS chunks.\\
 \hline
 $p$ & the number of machines in the cluster\\
 \hline
 $D$ & the amount of unique data on each machine\\
 \hline
-$B$ & the average block size. Our setting is  4K.\\
+$B$ & the average data chunk size. Our setting is  4K.\\
 \hline
-$s$ & the average size of data containers stored in the distributed file system . Our setting is  64MB.\\
+$s$ & the average size of file system blocks in the distributed file system. The default is  64MB.\\
 \hline
 $m$ & memory size on each node used by VC\\ 
 \hline
 $F$ & the size of an polular data index entry\\
+$N_1$ & the average number  of non-CDS file system blocks  in a VM\\
+$N_2$ & the average number  of CDS file system blocks  in a VM\\
+$N_o$ & the average number  of file system blocks  in a VM for VO\\
 \hline
 \end{tabular}
 \caption{Modeling  symbols.}
