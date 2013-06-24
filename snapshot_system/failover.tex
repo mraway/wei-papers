@@ -3,7 +3,7 @@
 We  compare the impact of losing $d$ machines 
 to the the VC and VO approaches.  
 The replication degree of the backup storage 
-is $r$ for regular content blocks and $r=3$ is a typical setting in the distributed
+is $r$ for regular file blocks and $r=3$ is a typical setting in the distributed
 file system~\cite{Hadoop,GFS}.
 In the VC approach, a special replica degree $r_c$ used for CDS blocks where $r_c>r$. 
 Notice that the ratio of non CSD data size vs CDS data size for each VM is
@@ -121,8 +121,8 @@ We can observe that $N_1 +N_2 << N_o$.
 If  the backup for multiple VMs is conducted concurrently, there would be more
 VMs sharing for each file block on average.
 
-Figure~\ref{fig-vo-links} shows the average number of links to 
-a given block in the global index as more VMs are added. 
+Figure~\ref{fig-vo-links} shows the average number of VMs shared by 
+a block in the global index as more VMs are added. 
 The first 15 VMs are all windows machines, so that explains the initial 
 higher values, but for the most part the average number of 
 links is between 1.5 and 2.

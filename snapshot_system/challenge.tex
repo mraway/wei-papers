@@ -11,9 +11,18 @@ We discuss the design considerations as follows.
 % That arises mainly in Alibaba's Aliyun cloud service.
 %concerns
 %Base on Aliyun's production environment, the snapshot backup job has to satisfy 
+
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=3in]{images/colocated-arch.pdf}
+    \label{fig-colocated-arch}
+    \caption{Collocated VM Backup System}
+\end{figure}
+
 \begin{itemize}
 \item {\em Collocating with cluster-based cloud services.}
-We collocate the backup service with other cloud serices in a cluster
+We collocate the backup service with other cloud services in a cluster
 and use a distributed file system~\cite{GFS2004,Hadoop} to 
 store the backup with multiple replicas. 
 There might be a concern that storing many versions of snapshots would
@@ -32,18 +41,23 @@ Thus the normal disk usage  is about 1TB per machine, and adding 30\% to 100\%
 extra space for the backup is not a practical concern, especially with the
 added benefits of cheaper running costs and lower network bandwidth requirements.
 
-Since the block size in the Hadoop and GFS is uniform and large with 64MB as a default setting,
-the content block in a deduplication system is of nonuniform size with 4KB or 8KB on average.
+Since the file block size in the Hadoop and GFS is uniform and large with 64MB as a default setting,
+the content chunk in a deduplication system is of nonuniform size with 4KB or 8KB on average.
 We need to build an intermediate layer that supports large snapshot writing with append operations
 and infrequent snapshot access.
 
 \item {\em Fault tolerance and isolation.}
 The distributed file system~\cite{GoogleFS,Hadoop} provides the replication support
 and we can leverage existing open-source software to implement such a layer.
-When the number of machines failed exceeds the replication degree, there may be
+When the number of machines failed exceeds the replication degree, there could be
  some data loss.  Storage deduplication worsens the impact of such faults
 because  the majority of each snapshot (e.g. over 90\%) is deduplicated
-and the corresponding data blocks are shared among VMs.
+and the corresponding data chunks stored in the underlying file blocks
+are shared by many VMs. 
+%The failure of one data chunk or block can impact many sharing VMs. 
+In large scale cloud, machine failures happen at daily basis,
+the loss of a shared chunks can affect many VM users whose snapshots share this 
+data block. 
 
 Previous work in deduplication~\cite{extreme_binning09,sparseindex09} has
 studied the solutions to reduce memory requirements.
@@ -52,13 +66,10 @@ fault isolation.
 Because a content chunk is compared with a content signature collected from other users,
 this artificially creates data dependency among different VM users.
 % since storage for shared identical content chunks can become a failure point.
-In large scale cloud, node failures happen at daily basis,
-the loss of a shared block can affect many users whose snapshots share this 
-data block. 
 Without any control of such data sharing, we can only increase  
 replication for global datasets to enhance the availability,
 but this incurs significantly higher costs.
-Loss of a small number of shared data blocks can 
+Loss of a small number of shared data chunks can 
 cause the unavailability of snapshots for a large number of virtual machines.
 Thus a key goal  in our design
 is restricting the impact of  data loss to a limited number of VMs. 
@@ -83,7 +94,7 @@ studied in~\cite{extreme_binning09,Guo2011} along with the fault isolation consi
 %Specifically, the memory usage of snapshot service can never exceed 500MB in any node.
 Excessive use of bandwidth and computing resource for backup can create
 noticeable contention for resources with the existing cloud, which is not
-preferred and may not not be acceptible for production system operation. 
+preferred and may not not be acceptable for production system operation. 
 Thus it is desirable that backup for all nodes
 can be conducted in parallel and in a short period of time,
 and any centralized or cross-machine communication for

@@ -463,6 +463,9 @@ We cannot simply repeat the phase 1 multiple times to reduce temporary storage l
 \item The recipes of deleted snapshots have been removed from the system, thus we are not able to obtain the deleted block fingerprints from any metadata, the only way to discover them is to scan the append store indices.
 \end{enumerate}
 
+
+\comments{
+
 {\bf Discussion}
 For one VM's snapshots, let $L_{temp}$ be the amount of temporary storage leakage, 
 $D_{del}$ be the average amount of data that should be physically deleted in one snapshot deletion,
@@ -492,4 +495,4 @@ every $T/P_{bl} = 100$ runs of deletion phase-1.
 On a node that hosts 20 VMs and each VM deletes one snapshot per day, there would be 
 only 1 deletion phase-2 scheduled for every 5 days, which is sufficiently small to prevent the 
 heavy I/O workload of deletion phase-2 from disturbing normal VM opeations.
-
+}

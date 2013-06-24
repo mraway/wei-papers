@@ -13,19 +13,19 @@
 A deduplication scheme compares the fingerprints of the current snapshot
 with its parent snapshot and also other snapshots in the entire cloud.
 The traditional approach compares all fingerprints and 
-stores one copy for all of a block's duplicates.
+stores one copy for all of a chunk's duplicates.
 We call this as  the VM-oblivious (VO) approach.
 In comparison, we analyze the design of
-a VM-centric approach (VC) which differenates duplicates within a VM and cross VMs,
-and conducts \textit{Inner-VM} and \textit{cross-VM} detection seperately. 
+a VM-centric approach (VC) which differentiates duplicates within a VM and cross VMs,
+and conducts \textit{Inner-VM} and \textit{cross-VM} detection separately. 
 
 \subsection{Inner and cross VM deduplication}
 
-Inner-VM duplication can be very effecive within VM's snapshots. There
+Inner-VM duplication can be very effective within VM's snapshots. There
 are typically a large number of duplicates existing among the snapshots
-for a single VM.  Localizing the snapshot data deduplication witin a VM
+for a single VM.  Localizing the snapshot data deduplication within a VM
 improves the system by:
-increasing data independency between different VM backups,
+increasing data independence between different VM backups,
 simplifying snapshot management and statistics collection,
 and facilitating parallel execution of snapshot operations.
 On the other hand, cross-VM duplication can also be desirable mainly due to widely-used software and libraries. 
@@ -36,17 +36,17 @@ We integrate those strategies together as follows.
 %and it is parallel since each segment is processed independently.
 
 \begin{itemize}
-\item \textbf{Dirtybit-based corase-grain inner-VM deduplication.}
-The first-level deduplication is to follow the standand dirty bit approach, but is conducted
+\item \textbf{Dirtybit-based coarse-grain inner-VM deduplication.}
+The first-level deduplication is to follow the standard dirty bit approach, but is conducted
 in the coarse grain segment level.
-We use the  Xen virtual device driver which supports changed block tracking
+We use the  Xen virtual device driver which supports a feature called "changed block tracking''
 for the storage device
-and the dirty bit setting is maintained in a corase grain level we call it a segment.
+and the dirty bit setting is maintained in a coarse grain level we call it a segment.
 In our implementation, the segment size is 2MB. 
-Since every write for a block will touch a dirty bit, the device driver maintains dirtybits in memory
-and cannot affort a small segment  size.
+Since every write for a segment will touch a dirty bit, the device driver maintains dirty bits in memory
+and cannot afford a small segment  size.
 
-It should be noted that changed block tracking is supported or can be easily implemented in many 
+It should be noted that dirtybit tracking is supported or can be easily implemented in many 
 major virtualization solution vendors. 
 %(VMware, Xen, Microsoft).  
 VMware support it directly; the VMWare hypervisor has an API to let external backup application know 
@@ -60,10 +60,10 @@ the VM's I/O traffic, therefore changed block tracking can be implemented extern
 The best deduplication uses a nonuniform chunk size 
 in the average of 4K or 8K~\cite{??}. This allows the system to
 achieve deduplication even when there are insertions/deletions which would
-affect many fixed-size blocks.
+affect many fixed-size chunks.
 Thus the second-level inner-VM deduplication is to perform this chunking for
 dirty segments, and to compare the snapshot with its parent. 
-We load the fingerprints of block chunks of the corresponding segment from the
+We load the chunk fingerprints in the corresponding segment from the
 parent and perform fingerprint matching for further inner-VM deduplication.
 The amount of memory for maintaining those fingerprints  is small, as we only
 load one segment at a time.
@@ -88,7 +88,7 @@ For example, with a 2MB segment, there are about 500 fingerprints to compare.
 %and a tiny amount of memory to hold it in main memory.
 
 \item \textbf{Cross-VM deduplication.}
-This step accomplishes the standand global fingerprint  comparison as conducted
+This step accomplishes the standard global fingerprint  comparison as conducted
 in the previous work~\cite{??}.
 One key observation is that the inner deduplication has removed many of the duplicates.
 There are fewer deduplication opportunities across VMs while the memory and network
@@ -97,11 +97,16 @@ Thus our approximation is that the global fingerprint comparison only searches f
 %Since duplicate sharing patterns among  VM follows a zip-like distribution,  
 \end{itemize}
 
-When a block is not detected as a duplicate to any existing block, this block will be written
+When a chunk is not detected as a duplicate to any existing chunk, this chunk will be written
 to the file system. Since the backend file system typically uses a large block size such as 64MB, each VM will 
-accululate small local blocks. We manage this accumulation process using an apendstore  scheme
+accumulate small local chunk. We manage this accumulation process using an append-store  scheme
 and discuss this in details in Section~\ref{sect:arch}.
+The system allows all machines conduct the backup in parallel in different machines, and each machine
+conducts the backup of one VM at a time, and thus only requires a write  buffer for one VM.
 
+It should be noted that CDS chunks are computed periodically and all CDS chunks are stored in a separate
+append-store instance. In this way, each file block for non-CDS chunks is associated with one VM
+and does not contain any CDS chunk. 
 
  \subsection{Popular Chunk Management}
 %VM-oriented Fault Isolation}
@@ -110,23 +115,25 @@ and discuss this in details in Section~\ref{sect:arch}.
 %The inner-VM deduplication does not depend on any global service and the comparison
 %for each VM is localized within the parent and the current snapshot.
 %Lack of data dependence between VMs brings 
-With cross-VM deduplication, shared data blocks
-create an artifical dependence  among VMs and failure of one shared block
-affects many VMs. Thus we only maintain the index for a small set of popular chunks.
+With cross-VM deduplication, shared data chunks
+create an artificial dependence  among VMs. 
+Thus we only maintain the index for the most popular chunks to reduce the inter-VM dependence
+while still accomplishing competitive deduplication efficiency. 
+
 The management for popular data chunks contains two aspects.
 \begin{itemize}
 \item Compute and select top-$k$ most popular chunks.
-The popularity of a chunk is the number  of data blocks from different VMs
-that are duplicates of this block after the inner VM deduplication.
-This number can be computed perioidically in a weekly basis.
-Once the popularity of all data blocks is collected, the system only maintains the top $k$
-most popular blocks.  For cross-VM comparison,
+The popularity of a chunk is the number  of data chunks  from different VMs
+that are duplicates of this chunk after the inner VM deduplication.
+This number can be computed periodically in a weekly basis.
+Once the popularity of all data chunks is collected, the system only maintains the top $k$
+most popular chunks.  For cross-VM comparison,
 we only store  top $k$ items and $k$ is chosen to be relatively small.
 Our analysis below will show that the algorithm can still deliver competitive
-deduplication effiency after making these approximations.
-\item  Since $k$ is small and these top $k$ blocks are shared among multiple VMs, 
-we can afford to provide extra replicas for these popular blocks to enhanace the fault resilence.
-We will provide an analysis of the fault tolerance in the next subsection.
+deduplication efficiency after making these approximations.
+\item  Since $k$ is small and these top $k$ chunks are shared among multiple VMs, 
+we can afford to provide extra replicas for these popular chunks to enhance the fault resilience.
+We will provide an analysis of the space need and fault tolerance in the next subsection.
 \end{itemize} 
 
 This section analyzes how value   $k$ impacts the deduplication efficiency.
@@ -135,7 +142,7 @@ This section analyzes how value   $k$ impacts the deduplication efficiency.
 %\subsubsection{Impact of CDS deduplication}
 The analysis is based on VM traces collected
 using Alibaba's production user data~\cite{ieeecloud} 
-which shows that the popularity of data blocks after inner VM deduplication follows 
+which shows that the popularity of data chunks after inner VM deduplication follows 
 a Zipf-like distribution\cite{zipf} and its
 exponent $\alpha$ is ranged between 0.65  and  0.70.
 %As a result, it can be proved that deduplication efficiency of CDS index is scalable:
@@ -146,7 +153,7 @@ exponent $\alpha$ is ranged between 0.65  and  0.70.
 %\epsfig{file=log-log.disk.pdf,width=3in}
 %source ../vm_snapshot_sim/images/log-log.disk.eps
  \includegraphics[width=3in]{log-log-disk.pdf}
-\caption{Duplicate frequency versus  block ranking in a log scale.}
+\caption{Duplicate frequency versus  chunk ranking in a log scale.}
 \label{fig:Datazipf}
 \end{figure}
 
@@ -154,7 +161,7 @@ exponent $\alpha$ is ranged between 0.65  and  0.70.
 \centering
 \begin{tabular}{|p{1.25cm}|p{6.5cm}|}
 \hline
-$b$ &  the total amount of data blocks\\ 
+$b$ &  the total amount of data chunks\\ 
 \hline
 $b_u$ &  the total amount of unique fingerprints after inner VM  deduplication\\
 \hline
@@ -162,7 +169,7 @@ $C_i$ &  the frequency for the $i$th most popular fingerprint\\
 \hline
 $\delta$ &  the percentage of duplicates detected in inner VM deduplication\\
 \hline
-$\sigma$ &  the number of uniqie non-CDS chunks over  the number of the CDS chunks.\\
+$\sigma$ &  the number of unique non-CDS chunks over  the number of the CDS chunks.\\
 \hline
 $p$ & the number of machines in the cluster\\
 \hline
@@ -174,7 +181,7 @@ $s$ & the average size of file system blocks in the distributed file system. The
 \hline
 $m$ & memory size on each node used by VC\\ 
 \hline
-$F$ & the size of an polular data index entry\\
+$F$ & the size of an popular data index entry\\
 $N_1$ & the average number  of non-CDS file system blocks  in a VM\\
 $N_2$ & the average number  of CDS file system blocks  in a VM\\
 $N_o$ & the average number  of file system blocks  in a VM for VO\\
@@ -185,7 +192,7 @@ $N_o$ & the average number  of file system blocks  in a VM for VO\\
 \end{table}
 
 
-Let $b$ be the total number of data blocks after localized deduplication, 
+Let $b$ be the total number of data chunks after localized deduplication, 
 $b_u$ be the total number of fingerprints 
 in the global index after complete deduplication, and
 $C_i$ be the frequency for the $i$th most popular fingerprint. 
@@ -205,14 +212,14 @@ C_1=\frac{b(1-\alpha)}{b_u^{1-\alpha}}.
 %e_c = \frac{b-b_u}{b} = 1 - \frac{b_u}{b}
 %\end{equation}
 
-The  $k$ most popular fingerprints can cover the following number of blocks after inner VM 
+The  $k$ most popular fingerprints can cover the following number of chunks after inner VM 
 deduplication.
 \[
 C_1 \sum_{i=1}^{k}\frac{1}{i^\alpha} \approx  
 C_1 \int_{1}^{k}\frac{1}{x^\alpha} dx  \approx  C_1\frac{  k^{1-\alpha}} {1-\alpha}.
 \]
 
-Deduplication efficiency of VC using top $k$ popular blocks
+Deduplication efficiency of VC using top $k$ popular chunks
 is the percentage of duplicates that can be detected:  
 \begin{equation}
 \begin{split}
@@ -250,19 +257,19 @@ e_k &=
 %[Describe the dedup efficiency model in detail]
 Let $p$ be the number of physical machines in the cluster, $m$ be the memory on each node used by the popular
 index, $F$ be the size of an index entry,
-$D$ be the amount of unique data on each phyiscal machine, and 
-$B$ be the average block size. We store the popular index using a distribued shared memory hashtable
+$D$ be the amount of unique data on each physical machine, and 
+$B$ be the average chunks size. We store the popular index using a distributed shared memory hashtable
 such as MemCacheD.  Then $k$ and $b_u$ can be expressed as:
 $
 k = p*m/F$, and $b_u = p*D/B.
 $
 
-The overall deduplication effiency of VC is
+The overall deduplication efficiency of VC is
 \[
 \frac{ (1-\delta) + \delta (\frac{m*B}{D*F})^{1-\alpha}}
 { 1- \frac{b_u}{b} }.
 \]
-where $(\frac{m*B}{D*F})^{1-\alpha}$ represents the percentage of the remaining blocks detected as duplicates
+where $(\frac{m*B}{D*F})^{1-\alpha}$ represents the percentage of the remaining chunks detected as duplicates
 after inner VM deduplication. 
 %Then the deduplication efficiency of CDS approach using top k most popular fingerprints is:
 %\begin{equation}
@@ -270,7 +277,7 @@ after inner VM deduplication.
 %\end{equation}
 
 When the number of machines at each cluster increases, the number of total VMs increases.
-Then $k$ increases since more memory is available to host the popular block index.
+Then $k$ increases since more memory is available to host the popular chunks index.
 But for each physical machine, the number of VMs remains the same, and thus
 $D$ is  a constant. Then  the overall deduplication efficiency of VC remains
 a constant.

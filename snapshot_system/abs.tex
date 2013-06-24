@@ -1,14 +1,16 @@
 \begin{abstract}
-A cloud environment that  hosts a large number of  virtual machines has
+A cloud environment that  hosts a large number of  virtual machines (VMs) has
 a high storage demand for frequent backup of system image snapshots.
 Deduplication of data blocks can lead a big reduction of redundant blocks when
-their signatures are identical. However it is expensive and less fault-resilient to perform a global comparison
-of all data block signatures and let a data block share by many virtual machines. 
-This paper studies a cluster-based design which collocates a lightweight
-backup service with the cloud service and integrates multiple duplicate detection strategies that  
+their signatures are identical. However it is expensive and less fault-resilient to perform a global deduplication
+using signatures and let a data block share by many virtual machines. 
+This paper studies a cluster-based VM-centric scheme which collocates a lightweight
+backup service with the cloud service and it integrates multiple duplicate detection strategies that  
 localize the deduplication as much as possible within each virtual machine.
-Our analysis shows that  this virtual machine centric scheme uses a small amount of memory resource to conduct duplicate detection
-and can  provide  better fault tolerance through deduplication localization.  
+It also organizes the write of small data chunks into large file system blocks so
+that each underlying file block is associated with one VM for most of cases.
+Our analysis shows that  this VM centric scheme 
+can  provide  better fault tolerance while using a small amount of computing and storage resource. 
 This  paper  provides a comparative evaluation of this scheme in  accomplishing a high deduplication 
 efficiency while sustaining a good backup throughput. 
 

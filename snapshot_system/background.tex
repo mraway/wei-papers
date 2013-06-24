@@ -20,14 +20,14 @@ The previous work for storage backup has extensively studied  data deduplication
 globally among different files from different users.
 Backup systems have been developed to use content fingerprints to identify duplicate
 content~\cite{venti02,Rhea2008}.  Offline deduplication is 
-used in ~\cite{EMC,NetAppOffline} to remove previously written duplicate blocks during idle time.
+used in ~\cite{EMC,NetAppOffline} to remove previously written duplicates during idle time.
 %,NGmiddleware2011}.
 %Today's commercial data backup systems (e.g. from EMC and NetApp)
 %\cite{emc_avamar}\cite{datadomain_whitepaper}
 %use a variable-size chunking algorithm to detect duplicates in file data~\cite{similar94,hydrastor09}.
 Several techniques have been proposed to speedup searching of duplicate
 fingerprints. For example, the data domain method ~\cite{bottleneck08} 
-uses  an in-memory Bloom filter and a prefetching cache for data blocks  which may be
+uses  an in-memory Bloom filter and a prefetching cache for data chunks  which may be
 accessed.  An improvement to this work with parallelization is in ~\cite{MAD210,DEBAR}.
 As discussed in Section~\ref{sect:intro},
 there is no dedicated resource for deduplication in our targeted setting and low memory usage
