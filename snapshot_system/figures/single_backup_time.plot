@@ -1,0 +1,20 @@
+set term post eps color solid enhanced font ", 18"
+set output "single_backup_time.eps"
+set boxwidth 0.8 absolute
+set key reverse top #Left outside
+#set key font ",48"
+set style fill solid 1.00 border -1
+set style histogram clustered gap 1 title  offset character 0, 0, 0
+set datafile missing '-'
+set style data histograms
+set style histogram rowstacked
+#set xtics nomirror rotate by -45
+#set title "General impact of 3-level deduplication"
+set yrange [0:320] noreverse nowriteback
+set ylabel "Time (sec)"
+set xlabel "CDS memory usage"
+set grid y
+plot 'single_backup_time.txt' using 6:xtic(1) ti "Read" fs pattern 2, \
+'' u 5 ti "Write" fs pattern 7, \
+'' u 3 ti "Level-2" fs pattern 4, \
+'' u 4 ti "Level-3" fs pattern 5
