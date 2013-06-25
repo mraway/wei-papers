@@ -16,9 +16,9 @@ automatically conducts  the backup of virtual disk images to all active users ev
 The cost of supporting a large number of concurrent backup streams is high
 because of the huge storage demand. 
 Using a separate  backup service with full deduplication support~\cite{venti02,bottleneck08}
-(Figure~\ref{fig-traditional-arch})
+%(Figure~\ref{fig-traditional-arch})
 can effectively identify and remove content duplicates among snapshots, 
-but the solution can be expensive. There is also a large amount of 
+but such a solution can be expensive. There is also a large amount of 
 network traffic to transfer  data from the host machines to the backup facility
 before duplicates are removed.
 
@@ -30,27 +30,25 @@ before duplicates are removed.
 %\end{figure}
 
 
-This paper seeks for a low-cost architecture option and takes advantage of the
-fact that the
-backup service collocates on the cloud cluster with a minimum resource usage
-(Figure~\ref{fig-colocated-arch})
+This paper seeks for a low-cost architecture option  that collocates
+a backup service with other cloud services and  uses a minimum amount of resources. 
 %Since most of backup data is not used in practice, system resource in such a service is not fully utilized.
 %The dirty bit approach~\cite{??}  which checks the version difference can effectively remove
 %duplicates while using content fingerprints can significantly compress more~\cite{Bottlneck08}.
 %On the other hand, comparing fingerprints  adds significant  memory cost. 
 %Since each physical machine in a cluster  hosts many VMs, memory contention happens frequently.
-Cloud providers often wish that the backup service only consumes  small or modest resources
-with a minimal impact to the existing cloud services.  
-We study and evaluate the integration of several deduplication strategies to meet
-the low-cost collocation requirement. In parallel, we identify deduplication options that yield
-better fault isolation.
+%Cloud providers often wish that the backup service only consumes  small or modest resources
+%with a minimal impact to the existing cloud services.  
+%We study and evaluate the integration of several deduplication strategies to meet
+%the low-cost collocation requirement. 
 %A recent study using subsampling~\cite{Guo2011}  can significantly reduce the memory requirement.
-We achieve improved fault isolation by accounting for the fact that after
+We also consider the fact that after
 deduplication most data chunks are shared by several to many virtual machines.
-Failure of such popular data chunks would have a catastrophic effect and many
+Failure of shared data chunks can have a catastrophic effect and many
 snapshots of virtual machines would be affected.
 The previous work in deduplication focuses on the efficiency and approximation of
 finger print comparison, and has not addressed fault tolerance together with deduplication.
+Thus we also seek deduplication options that yield better fault isolation.
 % along with a low-cost solution.
 %Another issue considered is that
 %that deletion of old snapshots compete for computing resource as well. That is because data dependence created
@@ -72,12 +70,17 @@ based on  version  detection, inner VM duplicate search,
 and controlled cross-VM comparison. 
 This approach is VM centric by localizing duplicate detection within each VM  
 and by packaging data chunks from the same VM into a file system block as much as possible.
-The solution uses  a small amount of  memory while delivering a decent deduplication efficiency. 
-Our localization solution also brings the benefits of parallelism, resource utilization, and fault isolation.
-Our deletion strategy uses a double Bloom filter strategy for periodic mark-and-sweeping of expired data.
+By narrowing duplicate sharing within a small amount of data chunks,
+this scheme can afford to allocate extra replicas of these shared chunks for better
+fault resilience.
+Localization also brings the benefits of parallelism exploitation so
+backup operations can run simultaneously without a central  bottleneck.
+This  VM-centric solution uses  a small amount of  memory while delivering a decent deduplication efficiency. 
+%Our deletion strategy uses a double Bloom filter strategy for periodic mark-and-sweeping of expired data.
 We have developed a prototype system that runs a cluster of Linux machines with Xen.
-The backup storage uses a standard distributed file system with data replication and block packaging,
-and we allocate more  replicas for the commonly-shared  data blocks among VM snapshots to enhance fault tolerance.
+The backup storage uses a standard distributed file system with data replication and block packaging.
+%and we allocate more  replicas for the commonly-shared  data 
+%blocks among VM snapshots to enhance fault tolerance.
 
 
 

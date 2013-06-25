@@ -16,7 +16,8 @@ means no fine-grained file system metadata can be used to determine the changed 
 
 
 
-The previous work for storage backup has extensively studied  data deduplication techniques can eliminate redundancy 
+The previous work for storage backup has extensively studied  data deduplication techniques that
+can eliminate redundancy 
 globally among different files from different users.
 Backup systems have been developed to use content fingerprints to identify duplicate
 content~\cite{venti02,Rhea2008}.  Offline deduplication is 
@@ -29,9 +30,9 @@ Several techniques have been proposed to speedup searching of duplicate
 fingerprints. For example, the data domain method ~\cite{bottleneck08} 
 uses  an in-memory Bloom filter and a prefetching cache for data chunks  which may be
 accessed.  An improvement to this work with parallelization is in ~\cite{MAD210,DEBAR}.
-As discussed in Section~\ref{sect:intro},
-there is no dedicated resource for deduplication in our targeted setting and low memory usage
- is required so that the resource impact to other cloud services is minimized.
+%As discussed in Section~\ref{sect:intro},
+%there is no dedicated resource for deduplication in our targeted setting and low memory usage
+% is required so that the resource impact to other cloud services is minimized.
 %NG et al.~\cite{ NGmiddleware2011}  use
 %a related filtering technique for integrating deduplication in Linux  file system and the memory
 %consumed is up to 2GB for a single machine. That is still too big in our context discussed below.
