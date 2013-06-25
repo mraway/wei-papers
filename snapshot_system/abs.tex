@@ -4,9 +4,9 @@ a high storage demand for frequent backup of system image snapshots.
 Deduplication of data blocks can lead a big reduction of redundant blocks when
 their signatures are identical. However it is expensive and less fault-resilient to perform a global deduplication
 using signatures and let a data block share by many virtual machines. 
-This paper studies a cluster-based VM-centric scheme which collocates a lightweight
-backup service with the cloud service and it integrates multiple duplicate detection strategies that  
-localize the deduplication as much as possible within each virtual machine.
+This paper studies a VM-centric scheme which collocates a lightweight
+backup service with other cloud services in a cluster and it integrates multiple duplicate detection strategies 
+that  localize deduplication as much as possible within each virtual machine.
 It also organizes the write of small data chunks into large file system blocks so
 that each underlying file block is associated with one VM for most of cases.
 Our analysis shows that  this VM centric scheme 
