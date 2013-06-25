@@ -1,4 +1,20 @@
 \subsection{Fault Analysis }
+\begin{figure}
+    \centering
+    \subfigure[Sharing of data under VM-oblivious dedup model]
+    {
+        \includegraphics[width=3in]{images/share_model_vc.pdf}
+        \label{fig:share_vc}
+    }
+    \\
+    \subfigure[Sharing of data under VM-centric dedup model]
+    {
+        \includegraphics[width=3in]{images/share_model_vo.pdf}
+        \label{fig:share_vo}
+    }
+    \caption{Difference of sharing data under VO and VC approaches}
+    \label{fig:share}
+\end{figure}
 
 We  compare the impact of losing $d$ machines 
 to the the VC and VO approaches.  
@@ -86,12 +102,6 @@ and  $N_2$ be the averge number of file system blocks for CDS data for each VM.
 For VO, let $N_o$ be the averge number of file system blocks for each VM
 and  let $V_o$ be the averge number of VMs shared by each file system block.
 Figure~\ref{fig:shared} illustates the bipartite association.
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.45\textwidth]{shared.pdf}
-\caption{Assoication of data blocks to VMs.}
-\label{fig:shared}
-\end{figure}
 
 Each non-CDS file system block is associated with one VM while CDS file system blocks are
 shared among VMs. 
