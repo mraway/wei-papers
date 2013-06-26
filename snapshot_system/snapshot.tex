@@ -10,38 +10,50 @@
 %For this purpose, we exploit the data characteristics of snapshots and collect most popular data.
 %Data sharing across VMs is limited within this small data set such that adding replicas for it could enhance fault tolerance
 
-A deduplication scheme compares the fingerprints of the current snapshot
-with its parent snapshot and also other snapshots in the entire cloud.
-The traditional approach compares all fingerprints and 
-stores one copy for all of a chunk's duplicates.
-We call this as  the VM-oblivious (VO) approach.
-In comparison, we analyze the design of
-a VM-centric approach (VC) which differentiates duplicates within a VM and cross VMs,
-and conducts \textit{Inner-VM} and \textit{cross-VM} detection separately. 
+%A deduplication scheme compares the fingerprints of the current snapshot
+%with its parent snapshot and also other snapshots in the entire cloud.
+%The traditional approach compares all fingerprints and 
+%stores one copy for all of a chunk's duplicates.
+%We call this as  the VM-oblivious (VO) approach.
+Our VC design has the following objectives:
+\begin{itemize}
 
-\subsection{Inner and cross VM deduplication}
-
-Inner-VM duplication can be very effective within VM's snapshots. There
-are typically a large number of duplicates existing among the snapshots
-for a single VM.  Localizing the snapshot data deduplication within a VM
-improves the system by:
-increasing data independence between different VM backups,
+\item
+1) Localize the deduplication and data blocking within each VM as much as possible so 
+that any failure of a file system block mainly affects the associated VM.
+Localizing the snapshot data deduplication within a VM
+improves the system by increasing data independence between different VM backups,
 simplifying snapshot management and statistics collection,
 and facilitating parallel execution of snapshot operations.
-On the other hand, cross-VM duplication can also be desirable mainly due to widely-used software and libraries. 
+\item
+2) Maintain a competitive deduplication effiency while being resource-friendly to other
+existing cloud services.
+Cross-VM duplication can be desirable since  there are many cloud images
+use widely-used software and libraries and their data blocks are duplicate. 
 As the result, different VMs tend to backup large amount of highly similar data.
-We integrate those strategies together as follows.
+\item
+3)  Mininimize the number of data chunks shared among VMs and add extra replicas to incrase
+fault resilience for such data chunks.
+\end{itemize}
+
+\subsection{Key VC Strategies}
+
+%Inner-VM duplication can be very effective within VM's snapshots. There
+%are typically a large number of duplicates existing among the snapshots
+%for a single VM.  
+
 %Our multi-level pipeline process can minimize 
 %the cost of deduplication while maximize the its efficiency at each level,
 %and it is parallel since each segment is processed independently.
 
+%Our VC differentiates duplicates within a VM and cross VMs,
+%and conducts \textit{Inner-VM} and \textit{cross-VM} detection separately. 
+
 \begin{itemize}
-\item \textbf{Dirtybit-based coarse-grain inner-VM deduplication.}
-The first-level deduplication is to follow the standard dirty bit approach, but is conducted
-in the coarse grain segment level.
-We use the  Xen virtual device driver which supports a feature called "changed block tracking''
-for the storage device
-and the dirty bit setting is maintained in a coarse grain level we call it a segment.
+\item \textbf{Local duplicate search.}
+We start with the standard dirty bit approach in a coarse grain segment level
+and use the  Xen virtual device driver to implement a feature called ``changed block tracking''
+for the storage device and the dirty bit setting is maintained in a coarse grain level we call it a segment.
 In our implementation, the segment size is 2MB. 
 Since every write for a segment will touch a dirty bit, the device driver maintains dirty bits in memory
 and cannot afford a small segment  size.
@@ -49,20 +61,20 @@ and cannot afford a small segment  size.
 It should be noted that dirtybit tracking is supported or can be easily implemented in many 
 major virtualization solution vendors. 
 %(VMware, Xen, Microsoft).  
-VMware support it directly; the VMWare hypervisor has an API to let external backup application know 
+%VMware support it directly; 
+The VMWare hypervisor has an API to let external backup application know 
 the changed areas since last backup. Xen doesn't directly support it, However, their open-source 
 architecture allows anyone to extend the device driver, thus enabling changed block tracking. 
 We implement dirty bit tracking this way in Alibaba's platform.  
 The Microsoft SDK provides an API that allows external applications to monitor 
 the VM's I/O traffic, therefore changed block tracking can be implemented externally. 
 
-\item \textbf{Chunk-level fine-grain inner-VM detection.}
-The best deduplication uses a nonuniform chunk size 
-in the average of 4K or 8K~\cite{??}. This allows the system to
-achieve deduplication even when there are insertions/deletions which would
-affect many fixed-size chunks.
-Thus the second-level inner-VM deduplication is to perform this chunking for
-dirty segments, and to compare the snapshot with its parent. 
+Since the best deduplication uses a nonuniform chunk size 
+in the average of 4K or 8K~\cite{??},  
+%This allows the system to achieve deduplication even when there are insertions/deletions which would
+%affect many fixed-size chunks.
+we conduct additional local inner-VM deduplication by comparing
+chunk signatures within a dirty segment from its parent snapshot. 
 We load the chunk fingerprints in the corresponding segment from the
 parent and perform fingerprint matching for further inner-VM deduplication.
 The amount of memory for maintaining those fingerprints  is small, as we only
@@ -87,7 +99,7 @@ For example, with a 2MB segment, there are about 500 fingerprints to compare.
 %there requires no more than one DFS access to load the segment recipe from previous snapshot,
 %and a tiny amount of memory to hold it in main memory.
 
-\item \textbf{Cross-VM deduplication.}
+\item \textbf{Cross-VM deduplication with top $k$ popular chunks}
 This step accomplishes the standard global fingerprint  comparison as conducted
 in the previous work~\cite{??}.
 One key observation is that the inner deduplication has removed many of the duplicates.

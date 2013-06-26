@@ -205,8 +205,90 @@ capacity of the system, thus limiting its scalability.
 %\item {Resource usage modeling and control}.
 %\end{enumerate}
 
-With these considerations in mind, we study a cluster-based backup service 
-with VM-centric deduplication. This service is co-hosted   in the existing set of machines and resource usage is friendly
+
+A deduplication scheme compares the fingerprints of the current snapshot
+with its parent snapshot and also other snapshots in the entire cloud without consideration of .
+%The traditional approach compares all fingerprints and
+%stores one copy for all of a chunk's duplicates.
+We call this as  the VM-oblivious (VO) approach.
+In designing and selecting a duplication algorithm, we have considered the following options.
+\begin{itemize}
+\item {\bf Version-based change detection}.
+VM snapshots can be  backed up  incrementally by identifying file  blocks that have
+changed from the previous version of the snapshot~\cite{Clements2009,Vrable2009,TanIPDPS2011}.
+Active snapshots will contain all the information needed to restore the virtual disk
+and when deleting a snapshot, data referenced by other snapshots are removed.
+While full signature comparison can deliver additional reduction~\cite{Guo2011,Dong,ExtremeBining},
+content change detection falls into a VM-centric approach since deduplication is localizable. 
+We are seeking for additional optimzations to improve duplication efficency and design the 
+assoication of data chunks with the underlying file blocks so that
+file block sharing among VMs is minimized.
+\item {\bf sampled Index}.
+One alternative approach to reducing the use of memory space is 
+to use a sampled index with prefetching, proposed  by Guo and Efstathopoulos\cite{Guo2011}. 
+An evaluation with our test data shows that using a sampled index can achieve a high
+deduplication effiency with a single machine setup.  
+One key problem is that the algorithm is VM oblivious and not easy to be adopted for VM-centric.
+Another problem is  to design a distributed version 
+in deduplicating large bodies of data. 
+%The algorithm stores the sampled index in memory, which is required for high
+%throughput to avoid the disk-bottleneck problem - since the index itself has no
+%locality information, lookups are essentially random, so the index must be
+%somehow optimized to prevent excessive disk seeking (the sampling algorithm does
+%this by storing the index in memory). 
+To use a distributed memory version of the sampled index, every deduplicate request
+may access a remote machine for index lookup,  which  incurs a significant overhead.
+
+
+Another possibiliy is to use this approach partially  in our VM centric solution by indexing
+the most popular data chunks. For a small set of popular data chunks, the prefetching strategy
+used in the sampled index will not work well because the spatial locality is limited among popular 
+data chunks. In our test data,  on average the number of consecutive data chunks is 7, which is too small
+to be effective for index sampling. 
+
+%To distribute this sampled index, every  each machine would
+%either require a complete copy of the index which would have a prohibitive cost in
+%memory, or something like memcached must be used, which leaves the same problem
+%as the disk bottleneck with every index check potentially using the network.
+%The difficulty in storing extremely large bodies of data
+%is related, as once 1PB is stored in the system, assuming a sampling rate of 
+%1/101 with 22 byte index entires, 55GB of (in memory) index are required.
+
+%Our solution uses more total memory (??how much??), but is more scalable both in
+%terms of capactity and distributing the deduplication. The only part of our
+%algorithm which requires significant network traffic is the CDS deduplication,
+%but this is done after Levels 1 and 2 (dirty bits and comparison to parent), and
+%so is only done for a small percent of blocks (?? 5-10\% ??).
+
+\item {\bf Stateless  Data Routing}.
+Another approach for duplicate comparison  is to use a content-based hash
+partitioning algorithm called stateless data routing~\cite{Dong20??}
+that divides the deduplication work with an approximation, which 
+is similar to Exreme Binning\cite{extreme_binning09}. 
+Again such an approach is VM-oblivious while each request does incur a network routing latency, and then
+additional overhead for a bloomer filter based  disk lookup~\cite{Dong20??} or 
+a disk index access~\cite{extreme_binning09}. 
+ 
+%We compared our solution to
+%content-based hash partitioning by running the algorithm on our set of 
+%traces. We used 2MB superchunks and 4KB chunks to partition the data, and use
+%the minhashes of the superchunks for routing. The results of this are shown in
+%Table~\ref{??}. Routing each chunk to a bin provides good deduplication
+%efficiency, and only requires each storage node to keep an index of local data
+%and the bin mapping, but misses significant opportunities in our indended use
+%case.
+
+%The problem with the Data Routing algorithm is in the very high network traffic.
+%Our intended use case is a backup system which runs alongside a number of VMs,
+%in order to save costs. Data Routing makes no use of the inherent locality in
+%such a system, and therefore puts a much higher network burden on machines which
+%are also running 35 VMs each. This will reduce the available network bandwidth
+%to users of the VMs, and/or reduce the possible deduplication throughput.
+\end{itemize}
+
+With these considerations in mind, we study a 
+VM-centric appraoch (called VC)
+for a backup service co-hosted   in the existing set of machines and resource usage is friendly
 to the existing applications.  
 We will first discuss and analyze the integration of the VM-centric deduplication strategies with fault isolation, and then present
 an architecture and implementation design with deletion support.
