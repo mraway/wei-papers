@@ -1,4 +1,5 @@
-\subsection{Fault Analysis }
+\subsection{Storage Space and Impact on Fault Tolerance}
+ 
 \begin{figure}
     \centering
     \subfigure[Sharing of data under VM-oblivious dedup model]
@@ -16,19 +17,17 @@
     \label{fig:share}
 \end{figure}
 
-We  compare the impact of losing $d$ machines 
-to the the VC and VO approaches.  
 The replication degree of the backup storage 
 is $r$ for regular file blocks and $r=3$ is a typical setting in the distributed
 file system~\cite{Hadoop,GFS}.
 In the VC approach, a special replica degree $r_c$ used for CDS blocks where $r_c>r$. 
 Notice that the ratio of non CSD data size vs CDS data size for each VM is
 \[
-\sigma=  \frac{b*\delta(1 -   (\frac{k}{b_u})^{1-\alpha})} {k}.
+\sigma=  \frac{c*\delta(1 -   (\frac{k}{c_u})^{1-\alpha})} {k}.
 \]
 
-Thus  storage cost for VO with full deduplication is $b_u *r$ and for VC, it is
-\[ k*r_c  + k*\sigma *r
+Thus  storage cost for VO with full deduplication is $c_u *r$ and for VC, it is
+\[ k*r_c  + k*\sigma *r.
 \]
 
 In our experiment with Alibaba data, the ratio $\sigma$ 
@@ -37,9 +36,10 @@ cost.  Figure~\ref{fig:storageCDS} shows the storage cost ratio of VC and VO whe
 $r$=3, and $r_c$ varies from 3 to 10.
 The result shows that the storage cost for adding extra replication for CDS
 is insignificant.
-Now we compare the fault resilience of VC and VO.
 
 
+Next we  compare the impact of losing $d$ machines 
+to the the VC and VO approaches.  
 
 
 \comments{
@@ -66,7 +66,7 @@ In VC, the blocks in CDS are stored in a container manner (superblock), and they
 The number of data containers stored with replication degree $r$ for
 referenced by each VM is:
 \[
-N_1= \frac{b}{v*s} (1-\delta) +b/(v*s)\delta (1 -  (\frac{k}{b_u})^{1-\alpha})
+N_1= \frac{b}{v*s} (1-\delta) +b/(v*s)\delta (1 -  (\frac{k}{b_u})^{1-\alpha}).
 \]
 The number of CDS data containers stored with replication degree $r_c$ for
 referenced by each VM is:
@@ -80,37 +80,36 @@ N_2= \frac{b}{v*s}\delta (\frac{k}{b_u})^{1-\alpha}.
 %Thus the number of VMs using a block =    $(1-s_c)  + s_c *L$.
 In characterizing the reliability of VM backups in our model, 
 we consider the likely hood that a file system block fails,
-given some number of storage node failures. 
+given some number of storage machine failures. 
 Every time a filesystem block fails,
 we say that we have lost data for that virtual machine, so it is no longer
 available. 
-(in reality it may be only one snapshot that is affected, but it is the user
-who must decide which snapshots are important, so we consider the worst case). 
+In reality it may be only one snapshot that is affected, but it is the user
+who must decide which snapshots are important, so we consider the worst case. 
 We use filesystem blocks rather than a deduplication
 data chunk as our unit of failure because the DFS keeps
-filesystem blocks as its base unit of storage (in our case there are 
-16384 blocks in a filesytem block on average, with 4KB block size and 
-a 64MB block size).
+filesystem blocks as its base unit of storage.
+% (in our case there are 
+%16384 blocks in a filesytem block on average, with 4KB block size and 
+%a 64MB block size).
 
-To  compute the probablity of losing a virtual machine, 
+To  compute the probablity of losing snapshots of a virtual machine, 
 we estimate the number of file system blocks per VM in each apporach.
 We can build a bipartite graph representing the association from unique file system blocks
 to their corresponding VMs. An association edge is  drawn  from a file block  to a VM 
 if this file is used by this VM. 
-For VC, let $N_1$ be the averge number of file system blocks for non-CDS data for each VM
-and  $N_2$ be the averge number of file system blocks for CDS data for each VM.
-For VO, let $N_o$ be the averge number of file system blocks for each VM
-and  let $V_o$ be the averge number of VMs shared by each file system block.
+For VC, each VM has an 
+averge number of $N_1$ file system blocks for non-CDS data. 
+It also refers  an average of   $N_2$ file system blocks for CDS data 
+For VO, each VM has an average  of  $N_o$ file system blocks
+and let $V_o$ be the averge number of VMs shared by each file system block.
 Figure~\ref{fig:shared} illustates the bipartite association.
 
-Each non-CDS file system block is associated with one VM while CDS file system blocks are
-shared among VMs. 
+In VC, each non-CDS file system block is associated with one VM while CDS file system blocks are
+shared among VMs  (at most $V$ VMs). Thus, 
 \[
-V *N_1 *s  = pD  \frac{\delta} {\delta +1}
-\]
-For CDS file blocks, there are at most $V$ VMs sharing, thus
-\[
-V *N_2 *s  \leq pD  \frac{1} {\delta +1} *V
+V *N_1 *s  = pD  \frac{\delta} {\delta +1} \; \mbox{ and } \; 
+V *N_2 *s  \leq pD  \frac{1} {\delta +1} *V.
 \]
 For the VO approach, 
 \[
@@ -120,19 +119,19 @@ Then
 \[
 N_1= \frac{pD \delta} {V s (\delta +1)},\; 
 N_2 \leq \frac{pD } {s (\delta +1)}, \; 
-\mbox{and} N_o = \frac{pD V_o } {s V}.
+\mbox{and} \; N_o = \frac{pD V_o } {s V}.
 \]
 Since each file block (with default size $s=64MB$) contains many chunks (on average 4KB),
 each file block contains the hot low-level chunks shared by many VMs, and it also contains
 rare chunks which are not shared.
 Figure~\ref{fig:VOshared} shows the number of VMs shared by each file block.
-In our experiment, we find that $V_o \approx 0.2 V$ when backuping up VMs one by one.
+In our experiment, we find that $V_o \approx 0.2 V$ when backing up VMs one by one.
 We can observe that $N_1 +N_2 << N_o$.
 If  the backup for multiple VMs is conducted concurrently, there would be more
-VMs sharing for each file block on average.
+VMs shared  by each file block on average.
 
 Figure~\ref{fig-vo-links} shows the average number of VMs shared by 
-a block in the global index as more VMs are added. 
+a block in the global index as more VMs are added in VO. 
 The first 15 VMs are all windows machines, so that explains the initial 
 higher values, but for the most part the average number of 
 links is between 1.5 and 2.
@@ -176,7 +175,7 @@ links is between 1.5 and 2.
 
 
 
-The availability of is a VM is the likelyhood that
+The snapshot availability of is a VM is the likelyhood that
 there is no  data loss for all its file blocks.
 With replication degree $r$, the likelyhood of
 a file block block is the probability that  
@@ -184,9 +183,10 @@ all of its replicas appear in $d$ failed machines.
 Namely, $\binom{d}{r}/ \binom{p}{r}$.
 
 
-When there are $r \le d<r_c$ machines failed, 
+When there are $r \le d<r_c$ machines failed and then there is no CDS data loss,  
 %a file block failure depends on if all replicas of this container reside in the failed machines.
-the avaiability of a VM in the VC approach is
+the snapshot avaiability of a VM in the VC approach is 
+and is
 \[
 (1-\frac{\binom{d}{r}} { \binom{p}{r} })^{N_1}.
 \]
@@ -197,8 +197,8 @@ the avaiability of a VM in the VC approach is
 %\end{multline}
 %\end{split}
 
-When $r_c \leq d$, the CDS file block in VC can also have a loss.
-The availability of  a VM in the VC approach is
+When $r_c \leq d$, both non-CDS and CDS file blocks in VC can have a loss.
+The snapshot availability of  a VM in the VC approach is
 \[
 (1-\frac{ \binom{d}{r}} { \binom{p}{r} })^{N_1} 
 *
@@ -210,7 +210,7 @@ The availability of  a VM in the VC approach is
 %\end{split}
 %\end{multline}
 
-The availability of its VM  mbox in the VO approach is
+The snapshot availability of a VM  in the VO approach is
 \[ 
 (1-\frac{ \binom{d}{r}} { \binom{p}{r} })^{N_o}. 
 \]
@@ -303,10 +303,11 @@ is only one VM pointing to each Non-CDS chunk. You can see the increase in relia
 The figure shows that even as the number of VMs sharing a CDS file block 
 increase by 100 times, the availability only decreases
 slightly.
-The key factor placed is that  $N_1 +N_2 << N_o$.
-The VM-centric approach packs  data blocks under one VM as much as possible
-and performs deduplication mainly within the same VM. The sharing part in CDS is replicated
-with a higher degree, which also signficantly increses the availability even a CDS file blcok
+The key factor placed is that  $N_1 +N_2 << N_o$, caused by the fact that
+the VM-centric approach localizes deduplication and
+packs  data blocks for one VM as much as possible.
+The extra replicaton for CDS blocks 
+also signficantly increses the snapshot availability even a CDS file block
 is shared by every VM.
 
 % while in VO even small increases in $L$ causes a large decrease in availability. 
