@@ -12,9 +12,9 @@ set style histogram rowstacked
 #set title "General impact of 3-level deduplication"
 set yrange [0:320] noreverse nowriteback
 set ylabel "Time (sec)"
-set xlabel "CDS memory usage"
+set xlabel "Size of CDS over unique data in percentage (%)"
 set grid y
-plot 'single_backup_time.txt' using 6:xtic(1) ti "Read" fs pattern 2, \
-'' u 5 ti "Write" fs pattern 7, \
-'' u 3 ti "Level-2" fs pattern 4, \
-'' u 4 ti "Level-3" fs pattern 5
+plot 'single_backup_time.txt' using 7:xtic(1) ti "Read" fs pattern 2, \
+'' u 6 ti "Write" fs pattern 7, \
+'' u 4 ti "Level-2" fs pattern 4, \
+'' u 5 ti "Level-3" fs pattern 5
