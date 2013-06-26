@@ -41,12 +41,31 @@ the file system. The main bottleneck here is our QFS only manages one disk per n
 making it inefficient to utilize the benefits of parallel disk access. We expect our achitecture can
 perform even better in production cluster which normally has more than ten disks on each node.
 
-\begin{figure}[htbp]
-  \centering
-  \epsfig{file=figures/parallel_backup.pdf, width=3.5in}
-  \caption{Throughput per-node with concurrent snapshot backup tasks}
-  \label{fig:parallel_backup}
+\begin{figure}
+    \centering
+    \subfigure[Real VM backup performance]
+    {
+        \includegraphics[width=3in]{figures/parallel_backup_with_read.pdf}
+        \label{fig:withread}
+    }
+    \\
+    \subfigure[Deduplication and storage system performance]
+    {
+        \includegraphics[width=3in]{figures/parallel_backup_no_read.pdf}
+        \label{fig:noread}
+    }
+    \caption{Throughput per-node with concurrent snapshot backup tasks}
+    \label{fig:parallel_backup}
 \end{figure}
+
+
+
+% \begin{figure}[htbp]
+%   \centering
+%   \epsfig{file=figures/parallel_backup.pdf, width=3.5in}
+%   \caption{Throughput per-node with concurrent snapshot backup tasks}
+%   \label{fig:parallel_backup}
+% \end{figure}
 
 \subsection{Read Snapshot}
 

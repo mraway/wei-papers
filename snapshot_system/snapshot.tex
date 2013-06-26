@@ -323,7 +323,7 @@ the better deduplication efficiency our CDS deduplication approach will have.
     \begin{tikzpicture}
             \begin{axis}[
             %title={CDS Coverage},
-            xlabel={Total Data Stored (GB)},
+            xlabel={Total number of chunks stored},
             ylabel={CDS Coverage (\%)},
             %extra y ticks={4.5,5.5,6.5} %to add extra ticks
             mark options=solid,
@@ -333,12 +333,12 @@ the better deduplication efficiency our CDS deduplication approach will have.
                 at={(0.5,-0.2)},
             anchor=north}
             ]
-            \addplot[color=blue,mark=*] table[x=InputSize,y=A1] {figures/cds_coverage.txt};
-            \addplot[color=blue,mark=square*] table[x=InputSize,y=A2] {figures/cds_coverage.txt};
-            \addplot[color=blue,mark=triangle*,mark size=3] table[x=InputSize,y=A4] {figures/cds_coverage.txt};
-            \addplot[densely dashed,color=red,mark=*] table[x=InputSize,y=T1] {figures/cds_coverage.txt};
-            \addplot[densely dashed,color=red,mark=square*] table[x=InputSize,y=T2] {figures/cds_coverage.txt};
-            \addplot[densely dashed,color=red,mark=triangle*] table[x=InputSize,y=T4] {figures/cds_coverage.txt};
+            \addplot[color=blue,mark=*] table[x=InputChunks,y=A1] {figures/cds_coverage.txt};
+            \addplot[color=blue,mark=square*] table[x=InputChunks,y=A2] {figures/cds_coverage.txt};
+            \addplot[color=blue,mark=triangle*,mark size=3] table[x=InputChunks,y=A4] {figures/cds_coverage.txt};
+            \addplot[densely dashed,color=red,mark=*] table[x=InputChunks,y=T1] {figures/cds_coverage.txt};
+            \addplot[densely dashed,color=red,mark=square*] table[x=InputChunks,y=T2] {figures/cds_coverage.txt};
+            \addplot[densely dashed,color=red,mark=triangle*] table[x=InputChunks,y=T4] {figures/cds_coverage.txt};
             \legend{Measured (1\%CDS),Measured (2\%CDS),Measured (4\%CDS),Predicted (1\%CDS),Predicted (2\%CDS),Predicted (4\%CDS)};
             \end{axis}
     \end{tikzpicture}

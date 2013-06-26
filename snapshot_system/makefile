@@ -9,4 +9,4 @@ all: ${MAIN}.pdf
 ${MAIN}.pdf: ${TEX} ${FIG} ${BIB} makefile
 	pdflatex ${MAIN}.tex
 clean:
-	rm -rf *.out *.aux *.log *.blg *.bbl *.pdf *.dvi *.ps ${MAIN}
+	rm -rf *.out *.aux *.log *.blg *.bbl *.dvi *.ps ${MAIN}.pdf
