@@ -67,6 +67,64 @@ perform even better in production cluster which normally has more than ten disks
 %   \label{fig:parallel_backup}
 % \end{figure}
 
+
+\subsection{Comparison with Other Approaches}
+\subsubsection{Extreme Binning}
+%\comments{
+    %this version of the figure is vertical
+    \begin{figure}[ht]
+  \centering
+    \begin{tikzpicture}
+            \begin{axis}[
+            %title={Extreme-Binning Efficiency},
+            ybar,
+            bar width=1.00cm,
+            symbolic x coords={Ex-Bin,CDS},
+            xlabel={Algorithm},
+            ylabel={Dedup. Efficiency (\%)},
+            %extra y ticks={4.5,5.5,6.5} %to add extra ticks
+            xtick=data, %without this the symbolic coords may be repeated as filler
+            enlarge x limits=0.6, %used to push plots towards center
+            ymax=100,
+            nodes near coords,
+            nodes near coords align={vertical},
+            ]
+            \addplot coordinates {(Ex-Bin,90.16) (CDS,0)};
+            \end{axis}
+    \end{tikzpicture}
+    \caption{Deduplication Efficiency
+        ($efficiency=\frac{d-du}{d-du_{complete}}$)}
+  \label{fig-exbin-efficiecy}
+\end{figure}
+%}
+%same figure as above but horizontal (better for only two data points)
+\begin{figure}[ht]
+  \centering
+    \begin{tikzpicture}
+            \begin{axis}[
+            %title={Extreme-Binning Efficiency},
+            xbar,
+            width=7cm,
+            height=3.5cm,
+            %bar width=0.75cm,
+            symbolic y coords={Ex-Bin,CDS},
+            xlabel={Dedup. Efficiency (\%)},
+            %ylabel={Algorithm},
+            %extra x ticks={4.5,5.5,6.5} %to add extra ticks
+            ytick=data, %without this the symbolic coords may be repeated as filler
+            enlarge y limits=0.5,
+            xmax=115, %otherwise label overlaps with right border
+            nodes near coords,
+            nodes near coords align={horizontal},
+            ]
+            \addplot coordinates {(90.16,Ex-Bin) (0,CDS)};
+            \end{axis}
+    \end{tikzpicture}
+    \caption{Deduplication Efficiency
+        ($efficiency=\frac{d-du}{d-du_{complete}}$)}
+  \label{fig-exbin-efficiecy}
+\end{figure}
+
 \comments{
 
 \subsection{Read Snapshot}
