@@ -143,7 +143,7 @@ links is between 1.5 and 2.
 		\begin{axis}[
 		%title={VO Block links},
 		xlabel={Number of VMs added},
-		ylabel={Avg. Links to a Block},
+		ylabel={Avg. links to a chunk},
 		%extra y ticks={4.5,5.5,6.5} %because it only shows 4,5,6,7
 		legend pos=south east
 		]
@@ -152,7 +152,7 @@ links is between 1.5 and 2.
 		\legend{Measured,Theoretical};
 		\end{axis}
 	\end{tikzpicture}
-  \caption{Average number of VMs sharing a block in the global index}
+  \caption{Average number of VMs sharing a data chunk in the global index}
   \label{fig-vo-links}
 \end{figure}
 
@@ -162,17 +162,33 @@ links is between 1.5 and 2.
 		\begin{axis}[
 		%title={VO Container links},
 		xlabel={Number of VMs},
-		ylabel={Avgerage Container links},
+		ylabel={Avg. links to an FSB},
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
 		]
-		\addplot[color=blue,mark=*] table[x=VMs,y=ContainerLinks] {figures/vo_container_links.txt};
+		\addplot[color=blue,mark=*] table[x=VMs,y=FSBLinks] {figures/vo_fsb_links.txt};
 		%\legend{Measured,Theoretical};
 		\end{axis}
 	\end{tikzpicture}
-  \caption{Measured Average number of VMs sharing a container in the global index (for VO)}
-  \label{fig-vo-container-links}
+  \caption{Measured Average number of VMs sharing a 64MB Filesystem Block in the global index (for VO)}
+  \label{fig-vo-fsb-links}
 \end{figure}
 
+\begin{figure}[ht]
+  \centering
+	\begin{tikzpicture}
+		\begin{axis}[
+		%title={Avg CDS Container Links},
+		xlabel={Number of VMs},
+		ylabel={Avg. links to CDS FSB},
+		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
+		]
+		\addplot[color=blue,mark=*] table[x=VMs,y=cdslinks] {figures/cds_links.txt};
+		%\legend{Measured,Theoretical};
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Measured Average number of VMs sharing a 64MB CDS Filesystem Block for (VC with 5\% CDS)}
+  \label{fig-cds-fsb-links}
+\end{figure}
 
 
 The snapshot availability of is a VM is the likelyhood that
@@ -289,9 +305,9 @@ the expected impact on the system.
 \]
 
 in our current testbed we have measured the average number of links
-per block (Figure~\ref{vo-links}) and number of links per chunk (Figure~\ref{vo-container-links})
+per block (Figure~\ref{vo-links}) and number of links per chunk (Figure~\ref{vo-fsb-links})
 in our dataset. For the complete dataset, we also found the average number of links to CDS chunks, which
-was 11 using a 5\% CDS. From Figure~\ref{vo-container-links} you can see that as you add VMs, the average
+was 11 using a 5\% CDS. From Figure~\ref{vo-fsb-links} you can see that as you add VMs, the average
 number of links to a chunk increases. We expect that this trend will level out with larger datasets, but
 should continue to increase at a slower rate. 
 For the VC model, we have to consider both CDS chunks and 
