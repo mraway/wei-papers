@@ -9,6 +9,21 @@ public VM cloud in China. We select 35 VMs from the most popular 7 OSes:
 Debian, Ubuntu, Redhat, CentOS, Win2003 32bit, win2003 64 bit and win2008 64 bit. 
 For each OS, 5 VMs are chosen, and every VM come with 10 full snapshots.
 
+\subsection{Replication cost}
+\begin{table}
+    \begin{tabular}{|c|c|}
+    \hline
+    PDS replication degree & Total space (GB) \\ \hline
+    3                      & 3065             \\ \hline
+    4                      & 3072             \\ \hline
+    5                      & 3079             \\ \hline
+    6                      & 3086             \\ \hline
+    7                      & 3093             \\ \hline
+    \end{tabular}
+\caption{Storage space cost under different PDS replication degree}
+\label{tab:replcation_cost}
+\end{table}
+
 \subsection{System Performance}
 {\bf Single VM Backup} We start the evauluation of our system by examine the normal warmed-up
 backup scenario - taking a snapshot of a VM which already has old backups exist. To simulate this
@@ -69,6 +84,7 @@ perform even better in production cluster which normally has more than ten disks
 %   \label{fig:parallel_backup}
 % \end{figure}
 
+
 % \begin{table}
 % \begin{tabular}{ |p{1.5cm}|p{1.8cm}|p{1.2cm}|p{1.4cm}| }
 % \hline
@@ -88,6 +104,96 @@ perform even better in production cluster which normally has more than ten disks
 % \caption{Time of backup a segment break down}
 % \label{tab:compare}
 % \end{table}
+
+
+\subsection{Comparison with Other Approaches}
+\subsubsection{Extreme Binning}
+%\comments{
+    %this version of the figure is vertical
+    \begin{figure}[ht]
+  \centering
+    \begin{tikzpicture}
+            \begin{axis}[
+            %title={Extreme-Binning Efficiency},
+            ybar,
+            bar width=1.00cm,
+            symbolic x coords={SRB,VC},
+            xlabel={Algorithm},
+            ylabel={Dedup. Efficiency (\%)},
+            %extra y ticks={4.5,5.5,6.5} %to add extra ticks
+            xtick=data, %without this the symbolic coords may be repeated as filler
+            enlarge x limits=0.6, %used to push plots towards center
+            ymin=85,
+            %ymax=100,
+            nodes near coords,
+            nodes near coords align={vertical},
+            ]
+            \addplot coordinates {(SRB,89.99) (VC,90.51)};
+            \end{axis}
+    \end{tikzpicture}
+    \caption{Deduplication Efficiency
+        ($efficiency=\frac{d-du}{d-du_{complete}}$) comparison between Stateless Routing with Binning and VC with 2\% CDS.}
+  \label{fig-exbin-efficiency}
+\end{figure}
+%}
+%same figure as above but horizontal (better for only two data points)
+\begin{figure}[ht]
+  \centering
+    \begin{tikzpicture}
+            \begin{axis}[
+            %title={Extreme-Binning Efficiency},
+            xbar,
+            width=7cm,
+            height=3.5cm,
+            %bar width=0.75cm,
+            symbolic y coords={SRB,VC},
+            xlabel={Dedup. Efficiency (\%)},
+            %ylabel={Algorithm},
+            %extra x ticks={4.5,5.5,6.5} %to add extra ticks
+            ytick=data, %without this the symbolic coords may be repeated as filler
+            enlarge y limits=0.5,
+            xmin=85,
+            xmax=92, %otherwise label overlaps with right border
+            nodes near coords,
+            nodes near coords align={horizontal},
+            ]
+            \addplot coordinates {(89.99,SRB) (90.51,VC)};
+            \end{axis}
+    \end{tikzpicture}
+    \caption{Deduplication Efficiency
+        ($efficiency=\frac{d-du}{d-du_{complete}}$) comparison between Stateless Routing with Binning and VC with 2\% CDS.}
+  \label{fig-exbin-efficiency}
+\end{figure}
+
+
+\begin{figure}[ht]
+  \centering
+    \begin{tikzpicture}
+            \begin{axis}[
+            %title={Ex-Binning Efficiency},
+            xlabel={Number of VMs added},
+            ylabel={Dedup. Efficiency (\%)},
+            %extra y ticks={4.5,5.5,6.5} %to add extra ticks
+            mark options=solid,
+            legend pos=south west,
+            %legend columns=2,
+            %legend style={
+            %    at={(0.5,-0.2)},
+            %anchor=north}
+            ]
+            \addplot[color=blue,mark=none] table[x=VMs,y=exbin] {figures/exbin_efficiency_comparison.txt};
+            \addplot[densely dotted, color=red,mark=none] table[x=VMs,y=cds1] {figures/exbin_efficiency_comparison.txt};
+            \addplot[loosely dotted, color=brown,mark=none] table[x=VMs,y=cds2] {figures/exbin_efficiency_comparison.txt};
+            \addplot[densely dashed,color=black,mark=none] table[x=VMs,y=cds4] {figures/exbin_efficiency_comparison.txt};
+            \legend{SRB,VC (1\%CDS),VC (2\%CDS),VC (4\%CDS)};
+            \end{axis}
+    \end{tikzpicture}
+    \caption{Deduplication Efficiency
+        ($efficiency=\frac{d-du}{d-du_{complete}}$) comparison between
+    Stateless Routing with Binning and VC.}
+  \label{fig-exbin-efficiency-graph}
+\end{figure}
+
 
 \comments{
 \subsection{Read Snapshot}
