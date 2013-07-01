@@ -24,12 +24,6 @@ is reduced and so do the writing time.
 Inside the deduplication procedure, the time costs of level-1
 is plainly zero, and the costs of level-2 and level-3 are almost identical under different settings
 because the number of fingerprints to process are just the same.
-\begin{figure}[htbp]
-  \centering
-  \epsfig{file=figures/single_backup_time.pdf, width=3.5in}
-  \caption{Time to backup a 40GB VM snapshot under different CDS memory usage settings}
-  \label{fig:single_vm_backup}
-\end{figure}
 
 {\bf Parallel VM Backup} We then evaluate the performance of writing snapshots in parallel.
 To begin, on each node we let 4 VMs writing snapshot concurrently, and gradually 
@@ -58,6 +52,14 @@ perform even better in production cluster which normally has more than ten disks
     \label{fig:parallel_backup}
 \end{figure}
 
+\begin{figure}[htbp]
+  \centering
+  \epsfig{file=figures/srb_vs_vc.pdf, width=3.5in}
+  \caption{Time to backup a dirty segment under SRB and VC approach}
+  \label{fig:srb_vs_vc}
+\end{figure}
+
+
 
 
 % \begin{figure}[htbp]
@@ -67,8 +69,27 @@ perform even better in production cluster which normally has more than ten disks
 %   \label{fig:parallel_backup}
 % \end{figure}
 
-\comments{
+% \begin{table}
+% \begin{tabular}{ |p{1.5cm}|p{1.8cm}|p{1.2cm}|p{1.4cm}| }
+% \hline
+%  & Costs & Stateless routing with binning (s) & VM-centric approach (s) \\ \hline
+% \multirow{4}{*}{\vbox{I/O related}} & Read data & 0.05 & 0.05 \\ \cline{2-4}
+%  & Transfer data  & 0.017 & 0.017 \\ \cline{2-4}
+%  & Write data & 0.03 & 0.025 \\ \cline{2-4}
+%  & Subtotal & 0.097 & 0.092 \\ \hline
+% \multirow{5}{*}{\vbox{Dedupe related}} & Read index/recipe & 0.01 & 0.00045 \\ \cline{2-4}
+%  & Write index/recipe & 0.01 & 0.0051 \\ \cline{2-4}
+%  & Transfer fingerprints & 0.00058 & 0.00013 \\ \cline{2-4}
+%  & CDS lookup & N/A & 0.00034 \\ \cline{2-4}
+%  & Subtotal & 0.021 & 0.0064 \\ \hline
+% \multicolumn{2}{ |c| }{Total} & 0.12 & 0.098 \\
+% \hline
+% \end{tabular}
+% \caption{Time of backup a segment break down}
+% \label{tab:compare}
+% \end{table}
 
+\comments{
 \subsection{Read Snapshot}
 
 \subsection{Comparison with Other Approaches}
