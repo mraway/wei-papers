@@ -130,11 +130,22 @@ We can observe that $N_1 +N_2 << N_o$.
 If  the backup for multiple VMs is conducted concurrently, there would be more
 VMs shared  by each file block on average.
 
-Figure~\ref{fig-vo-links} shows the average number of VMs shared by 
-a block in the global index as more VMs are added in VO. 
-The first 15 VMs are all windows machines, so that explains the initial 
-higher values, but for the most part the average number of 
-links is between 1.5 and 2.
+Figure~\ref{fig-vo-links} shows the average number of VMs sharing a block in
+the global index as more VMs are added in VO.  The first 15 VMs are all windows
+machines, so that explains the initial higher values, but for the most part the
+average number of links is between 1.5 and 2. Figure~\ref{fig-vo-fsb-links}
+shows the average number of VMs sharing a filesystem block (FSB) in the global
+index, but only for the 15 windows machines (the last machine has a much larger
+hard-drive, and therefore more unique data, which explains the drop-off in the
+last datapoint).  This is a reasonable assumption, that a cluster will have one
+OS dominating, and for our small dataset the number of links to an FSB
+increases as more VMs of the same OS are added. You can see in the plot however
+that even though a FSB contains 16K chunks, the average number of links to an
+FSB is only several times the number of average links to a chunk. This is
+because even in the VO global deduplication model, as long as writes are
+batched a single FSB will tend to contain chunks from only a small number of
+VMs. Below we show the significant impact the number of links has on VM backup
+reliability.
 
 \begin{figure}[ht]
   \centering
@@ -305,9 +316,9 @@ the expected impact on the system.
 \]
 
 in our current testbed we have measured the average number of links
-per block (Figure~\ref{vo-links}) and number of links per chunk (Figure~\ref{vo-fsb-links})
+per block (Figure~\ref{vo-links}) and number of links per chunk (Figure~\ref{fig-vo-fsb-links})
 in our dataset. For the complete dataset, we also found the average number of links to CDS chunks, which
-was 11 using a 5\% CDS. From Figure~\ref{vo-fsb-links} you can see that as you add VMs, the average
+was 11 using a 5\% CDS. From Figure~\ref{fig-vo-fsb-links} you can see that as you add VMs, the average
 number of links to a chunk increases. We expect that this trend will level out with larger datasets, but
 should continue to increase at a slower rate. 
 For the VC model, we have to consider both CDS chunks and 
@@ -316,21 +327,29 @@ higher rate. This gives a strong advantage to VC, in that for a large percent of
 is only one VM pointing to each Non-CDS chunk. You can see the increase in reliability in Figure~\ref{fig-vm-availability}.
 }
 
-The figure shows that even as the number of VMs sharing a CDS file block 
-increase by 100 times, the availability only decreases
-slightly.
-The key factor placed is that  $N_1 +N_2 << N_o$, caused by the fact that
-the VM-centric approach localizes deduplication and
-packs  data blocks for one VM as much as possible.
-The extra replicaton for CDS blocks 
-also signficantly increses the snapshot availability even a CDS file block
+Figure~\ref{fig-vm-availability} shows the reliability of VM backups as storage
+nodes fail for different numbers of links to average blocks in the index. We
+chose 5 and 11 for the VO and VC block links counts because those are what we
+measured in our dataset, and chose higher numbers to account for much larger
+datasets. As you can see from the graph, even small changes in the number of
+links to VO blocks has a significant impact on reliability, while even a 100
+times increase in the VC block link counts only slightly affects VC
+reliability.  The key factor placed is that  $N_1 +N_2 << N_o$, caused by the
+fact that the VM-centric approach localizes deduplication and packs  data
+blocks for one VM as much as possible.  The extra replicaton for CDS blocks
+also signficantly increaes the snapshot availability even when a CDS file block
 is shared by every VM.
 
 % while in VO even small increases in $L$ causes a large decrease in availability. 
 Figure~\ref{fig-cds-replication}
-shows the advantages of increasing the replication factor for CDS blocks. These figures together show
-the advantages of the VM-centric model, and the advantages that separating the replication factor for popular blocks
-can have on reliability.
+shows the advantages of increasing the replication factor for CDS blocks. the
+numbers in the graph are only meant to be relative, as we assume higher CDS
+block links than we have measured in our dataset (to account for a much larger
+body of data). It is easy to see though that increasing the replication of just
+the CDS blocks (which are the most popular blocks) can have a positive impact
+on the overall reliablity of the VM backups. These figures together show the
+advantages of the VM-centric model, and the advantages that separating the
+replication factor for popular blocks can have on reliability.
 
 \begin{figure}[ht]
   \centering
