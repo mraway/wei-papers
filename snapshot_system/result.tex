@@ -30,7 +30,14 @@ backup scenario - taking a snapshot of a VM which already has old backups exist.
 scenario, we pick one 40GB VM from the data set, make an initial snapshot backup, then
 evaulate the system performance on the second snapshot backup. We repeat such procedure
 under different CDS memory usage settings, the results of backup time break down are shown in
-firure~\ref{fig:single_vm_backup}. 
+Figure~\ref{fig:single_vm_backup}. 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=3in]{figures/single_backup_time.pdf}
+    \caption{Backup times for varying CDS sizes}
+    \label{fig:single_vm_backup}
+\end{figure}
 
 It's easy to see that the time of I/O dominates the backup process, our deduplication
 procedure only takes a tiny fraction of the total backup time. Larger memory permits us to
@@ -67,15 +74,6 @@ perform even better in production cluster which normally has more than ten disks
     \label{fig:parallel_backup}
 \end{figure}
 
-\begin{figure}[htbp]
-  \centering
-  \epsfig{file=figures/srb_vs_vc.pdf, width=3.5in}
-  \caption{Time to backup a dirty segment under SRB and VC approach}
-  \label{fig:srb_vs_vc}
-\end{figure}
-
-
-
 
 % \begin{figure}[htbp]
 %   \centering
@@ -107,7 +105,23 @@ perform even better in production cluster which normally has more than ten disks
 
 
 \subsection{Comparison with Other Approaches}
-\subsubsection{Extreme Binning}
+\subsubsection{Stateless Routing with Binning}
+We compare our system with Stateless Routing with Binning (SRB) in terms of
+both backup time and deduplication efficiency. SRB is the same as the stateless
+routing algorithm given in the Extreme Binning\cite{??} paper. the
+deduplication efficiency is compared in
+Figure~\ref{fig-exbin-efficiency-graph}, showing the deduplication efficiency
+(percent of duplicate chunks which are deduped) of SRB and VC with several
+different CDS sizes. From the graph you can see that VC provides similar or
+better deduplication efficiency in all cases. In Figure~\ref{fig:srb_vs_vc} you
+can see simulated backup times using actual throughput numbers from our test
+backup cluster, and VC outperforms SRB mainly due to significantly fewer index
+lookups (since SRB uses hash-partitioning, all lookups are essentially random
+and caching will be largely innefective).  \emph{Should we use one of the two
+bar charts, or the graph? I am thinking the graph, but I'll leave the two bar
+charts in the paper until we decide? If we use the bar charts some tex will
+have to be changed. We could also add each of the CDS sizes to the bar chart
+and have 4 bars instead of 2.}
 %\comments{
     %this version of the figure is vertical
     \begin{figure}[ht]
@@ -194,6 +208,12 @@ perform even better in production cluster which normally has more than ten disks
   \label{fig-exbin-efficiency-graph}
 \end{figure}
 
+\begin{figure}[htbp]
+  \centering
+  \epsfig{file=figures/srb_vs_vc.pdf, width=3.5in}
+  \caption{Time to backup a dirty segment under SRB and VC approach}
+  \label{fig:srb_vs_vc}
+\end{figure}
 
 \comments{
 \subsection{Read Snapshot}
