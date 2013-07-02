@@ -174,8 +174,8 @@ reliability.
 		ylabel={Avg. links to an FSB},
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
 		]
-		\addplot[color=blue,mark=*] table[x=VMs,y=FSBLinks] {figures/vo_fsb_links.txt};
-		%\legend{Measured,Theoretical};
+                \addplot[color=blue,mark=*] table[x=VMs,y=FSBLinks] {figures/vo_fsb_links.txt};
+                %\legend{Measured,Theoretical};
 		\end{axis}
 	\end{tikzpicture}
   \caption{Measured Average number of VMs sharing a 64MB Filesystem Block in the global index (for VO)}
