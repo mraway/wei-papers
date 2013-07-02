@@ -135,11 +135,9 @@ the global index as more VMs are added in VO.  The first 15 VMs are all windows
 machines, so that explains the initial higher values, but for the most part the
 average number of links is between 1.5 and 2. Figure~\ref{fig-vo-fsb-links}
 shows the average number of VMs sharing a filesystem block (FSB) in the global
-index, but only for the 15 windows machines (the last machine has a much larger
-hard-drive, and therefore more unique data, which explains the drop-off in the
-last datapoint).  This is a reasonable assumption, that a cluster will have one
-OS dominating, and for our small dataset the number of links to an FSB
-increases as more VMs of the same OS are added. You can see in the plot however
+The first 15 VMs added are all windows (though the last one has a much larger
+hard drive which explains the drop after 14), which is why the number of block
+links goes up quickly for the first half of the graph. You can see in the plot
 that even though a FSB contains 16K chunks, the average number of links to an
 FSB is only several times the number of average links to a chunk. This is
 because even in the VO global deduplication model, as long as writes are
