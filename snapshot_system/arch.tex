@@ -551,8 +551,8 @@ a fast solution with a very low resource usage to delete snapshorts with an appr
 
 With this in mind, we develop a two-phase {\em approximated} deletion strategy to trade deletion accuracy for
 speed and resource usage. Our method sacrifaces a tiny percentage of storage leakage
-to effectively identify unused blocks in $O(n)$ speed, with $n$ being the logical amount of chunks 
-to be deleted.
+to effectively identify unused chunks in $O(n)$ speed, with $n$ being the logical number of non-PDS chunks 
+to be deleted from a VM snapshort store.
 
 
 %Our system adopts VM-centric snapshot  lazy delete strategy so that all snapshot deletions are scheduled
@@ -562,29 +562,38 @@ to be deleted.
 %However, there is no simple solution can achieve these goals with high reliability.
 %Our hybrid deletion strategy, using fuzzy deletion regularly and accurate deletion periodically,
 %accomplishs our speed, resource usage and relibility goals very well.
+\begin{itemize}
+\item {\bf Computation for snapshot fingerprint summary.}
+Every time there is a new snapshot created,
+we compute a bloom-filter fingerprint summary for all non-PDS chunks used 
+in this snapshot.
+%{\bf Creating bloom filter} Scan all the living snapshot recipess and their segment recipes,
+%for every reference pointing to append store, add it to the bloom filter.
 
-{\bf Snapshot Summaries.}
-with this in mind, we compute a bloom-filter fingerprint summary for all non-PDS chunks used 
-by a snapshot during  its creation time.
-
-{\bf Approximate Deletion Phase-1}
-The goal of approximate deletion phase-1 to fast identify unused blocks 
-which are no longer referenced by other snapshots after a snapshot deletion.
-Instead of scanning the entire append store indices, we merge the type-1 summaries of all
-valid snapshots. Since each VM has uniform bloom filter parameters to create snapshot summaries, 
-such merged summeries give us a compact representation of
-all block fingerprints that are still in use.
-Thus by the property of bloom filter, if a fingerprint is not found in merged summaries, 
-we are certain that block is no longer used by any valid snapshot, it would be then added
-to append store's deletion log.
+\item {\bf Phase 1: Fast approximate deletion.}
+Then when there is a snapshot deletion, 
+we use  the snapshot fingerprint summary to identify if  chunks to be deleted from one snapshot
+are still used by other snapshots. 
+This is done approximately and quickly by compariing the fingerprints of deleted chunks with
+the fingerrinter bloomerfilter summary of other live snapshots.
+Since the number of live snapshots is limited for each VM (e.g. 10 in the Alibaba's production system), 
+the complexity of comparison is acceptable.
+%Instead of scanning the entire append store indices, we merge the type-1 summaries of all
+%valid snapshots. 
+%Since each VM has uniform bloom filter parameters to create snapshot summaries, 
+%such merged summeries give us a compact representation of
+%all block fingerprints that are still in use.
+%Thus by the property of bloom filter, if a fingerprint is not found in merged summaries, 
+%we are certain that block is no longer used by any valid snapshot, it would be then added
+%to append store's deletion log.
 However, there is a small false-positive probility which
 would indetify unused data as in use, resulting in temporary storage leakage.
 
-{\bf Approximate Deletion Phase-2}
+\item {\bf Phase 2: Perodic repair of leakage}
 %[exlpain why second bloom filter, why scan append store]
-We designed the second phase of approxmite deletion to solve the 
-temporary storage leakage problem mentioned above.
-In this phase we scan the entire append store indices, 
+Since there are certain unused chunks which are not deleted during
+the approximated deletion, the leakge repair is conducted periodically.
+In this phase we scan the entire snapshot store indices of a VM, 
 using the merged type-2 snapshot summaries to check if any of them are not
 referenced by existing snapshots.
 We cannot simply repeat the phase 1 multiple times to reduce temporary storage leakage, because:
@@ -592,7 +601,27 @@ We cannot simply repeat the phase 1 multiple times to reduce temporary storage l
 \item After several runs of phase-1, it is proven that the merged type-1 summaries cannot sieve remaining unused blocks, due to the false-positive property of bloom filter.
 \item The recipes of deleted snapshots have been removed from the system, thus we are not able to obtain the deleted block fingerprints from any metadata, the only way to discover them is to scan the append store indices.
 \end{enumerate}
+\end{itemize}
 
+
+
+
+%\item {\bf Check existance} For every data reference in the deleted snapshot recipe and its segment recipes,
+%check the existance of that data reference in bloom filter. If not found, it is safe to delete that piece of data from append store
+%because no living snapshots has referenced it.
+
+
+The overall time of running a approximate deletion for one snapshot deletion would be scanning
+all the living snapshots and deleted snapshots, since operations on the in-memory bloom filter can be done in
+parallel and is much faster than loading recipes from DFS:
+\begin{equation}
+T = (N_{SS} + 1) * T_{scan\_recipes}
+\end{equation}
+
+Using the example and analysis in previous section, this approximate deletion can be done in 5 minutes.
+Memory usage of the bloom filter depends on its false-positive probility $P_{bl}$,
+when set $P_{bl}$ to 0.01, the memory footprint of approximate deletion is about 15 MB.
+~
 
 
 
