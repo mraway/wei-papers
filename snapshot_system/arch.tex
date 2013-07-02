@@ -4,7 +4,7 @@
 %[describe what is going to be presented in this section]
 We start by analyzing the main features in the design of our system.
 We first present its architecture,
-then introduce the two major contributions: the colocated deduplication 
+then introduce the two major contributions: the collocated deduplication 
 scheme and the snapshot deletion strategy.
 
 \begin{figure}
@@ -34,7 +34,7 @@ Alibaba's platform which is the largest cloud service provider in China.
 {\bf Cluster Architecture}
 A typical VM cluster in our cloud environment
 consists of from hundreds to thousands of physical machines, each of which can
-host tens of xen-based\cite{Barham2003} VMs.
+host tens of Xen-based\cite{Barham2003} VMs.
 Alibaba's cloud platform provides a hadoop-like infrastructure, 
 which includes several highly scalable distributed service:
 \begin{enumerate}
@@ -43,7 +43,7 @@ in the cloud. All data needed for VM services, such as virtual disk images used 
 and snapshot data for backup purposes, reside in this distributed file system. 
 %\item[KV]: a distributed key-value store for managing structured data.
 %\item[MapReduce]: a distributed data processing framework supports Map-Reduce\cite{Dean2004}.
-\item {\bf Distributed memory cache} A distributed memory object caching system helps us to hold the fingerprints of those popular data blocks for deduplication inqueries. 
+\item {\bf Distributed memory cache} A distributed memory object caching system helps us to hold the fingerprints of those popular data blocks for deduplication inquiries. 
 \end{enumerate}
 }
 
@@ -100,7 +100,7 @@ which improves the generality of our architecture and deduplication scheme.
 
 
 %[describe the architecture frm node side]
-{\bf Node Architecuture} 
+{\bf Node Architecture} 
 Our node-side architecture, depicted in figure.\ref{fig:arch_vm}, consists of
 two main entities: a virtual block device driver, and snapshot deduplication component.
 
@@ -109,7 +109,7 @@ In Alibaba's VM cloud, every VM access its virtual machine disk image through th
 virtual block device driver (called TapDisk\cite{Warfield2005} in Xen).
 This driver maintains a map of dirty-bits to record
 the change status of every fix-size segment of the virtual disk. 
-When the VM issue a disk write, the bits coresponding to the segments that covers 
+When the VM issue a disk write, the bits corresponding to the segments that covers 
 the modified disk region are set, thus letting snapshot deduplication component knows these
 segments must be checked during snapshot backup. After the snapshot backup is finished, 
 snapshot deduplication component acknowledges the driver to resume the dirty-bits map to
@@ -241,11 +241,11 @@ the data structures  includes reference pointers to the actual data location.
 %[describe the data structure in underlying storage]
 \subsection{A VM-centric snapshot store for backup data}
 
-We build a snapshot storage on the top of a distribued file system.
+We build a snapshot storage on the top of a distributed file system.
 Following the VM-centric idea for the purpose of fault isolation,
-each VM has its own snapshot store, contaning new data chunks which are considered
+each VM has its own snapshot store, containing new data chunks which are considered
 to be non-duplicates.
-There is also a special store containing all PDS chunks shared amony different VMs.
+There is also a special store containing all PDS chunks shared among different VMs.
 The replication degree of file blocks of snapshot stores in the underlying file system
 Extra replication of this store is added as discussed in Section~\ref{sect:analysis}.
 As shown in Fig.\ref{fig:as_arch}, we explain the data structure of snapshot stores as follows.
@@ -256,8 +256,8 @@ in the corresponding DSF file.
 The PDS index uses the offset and size as a reference in its index structure.
  
 \item Each non-PDS snapshot store is divided into a set of containers and each of them is approximately 
-1G bytes. The reason we dividie the snapshot into containers is to simplify the compact process
-conducted perioidcally.  There are chunks deleted without any reference from other snapshots
+1G bytes. The reason we divide the snapshot into containers is to simplify the compact process
+conducted periodically.  There are chunks deleted without any reference from other snapshots
 and to reclaim the space of these useless chunks, a compaction  routine can work on one container at a time
 and copy used data chunks to another container.
 	\begin{itemize}
@@ -270,7 +270,7 @@ in snapshot data accessing~\cite{Sampling,FoundationPaper},
 	retrieval of  data chunks by group naturally fits in the prefetching scheme  to speedup
 	snapshot access. A  typical chunk group contains 100 to 1000 chunks, with an average size of 
 200-600KB.
-Chunk groupping also reduces the  container index size as we discuss below. 
+Chunk grouping also reduces the  container index size as we discuss below. 
 Given  the average chunk size  4KB,  the index size for a 1GB container reduces from 10MB to 100KB when
 the chunk group size is 100.
 %%CBlock, then the overall index size is reduced to $1/m$. 
@@ -281,18 +281,18 @@ Each data container is represented by three data files in the DFS:
 1) the container data file holds the actual content of data chunks, 
 2) the container index file is responsible for translating a data reference
 into its location within a container, and 
-3) a chunk deletion log file saviing all the deletion requests within  the container.
+3) a chunk deletion log file saving all the deletion requests within  the container.
 A VM snapshot store typically has a small number of containers because each container is fairly large with an average size of 1GB bytes, it 
-maintains a limited number of snapshots (e.g. 10 in the Alaibaba case),
-and new snapshot data chunks can be effectively compressed in chunk groups in additon to  deduplciation.
+maintains a limited number of snapshots (e.g. 10 in the Alibaba case),
+and new snapshot data chunks can be effectively compressed in chunk groups in addition to  deduplication.
 
 \item We maintain  a chunk counter and assign the current number 
 as a chunk ID (called CID) within this container as a reference of a new chunk added to a container. 
 Since data chunks are always appended to the snapshot store, 
- a CID is monotoically increasing.
-A data chunk reference stored in the index of snapshot reeipts
+ a CID is monotonically increasing.
+A data chunk reference stored in the index of snapshot recipes
 is composed of two parts: a container ID (2 bytes) and CID (6 bytes).
-Once a snapshop is to be accessed access, the receipt in this snapshot will point to either a data chunk
+Once a snapshot is to be accessed access, the receipt in this snapshot will point to either a data chunk
 in the PDS or a reference number with a container ID and CID.
 With a container ID, the corresponding container index file is accessed and 
 the chunk group is identified using this CID. Once this chunk group is loaded to memory, its header contains the exact offset of the corresponding chunk and the content is then accessed from the memory buffer.
@@ -345,15 +345,15 @@ the recipe metadata of a snapshot.
 
 The write requests to append a data chunk to a VM store are accumulated in the client side. 
 When the number reaches the group size $g$, the snapshot store client compresses
-the accmnulated   chunk group, adds a chunk group index  in the begining, and then
+the accumulated   chunk group, adds a chunk group index  in the beginning, and then
 append the header and data  to the corresponding VM file,
 Then a new container  index entry is also created and is written the corresponding
 container index file.
 
-The writing of PDS data chunks is conducted periodically when there is a new PDS caclulation.
+The writing of PDS data chunks is conducted periodically when there is a new PDS calculation.
 Since the PDS dataset is small, a new PDS file is created during the periodical update.
 \item{\em Get(reference)}.
-The fetch operation for the PDS data chunk is straightforward since each referecence contains 
+The fetch operation for the PDS data chunk is straightforward since each reference contains 
 the offset and size within the PDS  underlying  file.
 We also maintain a small data cache for the PDS data service to speedup the process.
 
@@ -365,7 +365,7 @@ specified by the CID.
 Finally, the client updates its internal chunk data cache with the newly loaded content to 
 anticipate future sequential reads.
 \item {\em Delete(reference)}.
-A data chunk can be deleted when a snapshot expires or gets deleted explictly by a user.
+A data chunk can be deleted when a snapshot expires or gets deleted explicitly by a user.
 We will discuss the snapshot deletion shortly in the following subsection.
 %deletes the data pointed by the reference.
 %Under the hood, small var-sized data are grouped and stored into larger data containers. Each VM has
@@ -374,11 +374,11 @@ We will discuss the snapshot deletion shortly in the following subsection.
 %result in rewriting all the data at the same time.
 When deletion requests issued for a specific container,
 those requests are logged into the  container's deletion log file initially and thus  a lazy
-delection strategy is exercised.
+deletion strategy is exercised.
 Once CIDs appear in
 the deletion log, they will not be referenced by any future snapshot and can be safely deleted when needed. 
-Periodically, the sanpshot  store picks those containers with an excessive
-number of deletion requests to  compact and  reclaim the corrwsponding disk space. 
+Periodically, the snapshot  store picks those containers with an excessive
+number of deletion requests to  compact and  reclaim the corresponding disk space. 
 %The actual compaction will only take place when the number of deleted items 
 %reached $d\%$ of container's capacity. 
 During compaction, the snapshot store creates a new container (with the same container ID) to replace the 
@@ -532,27 +532,28 @@ Since $B$, $D$ and $F$ are pre-configured constants, the deduplication efficienc
 
 }
 
-\subsection{Fast VM-centric Snapshot Deletion with a Two-Phase  Apprxoimation}
+\subsection{ VM-centric Approximate Snapshot Deletion with Leak Repair}
 
 In a busy VM cluster, snapshot deletions are as frequent as snapshot creations.
 The VM-centric snapshot storage design simplifies the deletion process since we need to look
 for the useless chunks within each VM when deleting a snapshot.
-The PDS data chunks are commonly shared all VMs and we donot consider their referene
+The PDS data chunks are commonly shared all VMs and we donot consider their reference
 counting  during snapshot deletion.
 The selection of PDS data chunks   is updated periodically independent of snapshot deletion process.
 
-While we can use the standand mark-sweep technique~\cite{mark-sweep}, 
-it takes time to conduct this process everytime there is a snapshot deletion request.
+While we can use the standard mark-sweep technique~\cite{mark-sweep}, 
+it takes time to conduct this process every time there is a snapshot deletion request.
 In the case of Alibaba, snapshot backup is conducted automatically and there are 
 about 10 snapshot stored for  every user. Then when there is
-a new snapshort created every day,  there will be  a snapshort expired everyday to maintain
+a new snapshot created every day,  there will be  a snapshot expired everyday to maintain
 a balanced storage use. Given a large number of snapshot deletion requests, we are seeking
-a fast solution with a very low resource usage to delete snapshorts with an approximation.
+a fast solution with a very low resource usage to delete snapshots with an approximation.
 
-With this in mind, we develop a two-phase {\em approximated} deletion strategy to trade deletion accuracy for
-speed and resource usage. Our method sacrifaces a tiny percentage of storage leakage
+With this in mind, we develop an {\em approximate} deletion strategy to trade deletion accuracy for
+speed and resource usage. Our method sacrifices a tiny percentage of storage leakage
 to effectively identify unused chunks in $O(n)$ speed, with $n$ being the logical number of non-PDS chunks 
-to be deleted from a VM snapshort store.
+to be deleted from a VM snapshot store.
+The algorithm contains three aspects.
 
 
 %Our system adopts VM-centric snapshot  lazy delete strategy so that all snapshot deletions are scheduled
@@ -570,12 +571,12 @@ in this snapshot.
 %{\bf Creating bloom filter} Scan all the living snapshot recipess and their segment recipes,
 %for every reference pointing to append store, add it to the bloom filter.
 
-\item {\bf Phase 1: Fast approximate deletion.}
+\item {\bf Approximate deletion with fast summary comparison.}
 Then when there is a snapshot deletion, 
 we use  the snapshot fingerprint summary to identify if  chunks to be deleted from one snapshot
 are still used by other snapshots. 
-This is done approximately and quickly by compariing the fingerprints of deleted chunks with
-the fingerrinter bloomerfilter summary of other live snapshots.
+This is done approximately and quickly by comparing the fingerprints of deleted chunks with
+the fingerprint bloomer-filter summary of other live snapshots.
 Since the number of live snapshots is limited for each VM (e.g. 10 in the Alibaba's production system), 
 the complexity of comparison is acceptable.
 %Instead of scanning the entire append store indices, we merge the type-1 summaries of all
@@ -586,21 +587,22 @@ the complexity of comparison is acceptable.
 %Thus by the property of bloom filter, if a fingerprint is not found in merged summaries, 
 %we are certain that block is no longer used by any valid snapshot, it would be then added
 %to append store's deletion log.
-However, there is a small false-positive probility which
-would indetify unused data as in use, resulting in temporary storage leakage.
+However, there is a small false-positive ratio which
+would identify unused data as in use, resulting in temporary storage leakage.
 
-\item {\bf Phase 2: Perodic repair of leakage}
+\item {\bf Periodic repair of leakage}
 %[exlpain why second bloom filter, why scan append store]
 Since there are certain unused chunks which are not deleted during
-the approximated deletion, the leakge repair is conducted periodically.
-In this phase we scan the entire snapshot store indices of a VM, 
-using the merged type-2 snapshot summaries to check if any of them are not
-referenced by existing snapshots.
-We cannot simply repeat the phase 1 multiple times to reduce temporary storage leakage, because:
-\begin{enumerate} 
-\item After several runs of phase-1, it is proven that the merged type-1 summaries cannot sieve remaining unused blocks, due to the false-positive property of bloom filter.
-\item The recipes of deleted snapshots have been removed from the system, thus we are not able to obtain the deleted block fingerprints from any metadata, the only way to discover them is to scan the append store indices.
-\end{enumerate}
+the approximated deletion, the leakage repair is conducted periodically.
+In this phase we load the metadata of all containers from a VM snapshot store,
+mark if any chunk is used.  For unused chunks within this VM, such chunks are to be deleted.
+This process is identical to the previously-developed mark-and-sweep techniques except that
+we only need to conduct a VM-specific mark-and-sweep  operation.
+%We cannot simply repeat the phase 1 multiple times to reduce temporary storage leakage, because:
+%\begin{enumerate} 
+%\item After several runs of phase-1, it is proven that the merged type-1 summaries cannot sieve remaining unused blocks, due to the false-positive property of bloom filter.
+%\item The recipes of deleted snapshots have been removed from the system, thus we are not able to obtain the deleted block fingerprints from any metadata, the only way to discover them is to scan the append store indices.
+%\end{enumerate}
 \end{itemize}
 
 
@@ -610,48 +612,38 @@ We cannot simply repeat the phase 1 multiple times to reduce temporary storage l
 %check the existance of that data reference in bloom filter. If not found, it is safe to delete that piece of data from append store
 %because no living snapshots has referenced it.
 
-
-The overall time of running a approximate deletion for one snapshot deletion would be scanning
-all the living snapshots and deleted snapshots, since operations on the in-memory bloom filter can be done in
-parallel and is much faster than loading recipes from DFS:
-\begin{equation}
-T = (N_{SS} + 1) * T_{scan\_recipes}
-\end{equation}
-
-Using the example and analysis in previous section, this approximate deletion can be done in 5 minutes.
-Memory usage of the bloom filter depends on its false-positive probility $P_{bl}$,
-when set $P_{bl}$ to 0.01, the memory footprint of approximate deletion is about 15 MB.
-~
-
+%The overall time of running a approximate deletion for one snapshot deletion would be scanning
+%all the living snapshots and deleted snapshots, since operations on the in-memory bloom filter can be done in
+%parallel and is much faster than loading recipes from DFS:
+%\begin{equation}
+%T = (N_{SS} + 1) * T_{scan\_recipes}
+%\end{equation}
+%
+%Using the example and analysis in previous section, this approximate deletion can be done in 5 minutes.
+%Memory usage of the bloom filter depends on its false-positive probility $P_{bl}$,
+%when set $P_{bl}$ to 0.01, the memory footprint of approximate deletion is about 15 MB.
+%~
 
 
-{\bf Discussion}
-For one VM's snapshots, let $L_{temp}$ be the amount of temporary storage leakage, 
-$D_{del}$ be the average amount of data that should be physically deleted in one snapshot deletion,
-$P_{1}$ be the false-positive rate of merged bloom filter type-1,
-$N_1$ be the number of runs of deletion phase-1 during the gap of two deletion phase-2 operations, then we have:
-\begin{equation}
-L_{temp} = N_1 * P_1 * D_{del}
-\end{equation}
 
-If we let approxmite deletion phase-2 be triggered  
-when $L_{temp}/D_{del}$ is accmulated to exceed certain threshold $t$, then:
-\begin{equation}
-\frac{L_{temp}}{D_{del}} = N_1 * P_1 > t \Rightarrow N_{1} > \frac{t}{P_1}
-\end{equation}
+%{\bf Discussion}
+We estimate how often the leak repair needs to be conducted.
+Let $L$ be the amount of temporary storage leakage caused by our approximate snapshot deletion, 
+$H$ be the average size of non-PDS snapshot data that should be deleted. 
+$\epsilon$ be the false-positive rate of the merged bloom filter. 
+$R$ be the number of runs using the approximate deletion before a full leak repair is conducted.
+Then $ L= R * \epsilon * H.  $
 
-Let $P_2$ be the false-positive rate of merged snapshot type-2 summaries,
-$N_2$ be the number of runs of deletion phase-2,
-$L_{perm}$ be the permanent storage leakage resulting from the approxmite deletion phase-2,
-it can be calculated as follows: 
-\begin{equation}
-L_{perm} = N_2 * P_1 * P_2 * D_{del}
-\end{equation}
 
-For example, letting $P_1 = 0.01$ and $t=1.0$, 
+When ratio $L/H$ exceed a threshold $\tau$, then:
+\[
+\frac{L}{H} = R * \epsilon > \tau \Rightarrow R > \frac{\tau}{\epsilon}.
+\]
+
+For example, when $\epsilon = 0.01$ and $\tau=3$, 
 we would expect deletion phase-2 be triggered once for 
-every $T/P_{bl} = 100$ runs of deletion phase-1.
-On a node that hosts 20 VMs and each VM deletes one snapshot per day, there would be 
-only 1 deletion phase-2 scheduled for every 5 days, which is sufficiently small to prevent the 
-heavy I/O workload of deletion phase-2 from disturbing normal VM opeations.
+every $T/P_{bl} = 300$ runs of fast deletion. 
+When one machine hosts 25 VMs and there is one snapshot deletion per day per VM, there would be 
+only one full leak repair scheduled for every 12 days, which is sufficiently small to prevent the 
+heavy I/O workload of the mark-sweep process.
 
