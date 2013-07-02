@@ -123,13 +123,13 @@ we can afford to provide extra replicas for these popular chunks to enhance the 
 When a chunk is not detected as a duplicate to any existing chunk, this chunk will be written
 to the file system. Since the backend file system typically uses a large block size such as 64MB, each VM will 
 accumulate small local chunks. We manage this accumulation process using an append-store  scheme
-and discuss this in details in Section~\ref{sect:arch}.
+and discuss this in details in Section~\ref{sec:arch}.
 The system allows all machines conduct the backup in parallel in different machines, and each machine
 conducts the backup of one VM at a time, and thus only requires a write  buffer for one VM.
 
-CDS chunks are stored in a separate
-append-store instance. In this way, each file block for non-CDS chunks is associated with one VM
-and does not contain any CDS chunk. 
+CDS chunks are stored in a separate append-store instance. In this way, each
+file block for non-CDS chunks is associated with one VM and does not contain
+any CDS chunks. 
 \end{itemize}
 
  \subsection{Impact on deduplication efficiency}
@@ -291,8 +291,13 @@ The overall deduplication efficiency of VC is
 \frac{ (1-\delta) + \delta (\frac{m*C}{D*E})^{1-\alpha}}
 { 1- \frac{c_u}{c} }.
 \]
-where $(\frac{m*C}{D*E})^{1-\alpha}$ represents the percentage of the remaining chunks detected as duplicates
-after inner VM deduplication. 
+where $(\frac{m*C}{D*E})^{1-\alpha}$ represents the percentage of the remaining
+chunks detected as duplicates after inner VM deduplication.
+Figure~\ref{fig-cds-coverage} shows measured CDS coverage in our 35 VM dataset.
+You can see from the graph that the coverage actually increases as the datasize
+increases, which indicates that $\alpha$ increases with the datasize (a
+fixed-$\alpha$ model would predict constant coverage). This makes the CDS even
+more effective, as the coverage of the CDS increases as more data is added.
 %Then the deduplication efficiency of CDS approach using top k most popular fingerprints is:
 %\begin{equation}
 %  e_k = (\frac{m*B}{F*D})^{1-\alpha}
@@ -320,7 +325,7 @@ have a large portion of similar data, thus leading to a bigger $\alpha$. The mor
 the better deduplication efficiency our CDS deduplication approach will have.
 }
 
-
+\comments{ %this table is superceded by the graph below it
 \begin{table}
     \begin{tabular}{llll}
     Data size (GB) & 1\%    & 2\%    & 4\%    \\
@@ -333,6 +338,7 @@ the better deduplication efficiency our CDS deduplication approach will have.
     \caption{Deduplication effectiveness of top k\% of global index}
     \label{tab:cds}
 \end{table}
+}
 
 
 \begin{figure}[ht]
@@ -360,10 +366,12 @@ the better deduplication efficiency our CDS deduplication approach will have.
             \end{axis}
     \end{tikzpicture}
   \caption{fixed-alpha predicted vs. actual CDS coverage as data size increases.}
-  \label{fig-vo-links}
+  \label{fig-cds-coverage}
 \end{figure}
 
-As illiustrated in Figure~\ref{fig-vo-links},
+
+
+As illustrated in Figure~\ref{fig-vo-links}\emph{I am not sure where this reference should point, but I don't think it is pointing to the right figure},
 when the number of machines at each cluster increases, the number of total VMs increases.
 Then $k$ increases since more memory is available to host the popular chunks index.
 But for each physical machine, the number of VMs remains the same, and thus
