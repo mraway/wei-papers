@@ -193,9 +193,14 @@ the data structures  includes reference pointers to the actual data location.
 %\subsection{Snapshot management}
 
 
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=6in]{images/socc_arch_cluster.pdf}
+    \caption{System Architecture}
+    \label{fig:arch_cluster}
+\end{figure*}
 
-
-
+\comments{%socc_arch_cluster now includes the entire arch instead of having 2 figures
 \begin{figure}
     \centering
     \subfigure[Node architecture from VM point of view]
@@ -212,6 +217,7 @@ the data structures  includes reference pointers to the actual data location.
     \caption{System architecture.}
     \label{fig:arch}
 \end{figure}
+}
 
 %[describe the architecture frm node side]
 %[brief the virtual device driver]
@@ -318,8 +324,15 @@ the chunk group is identified using this CID. Once this chunk group is loaded to
 
 \begin{figure}[htbp]
   \centering
-  \epsfig{file=images/append_store_arch.pdf, width=3in}
+  \epsfig{file=images/sstore_arch.pdf, width=3in}
   \caption{Data structure of VM snapshot stores.}
+  \label{fig:as_arch}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \epsfig{file=images/pds_arch.pdf, width=3in}
+  \caption{System architecture for PDS data store.}
   \label{fig:as_arch}
 \end{figure}
 
