@@ -52,7 +52,7 @@ Thus we also seek deduplication options that yield better fault isolation.
 % along with a low-cost solution.
 Another issue considered is that
 that deletion of old snapshots compete for computing resource as well. That is because data dependence created
-deletion of old snapshots compete for computing resources as well so deletion needs
+deletion of old snapshots competes for computing resources as well so deletion needs
 to be considered in system design. The additional complexity for deletions
 come from the dependencies created by multiple links to the same problem, so
 some solution is needed to determine blocks with no dependent snapshots after deletion.
@@ -70,12 +70,12 @@ based on  version  detection, inner VM duplicate search,
 and controlled cross-VM comparison. 
 This approach is VM centric by localizing duplicate detection within each VM  
 and by packaging data chunks from the same VM into a file system block as much as possible.
-By narrowing duplicate sharing within a small amount of data chunks,
+By narrowing duplicate sharing within a small percent of data chunks,
 this scheme can afford to allocate extra replicas of these shared chunks for better
 fault resilience.
-Localization also brings the benefits of parallelism exploitation so
+Localization also brings the benefits of greater ability to exploit parallelism so
 backup operations can run simultaneously without a central  bottleneck.
-This  VM-centric solution uses  a small amount of  memory while delivering a decent deduplication efficiency. 
+This  VM-centric solution uses  a small amount of  memory while delivering a reasonable deduplication efficiency. 
 %Our deletion strategy uses a double Bloom filter strategy for periodic mark-and-sweeping of expired data.
 We have developed a prototype system that runs a cluster of Linux machines with Xen.
 The backup storage uses a standard distributed file system with data replication and block packaging.
