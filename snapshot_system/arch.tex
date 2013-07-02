@@ -233,9 +233,85 @@ the data structures  includes reference pointers to the actual data location.
 
 
 %[describe the data structure in underlying storage]
-\subsection{Append store for backup data}
-The Append Store (AS) is our underlining storage engine for storing snapshot data in the distributed file system
-after deduplication.
+\subsection{A VM-centric snapshot store for backup data}
+
+We build a snapshot storage on the top of a distribued file system.
+Following the VM-centric idea for the purpose of fault isolation,
+each VM has its own snapshot store, contaning new data chunks which are considered
+to be non-duplicates.
+There is also a special store containing all PDS chunks shared amony different VMs.
+The replication degree of file blocks of snapshot stores in the underlying file system
+Extra replication of this store is added as discussed in Section~\ref{sect:analysis}.
+As shown in Fig.\ref{fig:as_arch}, we explain the data structure of snapshot stores as follows.
+
+\begin{itemize}
+\item The PDS snapshot contains a set of commonly used data chunks and is accessed by its offset and size
+in the corresponding DSF file.
+The PDS index uses the offset and size as a reference in its index structure.
+ 
+\item Each non-PDS snapshot store is divided into a set of containers and each of them is approximately 
+1G bytes. The reason we dividie the snapshot into containers is to simplify the compact process
+conducted perioidcally.  There are chunks deleted without any reference from other snapshots
+and to reclaim the space of these useless chunks, a compaction  routine can work on one container at a time
+and copy used data chunks to another container.
+	\begin{itemize}
+	\item Each container is divided into a set of chunk data groups. Each group is composed of
+	a set of data chunks and is the basic unit for the snapshot in data access and retrieval. 
+	In writing a chunk group, data chunks in this group are compressed together and then stored. 
+	When accessing a particular chunk, its chunk group is retrieved from the disk storage
+	and uncompressed. Given the high spatial locality 
+in snapshot data accessing~\cite{Sampling,FoundationPaper},
+	retrieval of  data chunks by group naturally fits in the prefetching scheme  to speedup
+	snapshot access. A  typical chunk group contains 100 to 1000 chunks, with an average size of 
+200-600KB.
+Chunk groupping also reduces the  container index size as we discuss below. 
+Given  the average chunk size  4KB,  the index size for a 1GB container reduces from 10MB to 100KB when
+the chunk group size is 100.
+%%CBlock, then the overall index size is reduced to $1/m$. 
+%n our implementation, using $m=100$ reduces the index for
+%a 1GB container from 10 MB to 100 KB.
+	\item 
+Each data container is represented by three data files in the DFS:
+1) the container data file holds the actual content of data chunks, 
+2) the container index file is responsible for translating a data reference
+into its location within a container, and 
+3) a chunk deletion log file saviing all the deletion requests within  the container.
+A VM snapshot store typically has a small number of containers because each container is fairly large with an average size of 1GB bytes, it 
+maintains a limited number of snapshots (e.g. 10 in the Alaibaba case),
+and new snapshot data chunks can be effectively compressed in chunk groups in additon to  deduplciation.
+
+\item We maintain  a chunk counter and assign the current number 
+as a chunk ID (called CID) within this container as a reference of a new chunk added to a container. 
+Since data chunks are always appended to the snapshot store, 
+ a CID is monotoically increasing.
+A data chunk reference stored in the index of snapshot reeipts
+is composed of two parts: a container ID (2 bytes) and CID (6 bytes).
+Once a snapshop is to be accessed access, the receipt in this snapshot will point to either a data chunk
+in the PDS or a reference number with a container ID and CID.
+With a container ID, the corresponding container index file is accessed and 
+the chunk group is identified using this CID. Once this chunk group is loaded to memory, its header contains the exact offset of the corresponding chunk and the content is then accessed from the memory buffer.
+
+%Every container  Store assign every piece of data a CID for its internal data referencing. 
+%When new data is appended, its CID is the current largest CID in that container plus one.
+%As a result, all the data locations are naturally indexed by this self-incremental CID, 
+%no extra sorting is needed.
+	\end{itemize}
+\end{itemize}
+
+%acceretrieved  and ret
+%Using CBlock brings us several advantages: First, the write workload to DFS master is greatly reduced; second, grouping
+%small chunks gives better compression. Third, reading a CBlock (200 - 600 KB) typically cost the same amount of disk 
+%seek as reading a 4KB chunk. Finally, this greatly reduces the size of index. Let $m$ be the number of chunks in each
+%CBlock, then the overall index size is reduced to $1/m$. In our implementation, using $m=100$ reduces the index for
+%a 1GB container from 10 MB to 100 KB.
+
+ 
+% of  divided into a set of data containers.
+%Each container has 3 parts.
+%Each chunk in the snapshot is referenced by the following data format
+
+%The Append Store (AS) is our underlining storage engine for storing snapshot data in the distributed file system
+%after deduplication.
 %AS is built on top of our highly scalable distributed file system (DFS), 
 %which is very similar to Google's file system
 %in a sense that it is optimized for large files and sequential read/append operations.
@@ -243,59 +319,80 @@ after deduplication.
 \begin{figure}[htbp]
   \centering
   \epsfig{file=images/append_store_arch.pdf, width=3in}
-  \caption{Architecture of Append Store}
+  \caption{Data structure of VM snapshot stores.}
   \label{fig:as_arch}
 \end{figure}
 
-AS supplies three interfaces: {\em get(ref)} accepts a data reference and retrieves data, 
-{\em put(data)} accepts data and returns a reference to be stored in metadata recipes, 
-{\em delete(ref)} 
-deletes the data pointed by the reference.
-Under the hood, small var-sized data are grouped and stored into larger data containers. Each VM has
-its snapshot data stored in its own Append Store, specified by the VM ID. 
-We split every Append Store into multiple data containers so that reclaiming the disk space would not 
-result in rewriting all the data at the same time.
+The snapshot  store supports three API calls.
+\begin{itemize}
 
-As shown in Fig.\ref{fig:as_arch}, every data container is represented as three data files in DFS:
-the data file holds all the actual data, the index file is responsible for translating data reference
-into data locations, and a deletion log file remembers all the deletion requests to the container.
+%AS supplies three interfaces: {\em get(ref)} accepts a data reference and retrieves data, 
+\item {\em Put(data)} places data chunk into the snapshot store and returns a reference to be stored in 
+the recipe metadata of a snapshot. 
 
-A data reference is composed of two parts: a container ID (2 bytes) and CID (6 bytes).
-Append Store assign every piece of data a CID for its internal data referencing. 
-When new data is appended, its CID is the current largest CID in that container plus one.
-As a result, all the data locations are naturally indexed by this self-incremental CID, 
-no extra sorting is needed.
+The write requests to append a data chunk to a VM store are accumulated in the client side. 
+When the number reaches the group size $g$, the snapshot store client compresses
+the accmnulated   chunk group, adds a chunk group index  in the begining, and then
+append the header and data  to the corresponding VM file,
+Then a new container  index entry is also created and is written the corresponding
+container index file.
 
-Append Store groups multiple chunk data (i.e., 100) into larger units, called {\em CBlock}.
-CBlock is the basic unit for append store's internal read/write/compression.
-There is one index entry in the container index corresponding to every CBlock. It keeps the first chunk's CID
-in that CBlock, and the CBlock data's size and location.
+The writing of PDS data chunks is conducted periodically when there is a new PDS caclulation.
+Since the PDS dataset is small, a new PDS file is created during the periodical update.
+\item{\em Get(reference)}.
+The fetch operation for the PDS data chunk is straightforward since each referecence contains 
+the offset and size within the PDS  underlying  file.
+We also maintain a small data cache for the PDS data service to speedup the process.
 
-Using CBlock brings us several advantages: First, the write workload to DFS master is greatly reduced; second, grouping
-small chunks gives better compression. Third, reading a CBlock (200 - 600 KB) typically cost the same amount of disk 
-seek as reading a 4KB chunk. Finally, this greatly reduces the size of index. Let $m$ be the number of chunks in each
-CBlock, then the overall index size is reduced to $1/m$. In our implementation, using $m=100$ reduces the index for
-a 1GB container from 10 MB to 100 KB.
-
-In order to read a chunk data by reference, Append Store client first loads the
-container index file specified by the container ID, then search the CBlock index to find the entry that covers the chunk by CID.
-After that, it reads the whole CBlock data from DFS, decompress it, seek the exact chunk data specified by CID. 
-Finally, the client updates itws internal chunk data cache with the newly loaded contents to anticipate future sequential reads.
-
-Write requests to append store are accumulated. When the number reaches $m$, the AS client forms a CBlock by assigning 
-every chunk a CID, compress the CBlock data, and append it to the CBlock data file. Then a new CBlock index entry is appended
-to CBlock index.
-
-Append store adopts lazy delete strategy. The deletion requests are appended into every container's deletion log file with the CID of data to be deleted.
-CIDs in deletion log are guaranteed to be referenced by nobody and can be safe deleted in future. 
-Periodically, snapshot management system asks append store to compact containers in order to reclaim disk space. 
-The actual compaction will only take place when the number of deleted items reached $d\%$ of container's capacity. 
-During compaction, append store creates a new container (with the same container ID) to replace the 
+To read a non-PDS chunk data by a reference,  the snapshot store client first loads the
+corresponding VM's container index file specified by the container ID, then searches the chunk
+group  that  covers the chunk by the group  CID range.
+After that, it reads the whole chunk group from DFS, decompresses it, seeks the exact chunk data 
+specified by the CID. 
+Finally, the client updates its internal chunk data cache with the newly loaded content to 
+anticipate future sequential reads.
+\item {\em Delete(reference)}.
+A data chunk can be deleted when a snapshot expires or gets deleted explictly by a user.
+We will discuss the snapshot deletion shortly in the following subsection.
+%deletes the data pointed by the reference.
+%Under the hood, small var-sized data are grouped and stored into larger data containers. Each VM has
+%its snapshot data stored in its own Append Store, specified by the VM ID. 
+%We split every Append Store into multiple data containers so that reclaiming the disk space would not 
+%result in rewriting all the data at the same time.
+When deletion requests issued for a specific container,
+those requests are logged into the  container's deletion log file initially and thus  a lazy
+delection strategy is exercised.
+Once CIDs appear in
+the deletion log, they will not be referenced by any future snapshot and can be safely deleted when needed. 
+Periodically, the sanpshot  store picks those containers with an excessive
+number of deletion requests to  compact and  reclaim the corrwsponding disk space. 
+%The actual compaction will only take place when the number of deleted items 
+%reached $d\%$ of container's capacity. 
+During compaction, the snapshot store creates a new container (with the same container ID) to replace the 
 existing one. This is done by sequentially scan the old container, copying all the chunks that are not 
-found in deletion log to the new container, creating new CBlocks and indices. 
+found in the deletion log to the new container, creating new chunk groups and indices. 
 However, every chunk's CID is plainly copied rather than re-generated. This does not affect the sorted
 order of CIDs in new container, but just leaving holes in CID values. As the result, all data references stored 
 in upper level recipes are unaffected, and the data reading process is as efficient as before.
+\end{itemize}
+
+%As shown in Fig.\ref{fig:as_arch}, every data container is represented as three data files in DFS:
+%the data file holds all the actual data, the index file is responsible for translating data reference
+%into data locations, and a deletion log file remembers all the deletion requests to the container.
+%
+%A data reference is composed of two parts: a container ID (2 bytes) and CID (6 bytes).
+%Append Store assign every piece of data a CID for its internal data referencing. 
+%When new data is appended, its CID is the current largest CID in that container plus one.
+%As a result, all the data locations are naturally indexed by this self-incremental CID, 
+%no extra sorting is needed.
+
+%Append Store groups multiple chunk data (i.e., 100) into larger units, called {\em CBlock}.
+%CBlock is the basic unit for append store's internal read/write/compression.
+%There is one index entry in the container index corresponding to every CBlock. It keeps the first chunk's CID
+%in that CBlock, and the CBlock data's size and location.
+%
+%Using CBlock brings us several advantages: First, the write workload to DFS master is greatly reduced; second, grouping
+%small chunks gives better compression. Third, reading a CBlock (200 - 600 KB) typically cost the same amount of disk 
 
 
 
@@ -422,21 +519,40 @@ Since $B$, $D$ and $F$ are pre-configured constants, the deduplication efficienc
 
 }
 
-\subsection{Snapshot Summaries for Approximate Deletion}
+\subsection{Fast VM-centric Snapshot Deletion with a Two-Phase  Apprxoimation}
+
 In a busy VM cluster, snapshot deletions are as frequent as snapshot creations.
-Our system adopts lazy delete strategy so that all snapshot deletions are scheduled
-in the backup time window at midnight. 
-Therefore, snapshot deletions must be fast enough to fit in time window and
-efficient enough to satisfy our resource constraints.
-However, there is no simple solution can achieve these goals with high reliability.
-Hence we designed a two-phase {\em approximate deletion} strategy to trade deletion accuracy for
+The VM-centric snapshot storage design simplifies the deletion process since we need to look
+for the useless chunks within each VM when deleting a snapshot.
+The PDS data chunks are commonly shared all VMs and we donot consider their referene
+counting  during snapshot deletion.
+The selection of PDS data chunks   is updated periodically independent of snapshot deletion process.
+
+While we can use the standand mark-sweep technique~\cite{mark-sweep}, 
+it takes time to conduct this process everytime there is a snapshot deletion request.
+In the case of Alibaba, snapshot backup is conducted automatically and there are 
+about 10 snapshot stored for  every user. Then when there is
+a new snapshort created every day,  there will be  a snapshort expired everyday to maintain
+a balanced storage use. Given a large number of snapshot deletion requests, we are seeking
+a fast solution with a very low resource usage to delete snapshorts with an approximation.
+
+With this in mind, we develop a two-phase {\em approximated} deletion strategy to trade deletion accuracy for
 speed and resource usage. Our method sacrifaces a tiny percentage of storage leakage
-to effectively identify unused blocks in $O(n)$ speed, with $n$ being the logical amount of blocks 
+to effectively identify unused blocks in $O(n)$ speed, with $n$ being the logical amount of chunks 
 to be deleted.
+
+
+%Our system adopts VM-centric snapshot  lazy delete strategy so that all snapshot deletions are scheduled
+%in the backup time window at midnight. 
+%Therefore, snapshot deletions must be fast enough to fit in time window and
+%efficient enough to satisfy our resource constraints.
+%However, there is no simple solution can achieve these goals with high reliability.
 %Our hybrid deletion strategy, using fuzzy deletion regularly and accurate deletion periodically,
 %accomplishs our speed, resource usage and relibility goals very well.
 
-{\bf Snapshot Summaries}
+{\bf Snapshot Summaries.}
+with this in mind, we compute a bloom-filter fingerprint summary for all non-PDS chunks used 
+by a snapshot during  its creation time.
 
 {\bf Approximate Deletion Phase-1}
 The goal of approximate deletion phase-1 to fast identify unused blocks 
@@ -465,7 +581,7 @@ We cannot simply repeat the phase 1 multiple times to reduce temporary storage l
 \end{enumerate}
 
 
-\comments{
+
 
 {\bf Discussion}
 For one VM's snapshots, let $L_{temp}$ be the amount of temporary storage leakage, 
@@ -496,4 +612,4 @@ every $T/P_{bl} = 100$ runs of deletion phase-1.
 On a node that hosts 20 VMs and each VM deletes one snapshot per day, there would be 
 only 1 deletion phase-2 scheduled for every 5 days, which is sufficiently small to prevent the 
 heavy I/O workload of deletion phase-2 from disturbing normal VM opeations.
-}
+
