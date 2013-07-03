@@ -256,7 +256,7 @@ in the corresponding DSF file.
 The PDS index uses the offset and size as a reference in its index structure.
  
 \item Each non-PDS snapshot store is divided into a set of containers and each of them is approximately 
-1G bytes. The reason we divide the snapshot into containers is to simplify the compact process
+1GB. The reason we divide the snapshot into containers is to simplify the compact process
 conducted periodically.  There are chunks deleted without any reference from other snapshots
 and to reclaim the space of these useless chunks, a compaction  routine can work on one container at a time
 and copy used data chunks to another container.
@@ -282,7 +282,7 @@ Each data container is represented by three data files in the DFS:
 2) the container index file is responsible for translating a data reference
 into its location within a container, and 
 3) a chunk deletion log file saving all the deletion requests within  the container.
-A VM snapshot store typically has a small number of containers because each container is fairly large with an average size of 1GB bytes, it 
+A VM snapshot store typically has a small number of containers because each container is fairly large with an average size of 1GB, it 
 maintains a limited number of snapshots (e.g. 10 in the Alibaba case),
 and new snapshot data chunks can be effectively compressed in chunk groups in addition to  deduplication.
 
