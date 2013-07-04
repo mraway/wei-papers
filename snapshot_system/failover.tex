@@ -175,7 +175,7 @@ significant impact the number of links has on VM backup reliability.
                 \legend{Global Dedup (VO), PDS FSB (VC)};
 		\end{axis}
 	\end{tikzpicture}
-  \caption{Measured Average number of VMs sharing a 64MB FSB with global dedup (VO), and in the PDS for VC.}
+  \caption{Measured Average number of VMs sharing a 64MB FSB with global dedup (VO), and in a 2\% PDS for VC.}
   \label{fig-fsb-links}
 \end{figure}
 
@@ -294,8 +294,8 @@ the expected impact on the system.
 
 in our current testbed we have measured the average number of links per chunk
 (Figure~\ref{vo-links}) and number of links per Filesystem Block (FSB)
-(Figure~\ref{fig-fsb-links}) in our dataset. For the complete dataset, we
-also found the average number of links to PDS chunks, which was 11 using a 5\%
+(Figure~\ref{fig-fsb-links}) in our dataset. For the complete dataset, we also
+found the average number of links to PDS chunks, which was \~19 using a 2\%
 PDS. From Figure~\ref{fig-fsb-links} you can see that as you add VMs, the
 average number of links to a chunk increases linearly for our dataset. We
 expect that this trend will level out with larger datasets, but should continue
@@ -309,13 +309,13 @@ reliability in Figure~\ref{fig-vm-availability}.
 
 Figure~\ref{fig-vm-availability} shows the reliability of VM backups as storage
 nodes fail for different numbers of links to average blocks in the index. We
-chose 5 and 11 for the VO and VC block links counts because those are what we
+chose 5 and 20 for the VO and VC block links counts because those are what we
 measured in our dataset, and chose higher numbers to account for much larger
 datasets. We chose to use a very optimistic setting for VO (10), and an extreme
 amount of sharing for VC (1000) to better show the significant improvement in
 data reliability for the VC model. As you can see from the graph, even small
 changes in the number of links to VO blocks has a significant impact on
-reliability, while even a 100 times increase in the VC block link counts only
+reliability, while even a 50 times increase in the VC block link counts only
 slightly affects VC reliability.  The key factor placed is that  $N_1 +N_2 <<
 N_o$, caused by the fact that the VM-centric approach localizes deduplication
 and packs  data blocks for one VM as much as possible.  The extra replicaton
@@ -356,7 +356,7 @@ replication factor for popular blocks can have on reliability.
                 \addplot[color=red,mark=*] table[x=NodesFailed,y=VC1]{figures/vm_failure_2.txt};
                 %\addplot[color=red,mark=triangle*,mark size=3] table[x=NodesFailed,y=VC3]{figures/vm_failure_2.txt};
                 %\addplot[color=red,mark=diamond*,mark size=3] table[x=NodesFailed,y=VC4]{figures/vm_failure_2.txt};
-            \legend{$VO\,10$ (optimistic),$VO\,5$ (measured),$VC\,1000$ (extreme),$VC\,11$ (measured)}
+            \legend{$VO\,10$ (optimistic),$VO\,5$ (measured),$VC\,1000$ (extreme),$VC\,20$ (measured)}
 		\end{axis}
 	\end{tikzpicture}
   \caption{Availability of VM backups as nodes fail for VO and VC models for varying average block link counts (i.e. average number of VMs that use a block). Non-PDS replication fixed at 3 and PDS replication increased to 4.}
