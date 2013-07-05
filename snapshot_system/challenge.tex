@@ -5,9 +5,9 @@ As discussed earlier, collocating the backup service on the existing
 cloud cluster avoids the extra cost to acquire a dedicated backup facility
 and reduces the network bandwidth consumption in transferring the un-deduplicated
 raw data for backup. 
-Figure~\ref{fig:collocated} illustrates the cluster architeture where
-each physical runs a backup service and a distribued file system (DFS)~\cite{GFS2004,Hadoop} 
-serves a backup store  for the snapshopts.
+Figure~\ref{fig:collocated} illustrates the cluster architecture where
+each physical runs a backup service and a distributed file system (DFS)~\cite{GFS2004,Hadoop} 
+serves a backup store  for the snapshots.
 The previous study shows that 
  deduplication can compress the backup copies 
 effectively in a 10:1 or even 15:1 rage. 
@@ -52,7 +52,7 @@ the cluster storage usage.
 
 We discuss the design considerations as follows. 
 \begin{itemize}
-\item {\em Deduplication localization, sharing minmization, and fault tolerance.}
+\item {\em Deduplication localization, sharing minimization, and fault tolerance.}
 
 %Previous work in deduplication~\cite{extreme_binning09,sparseindex09} has
 %studied the solutions to reduce memory requirements.
@@ -67,10 +67,14 @@ basis in a large-scale cloud and
 %data block. 
 loss of a small number of shared data chunks can 
 cause the unavailability of snapshots for a large number of virtual machines.
-Localizing the impact of deduplication can incrase fault isolation and resilience.
-Thus from the fault tolerance point of view,  duplicate sharing among mutiple VMs is 
-discourage. On the other hand, we need to seek for a tradeoff since there are
-a significant number of duplicates cross VMs.
+Localizing the impact of deduplication can increase fault isolation and resilience.
+Thus from the fault tolerance point of view,  duplicate sharing among multiple VMs is 
+discourage. 
+Another disadvantage of sharing is that it complicates snapshot deletion.
+The mark-sweep approach~\cite{mark-sweep} is effective for deletion, and its main cost
+is to count if a data chunk is still shared by other snapshots.
+Thus our goal is to localize deduplication and minimize sharing, while we seek for 
+a tradeoff since there are a significant number of duplicates cross VMs.
  
 % since storage for shared identical content chunks can become a failure point.
 %Without any control of such data sharing, we can only increase  
@@ -87,7 +91,7 @@ We need to build an intermediate layer that supports large snapshot writing with
 and infrequent snapshot access.
 Packaging that maps data chunks to file system blocks can create data dependence among VMs
 since a file block can be shared even more VMs.
-Thus we need to consider a minimum assoocation of a fie system block to VMs in the packaging process.
+Thus we need to consider a minimum association of a fie system block to VMs in the packaging process.
 %The distributed file system~\cite{GoogleFS,Hadoop} provides the replication support
 %and we can leverage existing open-source software to implement such a layer.
 %When the number of machines failed exceeds the replication degree, there could be
@@ -220,14 +224,14 @@ Active snapshots will contain all the information needed to restore the virtual 
 and when deleting a snapshot, data referenced by other snapshots are removed.
 While full signature comparison can deliver additional reduction~\cite{Guo2011,Dong,ExtremeBining},
 content change detection falls into a VM-centric approach since deduplication is localizable. 
-We are seeking for additional optimzations to improve duplication efficency and design the 
-assoication of data chunks with the underlying file blocks so that
+We are seeking for additional optimization to improve duplication efficiency and design the 
+association of data chunks with the underlying file blocks so that
 file block sharing among VMs is minimized.
 \item {\bf sampled Index}.
 One alternative approach to reducing the use of memory space is 
 to use a sampled index with prefetching, proposed  by Guo and Efstathopoulos\cite{Guo2011}. 
 An evaluation with our test data shows that using a sampled index can achieve a high
-deduplication effiency with a single machine setup.  
+deduplication efficiency with a single machine setup.  
 One key problem is that the algorithm is VM oblivious and not easy to be adopted for VM-centric.
 Another problem is  to design a distributed version 
 in deduplicating large bodies of data. 
@@ -240,7 +244,7 @@ To use a distributed memory version of the sampled index, every deduplicate requ
 may access a remote machine for index lookup,  which  incurs a significant overhead.
 
 
-Another possibiliy is to use this approach partially  in our VM centric solution by indexing
+Another possibility is to use this approach partially  in our VM centric solution by indexing
 the most popular data chunks. For a small set of popular data chunks, the prefetching strategy
 used in the sampled index will not work well because the spatial locality is limited among popular 
 data chunks. In our test data,  on average the number of consecutive data chunks is 7, which is too small
@@ -287,7 +291,7 @@ a disk index access~\cite{extreme_binning09}.
 \end{itemize}
 
 With these considerations in mind, we study a 
-VM-centric appraoch (called VC)
+VM-centric approach (called VC)
 for a backup service co-hosted   in the existing set of machines and resource usage is friendly
 to the existing applications.  
 We will first discuss and analyze the integration of the VM-centric deduplication strategies with fault isolation, and then present
