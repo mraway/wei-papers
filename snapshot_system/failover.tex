@@ -313,14 +313,15 @@ chose 5 and 20 for the VO and VC block links counts because those are what we
 measured in our dataset, and chose higher numbers to account for much larger
 datasets. We chose to use a very optimistic setting for VO (10), and an extreme
 amount of sharing for VC (1000) to better show the significant improvement in
-data reliability for the VC model. As you can see from the graph, even small
-changes in the number of links to VO blocks has a significant impact on
-reliability, while even a 50 times increase in the VC block link counts only
-slightly affects VC reliability.  The key factor placed is that  $N_1 +N_2 <<
-N_o$, caused by the fact that the VM-centric approach localizes deduplication
-and packs  data blocks for one VM as much as possible.  The extra replicaton
-for PDS blocks also signficantly increases the snapshot availability even when
-a PDS file block is shared by every VM.
+data reliability for the VC model (showing VO best case is still worse than VC
+worst case). As you can see from the graph, even small changes in the number of
+links to VO blocks has a significant impact on reliability, while even a 50
+times increase in the VC block link counts only slightly affects VC
+reliability.  The key factor placed is that  $N_1 +N_2 << N_o$, caused by the
+fact that the VM-centric approach localizes deduplication and packs  data
+blocks for one VM as much as possible.  The extra replicaton for PDS blocks
+also signficantly increases the snapshot availability even when a PDS file
+block is shared by every VM.
 
 % while in VO even small increases in $L$ causes a large decrease in availability. 
 Figure~\ref{fig-pds-replication}
@@ -359,7 +360,7 @@ replication factor for popular blocks can have on reliability.
             \legend{$VO\,10$ (optimistic),$VO\,5$ (measured),$VC\,1000$ (extreme),$VC\,20$ (measured)}
 		\end{axis}
 	\end{tikzpicture}
-  \caption{Availability of VM backups as nodes fail for VO and VC models for varying average block link counts (i.e. average number of VMs that use a block). Non-PDS replication fixed at 3 and PDS replication increased to 4.}
+  \caption{Availability of VM backups as nodes fail for VO and VC models for varying degrees of block sharing (i.e. average number of VMs that use a block). Non-PDS replication fixed at 3 and PDS replication increased to 4.}
   \label{fig-vm-availability}
 \end{figure}
 
@@ -387,6 +388,21 @@ replication factor for popular blocks can have on reliability.
   \caption{Availability of VM backups as nodes fail in the VC model for different PDS Replication factors (Non-PDS replication fixed at 3, and average PDS block links set to 1000)}
   \label{fig-pds-replication}
 \end{figure}
+
+
+\begin{table}
+    \begin{tabular}{ll}
+    Nodes Failed & Availability (\%) \\
+    1           &  100\\
+    2           & 100\\
+    3          & 99.999\\
+    5          & 99.993\\
+    10          & 99.926\\
+    20          & 99.295\\
+    \end{tabular}
+    \caption{Availability of a single block in the global data store}
+    \label{tab:block-availability}
+\end{table}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%NEW MODEL END%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \comments{
