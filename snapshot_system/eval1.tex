@@ -5,7 +5,7 @@
 We have implemented and evaluated a prototype of our VO scheme on a Linux cluster
 of 8-core AMD FX-8120 at 3.1 GHz with 16 GB RAM. 
 Our implementation is based on Alibaba's Xen cloud platform~\cite{Aliyun,WeiZhangIEEE}.
-Each machine  is equiped with a 
+Each machine  is equipped with a 
 a distributed file system (QFS) running in the cluster manages six 3TB disks
 with default replication degree set to 3. The CDS replication is set to 5.
 Objectives of our evaluation are:
@@ -25,6 +25,12 @@ design.
 %Debian, Ubuntu, Redhat, CentOS, Win2003 32bit, win2003 64 bit and win2008 64 bit. 
 %For each OS, 5 VMs are chosen, and every VM come with 10 full snapshots.
 %\subsection{Experimental setup}
+
+We will also compare our VC approach with  with
+a VO approach  using stateless routing with binning (SRB).
+SRB executes a distributed deduplication by routeing a data chunk to a machine~\cite{ParallelDataDomain}
+using  the chunk hashing function discussed in \cite{??}. Within such a machine, the data chunk is compared with
+a local index. 
 
 \comments{
 %We are running our deduplication/backup  service on 100 nodes.
@@ -145,24 +151,25 @@ study the CDS deduplication against user-related data. The overall size of datas
 %  \label{fig:overall}
 %\end{figure}
 
+%We assess the deduplication efficiency of VC and compare with
+%that of an VO approach  using stateless routing with binning (SRB).
+%SRB routes a data chunk to a machine~\cite{ParallelDataDomain}
+%using  the chunk hashing function disussed in \cite{??}. 
 
-{\bf Stateless Routing with Binning.}
-We compare our system with Stateless Routing with Binning (SRB) in terms of
-both backup time and deduplication efficiency. SRB is the same as the stateless
-routing algorithm given in the Extreme Binning\cite{??} paper. the
-deduplication efficiency is compared in
-Figure~\ref{fig-exbin-efficiency-graph}, showing the deduplication efficiency
-(percent of duplicate chunks which are deduped) of SRB and VC with several
-different CDS sizes. From the graph you can see that VC provides similar or
-better deduplication efficiency in all cases. In Figure~\ref{fig:srb_vs_vc} you
-can see simulated backup times using actual throughput numbers from our test
-backup cluster, and VC outperforms SRB mainly due to significantly fewer index
-lookups (since SRB uses hash-partitioning, all lookups are essentially random
-and caching will be largely innefective).  \emph{Should we use one of the two
-bar charts, or the graph? I am thinking the graph, but I'll leave the two bar
-charts in the paper until we decide? If we use the bar charts some text will
-have to be changed. We could also add each of the CDS sizes to the bar chart
-and have 4 bars instead of 2.}
+Figure~\ref{fig-exbin-efficiency-graph} shows the deduplication efficiency which is
+the percent of deduped duplicate chunks by SRB and VC.
+It also lists several PDS sizes chosen for VC. ``2\% PDS" means that
+we allocate the space of distributed shared memory  to accommodate $\delta=2\%$
+of data chunks shared among VMs. Namely 
+With $\delta=2\%$, the deduplication efficiency can reach over 90\% 
+while $\delta=4\%$, the deduplication efficiency can reach over 92\%. 
+The loss of efficiency in VC is caused by the restriction of the total physical memory available
+in the cluster to support PDS.  
+The loss of efficiency in SRB is caused by the routing of data chunks which restricts the search scope
+for global comparison.
+In all cases, VC provides similar or better deduplication efficiency than SRB.
+
+
 
 \comments{%both of the bar charts are superceded by the graph below
 %\comments{
@@ -250,13 +257,6 @@ and have 4 bars instead of 2.}
         ($efficiency=\frac{d-du}{d-du_{complete}}$) comparison between
     Stateless Routing with Binning and VC.}
   \label{fig-exbin-efficiency-graph}
-\end{figure}
-
-\begin{figure}[htbp]
-  \centering
-  \epsfig{file=figures/srb_vs_vc.pdf, width=3.5in}
-  \caption{Time to backup a dirty segment under SRB and VC approach}
-  \label{fig:srb_vs_vc}
 \end{figure}
 
 
@@ -366,6 +366,24 @@ deduplication architecture and compression greatly reduce the amount of data tha
 the file system. The main bottleneck here is our QFS only manages one disk per node, 
 making it inefficient to utilize the benefits of parallel disk access. We expect our achitecture can
 perform even better in production cluster which normally has more than ten disks on each node.
+
+In Figure~\ref{fig:srb_vs_vc} you
+can see simulated backup times using actual throughput numbers from our test
+backup cluster, and VC outperforms SRB mainly due to significantly fewer index
+lookups (since SRB uses hash-partitioning, all lookups are essentially random
+and caching will be largely innefective).  \emph{Should we use one of the two
+bar charts, or the graph? I am thinking the graph, but I'll leave the two bar
+charts in the paper until we decide? If we use the bar charts some text will
+have to be changed. We could also add each of the CDS sizes to the bar chart
+and have 4 bars instead of 2.}
+
+\begin{figure}[htbp]
+  \centering
+  \epsfig{file=figures/srb_vs_vc.pdf, width=3.5in}
+  \caption{Time to backup a dirty segment under SRB and VC approach}
+  \label{fig:srb_vs_vc}
+\end{figure}
+
 
 \begin{figure}
     \centering
