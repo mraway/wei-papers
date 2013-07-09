@@ -452,6 +452,30 @@ replication factor for popular blocks can have on reliability.
   \label{fig-pds-replication}
 \end{figure}
 
+\begin{figure}[ht]
+  \centering
+	\begin{tikzpicture}
+		\begin{axis}[
+		%title={PDS Replication affect on availability},
+		xlabel={Failed storage nodes},
+		ylabel={VM Snapshot Availability (\%)},
+		extra y ticks={99.9}, %if important numbers are missing
+                mark options=solid,
+                legend style={
+                    cells={anchor=west}, %legend entry alignment
+                    legend pos=south west %legend position
+                }
+		]
+                \addplot[color=blue,mark=*] table[x=NodesFailed,y=VC1]{figures/cds_replication2.txt};
+                \addplot[color=red,mark=square*] table[x=NodesFailed,y=VC2]{figures/cds_replication2.txt};
+                \addplot[color=brown,mark=triangle*,mark size=3] table[x=NodesFailed,y=VC3]{figures/cds_replication2.txt};
+                \addplot[color=black,mark=diamond*,mark size=3] table[x=NodesFailed,y=VC4]{figures/cds_replication2.txt};
+            \legend{$R_C=3$,$R_C=4$,$R_C=5$,$R_C=7$}
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Availability of VM backups as nodes fail in the VC model for different PDS Replication factors (Non-PDS replication fixed at 3, and average PDS block links set to 20)}
+  \label{fig-pds-replication2}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%NEW MODEL END%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
