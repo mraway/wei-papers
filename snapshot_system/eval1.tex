@@ -69,7 +69,7 @@ The final content copied to the backup storage is reduced by 94.4\% in total.
 }
 %\begin{figure}
 %\centering
-%\includegraphics[width=0.4\textwidth]{mem_time.pdf}
+%\includegraphics[width=0.4\textwidth]{mem_time}
 %\caption{ Parallel time when memory limit varies.}
 %\label{fig:memory}
 %%\end{figure}
@@ -338,7 +338,7 @@ Overall speaking,  VC is faster than SRB while data reading dominates the proces
 
 \begin{figure}[htbp]
   \centering
-  \epsfig{file=figures/srb_vs_vc.pdf, width=3.5in}
+  \epsfig{file=figures/srb_vs_vc, width=3.5in}
   \caption{Time to backup a dirty segment under SRB and VC approach}
   \label{fig:srb_vs_vc}
 \end{figure}
@@ -359,7 +359,7 @@ PDS lookup takes a small amount of time.
 
 \begin{figure}
     \centering
-    \includegraphics[width=3in]{figures/single_backup_time.pdf}
+    \includegraphics[width=3in]{figures/single_backup_time}
     \caption{Backup times for varying CDS sizes}
     \label{fig:single_vm_backup}
 \end{figure}
@@ -382,13 +382,13 @@ perform even better in production cluster which normally has more than ten disks
     \centering
     \subfigure[Real VM backup performance]
     {
-        \includegraphics[width=3in]{figures/parallel_backup_with_read.pdf}
+        \includegraphics[width=3in]{figures/parallel_backup_with_read}
         \label{fig:withread}
     }
     \\
     \subfigure[Deduplication and storage system performance]
     {
-        \includegraphics[width=3in]{figures/parallel_backup_no_read.pdf}
+        \includegraphics[width=3in]{figures/parallel_backup_no_read}
         \label{fig:noread}
     }
     \caption{Throughput per-node with concurrent snapshot backup tasks}
@@ -398,7 +398,7 @@ perform even better in production cluster which normally has more than ten disks
 
 % \begin{figure}[htbp]
 %   \centering
-%   \epsfig{file=figures/parallel_backup.pdf, width=3.5in}
+%   \epsfig{file=figures/parallel_backup, width=3.5in}
 %   \caption{Throughput per-node with concurrent snapshot backup tasks}
 %   \label{fig:parallel_backup}
 % \end{figure}
