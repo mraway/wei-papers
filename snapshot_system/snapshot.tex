@@ -347,7 +347,7 @@ the better deduplication efficiency our CDS deduplication approach will have.
             \begin{axis}[
             %title={CDS Coverage},
             xlabel={Total number of chunks stored},
-            ylabel={CDS Coverage (\%)},
+            ylabel={PDS Coverage (\%)},
             %extra y ticks={4.5,5.5,6.5} %to add extra ticks
             mark options=solid,
             %legend pos=outer north east,
@@ -362,7 +362,7 @@ the better deduplication efficiency our CDS deduplication approach will have.
             \addplot[densely dashed,color=red,mark=*] table[x=InputChunks,y=T1] {figures/cds_coverage.txt};
             \addplot[densely dashed,color=red,mark=square*] table[x=InputChunks,y=T2] {figures/cds_coverage.txt};
             \addplot[densely dashed,color=red,mark=triangle*] table[x=InputChunks,y=T4] {figures/cds_coverage.txt};
-            \legend{Measured (1\%CDS),Measured (2\%CDS),Measured (4\%CDS),Predicted (1\%CDS),Predicted (2\%CDS),Predicted (4\%CDS)};
+            \legend{Measured ($\sigma=1\%$),Measured ($\sigma=2\%$),Measured ($\sigma=4\%$),Predicted ($\sigma=1\%$),Predicted ($\sigma=2\%$),Predicted ($\sigma=4\%$)};
             \end{axis}
     \end{tikzpicture}
   \caption{fixed-alpha predicted vs. actual CDS coverage as data size increases.}

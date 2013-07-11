@@ -166,13 +166,13 @@ significant impact the number of links has on VM backup reliability.
 		\begin{axis}[
 		%title={VO FSB links},
 		xlabel={Number of VMs},
-		ylabel={Avg. Num. VMs sharing FSB},
+		ylabel={\small Avg. Num. VMs sharing FSB},
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
 		legend pos=north west
 		]
                 \addplot[color=blue,mark=*] table[x=VMs,y=FSBLinks] {figures/vo_fsb_links.txt};
 		\addplot[color=red,mark=square*] table[x=VMs,y=cdslinks] {figures/cds_links.txt};
-                \legend{Global Dedup (VO), PDS FSB (VC)};
+                \legend{VO, PDS in VC};
 		\end{axis}
 	\end{tikzpicture}
   \caption{Measured Average number of VMs sharing a 64MB FSB with global dedup (VO), and in a 2\% PDS for VC.}
@@ -185,14 +185,14 @@ significant impact the number of links has on VM backup reliability.
 		\begin{axis}[
 		%title={VO VM links},
 		xlabel={Number of VMs},
-		ylabel={Avg. Num. FSBs used by VM},
+		ylabel={\small Avg. Num. FSBs used by VM},
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
 		legend pos=north west
 		]
                 \addplot[color=blue,mark=*] table[x=VMs,y=VMLinks] {figures/vo_vm_links.txt};
 		\addplot[color=red,mark=square*] table[x=VMs,y=VMNonCDSLinks] {figures/vc_vm_links.txt};
 		\addplot[color=red,densely dashed,mark=triangle*,mark size=3] table[x=VMs,y=VMCDSLinks] {figures/vc_vm_links.txt};
-                \legend{VO FSB, Non-PDS FSB (VC), PDS FSB (VC)};
+                \legend{$N_0$, $N_1$, $N_2$};
 		\end{axis}
 	\end{tikzpicture}
   \caption{Measured Average number of 64MB FSBs used by a single VM. For VC both the number of PDS and Non-PDS FSBs used are shown.}
@@ -260,7 +260,7 @@ The snapshot availability of a VM  in the VO approach is
 		\begin{axis}[
 		%title={Node failure affect on VMs},
 		xlabel={Number of nodes failed},
-		ylabel={chance that a VM is affected (\%) in VO},
+		ylabel={\small chance that a VM is affected (\%) in VO},
 		%extra y ticks={4.5,5.5,6.5} %because it only shows 4,5,6,7
 		]
 		\addplot[color=blue,mark=*] table{figures/vm_failure.txt};
@@ -277,7 +277,7 @@ The snapshot availability of a VM  in the VO approach is
 		\begin{axis}[
 		%title={Node failure affect on VMs},
 		xlabel={Failed storage nodes},
-		ylabel={Chance VM is affected (\%)},
+		ylabel={\small Chance VM is affected (\%)},
 		%extra y ticks={4.5,5.5,6.5} %if important numbers are missing
                 mark options=solid,
                 legend pos=north west
@@ -355,20 +355,20 @@ advantages of the VM-centric model, and the advantages that separating the
 replication factor for popular blocks can have on reliability.
 
 \begin{table}
-    \begin{tabular}{|l|ll|}
+    \begin{tabular}{|l|lll|}
     \hline
-    \multirow{2}{*}{Nodes Failed}   & \multicolumn{2}{c|}{Availability(\%)}\\
-                                    & $R=3$ & $R=4$\\
+    \multirow{2}{*}{Nodes Failed}   & \multicolumn{3}{c|}{Availability(\%)}\\
+                                    & $R=3$ & $R=4$ & $R=5$\\
     \hline
-    1           &  100      & 100\\
-    2           & 100       & 100\\
-    3          & 99.999     & 100\\
-    5          & 99.993     & 99.9999\\
-    10          & 99.926    & 99.995\\
-    20          & 99.295    & 99.876\\
+    1           &  100      & 100       & 100\\
+    2           & 100       & 100       & 100\\
+    3          & 99.999     & 100       & 100\\
+    5          & 99.993     & 99.9999   & 99.999998\\
+    10          & 99.926    & 99.995    & 99.999\\
+    20          & 99.295    & 99.876    & 99.979\\
     \hline
     \end{tabular}
-    \caption{Availability of a single FSB in the global data store with different relplication factors}
+    \caption{Availability in a 100 machine cluster of a single FSB in the global data store with different relplication factors}
     \label{tab:fsb-availability}
 \end{table}
 
@@ -378,7 +378,7 @@ replication factor for popular blocks can have on reliability.
             \begin{axis}[
             %title={FSB Availability},
             xlabel={Number of Machines Failed},
-            ylabel={Availability of Single FSB (\%)},
+            ylabel={\small Availability of Single FSB (\%)},
             %extra y ticks={4.5,5.5,6.5} %to add extra ticks
             mark options=solid,
             legend pos=south west,
@@ -387,9 +387,10 @@ replication factor for popular blocks can have on reliability.
             %    at={(0.5,-0.2)},
             %anchor=north}
             ]
-            \addplot[color=blue,mark=none] table[x=NodesFailed,y=Availability3] {figures/fsb_availability.txt};
+            \addplot[color=blue,mark=none] table[x=NodesFailed,y=Availability5] {figures/fsb_availability.txt};
             \addplot[densely dashed, color=red,mark=none] table[x=NodesFailed,y=Availability4] {figures/fsb_availability.txt};
-            \legend{$R=3$,$R=4$};
+            \addplot[densely dotted,color=brown,mark=none] table[x=NodesFailed,y=Availability3] {figures/fsb_availability.txt};
+            \legend{$R=5$,$R=4$,$R=3$};
             \end{axis}
     \end{tikzpicture}
     \caption{Availability of Individual FSBs in 100 Machine Cluster with different replication factors.}
@@ -444,8 +445,8 @@ replication factor for popular blocks can have on reliability.
                 \addplot[color=blue,mark=*] table[x=NodesFailed,y=VC1]{figures/cds_replication.txt};
                 \addplot[color=red,mark=square*] table[x=NodesFailed,y=VC2]{figures/cds_replication.txt};
                 \addplot[color=brown,mark=triangle*,mark size=3] table[x=NodesFailed,y=VC3]{figures/cds_replication.txt};
-                \addplot[color=black,mark=diamond*,mark size=3] table[x=NodesFailed,y=VC4]{figures/cds_replication.txt};
-            \legend{$R_C=3$,$R_C=4$,$R_C=5$,$R_C=7$}
+                %\addplot[color=black,mark=diamond*,mark size=3] table[x=NodesFailed,y=VC4]{figures/cds_replication.txt};
+                \legend{$R_C=3$,$R_C=4$,$R_C=5$}%,$R_C=7$}
 		\end{axis}
 	\end{tikzpicture}
   \caption{Availability of VM backups as nodes fail in the VC model for different PDS Replication factors (Non-PDS replication fixed at 3, and average PDS block links set to 1000)}
@@ -469,8 +470,8 @@ replication factor for popular blocks can have on reliability.
                 \addplot[color=blue,mark=*] table[x=NodesFailed,y=VC1]{figures/cds_replication2.txt};
                 \addplot[color=red,mark=square*] table[x=NodesFailed,y=VC2]{figures/cds_replication2.txt};
                 \addplot[color=brown,mark=triangle*,mark size=3] table[x=NodesFailed,y=VC3]{figures/cds_replication2.txt};
-                \addplot[color=black,mark=diamond*,mark size=3] table[x=NodesFailed,y=VC4]{figures/cds_replication2.txt};
-            \legend{$R_C=3$,$R_C=4$,$R_C=5$,$R_C=7$}
+                %\addplot[color=black,mark=diamond*,mark size=3] table[x=NodesFailed,y=VC4]{figures/cds_replication2.txt};
+                \legend{$R_C=3$,$R_C=4$,$R_C=5$}%,$R_C=7$}
 		\end{axis}
 	\end{tikzpicture}
   \caption{Availability of VM backups as nodes fail in the VC model for different PDS Replication factors (Non-PDS replication fixed at 3, and average PDS block links set to 20)}
