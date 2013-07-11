@@ -86,7 +86,7 @@ For example, with a 2MB segment, there are about 500 fingerprints to compare.
 %as the current level-1 and level-2 combined, because finally they equal to comparing  
 %parent snapshot at 4KB granularity.
 %
-%However, at level-3 things are different. If we use 4KB fix-size block uniformly, it would be harder for different VM to share data through CDS, because there is no guarantee that the location of duplicate data on different VM disks are always aligned at 4KB boundary. For example, if two VMs each has a copy of duplicate data, but they are not aligned, then we won't be able to detect them. Our study at the current small data set has shown that using 4KB fix-size block will make CDS method less efficient by nearly 10%. Over the long time, more and more OS variations will co-exist in the cluster, making this 4KB fix-size approach inefficient in reducing duplicate data across VMs.
+%However, at level-3 things are different. If we use 4KB fix-size block uniformly, it would be harder for different VM to share data through PDS, because there is no guarantee that the location of duplicate data on different VM disks are always aligned at 4KB boundary. For example, if two VMs each has a copy of duplicate data, but they are not aligned, then we won't be able to detect them. Our study at the current small data set has shown that using 4KB fix-size block will make PDS method less efficient by nearly 10%. Over the long time, more and more OS variations will co-exist in the cluster, making this 4KB fix-size approach inefficient in reducing duplicate data across VMs.
 
 %\item \textit{Level 2  Chunk fingerprint comparison.}
 %If a segment is modified, we perform fine-grained deduplication 
@@ -106,7 +106,7 @@ One key observation is that the inner deduplication has removed many of the dupl
 There are fewer deduplication opportunities across VMs while the memory and network
 consumption for global comparison is more expensive.
 Thus our approximation is that the global fingerprint comparison only searches for the top $k$
-most popular items. This dataset is called CDS (common data set). 
+most popular items. This dataset is called PDS (common data set). 
 %Since duplicate sharing patterns among  VM follows a zip-like distribution,  
 The popularity of a chunk is the number  of data chunks  from different VMs
 that are duplicates of this chunk after the inner VM deduplication.
@@ -127,9 +127,9 @@ and discuss this in details in Section~\ref{sec:arch}.
 The system allows all machines conduct the backup in parallel in different machines, and each machine
 conducts the backup of one VM at a time, and thus only requires a write  buffer for one VM.
 
-CDS chunks are stored in a separate append-store instance. In this way, each
-file block for non-CDS chunks is associated with one VM and does not contain
-any CDS chunks. 
+PDS chunks are stored in a separate append-store instance. In this way, each
+file block for non-PDS chunks is associated with one VM and does not contain
+any PDS chunks. 
 \end{itemize}
 
  \subsection{Impact on deduplication efficiency}
@@ -153,13 +153,13 @@ any CDS chunks.
 We analyze how the choice of value  $k$ impacts the deduplication efficiency.
 %It also  compares the  fault resilience of our VM-centric deduplication approach with a standand approach using 
 %global deduplication.
-%\subsubsection{Impact of CDS deduplication}
+%\subsubsection{Impact of PDS deduplication}
 The analysis is based on the charactristics  of the VM snapshot traces
 studied from  Alibaba's production user data.
 Our previous study shows that the popularity of data chunks after inner VM deduplication follows 
 a Zipf-like distribution\cite{zipf} and its
 exponent $\alpha$ is ranged between 0.65  and  0.7.~\cite{ieeecloud}. 
-%As a result, it can be proved that deduplication efficiency of CDS index is scalable:
+%As a result, it can be proved that deduplication efficiency of PDS index is scalable:
 Table~\ref{tab:symbol} lists parameters used in this analysis.
 
 
@@ -184,7 +184,7 @@ $f_i$ &  the frequency for the $i$th most popular fingerprint\\
 \hline
 $\delta$ &  the percentage of duplicates detected in inner VM deduplication\\
 \hline
-$\sigma$ &  the number of unique non-CDS chunks over  the number of the CDS chunks.\\
+$\sigma$ &  the number of unique non-PDS chunks over  the number of the PDS chunks.\\
 \hline
 $p$ & the number of machines in the cluster\\
 \hline
@@ -198,9 +198,9 @@ $m$ & memory size on each node used by VC\\
 \hline
 $E$ & the size of an popular data index entry\\
 \hline
-$N_1$ & the average number  of non-CDS file system blocks  in a VM\\
+$N_1$ & the average number  of non-PDS file system blocks  in a VM\\
 \hline
-$N_2$ & the average number  of CDS file system blocks  in a VM\\
+$N_2$ & the average number  of PDS file system blocks  in a VM\\
 \hline
 $N_o$ & the average number  of file system blocks  in a VM for VO\\
 \hline
@@ -269,7 +269,7 @@ is the percentage of duplicates that can be detected:
 % \sum_{i=1}^{n}\frac{1}{i^\alpha}\approx \int_{1}^{n}\frac{1}{x^\alpha}\mathrm{d}x=\frac{x^{1-\alpha}}{1-\alpha}=\frac{n^{1-\alpha}}{1-\alpha}\;  for\;  \alpha<1
 % \end{equation}
 
-% So the cumulative distribution function for a CDS holding top $S_c$ fingerprints
+% So the cumulative distribution function for a PDS holding top $S_c$ fingerprints
 % of global index with size $S_g$ is:
 
 % \begin{equation}
@@ -293,12 +293,12 @@ The overall deduplication efficiency of VC is
 \]
 where $(\frac{m*C}{D*E})^{1-\alpha}$ represents the percentage of the remaining
 chunks detected as duplicates after inner VM deduplication.
-Figure~\ref{fig-cds-coverage} shows measured CDS coverage in our 35 VM dataset.
+Figure~\ref{fig-cds-coverage} shows measured PDS coverage in our 35 VM dataset.
 You can see from the graph that the coverage actually increases as the datasize
 increases, which indicates that $\alpha$ increases with the datasize (a
-fixed-$\alpha$ model would predict constant coverage). This makes the CDS even
-more effective, as the coverage of the CDS increases as more data is added.
-%Then the deduplication efficiency of CDS approach using top k most popular fingerprints is:
+fixed-$\alpha$ model would predict constant coverage). This makes the PDS even
+more effective, as the coverage of the PDS increases as more data is added.
+%Then the deduplication efficiency of PDS approach using top k most popular fingerprints is:
 %\begin{equation}
 %  e_k = (\frac{m*B}{F*D})^{1-\alpha}
 %\end{equation}
@@ -306,23 +306,23 @@ more effective, as the coverage of the CDS increases as more data is added.
 
 % is mainly affected by the its memory usage,
 %and the Zipf-like distribution parameter $\alpha$.
-%From the memory usage perspective, the more memory we give to CDS index, the more duplicates it can found.
+%From the memory usage perspective, the more memory we give to PDS index, the more duplicates it can found.
 %From the data characteristics perspective, if the system tends to backup arbitrarily random data, 
-%$\alpha$ would be small and thus CDS approach would not be effective. But in a VM cluster all VMs
+%$\alpha$ would be small and thus PDS approach would not be effective. But in a VM cluster all VMs
 %have a large portion of similar data, thus leading to a bigger $\alpha$. The more VM join the cluster,
-%the better deduplication efficiency our CDS deduplication approach will have.
+%the better deduplication efficiency our PDS deduplication approach will have.
 
 
 
 
 \comments{
-Since $B$, $D$ and $F$ are environment constants, the deduplication efficiency of CDS is mainly affected by its memory usage,
+Since $B$, $D$ and $F$ are environment constants, the deduplication efficiency of PDS is mainly affected by its memory usage,
 and the Zipf-like distribution parameter $\alpha$.
-From the memory usage perspective, the more memory we give to CDS index, the more duplicates it can found.
+From the memory usage perspective, the more memory we give to PDS index, the more duplicates it can found.
 From the data characteristics perspective, if the system tends to backup arbitrarily random data, 
-$\alpha$ would be small and thus CDS approach would not be effective. But in a VM cluster all VMs
+$\alpha$ would be small and thus PDS approach would not be effective. But in a VM cluster all VMs
 have a large portion of similar data, thus leading to a bigger $\alpha$. The more VM join the cluster,
-the better deduplication efficiency our CDS deduplication approach will have.
+the better deduplication efficiency our PDS deduplication approach will have.
 }
 
 \comments{ %this table is superceded by the graph below it

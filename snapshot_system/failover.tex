@@ -124,16 +124,14 @@ N_2 \leq \frac{pD } {s (\delta +1)}, \;
 Since each file block (with default size $s=64MB$) contains many chunks (on average 4KB),
 each file block contains the hot low-level chunks shared by many VMs, and it also contains
 rare chunks which are not shared.
-Figure~\ref{fig:VOshared} shows the number of VMs shared by each file block.
+Figure~\ref{fig-fsb-links} shows the number of VMs sharing by each file block.
 In our experiment, we find that $V_o \approx 0.2 V$ when backing up VMs one by one.
-We can observe that $N_1 +N_2 << N_o$.
+We can observe in Figure~\ref{fig-vm-links} that $N_1 +N_2 < N_o$. This is likely because the PDS FSBs tightly pack data used by many VMs, which decreases the overall number of FSBs required to backup a VM.
 If  the backup for multiple VMs is conducted concurrently, there would be more
 VMs shared  by each file block on average.
 
 Figure~\ref{fig-fsb-links} shows the average number of VMs sharing a
-filesystem block (FSB) in the global index as VMs are added. Two of the VMs had
-much larger hard drives (\~300GB), which explains the 2 drops, as those two VMs
-added much more unique data than normal. Though we expect the graph to level out some for
+filesystem block (FSB) as VMs are added. Though we don't expect the linear trend to continue indefinitely for
 much larger datasets, it should continue to increase, which has important implications
 on VM backup availability in the precense of failures. Below we show the
 significant impact the number of links has on VM backup reliability.
@@ -191,10 +189,11 @@ significant impact the number of links has on VM backup reliability.
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
 		legend pos=north west
 		]
-                \addplot[color=blue,mark=*] table[x=VMs,y=VMLinks] {figures/vo_vm_links.txt};
-		\addplot[color=red,mark=square*] table[x=VMs,y=VMNonCDSLinks] {figures/vc_vm_links.txt};
-		\addplot[color=red,densely dashed,mark=triangle*,mark size=2.7] table[x=VMs,y=VMCDSLinks] {figures/vc_vm_links.txt};
-                \legend{$N_0$, $N_1$, $N_2$};
+                \addplot table[x=VMs,y=No] {figures/vo_vm_links.txt};
+		\addplot table[x=VMs,y=N1] {figures/vc_vm_links.txt};
+                \addplot+[red,densely dashed] table[x=VMs,y=N2] {figures/vc_vm_links.txt};
+                \addplot+[dotted,mark=none] table[x=VMs,y expr=\thisrow{N1}+\thisrow{N2}] {figures/vc_vm_links.txt};
+                \legend{$N_o$, $N_1$, $N_2$, $N_1+N_2$};
 		\end{axis}
 	\end{tikzpicture}
   \caption{Measured Average number of 64MB FSBs used by a single VM. For VC both the number of PDS and Non-PDS FSBs used are shown.}
@@ -206,7 +205,7 @@ there is no  data loss for all its file blocks.
 With replication degree $r$, the likelyhood of
 a file block block is the probability that  
 all of its replicas appear in $d$ failed machines. 
-Namely, $\binom{d}{r}/ \binom{p}{r}$.
+Namely, $\binom{d}{r}/ \binom{p}{r}$. This can be seen in Figure~\ref{fig-fsb-availability} for a 100 machine cluster for 3 different replication factors.
 
 
 When there are $r \le d<r_c$ machines failed and then there is no PDS data loss,  
@@ -278,20 +277,20 @@ reliability in Figure~\ref{fig-vm-availability}.
 }
 
 Figure~\ref{fig-vm-availability} shows the reliability of VM backups as storage
-nodes fail for different numbers of links to average blocks in the index. We
-chose 5 and 20 for the VO and VC block links counts because those are what we
-measured in our dataset, and chose higher numbers to account for much larger
-datasets. We chose to use a very optimistic setting for VO (10), and an extreme
-amount of sharing for VC (1000) to better show the significant improvement in
-data reliability for the VC model (showing VO best case is still worse than VC
-worst case). As you can see from the graph, even small changes in the number of
-links to VO blocks has a significant impact on reliability, while even a 50
-times increase in the VC block link counts only slightly affects VC
-reliability.  The key factor placed is that  $N_1 +N_2 << N_o$, caused by the
-fact that the VM-centric approach localizes deduplication and packs  data
-blocks for one VM as much as possible.  The extra replicaton for PDS blocks
-also signficantly increases the snapshot availability even when a PDS file
-block is shared by every VM.
+nodes fail for different amounts of sharing of filesystem blocks in the index. We
+show 5 and 20 for the VO and VC block links counts because those are what we
+measured in our small dataset, and chose higher numbers to account for much
+larger datasets. We chose to use a very optimistic setting for VO (20), and the
+absolute worst case amount of sharing for VC in a 100 machine cluster with 25
+VMs per machine (2500). Our results show that even the VC worst case provides
+better VM reliability that VO. As you can see from the graph, even small
+changes in the number of links to VO blocks has a significant impact on
+reliability, while even a 50 times increase in the VC block link counts only
+slightly affects VC reliability.  The key factor placed is that  $N_1 +N_2 <
+N_o$, caused by the fact that the VM-centric approach localizes deduplication
+and packs  data blocks for one VM as much as possible.  The extra replicaton
+for PDS blocks also signficantly increases the snapshot availability even when
+a PDS file block is shared by every VM.
 
 % while in VO even small increases in $L$ causes a large decrease in availability. 
 Figure~\ref{fig-pds-replication}
@@ -318,7 +317,7 @@ replication factor for popular blocks can have on reliability.
     20          & 99.295    & 99.876    & 99.979\\
     \hline
     \end{tabular}
-    \caption{Availability in a 100 machine cluster of a single FSB in the global data store with different relplication factors}
+    \caption{Availability in a 100 machine cluster of a single FSB in the global data store with different replication factors}
     \label{tab:fsb-availability}
 \end{table}
 
@@ -330,7 +329,7 @@ replication factor for popular blocks can have on reliability.
             cycle list name=mline,
             xlabel={Number of Machines Failed},
             ylabel={\small Availability of Single FSB (\%)},
-            %extra y ticks={4.5,5.5,6.5} %to add extra ticks
+            extra y ticks={99.9}, %to add extra ticks
             mark options=solid,
             legend pos=south west,
             %legend columns=2,
@@ -369,21 +368,21 @@ replication factor for popular blocks can have on reliability.
                 },
                 %reverse legend,
 		]
-                \addplot table[x=NodesFailed,y=VC1]{figures/vm_failure_2.txt};
+                \addplot table[x=NodesFailed,y=VC1]{figures/vm_availability.txt};
                 \addlegendentry{$VC\,20$ (measured)}
-                \addplot table[x=NodesFailed,y=VC2]{figures/vm_failure_2.txt};
-                \addlegendentry{$VC\,1000$ (extreme)}
-                %\addplot table[x=NodesFailed,y=VC3]{figures/vm_failure_2.txt};
-                %\addplot table[x=NodesFailed,y=VC4]{figures/vm_failure_2.txt};
-                \addplot table[x=NodesFailed,y=VO1]{figures/vm_failure_2.txt};
+                \addplot table[x=NodesFailed,y=VC2]{figures/vm_availability.txt};
+                \addlegendentry{$VC\,2500$ (worst-case)}
+                \addplot table[x=NodesFailed,y=VO1]{figures/vm_availability.txt};
                 \addlegendentry{$VO\,5$ (measured)}
-                \addplot table[x=NodesFailed,y=VO2]{figures/vm_failure_2.txt};
-                \addlegendentry{$VO\,10$ (optimistic)}
-                %\addplot table[x=NodesFailed,y=VO3]{figures/vm_failure_2.txt};
-                %\addplot table[x=NodesFailed,y=VO4]{figures/vm_failure_2.txt};
+                \addplot table[x=NodesFailed,y=VO2]{figures/vm_availability.txt};
+                \addlegendentry{$VO\,20$ (optimistic)}
 		\end{axis}
 	\end{tikzpicture}
-  \caption{Availability of VM backups as nodes fail for VO and VC models for varying degrees of block sharing (i.e. average number of VMs that use a block). Non-PDS replication fixed at 3 and PDS replication increased to 4.}
+  \caption{Availability of VM backups as nodes fail for VO and VC models for
+  varying degrees of block sharing (i.e. average number of VMs that use a
+  block). Non-PDS replication fixed at 3 and PDS replication increased to 4.
+  Graph shown for 100 machine cluster.
+  }
   \label{fig-vm-availability}
 \end{figure}
 
