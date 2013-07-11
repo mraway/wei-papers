@@ -8,16 +8,54 @@
 \usepackage{breqn}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.7}
+\DeclareGraphicsExtensions{.pdf}
+
+
+\newcommand{\comments}[1]{}
+%pgfplots setup
 \pgfplotsset{every axis/.append style={
 	very thick,
 	tick style={thick}}}
 \pgfplotsset{
         every mark/.append style={solid}
 }
-\DeclareGraphicsExtensions{.pdf}
+\pgfplotscreateplotcyclelist{mcolor}{%
+    {blue,every mark/.append style={fill=blue},mark=*},
+    {red,every mark/.append style={fill=red},mark=square*},
+    {brown,every mark/.append style={fill=brown},mark=triangle*,mark size=3},
+    {black,every mark/.append style={fill=black},mark=diamond*,mark size=3},
+    {green!60!black,every mark/.append style={fill=green!60!black},mark=pentagon*,mark size=2.5},
+    {magenta!90!black,every mark/.append style={fill=magenta!90!black},mark=star,mark size=3},
+    {densely dashed,blue,every mark/.append style={fill=blue},mark=*},
+    {densely dashed,red,every mark/.append style={fill=red},mark=square*},
+    {densely dashed,brown,every mark/.append style={fill=brown},mark=triangle*,mark size=2.7},
+    {densely dashed,black,every mark/.append style={fill=black},mark=diamond*,mark size=2.7},
+    {densely dashed,green!60!black,every mark/.append style={fill=green!60!black},mark=pentagon*,mark size=2.5},
+    {densely dashed,magenta!90!black,every mark/.append style={fill=magenta!90!black},mark=star,mark size=3}}
 
+\pgfplotscreateplotcyclelist{mmark*}{
+    {mark=*},
+    {mark=square*},
+    {mark=triangle*,mark size=2.7},
+    {mark=diamond*,mark size=2.7},
+    {mark=pentagon*,mark size=2.5},
+    {mark=star,mark size=3},
+    {mark=asterisk,mark size=3},
+    {mark=+,mark size=3},
+    {mark=Mercedes star,mark size=3}}
 
-\newcommand{\comments}[1]{}
+\pgfplotscreateplotcyclelist{mline}{
+    {solid,blue,every mark/.append style={fill=blue}},
+    {densely dashed,red,every mark/.append style={fill=red}},
+    {densely dotted,brown,every mark/.append style={fill=brown}},
+    {loosely dotted,black,every mark/.append style={fill=black}},
+    {loosely dashed,green!60!black,every mark/.append style={fill=green!60!black}},
+    {densely dashdotted,magenta!90!black,every mark/.append style={fill=magenta!90!black}},
+    {densely dashdotdotted,teal,every mark/.append style={fill=teal}},
+    {loosely dashdotted,orange,every mark/.append style={fill=orange}},
+    {loosely dashdotdotted,violet,every mark/.append style={fill=violet}}}
+
+    \pgfplotsset{cycle list name=mcolor}
 
 \begin{document}
 

@@ -150,8 +150,8 @@ significant impact the number of links has on VM backup reliability.
 		%extra y ticks={4.5,5.5,6.5} %because it only shows 4,5,6,7
 		legend pos=south east
 		]
-		\addplot[color=blue,mark=*] table[x=VMs,y=Measured] {figures/vo_links.txt};
-		\addplot[color=red,mark=square*] table[x=VMs,y=Theoretical] {figures/vo_links.txt};
+		\addplot table[x=VMs,y=Measured] {figures/vo_links.txt};
+		\addplot table[x=VMs,y=Theoretical] {figures/vo_links.txt};
 		\legend{Measured,Theoretical};
 		\end{axis}
 	\end{tikzpicture}
@@ -170,8 +170,8 @@ significant impact the number of links has on VM backup reliability.
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
 		legend pos=north west
 		]
-                \addplot[color=blue,mark=*] table[x=VMs,y=FSBLinks] {figures/vo_fsb_links.txt};
-		\addplot[color=red,mark=square*] table[x=VMs,y=cdslinks] {figures/cds_links.txt};
+                \addplot table[x=VMs,y=FSBLinks] {figures/vo_fsb_links.txt};
+		\addplot table[x=VMs,y=cdslinks] {figures/cds_links.txt};
                 \legend{VO, PDS in VC};
 		\end{axis}
 	\end{tikzpicture}
@@ -186,12 +186,14 @@ significant impact the number of links has on VM backup reliability.
 		%title={VO VM links},
 		xlabel={Number of VMs},
 		ylabel={\small Avg. Num. FSBs used by VM},
+                ymin=0,
+                mark options=solid,
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
 		legend pos=north west
 		]
                 \addplot[color=blue,mark=*] table[x=VMs,y=VMLinks] {figures/vo_vm_links.txt};
 		\addplot[color=red,mark=square*] table[x=VMs,y=VMNonCDSLinks] {figures/vc_vm_links.txt};
-		\addplot[color=red,densely dashed,mark=triangle*,mark size=3] table[x=VMs,y=VMCDSLinks] {figures/vc_vm_links.txt};
+		\addplot[color=red,densely dashed,mark=triangle*,mark size=2.7] table[x=VMs,y=VMCDSLinks] {figures/vc_vm_links.txt};
                 \legend{$N_0$, $N_1$, $N_2$};
 		\end{axis}
 	\end{tikzpicture}
@@ -244,58 +246,6 @@ The snapshot availability of a VM  in the VO approach is
 %By comparison, the probability that a VM has data loss is close to
 %1 once  there are  $d \ge r$ failed machines. That is because there are more data blocks
 %shared among VMs. Any failure of these blocks causes many more VMs to fail.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%OLD MODEL START%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%The rate of increase in node failures can be seen in Figure~\ref{fig-vm-failure}
-%(for a 100 node cluster).
-%The graph assumes 10X40GB snapshots per VM with 18\% unique data after local
-%dedup and 64MB filesytem chunks (which results in 1792 filesystem chunks per
-%VM). We assume 18\% unique data after local dedup because that is what our
-%snapshots have shown.
-
-\comments{\begin{figure}[ht]
-  \centering
-  %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
-	\begin{tikzpicture}
-		\begin{axis}[
-		%title={Node failure affect on VMs},
-		xlabel={Number of nodes failed},
-		ylabel={\small chance that a VM is affected (\%) in VO},
-		%extra y ticks={4.5,5.5,6.5} %because it only shows 4,5,6,7
-		]
-		\addplot[color=blue,mark=*] table{figures/vm_failure.txt};
-		\end{axis}
-	\end{tikzpicture}
-  \caption{Percent chance that a VM is affected as storage nodes fail}
-  \label{fig-vm-failure}
-\end{figure}}
-
-\comments{\begin{figure}[ht]
-  \centering
-  %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
-	\begin{tikzpicture}
-		\begin{axis}[
-		%title={Node failure affect on VMs},
-		xlabel={Failed storage nodes},
-		ylabel={\small Chance VM is affected (\%)},
-		%extra y ticks={4.5,5.5,6.5} %if important numbers are missing
-                mark options=solid,
-                legend pos=north west
-		]
-                \addplot[densely dashed,color=blue,mark=*] table[x=NodesFailed,y=VO]{figures/vm_failure_1.txt};
-                \addplot[color=red,mark=*] table[x=NodesFailed,y=VC1]{figures/vm_failure_1.txt};
-                \addplot[color=red,mark=square*] table[x=NodesFailed,y=VC2]{figures/vm_failure_1.txt};
-                \addplot[color=red,mark=triangle*,mark size=3] table[x=NodesFailed,y=VC3]{figures/vm_failure_1.txt};
-                \legend{$VO$,$VC_{C_R=3}$,$VC_{C_R=4}$,$VC_{C_R=5}$,$VC_{C_R=6}$,$VC_{C_R=7}$}
-		\end{axis}
-	\end{tikzpicture}
-  \caption{Percent chance that a VM is affected as storage nodes fail}
-  \label{fig-vm-failure}
-\end{figure}}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%OLD MODEL END%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%NEW MODEL START%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \comments{
@@ -377,6 +327,7 @@ replication factor for popular blocks can have on reliability.
     \begin{tikzpicture}
             \begin{axis}[
             %title={FSB Availability},
+            cycle list name=mline,
             xlabel={Number of Machines Failed},
             ylabel={\small Availability of Single FSB (\%)},
             %extra y ticks={4.5,5.5,6.5} %to add extra ticks
@@ -387,9 +338,9 @@ replication factor for popular blocks can have on reliability.
             %    at={(0.5,-0.2)},
             %anchor=north}
             ]
-            \addplot[color=blue,mark=none] table[x=NodesFailed,y=Availability5] {figures/fsb_availability.txt};
-            \addplot[densely dashed, color=red,mark=none] table[x=NodesFailed,y=Availability4] {figures/fsb_availability.txt};
-            \addplot[densely dotted,color=brown,mark=none] table[x=NodesFailed,y=Availability3] {figures/fsb_availability.txt};
+            \addplot table[x=NodesFailed,y=Availability5] {figures/fsb_availability.txt};
+            \addplot table[x=NodesFailed,y=Availability4] {figures/fsb_availability.txt};
+            \addplot table[x=NodesFailed,y=Availability3] {figures/fsb_availability.txt};
             \legend{$R=5$,$R=4$,$R=3$};
             \end{axis}
     \end{tikzpicture}
@@ -404,6 +355,10 @@ replication factor for popular blocks can have on reliability.
 	\begin{tikzpicture}
 		\begin{axis}[
 		%title={Node failure affect on VMs},
+                cycle multi list={
+                    mline\nextlist
+                    [2 of]mmark*\nextlist
+                },
 		xlabel={Failed storage nodes},
 		ylabel={VM Snapshot Availability (\%)},
 		extra y ticks={99.9}, %if important numbers are missing
@@ -411,17 +366,21 @@ replication factor for popular blocks can have on reliability.
                 legend style={
                     cells={anchor=west}, %legend entry alignment
                     legend pos=south west %legend position
-                }
+                },
+                %reverse legend,
 		]
-                \addplot[densely dashed,color=blue,mark=square*] table[x=NodesFailed,y=VO2]{figures/vm_failure_2.txt};
-                \addplot[densely dashed,color=blue,mark=*] table[x=NodesFailed,y=VO1]{figures/vm_failure_2.txt};
-                %\addplot[densely dashed,color=blue,mark=triangle*,mark size=3] table[x=NodesFailed,y=VO3]{figures/vm_failure_2.txt};
-                %\addplot[densely dashed,color=blue,mark=diamond*,mark size=3] table[x=NodesFailed,y=VO4]{figures/vm_failure_2.txt};
-                \addplot[color=red,mark=square*] table[x=NodesFailed,y=VC2]{figures/vm_failure_2.txt};
-                \addplot[color=red,mark=*] table[x=NodesFailed,y=VC1]{figures/vm_failure_2.txt};
-                %\addplot[color=red,mark=triangle*,mark size=3] table[x=NodesFailed,y=VC3]{figures/vm_failure_2.txt};
-                %\addplot[color=red,mark=diamond*,mark size=3] table[x=NodesFailed,y=VC4]{figures/vm_failure_2.txt};
-            \legend{$VO\,10$ (optimistic),$VO\,5$ (measured),$VC\,1000$ (extreme),$VC\,20$ (measured)}
+                \addplot table[x=NodesFailed,y=VC1]{figures/vm_failure_2.txt};
+                \addlegendentry{$VC\,20$ (measured)}
+                \addplot table[x=NodesFailed,y=VC2]{figures/vm_failure_2.txt};
+                \addlegendentry{$VC\,1000$ (extreme)}
+                %\addplot table[x=NodesFailed,y=VC3]{figures/vm_failure_2.txt};
+                %\addplot table[x=NodesFailed,y=VC4]{figures/vm_failure_2.txt};
+                \addplot table[x=NodesFailed,y=VO1]{figures/vm_failure_2.txt};
+                \addlegendentry{$VO\,5$ (measured)}
+                \addplot table[x=NodesFailed,y=VO2]{figures/vm_failure_2.txt};
+                \addlegendentry{$VO\,10$ (optimistic)}
+                %\addplot table[x=NodesFailed,y=VO3]{figures/vm_failure_2.txt};
+                %\addplot table[x=NodesFailed,y=VO4]{figures/vm_failure_2.txt};
 		\end{axis}
 	\end{tikzpicture}
   \caption{Availability of VM backups as nodes fail for VO and VC models for varying degrees of block sharing (i.e. average number of VMs that use a block). Non-PDS replication fixed at 3 and PDS replication increased to 4.}
@@ -440,12 +399,13 @@ replication factor for popular blocks can have on reliability.
                 legend style={
                     cells={anchor=west}, %legend entry alignment
                     legend pos=south west %legend position
-                }
+                },
+                reverse legend,
 		]
-                \addplot[color=blue,mark=*] table[x=NodesFailed,y=VC1]{figures/cds_replication.txt};
-                \addplot[color=red,mark=square*] table[x=NodesFailed,y=VC2]{figures/cds_replication.txt};
-                \addplot[color=brown,mark=triangle*,mark size=3] table[x=NodesFailed,y=VC3]{figures/cds_replication.txt};
-                %\addplot[color=black,mark=diamond*,mark size=3] table[x=NodesFailed,y=VC4]{figures/cds_replication.txt};
+                \addplot table[x=NodesFailed,y=VC1]{figures/cds_replication.txt};
+                \addplot table[x=NodesFailed,y=VC2]{figures/cds_replication.txt};
+                \addplot table[x=NodesFailed,y=VC3]{figures/cds_replication.txt};
+                %\addplot table[x=NodesFailed,y=VC4]{figures/cds_replication.txt};
                 \legend{$R_C=3$,$R_C=4$,$R_C=5$}%,$R_C=7$}
 		\end{axis}
 	\end{tikzpicture}
@@ -465,12 +425,13 @@ replication factor for popular blocks can have on reliability.
                 legend style={
                     cells={anchor=west}, %legend entry alignment
                     legend pos=south west %legend position
-                }
+                },
+                reverse legend,
 		]
-                \addplot[color=blue,mark=*] table[x=NodesFailed,y=VC1]{figures/cds_replication2.txt};
-                \addplot[color=red,mark=square*] table[x=NodesFailed,y=VC2]{figures/cds_replication2.txt};
-                \addplot[color=brown,mark=triangle*,mark size=3] table[x=NodesFailed,y=VC3]{figures/cds_replication2.txt};
-                %\addplot[color=black,mark=diamond*,mark size=3] table[x=NodesFailed,y=VC4]{figures/cds_replication2.txt};
+                \addplot table[x=NodesFailed,y=VC1]{figures/cds_replication2.txt};
+                \addplot table[x=NodesFailed,y=VC2]{figures/cds_replication2.txt};
+                \addplot table[x=NodesFailed,y=VC3]{figures/cds_replication2.txt};
+                %\addplot table[x=NodesFailed,y=VC4]{figures/cds_replication2.txt};
                 \legend{$R_C=3$,$R_C=4$,$R_C=5$}%,$R_C=7$}
 		\end{axis}
 	\end{tikzpicture}
@@ -478,7 +439,6 @@ replication factor for popular blocks can have on reliability.
   \label{fig-pds-replication2}
 \end{figure}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%NEW MODEL END%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \comments{
 We use the following parameters  during the analysis

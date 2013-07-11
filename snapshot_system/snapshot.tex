@@ -346,7 +346,13 @@ the better deduplication efficiency our CDS deduplication approach will have.
     \begin{tikzpicture}
             \begin{axis}[
             %title={PDS Coverage},
-            xlabel={Total number of chunks stored},
+            %width=\columnwidth,
+            cycle multi list={
+                mline\nextlist
+                [3 of]mmark*\nextlist
+            },
+            %cycle list name=mcolor,
+            xlabel={Total num. chunks stored (in billions)},
             ylabel={PDS Coverage (\%)},
             %extra y ticks={4.5,5.5,6.5} %to add extra ticks
             mark options=solid,
@@ -354,14 +360,14 @@ the better deduplication efficiency our CDS deduplication approach will have.
             legend columns=2,
             legend style={
                 at={(0.5,-0.2)},
-            anchor=north}
+            anchor=north},
             ]
-            \addplot[color=blue,mark=*] table[x=InputChunks,y=A1] {figures/cds_coverage.txt};
-            \addplot[color=blue,mark=square*] table[x=InputChunks,y=A2] {figures/cds_coverage.txt};
-            \addplot[color=blue,mark=triangle*,mark size=3] table[x=InputChunks,y=A4] {figures/cds_coverage.txt};
-            \addplot[densely dashed,color=red,mark=*] table[x=InputChunks,y=T1] {figures/cds_coverage.txt};
-            \addplot[densely dashed,color=red,mark=square*] table[x=InputChunks,y=T2] {figures/cds_coverage.txt};
-            \addplot[densely dashed,color=red,mark=triangle*] table[x=InputChunks,y=T4] {figures/cds_coverage.txt};
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=A1] {figures/cds_coverage.txt};
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=A2] {figures/cds_coverage.txt};
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=A4] {figures/cds_coverage.txt};
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=T1] {figures/cds_coverage.txt};
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=T2] {figures/cds_coverage.txt};
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=T4] {figures/cds_coverage.txt};
             \legend{Measured ($\sigma=1\%$),Measured ($\sigma=2\%$),Measured ($\sigma=4\%$),Predicted ($\sigma=1\%$),Predicted ($\sigma=2\%$),Predicted ($\sigma=4\%$)};
             \end{axis}
     \end{tikzpicture}

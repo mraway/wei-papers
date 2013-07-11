@@ -246,6 +246,7 @@ delivers additional 10.5\% reduction.
     \begin{tikzpicture}
             \begin{axis}[
             %title={Ex-Binning Efficiency},
+            cycle list name=mline,
             xlabel={Number of VMs added},
             ylabel={Dedup. Efficiency (\%)},
             %extra y ticks={4.5,5.5,6.5} %to add extra ticks
@@ -254,13 +255,13 @@ delivers additional 10.5\% reduction.
             %legend columns=2,
             %legend style={
             %    at={(0.5,-0.2)},
-            %anchor=north}
+            %anchor=north},
             ]
-            \addplot[color=blue,mark=none] table[x=VMs,y=exbin] {figures/exbin_efficiency_comparison.txt};
-            \addplot[densely dotted, color=red,mark=none] table[x=VMs,y=cds1] {figures/exbin_efficiency_comparison.txt};
-            \addplot[loosely dotted, color=brown,mark=none] table[x=VMs,y=cds2] {figures/exbin_efficiency_comparison.txt};
-            \addplot[densely dashed,color=black,mark=none] table[x=VMs,y=cds4] {figures/exbin_efficiency_comparison.txt};
-            \legend{SRB,VC (1\%CDS),VC (2\%CDS),VC (4\%CDS)};
+            \addplot table[x=VMs,y=exbin] {figures/exbin_efficiency_comparison.txt};
+            \addplot table[x=VMs,y=cds4] {figures/exbin_efficiency_comparison.txt};
+            \addplot table[x=VMs,y=cds2] {figures/exbin_efficiency_comparison.txt};
+            \addplot table[x=VMs,y=cds1] {figures/exbin_efficiency_comparison.txt};
+            \legend{SRB,VC ($\sigma=4\%$),VC ($\sigma=2\%$),VC ($\sigma=1\%$)};
             \end{axis}
     \end{tikzpicture}
     \caption{Deduplication Efficiency
