@@ -124,13 +124,13 @@ N_2 \leq \frac{pD } {s (\delta +1)}, \;
 Since each file block (with default size $s=64MB$) contains many chunks (on average 4KB),
 each file block contains the hot low-level chunks shared by many VMs, and it also contains
 rare chunks which are not shared.
-Figure~\ref{fig-fsb-links} shows the number of VMs sharing by each file block.
+Figure~\ref{fig:fsb-links} shows the number of VMs sharing by each file block.
 In our experiment, we find that $V_o \approx 0.2 V$ when backing up VMs one by one.
-We can observe in Figure~\ref{fig-vm-links} that $N_1 +N_2 < N_o$. This is likely because the PDS FSBs tightly pack data used by many VMs, which decreases the overall number of FSBs required to backup a VM.
+We can observe in Figure~\ref{fig:vm-links} that $N_1 +N_2 < N_o$. This is likely because the PDS FSBs tightly pack data used by many VMs, which decreases the overall number of FSBs required to backup a VM.
 If  the backup for multiple VMs is conducted concurrently, there would be more
 VMs shared  by each file block on average.
 
-Figure~\ref{fig-fsb-links} shows the average number of VMs sharing a
+Figure~\ref{fig:fsb-links} shows the average number of VMs sharing a
 filesystem block (FSB) as VMs are added. Though we don't expect the linear trend to continue indefinitely for
 much larger datasets, it should continue to increase, which has important implications
 on VM backup availability in the precense of failures. Below we show the
@@ -154,7 +154,7 @@ significant impact the number of links has on VM backup reliability.
 		\end{axis}
 	\end{tikzpicture}
   \caption{Average number of VMs sharing a data chunk in the global index}
-  \label{fig-vo-links}
+  \label{fig:vo-links}
 \end{figure}
 }
 
@@ -174,7 +174,7 @@ significant impact the number of links has on VM backup reliability.
 		\end{axis}
 	\end{tikzpicture}
   \caption{Measured Average number of VMs sharing a 64MB FSB with global dedup (VO), and in a 2\% PDS for VC.}
-  \label{fig-fsb-links}
+  \label{fig:fsb-links}
 \end{figure}
 
 \begin{figure}[ht]
@@ -197,7 +197,7 @@ significant impact the number of links has on VM backup reliability.
 		\end{axis}
 	\end{tikzpicture}
   \caption{Measured Average number of 64MB FSBs used by a single VM. For VC both the number of PDS and Non-PDS FSBs used are shown.}
-  \label{fig-vm-links}
+  \label{fig:vm-links}
 \end{figure}
 
 The snapshot availability of is a VM is the likelyhood that
@@ -205,7 +205,7 @@ there is no  data loss for all its file blocks.
 With replication degree $r$, the likelyhood of
 a file block block is the probability that  
 all of its replicas appear in $d$ failed machines. 
-Namely, $\binom{d}{r}/ \binom{p}{r}$. This can be seen in Figure~\ref{fig-fsb-availability} for a 100 machine cluster for 3 different replication factors.
+Namely, $\binom{d}{r}/ \binom{p}{r}$. This can be seen in Figure~\ref{fig:fsb-availability} for a 100 machine cluster for 3 different replication factors.
 
 
 When there are $r \le d<r_c$ machines failed and then there is no PDS data loss,  
@@ -263,9 +263,9 @@ the expected impact on the system.
 
 in our current testbed we have measured the average number of links per chunk
 (Figure~\ref{vo-links}) and number of links per Filesystem Block (FSB)
-(Figure~\ref{fig-fsb-links}) in our dataset. For the complete dataset, we also
+(Figure~\ref{fig:fsb-links}) in our dataset. For the complete dataset, we also
 found the average number of links to PDS chunks, which was \~19 using a 2\%
-PDS. From Figure~\ref{fig-fsb-links} you can see that as you add VMs, the
+PDS. From Figure~\ref{fig:fsb-links} you can see that as you add VMs, the
 average number of links to a chunk increases linearly for our dataset. We
 expect that this trend will level out with larger datasets, but should continue
 to increase at a slower rate.  For the VC model, we have to consider both PDS
@@ -273,10 +273,10 @@ chunks and non-PDS chunks. In the VO model all data is shared, but in VC only
 the PDS data is shared, but at a much higher rate. This gives a strong
 advantage to VC, in that for a large percent of the data (95-99\%), there is
 only one VM pointing to each non-PDS chunk. You can see the increase in
-reliability in Figure~\ref{fig-vm-availability}.
+reliability in Figure~\ref{fig:vm-availability}.
 }
 
-Figure~\ref{fig-vm-availability} shows the reliability of VM backups as storage
+Figure~\ref{fig:vm-availability} shows the reliability of VM backups as storage
 nodes fail for different amounts of sharing of filesystem blocks in the index. We
 show 5 and 20 for the VO and VC block links counts because those are what we
 measured in our small dataset, and chose higher numbers to account for much
@@ -293,7 +293,7 @@ for PDS blocks also signficantly increases the snapshot availability even when
 a PDS file block is shared by every VM.
 
 % while in VO even small increases in $L$ causes a large decrease in availability. 
-Figure~\ref{fig-pds-replication}
+Figure~\ref{fig:pds-replication}
 shows the advantages of increasing the replication factor for PDS blocks. the
 numbers in the graph are only meant to be relative, as we assume higher PDS
 block links than we have measured in our dataset (to account for a much larger
@@ -317,7 +317,7 @@ replication factor for popular blocks can have on reliability.
     20          & 99.295    & 99.876    & 99.979\\
     \hline
     \end{tabular}
-    \caption{Availability in a 100 machine cluster of a single FSB in the global data store with different replication factors}
+    \caption{Availability in a 100 machine cluster of a single FSB with different replication factors}
     \label{tab:fsb-availability}
 \end{table}
 
@@ -344,7 +344,7 @@ replication factor for popular blocks can have on reliability.
             \end{axis}
     \end{tikzpicture}
     \caption{Availability of Individual FSBs in 100 Machine Cluster with different replication factors.}
-  \label{fig-fsb-availability}
+  \label{fig:fsb-availability}
 \end{figure}
 
 
@@ -383,7 +383,7 @@ replication factor for popular blocks can have on reliability.
   block). Non-PDS replication fixed at 3 and PDS replication increased to 4.
   Graph shown for 100 machine cluster.
   }
-  \label{fig-vm-availability}
+  \label{fig:vm-availability}
 \end{figure}
 
 \begin{figure}[ht]
@@ -409,7 +409,7 @@ replication factor for popular blocks can have on reliability.
 		\end{axis}
 	\end{tikzpicture}
   \caption{Availability of VM backups as nodes fail in the VC model for different PDS Replication factors (Non-PDS replication fixed at 3, and average PDS block links set to 1000)}
-  \label{fig-pds-replication}
+  \label{fig:pds-replication}
 \end{figure}
 
 \begin{figure}[ht]
@@ -419,7 +419,7 @@ replication factor for popular blocks can have on reliability.
 		%title={PDS Replication affect on availability},
 		xlabel={Failed storage nodes},
 		ylabel={VM Snapshot Availability (\%)},
-		extra y ticks={99.9}, %if important numbers are missing
+		%extra y ticks={99.99}, %if important numbers are missing
                 mark options=solid,
                 legend style={
                     cells={anchor=west}, %legend entry alignment
@@ -435,7 +435,7 @@ replication factor for popular blocks can have on reliability.
 		\end{axis}
 	\end{tikzpicture}
   \caption{Availability of VM backups as nodes fail in the VC model for different PDS Replication factors (Non-PDS replication fixed at 3, and average PDS block links set to 20)}
-  \label{fig-pds-replication2}
+  \label{fig:pds-replication2}
 \end{figure}
 
 

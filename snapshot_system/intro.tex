@@ -16,7 +16,7 @@ automatically conducts  the backup of virtual disk images to all active users ev
 The cost of supporting a large number of concurrent backup streams is high
 because of the huge storage demand. 
 Using a separate  backup service with full deduplication support~\cite{venti02,bottleneck08}
-%(Figure~\ref{fig-traditional-arch})
+%(Figure~\ref{fig:traditional-arch})
 can effectively identify and remove content duplicates among snapshots, 
 but such a solution can be expensive. There is also a large amount of 
 network traffic to transfer  data from the host machines to the backup facility
@@ -25,7 +25,7 @@ before duplicates are removed.
 %\begin{figure}[htb]
 %    \centering
 %    \includegraphics[width=3in]{images/traditional-arch}
-%    \label{fig-traditional-arch}
+%    \label{fig:traditional-arch}
 %    \caption{Traditional VM Backup System}
 %\end{figure}
 
@@ -61,7 +61,7 @@ especially when  VMs can migrate around in the cloud.
 %\begin{figure}[htb]
 %    \centering
 %    \includegraphics[width=3in]{images/colocated-arch}
-%    \label{fig-colocated-arch}
+%    \label{fig:colocated-arch}
 %    \caption{Collocated VM Backup System}
 %\end{figure}
 
@@ -88,9 +88,9 @@ The backup storage uses a standard distributed file system with data replication
 %THIS NEEDS MODIFICATION
 The rest of this paper is organized as follows.
 Section~\ref{review} reviews background and related work.
-Section~\ref{sec:framework}  discusses the  design options for snapshot backup with a VM-centric approach. 
-Section~\ref{sec:model}  analyzes the benefit of our approach for fault isolation. 
-Section~\ref{sec:arch}  describes our system architecture and implementation details.
+Section~\ref{sect:framework}  discusses the  design options for snapshot backup with a VM-centric approach. 
+Section~\ref{sect:model}  analyzes the benefit of our approach for fault isolation. 
+Section~\ref{sect:arch}  describes our system architecture and implementation details.
 %   the benefit of our approach for fault isolation. 
 Section~\ref{exper} is our experimental evaluation that compare with the other approaches.
 Section~\ref{conc}  concludes this paper.

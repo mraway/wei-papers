@@ -7,7 +7,7 @@ of 8-core AMD FX-8120 at 3.1 GHz with 16 GB RAM.
 Our implementation is based on Alibaba's Xen cloud platform~\cite{Aliyun,WeiZhangIEEE}.
 Each machine  is equipped with a 
 a distributed file system (QFS) running in the cluster manages six 3TB disks
-with default replication degree set to 3. The CDS replication is set to 5.
+with default replication degree set to 3. The PDS replication is set to 5.
 Objectives of our evaluation are:
 1) Study the deduplicate detection and removal effectiveness of the VC approach and compare with an alternative VO
 design.
@@ -46,7 +46,7 @@ a user may instruct extra snapshots to be saved.
 Each VMs uses   one of the most popular 7 OSes: 
 Debian, Ubuntu, Redhat, CentOS, Win2003 32bit, win2003 64 bit and win2008 64 bit. 
 The backup of VM snapshots is completed within a few  hours every night.
-Based on our study of its production  data,  each VM has about  40GB of storage  data usage on average
+Based on our study of production  data,  each VM has about  40GB of storage  data on average
 including OS and user data disk.
 Each VM image is  divided into 2 MB fix-sized segments and each segment is divided into 
 variable-sized content blocks  with an average size of 4KB.
@@ -89,13 +89,13 @@ a user may instruct extra snapshots to be saved.
 %Each VM uses   one of the most popular 7 OSes: 
 %Debian, Ubuntu, Redhat, CentOS, Win2003 32bit, win2003 64 bit and win2008 64 bit. 
 The backup of VM snapshots is completed within a few  hours every night.
-Based on our study of its production  data,  each VM has about  40GB of storage  data usage on average
+Based on our study of production  data,  each VM has about  40GB of storage  data  on average
 including OS and user data disk.
 All data are divided into 2 MB fix-sized segments and each segment is divided into 
 variable-sized content chunks ~\cite{similar94,rabin81} with an average size of 4KB.
 The signature for variable-sized blocks is computed using their SHA-1 hash. 
 Popularity of data blocks are collected through global counting 
-and the top 1\% will fall into CDS, as discussed in Section~\ref{sect:crossVM}.
+and the top 1\% will fall into PDS, as discussed in Section~\ref{sect:crossVM}.
 %variable sizes~\cite{similar94,rabin81} with an average size of 4KB. 
 %The signature for variable-sized blocks is computed using their SHA-1 hash. 
 
@@ -119,12 +119,12 @@ and the top 1\% will fall into CDS, as discussed in Section~\ref{sect:crossVM}.
 
 % the system must finish saving daily snapshots of all VMs in 2 hours. In our typical 1000 nodes cluster, each node hosts 25 VMs, each VM has 40GB of data on average, that translates to backup throughput of 139GB/second, or 500TB/hour.
 
-%In our snapshot deduplication architecture, CDS is the key to achieve greater deduplication than
-%incremental backup solutions. Our basic assumption of CDS us that VM disks, especially OS disks,
+%In our snapshot deduplication architecture, PDS is the key to achieve greater deduplication than
+%incremental backup solutions. Our basic assumption of PDS us that VM disks, especially OS disks,
 %have huge amount of data in common, and such common data can be represented by a relatively smaller data set
 %because of their high appearence frequency. As a result, the major portion of snapshot deduplication effect shall 
 %emerge from eliminating the duplication of such a small data set. In this section, we evaluate
-%the effectiveness of CDS using real user VM disks from our production VM cluster.
+%the effectiveness of PDS using real user VM disks from our production VM cluster.
 
 Since it's impossible to perform large scale analysis without affecting the VM performance,
 we sampled two data sets from real user VMs to measure the effectiveness of our deduplication scheme.
@@ -136,7 +136,7 @@ The overall data size for this 700 full snapshots is 17.6 TB.
 
 Dataset2 contains the first snapshots of 1323 VMs' data disks from a small cluster with 100 nodes. 
 Since inner-VM deduplication is not involved in the first snapshot, this data set helps us to 
-study the CDS deduplication against user-related data. The overall size of dataset2 is 23.5 TB.
+study the PDS deduplication against user-related data. The overall size of dataset2 is 23.5 TB.
 
 
 \subsection{Deduplication Efficiency}
@@ -154,7 +154,7 @@ study the CDS deduplication against user-related data. The overall size of datas
 %SRB routes a data chunk to a machine~\cite{ParallelDataDomain}
 %using  the chunk hashing function disussed in \cite{??}. 
 
-Figure~\ref{fig-exbin-efficiency-graph} shows the deduplication efficiency for SRB and VC.
+Figure~\ref{fig:exbin-efficiency-graph} shows the deduplication efficiency for SRB and VC.
 We define deduplication efficiency to be the percent of duplicate chunks
 which are detected and deduplicated.
 The figure also compares several PDS sizes chosen for VC. ``$\sigma=2\%$'' means that
@@ -205,8 +205,8 @@ delivers additional 10.5\% reduction.
     \end{tikzpicture}
     \caption{Deduplication Efficiency
          of SRB  and VC with $\delta=2\%$.}
-        %($efficiency=\frac{d-du}{d-du_{complete}}$) comparison between Stateless Routing with Binning and VC with 2\% CDS.}
-  \label{fig-exbin-efficiency1}
+        %($efficiency=\frac{d-du}{d-du_{complete}}$) comparison between Stateless Routing with Binning and VC with 2\% PDS.}
+  \label{fig:exbin-efficiency1}
 \end{figure}
 %}
 %same figure as above but horizontal (better for only two data points)
@@ -234,12 +234,12 @@ delivers additional 10.5\% reduction.
             \end{axis}
     \end{tikzpicture}
     \caption{Deduplication Efficiency
-        ($efficiency=\frac{d-du}{d-du_{complete}}$) comparison between Stateless Routing with Binning and VC with 2\% CDS.}
-  \label{fig-exbin-efficiency2}
+        ($efficiency=\frac{d-du}{d-du_{complete}}$) comparison between Stateless Routing with Binning and VC with 2\% PDS.}
+  \label{fig:exbin-efficiency2}
 \end{figure}
 }
 
-%graph comparing extreme binning (SRB) with CDS model (VC) for different cds percentages
+%graph comparing extreme binning (SRB) with PDS model (VC) for different cds percentages
 \begin{figure}[ht]
   \centering
     \begin{tikzpicture}
@@ -266,7 +266,7 @@ delivers additional 10.5\% reduction.
     \caption{Deduplication Efficiency
         ($efficiency=\frac{d-du}{d-du_{complete}}$) comparison between
     SRB and  VC.}
-  \label{fig-exbin-efficiency-graph}
+  \label{fig:exbin-efficiency-graph}
 \end{figure}
 
 
@@ -286,13 +286,13 @@ delivers additional 10.5\% reduction.
 %The extreme binning approach can reduce this data set to 542GB, which is slightly worse. As a reference, 
 %perfect deduplication achieves 364GB in this experiment.
 
-%Overall speaking, inner   VM deduplication or  CDS-based deduplication
+%Overall speaking, inner   VM deduplication or  PDS-based deduplication
 %can work well alone, but by combining them together we get a fairly good and stable deduplication ratio to 
 %all kind of OSes. 
 %Compared to a traditional dirty bit approach based on pages of
 %each file (e.g. segment in our scheme),
-%our CDS-based level 3 approach  can save additional 50\% storage space because many of level 2 block
-%content can be eliminated using the CDS also.
+%our PDS-based level 3 approach  can save additional 50\% storage space because many of level 2 block
+%content can be eliminated using the PDS also.
 
 \subsection{Resource Usage}
 {\bf Storage cost of replication.}
@@ -310,14 +310,14 @@ delivers additional 10.5\% reduction.
 \label{tab:replication_cost}
 \end{table}
 
-Table~\ref{tab:replication_cost} shows the total storage space required by VC as the PDS replication degree is changed. The increase in storage cost is minimal because the PDS makes up a very small percent of the total storage space, but the increase in reliability can be much more significant (see Figure~\ref{fig-pds-replication}).
+Table~\ref{tab:replication_cost} shows the total storage space required by VC as the PDS replication degree is changed. The increase in storage cost is minimal because the PDS makes up a very small percent of the total storage space, but the increase in reliability can be much more significant (see Figure~\ref{fig:pds-replication}).
 
 \subsection{Processing Time and Throughput}
 %{\bf Single VM Backup} We start the evauluation of our system by examine the normal warmed-up
 %backup scenario - taking a snapshot of a VM which already has old backups exist. To simulate this
 %scenario, we pick one 40GB VM from the data set, make an initial snapshot backup, then
 %evaulate the system performance on the second snapshot backup. We repeat such procedure
-%under different CDS memory usage settings, the results of backup time break down are shown in
+%under different PDS memory usage settings, the results of backup time break down are shown in
 
 Figure~\ref{fig:srb_vs_vc} shows
 the  average  processing  time of  each segment using VC and SRM in handling our dataset.
@@ -335,7 +335,7 @@ Overall speaking,  VC is faster than SRB while data reading dominates the proces
 %\emph{Should we use one of the two
 %bar charts, or the graph? I am thinking the graph, but I'll leave the two bar
 %charts in the paper until we decide? If we use the bar charts some text will
-%have to be changed. We could also add each of the CDS sizes to the bar chart
+%have to be changed. We could also add each of the PDS sizes to the bar chart
 %and have 4 bars instead of 2.}
 
 \begin{figure}[htbp]
@@ -352,7 +352,7 @@ procedure only takes a small fraction of the total backup time.
 The change of $\delta$ does not significantly affects the overall time and
 PDS lookup takes a small amount of time.
 %Larger memory permits us to
-%use larger CDS index to cover more of global index, as a result the amount of data to be writen
+%use larger PDS index to cover more of global index, as a result the amount of data to be writen
 %is reduced and so do the writing time.
 %Inside the deduplication procedure, the time costs of level-1
 %is plainly zero, and the costs of level-2 and level-3 are almost identical under different settings
@@ -362,7 +362,7 @@ PDS lookup takes a small amount of time.
 \begin{figure}
     \centering
     \includegraphics[width=3in]{figures/single_backup_time}
-    \caption{Backup times for varying CDS sizes}
+    \caption{Backup times for varying PDS sizes}
     \label{fig:single_vm_backup}
 \end{figure}
 
@@ -376,7 +376,7 @@ which is far beyond our QFS file system capability. The reason behind it is our 
 deduplication architecture and compression greatly reduce the amount of data that need to be written to
 the file system. The main bottleneck here is our QFS only manages one disk per node, 
 making it inefficient to utilize the benefits of parallel disk access. We expect our architecture can
-perform even better in production cluster which normally has more than ten disks on each node.
+perform even better in production clusters which often have more than ten disks on each node.
 
 
 
@@ -417,7 +417,7 @@ perform even better in production cluster which normally has more than ten disks
 % \multirow{5}{*}{\vbox{Dedupe related}} & Read index/recipe & 0.01 & 0.00045 \\ \cline{2-4}
 %  & Write index/recipe & 0.01 & 0.0051 \\ \cline{2-4}
 %  & Transfer fingerprints & 0.00058 & 0.00013 \\ \cline{2-4}
-%  & CDS lookup & N/A & 0.00034 \\ \cline{2-4}
+%  & PDS lookup & N/A & 0.00034 \\ \cline{2-4}
 %  & Subtotal & 0.021 & 0.0064 \\ \hline
 % \multicolumn{2}{ |c| }{Total} & 0.12 & 0.098 \\
 % \hline
@@ -458,7 +458,7 @@ is related, as once 1PB is stored in the system, assuming a sampling rate of
 
 Our solution uses more total memory (??how much??), but is more scalable both in
 terms of capactity and distributing the deduplication. The only part of our
-algorithm which requires significant network traffic is the CDS deduplication,
+algorithm which requires significant network traffic is the PDS deduplication,
 but this is done after Levels 1 and 2 (dirty bits and comparison to parent), and
 so is only done for a small percent of blocks (?? 5-10\% ??).
 

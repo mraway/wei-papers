@@ -48,7 +48,7 @@ and snapshot data for backup purposes, reside in this distributed file system.
 }
 
 \section{Architecture and Implementation Details}
-\label{sec:arch}
+\label{sect:arch}
 %[describe what is going to be presented in this section]
 %We start by analyzing the main features in the design of our system.
 %We first present its architecture,
@@ -142,7 +142,7 @@ node  for supporting backup and deduplication:
 1) a virtual block device driver, 2) a snapshot deduplication component,
 3) an append store client to store  and access snapshot data,
 and 4)  a CDS client to support CDS index access. We will further discuss our deduplication scheme 
-in Section~\ref{sec:dedup}.
+in Section~\ref{sect:dedupe}.
 
 
 We use the virtual device driver in Xen that employs a bitmap to track the changes 
@@ -197,7 +197,7 @@ the data structures  includes reference pointers to the actual data location.
     \centering
     \includegraphics[width=6in]{images/socc_arch_cluster}
     \caption{System Architecture}
-    \label{fig:arch_cluster}
+    \label{fig:arch_vm}
 \end{figure*}
 
 \comments{%socc_arch_cluster now includes the entire arch instead of having 2 figures
