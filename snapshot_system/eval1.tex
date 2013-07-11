@@ -59,9 +59,7 @@ in the presence of other I/O jobs. Noted that a typical 1U server can host
 6 to 8  hard drives and deliver over 300MB/second. Our setting uses 16.7\% or less 
 of local storage bandwidth. 
 The final snapshots are stored in a distributed file system built on the same 
-cluster. 
-
-The total local disk usage on each machine is about 8GB for the duplicate detection purpose,
+cluster. total local disk usage on each machine is about 8GB for the duplicate detection purpose,
 mainly for global index. 
 Level 1 segment dirty bits identify 78\% of duplicate blocks. For the remaining dirty segments,
 block-wise full deduplication removes about additional 74.5\% of duplicates.
@@ -156,26 +154,27 @@ study the CDS deduplication against user-related data. The overall size of datas
 %SRB routes a data chunk to a machine~\cite{ParallelDataDomain}
 %using  the chunk hashing function disussed in \cite{??}. 
 
-Figure~\ref{fig-exbin-efficiency-graph} shows the deduplication efficiency which is
-the percent of deduped duplicate chunks by SRB and VC.
-It also lists several PDS sizes chosen for VC. ``2\% PDS" means that
-we allocate the space of distributed shared memory  to accommodate $\delta=2\%$
-of data chunks shared among VMs. Namely 
-With $\delta=2\%$, the deduplication efficiency can reach over 90\% 
-while $\delta=4\%$, the deduplication efficiency can reach over 92\%. 
+Figure~\ref{fig-exbin-efficiency-graph} shows the deduplication efficiency for SRB and VC.
+We define deduplication efficiency to be the percent of duplicate chunks
+which are detected and deduplicated.
+The figure also compares several PDS sizes chosen for VC. ``$\sigma=2\%$'' means that
+we allocate the space of distributed shared memory  to accommodate 2\%
+of data chunks shared among VMs, as defined in Table~\ref{tab:symbol}. Namely 
+With $\sigma=2\%$, the deduplication efficiency can reach over 90\% 
+while with $\sigma=4\%$, the deduplication efficiency can reach over 92\%. 
 The loss of efficiency in VC is caused by the restriction of the total physical memory available
-in the cluster to support PDS.  
+in the cluster to support the PDS.  
 The loss of efficiency in SRB is caused by the routing of data chunks which restricts the search scope
 for global comparison.
-In all cases, VC provides similar or better deduplication efficiency than SRB
+In all cases, VC provides similar or better deduplication efficiency than SRB.
 
-This shows VC can remove  a competitive amount of duplicates.
-In general, our experiment shows that
-dirty-bit detection in the segment level  can reduce the data size to about 23\% of original data, 
+This result shows VC can remove  a competitive amount of duplicates.
+In general, our experiments show that
+dirty-bit detection at the segment level  can reduce the data size to about 23\% of original data, 
 which leads  about 77\% reduction.
 Local search within a segment can   further reduce the data size
 to about 18.5\% of original size, namely it delivers additional 4.5\% reduction.
-The PDS-based cross-VM detection with $\delta=2\% $
+The PDS-based cross-VM detection with $\sigma=2\% $
 can reduce the  size further to 8\% of original size, namely it 
 delivers additional 10.5\% reduction.
 
