@@ -7,12 +7,12 @@ while cross-VM deduplication with a small common data set
 effectively  covers a large percent of duplicate data.
 The scheme organizes the write of small data chunks into large file system blocks so
 that each underlying file block is associated with one VM for most cases.
-by keeping most of the VM-FSB mappings 1:1 we isolate faults and improve overal fault tolerance.
+by keeping most of the FSBs only referenced by 1 VM, we isolate faults and improve overal fault tolerance.
 Our solution accomplishes reasonable and competitive deduplication efficiency while
 still meeting stringent cloud resource usage requirements. 
 Our analysis shows that  this VM centric scheme 
-can  provide  better fault tolerance that VM-oblivious global deduplication schemes
-while using a small amount of computing and storage resource. 
+can  provide  better fault tolerance than VM-oblivious global deduplication schemes
+while using a small amount of computing and storage resources. 
 
 
 [Talk about more what we learn from Evaluation]

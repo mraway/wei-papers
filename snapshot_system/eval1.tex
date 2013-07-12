@@ -2,14 +2,14 @@
 \section{Evaluation}
 \label{sect:exper}
 
-We have implemented and evaluated a prototype of our VO scheme on a Linux cluster
-of 8-core AMD FX-8120 at 3.1 GHz with 16 GB RAM. 
+We have implemented and evaluated a prototype of our VC scheme on a Linux cluster of machines with
+8-core AMD FX-8120 at 3.1 GHz with 16 GB RAM. 
 Our implementation is based on Alibaba's Xen cloud platform~\cite{Aliyun,WeiZhangIEEE}.
 Each machine  is equipped with a 
-a distributed file system (QFS) running in the cluster manages six 3TB disks
+a distributed file system (QFS) and overall the cluster manages six 3TB disks
 with default replication degree set to 3. The PDS replication is set to 5.
 Objectives of our evaluation are:
-1) Study the deduplicate detection and removal effectiveness of the VC approach and compare with an alternative VO
+1) Study the duplicate detection and removal effectiveness of the VC approach and compare with an alternative VO
 design.
 2) Examine the impacts of VC for fault isolation and tolerance. 
 3) Evaluate the backup throughput performance VC  for a large number of VMs.
@@ -28,9 +28,11 @@ design.
 
 We will also compare our VC approach with  with
 a VO approach  using stateless routing with binning (SRB).
-SRB executes a distributed deduplication by routeing a data chunk to a machine~\cite{ParallelDataDomain}
-using  the chunk hashing function discussed in \cite{??}. Within such a machine, the data chunk is compared with
-a local index. 
+SRB executes a distributed deduplication by routing a data chunk to a machine~\cite{ParallelDataDomain}
+using  the chunk hashing function discussed in \cite{??}. Within such a machine,
+the data chunk is compared with a local index. This minHash paritioning
+algorithm helps provide a greater degree of parallelism, but ignores the
+significant amount of parallelism within a single VM.
 
 \comments{
 %We are running our deduplication/backup  service on 100 nodes.
@@ -48,13 +50,13 @@ Debian, Ubuntu, Redhat, CentOS, Win2003 32bit, win2003 64 bit and win2008 64 bit
 The backup of VM snapshots is completed within a few  hours every night.
 Based on our study of production  data,  each VM has about  40GB of storage  data on average
 including OS and user data disk.
-Each VM image is  divided into 2 MB fix-sized segments and each segment is divided into 
+For our system each VM image is  divided into 2 MB fix-sized segments and each segment is divided into 
 variable-sized content blocks  with an average size of 4KB.
 %variable sizes~\cite{similar94,rabin81} with an average size of 4KB. 
 The signature for variable-sized blocks is computed using their SHA-1 hash. 
 
 The seek cost of each random IO request in our test machines is about  10 milliseconds.
-The average I/O usage of local storage is controlled about 50MB/second for backup 
+The average I/O usage of local storage is controlled to about 50MB/second for backup 
 in the presence of other I/O jobs. Noted that a typical 1U server can host
 6 to 8  hard drives and deliver over 300MB/second. Our setting uses 16.7\% or less 
 of local storage bandwidth. 
@@ -63,7 +65,9 @@ cluster. total local disk usage on each machine is about 8GB for the duplicate d
 mainly for global index. 
 Level 1 segment dirty bits identify 78\% of duplicate blocks. For the remaining dirty segments,
 block-wise full deduplication removes about additional 74.5\% of duplicates.
-The final content copied to the backup storage is reduced by 94.4\% in total.
+The final content copied to the backup storage is reduced by 94.4\%
+\emph{Is this correct? Elsewhere we have used 92\% based on results from
+our srb-vc comparison graph} in total.
 }
 %\begin{figure}
 %\centering
@@ -95,7 +99,7 @@ All data are divided into 2 MB fix-sized segments and each segment is divided in
 variable-sized content chunks ~\cite{similar94,rabin81} with an average size of 4KB.
 The signature for variable-sized blocks is computed using their SHA-1 hash. 
 Popularity of data blocks are collected through global counting 
-and the top 1\% will fall into PDS, as discussed in Section~\ref{sect:crossVM}.
+and the top 1-2\% will fall into the PDS, as discussed in Section~\ref{sect:crossVM}.
 %variable sizes~\cite{similar94,rabin81} with an average size of 4KB. 
 %The signature for variable-sized blocks is computed using their SHA-1 hash. 
 
@@ -126,13 +130,13 @@ and the top 1\% will fall into PDS, as discussed in Section~\ref{sect:crossVM}.
 %emerge from eliminating the duplication of such a small data set. In this section, we evaluate
 %the effectiveness of PDS using real user VM disks from our production VM cluster.
 
-Since it's impossible to perform large scale analysis without affecting the VM performance,
+Since it's impossible to perform large scale analysis without affecting production VM performance,
 we sampled two data sets from real user VMs to measure the effectiveness of our deduplication scheme.
 Dataset1 is used study the detail impact of 3-level deduplication process,
 it compose of 35 VMs from 7 popular OSes: 
 Debian, Ubuntu, Redhat, CentOS, Win2003 32bit, win2003 64 bit and win2008 64 bit. For each OS, 
 5 VMs are chosen, and every VM come with 10 full snapshots of it OS and data disk. 
-The overall data size for this 700 full snapshots is 17.6 TB.
+The overall data size for these 700 full snapshots is 17.6 TB.
 
 Dataset2 contains the first snapshots of 1323 VMs' data disks from a small cluster with 100 nodes. 
 Since inner-VM deduplication is not involved in the first snapshot, this data set helps us to 
@@ -161,7 +165,7 @@ The figure also compares several PDS sizes chosen for VC. ``$\sigma=2\%$'' means
 we allocate the space of distributed shared memory  to accommodate 2\%
 of data chunks shared among VMs, as defined in Table~\ref{tab:symbol}. Namely 
 With $\sigma=2\%$, the deduplication efficiency can reach over 90\% 
-while with $\sigma=4\%$, the deduplication efficiency can reach over 92\%. 
+while with $\sigma=4\%$, the deduplication efficiency can reach 92\%. 
 The loss of efficiency in VC is caused by the restriction of the total physical memory available
 in the cluster to support the PDS.  
 The loss of efficiency in SRB is caused by the routing of data chunks which restricts the search scope
@@ -327,9 +331,9 @@ SRB has a higher index access and fingerprint comparison because once a chunk is
 it relies on this local machine to access its index (often on the disk) and perform comparison.
 VC is faster for index access because it conducts in-memory local search first and then
 accesses  the PDS which is on distributed shared memory.  
-SRB spends  slighter more time in  reading data and update because it also updates the on-disk
+SRB spends  slighter more time in  reading data and updates because it also updates the on-disk
 local meta data index.
-Overall speaking,  VC is faster than SRB while data reading dominates the processing time. 
+Overall,  VC is faster than SRB, though data reading dominates the processing time for both algorithms.
 %all lookups are essentially random and caching will be largely innefective).  
 
 %\emph{Should we use one of the two
@@ -345,12 +349,11 @@ Overall speaking,  VC is faster than SRB while data reading dominates the proces
   \label{fig:srb_vs_vc}
 \end{figure}
 
-Figure~\ref{fig:single_vm_backup} reports the average bacup time for a VM with VC with a varying number
-of PDS size.
-Again it shows that data reading dominates the backup process, our deduplication
+Figure~\ref{fig:single_vm_backup} reports the average bacup time for a VM in VC with a varying PDS size.
+Again it shows that data reading dominates the backup process; our deduplication
 procedure only takes a small fraction of the total backup time. 
-The change of $\delta$ does not significantly affects the overall time and
-PDS lookup takes a small amount of time.
+The change of $\sigma$ does not significantly affect the overall backup speed as
+PDS lookup takes only a small amount of time.
 %Larger memory permits us to
 %use larger PDS index to cover more of global index, as a result the amount of data to be writen
 %is reduced and so do the writing time.
@@ -369,14 +372,15 @@ PDS lookup takes a small amount of time.
 
     Figure~\ref{fig:parallel_backup} shows the node throughput when all machine nodes run
 the backup procedure in parallel.
-To begin, on each node we let 4 VMs writing snapshot concurrently, and gradually 
+To begin, on each node we write snapshots for 4 VMs concurrently, and gradually 
 increase number of VMs to 12 to saturate our system capability. We observed 
 the per-node throughput peaked at 2700 MB/s when writing 10 VM snapshots in parallel, 
 which is far beyond our QFS file system capability. The reason behind it is our efficient
-deduplication architecture and compression greatly reduce the amount of data that need to be written to
-the file system. The main bottleneck here is our QFS only manages one disk per node, 
-making it inefficient to utilize the benefits of parallel disk access. We expect our architecture can
-perform even better in production clusters which often have more than ten disks on each node.
+deduplication architecture and compression which greatly reduce the amount of data that needs to be written to
+the file system. The main bottleneck here is that our QFS installation only
+manages one disk per node, which prevents it from fully utilizing the the
+benefits of parallel disk access. We expect our architecture can
+perform even better in production clusters, which often have ten or more disks on each node.
 
 
 
