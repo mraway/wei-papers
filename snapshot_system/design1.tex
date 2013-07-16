@@ -47,7 +47,7 @@ segments which greatly ease the segment-level deduplication.
 
 In both two kind of recipes, 
 they do not include the actual data but only have
- references pointers to the data which are either stored in backup storage or CDS.
+ references pointers to the data which are either stored in backup storage or PDS.
 In our implementation the data reference is a 8 bytes field which is either an 
 ASID (discuss in \ref{sect:append} or an offset of 
 An additional flag indicates
@@ -88,7 +88,7 @@ DFS holds the responsibility of managing physical disk storage
 in the cloud, all data needed for VM services, such as virtual disk images used by runtime VMs,
 and snapshot data for backup purposes, reside in this distributed file system. 
 In addition, our snapshot system 
-places the index of CDS in MemCache for deduplication, 
+places the index of PDS in MemCache for deduplication, 
 and uses MapReduce to facilitate the offline
 data processing. All the above services can easily find their open-source counterparts,
 which shows the generality of our architecture and deduplication scheme.
@@ -134,7 +134,7 @@ at each node. The snapshot broker provides the functional interface for  snapsho
 The inner-VM  deduplication is conducted by the broker to access meta data in the snapshot data store
 and we discuss this in details in Section~\ref{sect:innerVM}.
 The cross-VM deduplication is conducted by the broker to access 
-a common data set (CDS) (will discuss in Section~\ref{sect:crossVM},
+a common data set (PDS) (will discuss in Section~\ref{sect:crossVM},
 whose block hash index is stored in a distributed memory cache. 
 
 %\input{snapshot}
