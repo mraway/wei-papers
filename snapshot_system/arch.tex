@@ -119,7 +119,7 @@ a clean state.
 The snapshot deduplication component consists of the chunking and deduplication 
 logic of our snapshot storage system. We choose 
 
-It contains an append store client which provides facilities to manage stored snapshot data, and a CDS client to support CDS index access. We will further discuss our deduplication scheme in section\ref{sect:dedupe}.
+It contains an append store client which provides facilities to manage stored snapshot data, and a PDS client to support PDS index access. We will further discuss our deduplication scheme in section\ref{sect:dedupe}.
 
 
 {\bf Snapshot Representation}
@@ -141,7 +141,7 @@ there are four key service components running on each cluster
 node  for supporting backup and deduplication: 
 1) a virtual block device driver, 2) a snapshot deduplication component,
 3) an append store client to store  and access snapshot data,
-and 4)  a CDS client to support CDS index access. We will further discuss our deduplication scheme 
+and 4)  a PDS client to support PDS index access. We will further discuss our deduplication scheme 
 in Section~\ref{sect:dedupe}.
 
 
@@ -184,7 +184,7 @@ In a snapshot recipes or a segment recipe,
 the data structures  includes reference pointers to the actual data location.
 %In our implementation the data reference is a 8 bytes field which is either an 
 %ASID (discuss in Section \ref{sect:append}) or an offset of an additional flag indicates
-%the location of CDS data.
+%the location of PDS data.
 
 
 
@@ -456,7 +456,7 @@ For example, with a 2MB segment, there are about 500 fingerprints to compare.
 %as the current level-1 and level-2 combined, because finally they equal to comparing  
 %parent snapshot at 4KB granularity.
 %
-%However, at level-3 things are different. If we use 4KB fix-size block uniformly, it would be harder for different VM to share data through CDS, because there is no guarantee that the location of duplicate data on different VM disks are always aligned at 4KB boundary. For example, if two VMs each has a copy of duplicate data, but they are not aligned, then we won't be able to detect them. Our study at the current small data set has shown that using 4KB fix-size block will make CDS method less efficient by nearly 10%. Over the long time, more and more OS variations will co-exist in the cluster, making this 4KB fix-size approach inefficient in reducing duplicate data across VMs.
+%However, at level-3 things are different. If we use 4KB fix-size block uniformly, it would be harder for different VM to share data through PDS, because there is no guarantee that the location of duplicate data on different VM disks are always aligned at 4KB boundary. For example, if two VMs each has a copy of duplicate data, but they are not aligned, then we won't be able to detect them. Our study at the current small data set has shown that using 4KB fix-size block will make PDS method less efficient by nearly 10%. Over the long time, more and more OS variations will co-exist in the cluster, making this 4KB fix-size approach inefficient in reducing duplicate data across VMs.
 
 %\item \textit{Level 2  Chunk fingerprint comparison.}
 %If a segment is modified, we perform fine-grained deduplication 
@@ -493,24 +493,24 @@ It also  compares the  fault resilience of our VM-centric deduplication approach
 global deduplication.
 
 
-{\bf Impact of CDS deduplication.}
+{\bf Impact of PDS deduplication.}
 Our empirical study based on VM images from production environment\cite{ieeecloud} showed that the
 frequency of data duplication follows Zipf-like distribution\cite{zipf},
 with the exponent $\alpha$ between 0.65 ~ 0.70.
-As a result, it can be proved that deduplication efficiency of CDS index is scalable:
+As a result, it can be proved that deduplication efficiency of PDS index is scalable:
 
 For the Zipf-like distribution, an approximation to the sum of the first $n$ 
 elements of the distribution can be derived as follows:
 \begin{equation}
 \sum_{i=1}^{n}\frac{1}{i^\alpha}\approx \int_{1}^{n}\frac{1}{x^\alpha}\mathrm{d}x=\frac{x^{1-\alpha}}{1-\alpha}=\frac{n^{1-\alpha}}{1-\alpha}\;  for\;  \alpha<1
 \end{equation}
-So the cumulative distribution function for a CDS holding top $S_c$ fingerprints
+So the cumulative distribution function for a PDS holding top $S_c$ fingerprints
 of global index with size $S_g$ is:
 \begin{equation}
   E = (S_c / S_g)^{1-\alpha} \;  for\;  \alpha<1
 \end{equation}
 %[Describe the dedup efficiency model in detail]
-Let $N$ be the number of nodes in the cluster, $m$ be the memory on each node that are used by CDS, $D$ be the amount of data on each node, and $B$ be the average block size. Then $S_c$ and $S_g$ can be expressed as:
+Let $N$ be the number of nodes in the cluster, $m$ be the memory on each node that are used by PDS, $D$ be the amount of data on each node, and $B$ be the average block size. Then $S_c$ and $S_g$ can be expressed as:
 \begin{equation}
 S_c = N*m/F, \; S_g = N*D/B
 \end{equation}
@@ -518,7 +518,7 @@ By replacing $S_c$ and $S_g$ in the first formula, the deduplication efficiency 
 \begin{equation}
   E = (\frac{m*B}{F*D})^{1-\alpha}
 \end{equation}
-Since $B$, $D$ and $F$ are pre-configured constants, the deduplication efficiency of CDS is only controlled by the its memory usage.
+Since $B$, $D$ and $F$ are pre-configured constants, the deduplication efficiency of PDS is only controlled by the its memory usage.
 
 \begin{table}
     \begin{tabular}{llll}
