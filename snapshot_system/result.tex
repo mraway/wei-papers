@@ -211,6 +211,37 @@ and have 4 bars instead of 2.}
   \label{fig-exbin-efficiency-graph}
 \end{figure}
 
+%version of above graph using minhash algorithm
+\begin{figure}[ht]
+  \centering
+    \begin{tikzpicture}
+            \begin{axis}[
+            %title={Ex-Binning Efficiency},
+            cycle list name=mline,
+            xlabel={Number of VMs added},
+            ylabel={Dedup. Efficiency (\%)},
+            %extra y ticks={4.5,5.5,6.5} %to add extra ticks
+            mark options=solid,
+            legend pos=south west,
+            %legend columns=2,
+            %legend style={
+            %    at={(0.5,-0.2)},
+            %anchor=north},
+            ]
+            \addplot table[x=VMs,y=exbin] {figures/exbin_efficiency_comparison2.txt};
+            \addplot table[x=VMs,y=MHcds4] {figures/exbin_efficiency_comparison2.txt};
+            \addplot table[x=VMs,y=MHcds2] {figures/exbin_efficiency_comparison2.txt};
+            \addplot table[x=VMs,y=MHcds1] {figures/exbin_efficiency_comparison2.txt};
+            \addplot table[x=VMs,y=MHNocds] {figures/exbin_efficiency_comparison2.txt};
+            \legend{SRB,VC ($\sigma=4\%$),VC ($\sigma=2\%$),VC ($\sigma=1\%$),VC (No PDS)};
+            \end{axis}
+    \end{tikzpicture}
+    \caption{Deduplication Efficiency
+        ($efficiency=\frac{d-du}{d-du_{complete}}$) comparison between
+    Stateless Routing with Binning and VC. VC uses the minhash algorithm for Level-2.}
+  \label{fig-exbin-efficiency-graph2}
+\end{figure}
+
 \begin{figure}[htbp]
   \centering
   \epsfig{file=figures/srb_vs_vc, width=3.5in}
