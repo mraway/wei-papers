@@ -1,4 +1,4 @@
-set term post eps color solid enhanced font ", 18"
+set term post eps color solid enhanced font ", 20"
 set output "parallel_backup_no_read.eps"
 set boxwidth 0.9 absolute
 set key reverse top #Left outside
@@ -10,7 +10,8 @@ set style data histograms
 #set style histogram rowstacked
 #set xtics nomirror rotate by -45
 set yrange [0:9000] noreverse nowriteback
-set ylabel "Deduplication and backup system throughput (MB/sec)"
+#set ylabel "Deduplication and backup system throughput (MB/sec)"
+set ylabel "Throughput (MB/sec)"
 set xlabel "Number of concurrent snapshot backup tasks per node"
 set grid y
 plot 'parallel_backup_no_read.txt' using 2:xtic(1) ti "Raw" fs pattern 2, \
