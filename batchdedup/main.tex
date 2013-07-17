@@ -1,0 +1,83 @@
+\documentclass[finalversion]{usetex-v1}
+%\usepackage[top=1in, bottom=1in, left=1.25in, right=1.25in]{geometry}
+\usepackage[colorlinks,linkcolor=red,anchorcolor=blue,citecolor=green,urlcolor=black]{hyperref}
+\usepackage{epsfig}
+%\usepackage{breakurl}
+%% Define a new 'leo' style for the package that will use a smaller font.
+%\makeatletter
+%\def\url@leostyle{%
+%  \@ifundefined{selectfont}{\def\UrlFont{\sf}}{\def\UrlFont{\small\ttfamily}}}
+%\makeatother
+%% Now actually use the newly defined style.
+%\urlstyle{leo}
+%\linespread{1.2}
+%\setlength{\parskip}{1ex}
+
+
+\newcommand{\comments}[1]{}
+
+\begin{document}
+%\title{Selective Deduplication for VM Snapshots in Cloud Storage}
+\title{ Low-Cost Data Deduplication  for  Virtual Machine Backup in Cloud Storage}
+%\title{Data Deduplication and Zipf-like Distribution in VM Cloud Storage}
+
+\author{
+Wei Zhang$^{\star}$, Tao Yang$^\star$, Gautham Narayanasamy$^\star$, and Hong Tang$^\dagger$ \\
+{\normalsize$^\star$  University of California at Santa Barbara}, {\normalsize$^\dagger$Alibaba Inc.}
+%Wei Zhang, Tao Yang, Gautham Narayanasamy\\
+%University of California at Santa Barbara
+%\and
+%Hong Tang\\
+%Alibaba Inc.
+}
+
+% \{wei, tyang\}@cs.ucsb.edu
+
+\date{}
+\maketitle
+
+%need to explain: vm cloud, vm backup, dedup fundamentals, vm dedup(2 works), distributed dedup, zipf
+%need to define: requirements, design considerations, architecture
+
+\input{abs}
+\input{intro} %introduce the vm cloud, backup problem, and our requirements
+\input{background} %related works, related solutions, 
+\input{arch} %, design considerations, architecture
+%\input{analysis} %, design considerations, architecture
+\input{eval} %data study, zipf, model of cds size and dedup efficiency
+%\input{results}
+%\input{related}
+%\input{future}
+\input{concl}
+
+
+{\bf Acknowledgment.} We thank Michael Agun, Renu Tewari, and
+the anonymous referees for their valuable comments.
+This work is supported in part by NSF IIS-1118106. 
+Any opinions, findings, conclusions or recommendations expressed in this material
+are those of the authors and
+do not necessarily reflect the views of the National Science Foundation.
+
+
+      %\setlength{\itemsep}{ex}%
+%      \setlength{\parskip}{0ex}%
+%\setlength{\itemsep}{-3mm}
+
+	%\linespread{0.3} 
+%  \let\oldthebibliography=\thebibliography
+%  \let\endoldthebibliography=\endthebibliography
+%  \renewenvironment{thebibliography}[1]{%
+%    \begin{oldthebibliography}{#1}%
+%      \setlength{\parskip}{-0.02ex}%
+%      \setlength{\itemsep}{-0.02ex}%
+%      \setlength{\baselineskip}{-0.02ex}%
+
+%  }%
+%  {%
+%    \end{oldthebibliography}%
+%  }
+{\small
+\bibliographystyle{abbrv}
+\bibliography{library,dedup1}
+}
+\end{document}

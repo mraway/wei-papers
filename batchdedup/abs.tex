@@ -1,0 +1,52 @@
+\begin{abstract}
+%Virtualization has became the engine behind many cloud computing platforms.
+In a virtualized cloud cluster, frequent  snapshot backup of virtual disks improves
+hosting  reliability; however, it  takes significant 
+memory resource to detect and remove duplicated content blocks among snapshots.
+This paper presents a low-cost deduplication solution scalable for a large number 
+of virtual machines.  The key idea is to separate duplicate detection from 
+the actual storage backup instead of using inline deduplication, and partition
+global index and  detection requests among machines using  fingerprint values.
+Then each machine conducts duplicate detection partition by partition independently with minimal memory usage.
+%in parallel among all machines and  each machine full duplication detection is 
+Another optimization is to allocate and control
+buffer space for exchanging  detection requests and duplicate summaries among machines.
+%The memory requirement and disk usage for the proposed solution is very small while the overall thoughput
+%and backup process timing is not compromised. 
+Our evaluation shows that  the proposed multi-stage scheme 
+uses a small amount of memory  while delivering a satisfactory backup throughput.
+%in a large cloud setting.
+%which only reqiires a very small amount of memory and CPU resource.  
+%Experimental results  show the proposed scheme  can achieve high deduplication ratio while using
+%a  small  amount of cloud resources. 
+
+%Our system compares well with Amazon Glacier, in that, both of them are low-cost archival systems, 
+%supporting lazy storage with asynchronous notification mechanisms and achieve parallelism by 
+%reading/writing from multiple storage nodes/disks simultaneously. At the same time, 
+
+
+%While dirtybit-based technique can identify unmodified data between versions, 
+%full deduplication with fingerprint comparison  can remove more redundant content
+%at the cost of computing resources.
+%with  for similarity comparison and   reliability handling.
+%Current snapshot deduplication is mainly done through copy-on-write 
+%on fixed-size disk blocks. Such solutions cannot handle the
+% cross VM data duplication because VMs do not share any data. 
+%In addition, storing VM images and their snapshots
+%in the same storage engine reduce the underline design flexibility because 
+%these two kinds of data have distinct access requirements.
+%In this paper, 
+%we show that there is a large amount of duplicated data shared amongy virtual machines
+%through a production VM data study and thus it is expective to perform cross-machine deduplication. 
+% first perform a large scale study in production VM clusters 
+%to show that cross VM data duplication is severe due to they have large amount of
+%common data. Then our data analysis finds out that the overall data duplication pattern follows the Zipf's law.
+%Base on these discoveries, we propose a snapshot storage deduplication scheme using variable-size chunking
+%to address the above problem efficiently.
+%We eliminate the majority of cross VM data duplication by pre-select
+%a small set of frequently seen data blocks to be shared globally, and we also remove
+%many cross snapshot duplication by using smaller chunking granuarity and locality.
+\end{abstract}
+%\begin{IEEEkeywords}
+%Cloud storage backup,  Virtual machine snapshots,  Distributed data deduplication
+%\end{IEEEkeywords}
