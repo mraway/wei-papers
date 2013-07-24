@@ -345,6 +345,21 @@ delivers additional 10.5\% reduction.
 
 Table~\ref{tab:replication_cost} shows the total storage space required by VC as the PDS replication degree is changed. The increase in storage cost is minimal because the PDS makes up a very small percent of the total storage space, but the increase in reliability can be much more significant (see Figure~\ref{fig:pds-replication}).
 
+\begin{table}
+    \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    Tasks & CPU & Mem (MB) & Disk (MB/s) & Network \\ \hline
+    4                      & 63\% & 164 & 84     &    \\ \hline
+    6                      & 77\% & 201  & 88.5   &     \\ \hline
+    8                      & 82\% & 237   & 89.2   &    \\ \hline
+    10                      & 85\% & 273   & 90.4   &    \\ \hline
+    12                      & 91\% & 312    & 91.5   &   \\ \hline
+    \end{tabular}
+\caption{Resource usage under concurrent backup tasks}
+\label{tab:resource_usage}
+\end{table}
+
+
 \subsection{Processing Time and Throughput}
 %{\bf Single VM Backup} We start the evauluation of our system by examine the normal warmed-up
 %backup scenario - taking a snapshot of a VM which already has old backups exist. To simulate this
@@ -458,7 +473,21 @@ perform even better in production clusters, which often have ten or more disks o
 % \caption{Time of backup a segment break down}
 % \label{tab:compare}
 % \end{table}
+\subsection{Approximate Deletion}
 
+\begin{figure}
+    \centering
+    \includegraphics[width=3in]{figures/leakage}
+    \caption{Accumulated storage leakage by approximate snapshot deletions}
+    \label{fig:leakage}
+\end{figure}
+
+Figure\ref{fig:leakage} shows the average accumulated storage leakage resulted by daily
+approximate deletions among all VMs. We see the storage leakage ratio is satisfactory: 
+after 9 snapshot approximate deletions, there is only 1MB space leaked over every 10GB
+of stored data. In addition, the leakage ratio grows linearly with the number of approximate deletions
+as our analysis, which gives us a reliable prediction of when to trigger a accurate mark-and-sweep delete operation. 
+  
 
 \comments{
 \subsection{Read Snapshot}
