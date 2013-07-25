@@ -15,9 +15,12 @@
 %The traditional approach compares all fingerprints and 
 %stores one copy for all of a chunk's duplicates.
 %We call this as  the VM-oblivious (VO) approach.
-Our VC design has the following objectives:
-\begin{itemize}
+Our VC design has the following  objectives: 1)  localizing deduplication while identifying a decent amount of
+duplicates among VMs to maintain a competitive deduplication efficiency and simplify snapshot management;
+2) Minimizing the number of file system blocks shared among VMs and adding extra replicas for shared blocks.
 
+\comments{
+\begin{itemize}
 \item
 1) Localize the deduplication and data blocking within each VM as much as possible so 
 that any failure of a file system block mainly affects the associated VM.
@@ -26,17 +29,15 @@ improves the system by increasing data independence between different VM backups
 simplifying snapshot management and statistics collection,
 and facilitating parallel execution of snapshot operations.
 \item
-2) Maintain a competitive deduplication effiency while being resource-friendly to other
+2) Maintain a competitive deduplication efficiency while being resource-friendly to other
 existing cloud services.
 Cross-VM duplication can be desirable since  there are many cloud images
 use widely-used software and libraries and their data blocks are duplicate. 
 As the result, different VMs tend to backup large amount of highly similar data.
 \item
-3)  Mininimize the number of data chunks shared among VMs and add extra replicas to incrase
-fault resilience for such data chunks.
 \end{itemize}
-
-\subsection{Key VC Strategies}
+}
+\subsection{Key VM-centric  Strategies}
 \label{sect:vc-strategies}
 
 %Inner-VM duplication can be very effective within VM's snapshots. There
@@ -51,24 +52,25 @@ fault resilience for such data chunks.
 %and conducts \textit{Inner-VM} and \textit{cross-VM} detection separately. 
 
 \begin{itemize}
-\item \textbf{Local duplicate search.}
-We start with the standard dirty bit approach in a coarse grain segment level
-and use the  Xen virtual device driver to implement a feature called ``changed block tracking''
-for the storage device and the dirty bit setting is maintained in a coarse grain level we call it a segment.
-In our implementation, the segment size is 2MB. 
+\item \textbf{Local duplicate search with VM-specific bining.}
+We start with the standard dirty bit approach in a coarse grain segment level.
+In our implementation with Xen at an Alibaba platform, the segment size is 2MB
+and  the device driver is extended to support  changed block tracking. 
 Since every write for a segment will touch a dirty bit, the device driver maintains dirty bits in memory
 and cannot afford a small segment  size.
-
-It should be noted that dirtybit tracking is supported or can be easily implemented in many 
-major virtualization solution vendors. 
+%Xen doesn't directly support it, However, their open-source 
+%architecture allows anyone to extend 
+%and use the  Xen virtual device driver to implement a feature called ``changed block tracking''
+%for the storage device and the dirty bit setting is maintained in a coarse grain level we call it a segment.
+It should be noted that dirtybit tracking is supported or can be easily implemented in 
+major virtualization solution vendors. For example,
 %(VMware, Xen, Microsoft).  
 %VMware support it directly; 
-The VMWare hypervisor has an API to let external backup application know 
-the changed areas since last backup. Xen doesn't directly support it, However, their open-source 
-architecture allows anyone to extend the device driver, thus enabling changed block tracking. 
-We implement dirty bit tracking this way in Alibaba's platform.  
+the VMWare hypervisor has an API to let external backup applications know 
+the changed areas since last backup. 
+%We implement dirty bit tracking this way in Alibaba's platform.  
 The Microsoft SDK provides an API that allows external applications to monitor 
-the VM's I/O traffic, therefore changed block tracking can be implemented externally. 
+the VM's I/O traffic and implement  the changed block tracking feature.
 
 Since the best deduplication uses a nonuniform chunk size 
 in the average of 4K or 8K~\cite{??},  
@@ -113,7 +115,7 @@ The popularity of a chunk is the number  of data chunks  from different VMs
 that are duplicates of this chunk after the inner VM deduplication.
 This number can be computed periodically on a weekly basis.
 Once the popularity of all data chunks is collected, the system only maintains the top $k$
-most popular chunk signatures in a distribued shared memory.  
+most popular chunk signatures in a distributed shared memory.  
 %For cross-VM comparison, we only store  top $k$ items and $k$ is chosen to be relatively small.
 
 Since $k$ is relatively small and these top $k$ chunks are shared among multiple VMs, 
@@ -132,6 +134,15 @@ PDS chunks are stored in a separate append-store instance. In this way, each
 file block for non-PDS chunks is associated with one VM and does not contain
 any PDS chunks. 
 \end{itemize}
+
+We have not  adopted the  sampled index~\cite{Guo2011} 
+for  popular data chunks and  this is because sampling requires the use of prefetching to be effective.
+%For a small set of popular data chunks, the prefetching strategy
+%used In the sampled index will not work well because 
+For the data sets we have tested, the spatial locality is limited among popular
+data chunks and  on average the number of consecutive data chunks is 7 among popular chinks, which is not sufficient.
+%to be effective for index sampling.
+
 
  \subsection{Impact on deduplication efficiency}
 %VM-oriented Fault Isolation}
@@ -155,7 +166,7 @@ We analyze how the choice of value  $k$ impacts the deduplication efficiency.
 %It also  compares the  fault resilience of our VM-centric deduplication approach with a standand approach using 
 %global deduplication.
 %\subsubsection{Impact of PDS deduplication}
-The analysis is based on the charactristics  of the VM snapshot traces
+The analysis is based on the characteristics  of the VM snapshot traces
 studied from  Alibaba's production user data.
 Our previous study shows that the popularity of data chunks after inner VM deduplication follows 
 a Zipf-like distribution\cite{zipf} and its
@@ -295,8 +306,8 @@ The overall deduplication efficiency of VC is
 where $(\frac{m*C}{D*E})^{1-\alpha}$ represents the percentage of the remaining
 chunks detected as duplicates after inner VM deduplication.
 Figure~\ref{fig:cds-coverage} shows measured PDS coverage in our 35 VM dataset.
-You can see from the graph that the coverage actually increases as the datasize
-increases, which indicates that $\alpha$ increases with the datasize (a
+You can see from the graph that the coverage actually increases as the data size
+increases, which indicates that $\alpha$ increases with the data size (a
 fixed-$\alpha$ model would predict constant coverage). This makes the PDS even
 more effective, as the coverage of the PDS increases as more data is added.
 %Then the deduplication efficiency of PDS approach using top k most popular fingerprints is:
