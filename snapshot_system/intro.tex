@@ -43,7 +43,7 @@ a backup service with other cloud services and  uses a minimum amount of resourc
 %the low-cost collocation requirement. 
 %A recent study using subsampling~\cite{Guo2011}  can significantly reduce the memory requirement.
 We also consider the fact that after
-deduplication most data chunks are shared by several to many virtual machines.
+deduplication, most data chunks are shared by several to many virtual machines.
 Failure of shared data chunks can have a catastrophic effect and many
 snapshots of virtual machines would be affected.
 The previous work in deduplication focuses on the efficiency and approximation of
@@ -51,12 +51,15 @@ finger print comparison, and has not addressed fault tolerance together with ded
 Thus we also seek deduplication options that yield better fault isolation.
 % along with a low-cost solution.
 Another issue considered is that
-that deletion of old snapshots compete for computing resource as well. That is because data dependence created
-deletion of old snapshots competes for computing resources as well so deletion needs
-to be considered in system design. The additional complexity for deletions
-come from the dependencies created by multiple links to the same problem, so
-some solution is needed to determine blocks with no dependent snapshots after deletion.
-especially when  VMs can migrate around in the cloud.
+that deletion of old snapshots compete for computing resource as well. 
+%That is because data dependence created deletion of old snapshots competes for computing resources.
+% as well so deletion needs to be considered in system design. 
+sharing of data chunks among oby multiple VMs and their snapshots needs to be detected during
+snapshot   deletion and such dependenec complicates deletion operations. 
+%The additional complexity for deletions
+%come from the dependencies created by multiple links to the same problem, so
+%some solution is needed to determine blocks with no dependent snapshots after deletion.
+%especially when  VMs can migrate around in the cloud.
 
 %\begin{figure}[htb]
 %    \centering
@@ -77,8 +80,9 @@ Localization also brings the benefits of greater ability to exploit parallelism 
 backup operations can run simultaneously without a central  bottleneck.
 This  VM-centric solution uses  a small amount of  memory while delivering a reasonable deduplication efficiency. 
 %Our deletion strategy uses a double Bloom filter strategy for periodic mark-and-sweeping of expired data.
-We have developed a prototype system that runs a cluster of Linux machines with Xen.
-The backup storage uses a standard distributed file system with data replication and block packaging.
+We have developed a prototype system that runs a cluster of Linux machines with Xen and uses 
+a standard distributed file system for the backup storage. 
+% with data replication and block packaging.
 %and we allocate more  replicas for the commonly-shared  data 
 %blocks among VM snapshots to enhance fault tolerance.
 
@@ -87,9 +91,9 @@ The backup storage uses a standard distributed file system with data replication
 %************** Paper sections summary
 %THIS NEEDS MODIFICATION
 The rest of this paper is organized as follows.
-Section~\ref{review} reviews background and related work.
-Section~\ref{sect:framework}  discusses the  design options for snapshot backup with a VM-centric approach. 
-Section~\ref{sect:model}  analyzes the benefit of our approach for fault isolation. 
+Section~\ref{option} reviews the background and discusses the  design options for snapshot backup 
+with a VM-centric approach. 
+Section~\ref{sect:model}  analyzes the tradeoff and benefit of our approach. 
 Section~\ref{sect:arch}  describes our system architecture and implementation details.
 %   the benefit of our approach for fault isolation. 
 Section~\ref{exper} is our experimental evaluation that compare with the other approaches.
