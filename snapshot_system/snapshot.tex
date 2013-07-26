@@ -75,10 +75,15 @@ in the average of 4K or 8K~\cite{??},
 %This allows the system to achieve deduplication even when there are insertions/deletions which would
 %affect many fixed-size chunks.
 we conduct additional local inner-VM deduplication by comparing
-chunk signatures within a dirty segment from its parent snapshot. 
-We load the chunk fingerprints in the corresponding segment from the
-parent and perform fingerprint matching for further inner-VM deduplication.
-The amount of memory for maintaining those fingerprints  is small, as we only
+dirty segment's chunk fingerprints to similar segments from its parent snapshot. 
+For every segment, the minimum value of all its chunk fingerprints is computed during backup
+and is recorded in the snapshot recipe.
+So when we are processing a dirty segment,
+we can easily find similar segments from the
+parent snapshot recipe and load their segment recipes. Then we can perform fingerprint matching 
+against them
+for further inner-VM deduplication.
+The amount of memory for maintaining those fingerprints is small, as we only
 load one segment at a time.
 For example, with a 2MB segment, there are about 500 fingerprints to compare.
 
