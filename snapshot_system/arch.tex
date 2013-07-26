@@ -664,7 +664,7 @@ $(1- \frac{1}{z}) ^{j U}$. Notice that when a chunk appears multiple times in th
 increase the probability of a particular bit being 0 in all $h$ vectors.
 Then the false-positive rate $\epsilon$ is: 
 \[
-\epsilon = (1-(1-\frac{z})^{jU})^j.
+\epsilon = (1-(1-\frac{1}{z})^{jU})^j.
 \]
 
 For each snapshot deletion, the amount of chunks need to be deleted is nearly identical to the number of
@@ -690,5 +690,5 @@ Then we would expect leak repair be triggered once for
 every 290 runs of approximate deletion. 
 When one machine hosts 25 VMs and there is one snapshot deletion per day per VM, there would be 
 only one full leak repair for one VM scheduled for every 12 days. Each repairs uses about 90MB memory on average
-as discussed and takes a few minutes.
+as discussed earlier and takes a short period of time.
 % which is sufficiently small to offset the heavy I/O workload of the mark-sweep process.
