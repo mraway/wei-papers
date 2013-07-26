@@ -137,7 +137,7 @@ on VM backup availability in the precense of failures. Below we show the
 significant impact the number of links has on VM backup reliability.
 
 \comments{%dropping block links bec. we don't use it elsewhere
-\begin{figure}[ht]
+\begin{figure}[htbp]
   \centering
   %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
 	\begin{tikzpicture}
@@ -158,7 +158,7 @@ significant impact the number of links has on VM backup reliability.
 \end{figure}
 }
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
   \centering
 	\begin{tikzpicture}
 		\begin{axis}[
@@ -177,7 +177,10 @@ significant impact the number of links has on VM backup reliability.
   \label{fig:fsb-links}
 \end{figure}
 
-\begin{figure}[ht]
+
+
+
+\begin{figure}[htbp]
   \centering
 	\begin{tikzpicture}
 		\begin{axis}[
@@ -274,7 +277,53 @@ the PDS data is shared, but at a much higher rate. This gives a strong
 advantage to VC, in that for a large percent of the data (95-99\%), there is
 only one VM pointing to each non-PDS chunk. You can see the increase in
 reliability in Figure~\ref{fig:vm-availability}.
+\begin{table}
+    \begin{tabular}{|l|lll|}
+    \hline
+    \multirow{2}{*}{Nodes Failed}   & \multicolumn{3}{c|}{Availability(\%)}\\
+                                    & $R=3$ & $R=4$ & $R=5$\\
+    \hline
+    1           &  100      & 100       & 100\\
+    2           & 100       & 100       & 100\\
+    3          & 99.999     & 100       & 100\\
+    5          & 99.993     & 99.9999   & 99.999998\\
+    10          & 99.926    & 99.995    & 99.999\\
+    20          & 99.295    & 99.876    & 99.979\\
+    \hline
+    \end{tabular}
+    \caption{Availability in a 100 machine cluster of a single FSB with different replication factors}
+    \label{tab:fsb-availability}
+\end{table}
+
 }
+\begin{figure}[htbp]
+  \centering
+    \begin{tikzpicture}
+            \begin{axis}[
+            %title={FSB Availability},
+            cycle list name=mline,
+            xlabel={Number of Machines Failed},
+            ylabel={\small Availability of Single FSB (\%)},
+            extra y ticks={99.9}, %to add extra ticks
+            mark options=solid,
+            legend pos=south west,
+            %legend columns=2,
+            %legend style={
+            %    at={(0.5,-0.2)},
+            %anchor=north}
+            ]
+            \addplot table[x=NodesFailed,y=Availability5] {figures/fsb_availability.txt};
+            \addplot table[x=NodesFailed,y=Availability4] {figures/fsb_availability.txt};
+            \addplot table[x=NodesFailed,y=Availability3] {figures/fsb_availability.txt};
+            \legend{$R=5$,$R=4$,$R=3$};
+            \end{axis}
+    \end{tikzpicture}
+    \caption{Availability of Individual FSBs in 100 Machine Cluster with different replication factors.}
+  \label{fig:fsb-availability}
+\end{figure}
+
+
+\comments{
 
 Figure~\ref{fig:vm-availability} shows the reliability of VM backups as storage
 nodes fail for different amounts of sharing of filesystem blocks in the index. We
@@ -302,50 +351,6 @@ the PDS blocks (which are the most popular blocks) can have a positive impact
 on the overall reliablity of the VM backups. These figures together show the
 advantages of the VM-centric model, and the advantages that separating the
 replication factor for popular blocks can have on reliability.
-
-\begin{table}
-    \begin{tabular}{|l|lll|}
-    \hline
-    \multirow{2}{*}{Nodes Failed}   & \multicolumn{3}{c|}{Availability(\%)}\\
-                                    & $R=3$ & $R=4$ & $R=5$\\
-    \hline
-    1           &  100      & 100       & 100\\
-    2           & 100       & 100       & 100\\
-    3          & 99.999     & 100       & 100\\
-    5          & 99.993     & 99.9999   & 99.999998\\
-    10          & 99.926    & 99.995    & 99.999\\
-    20          & 99.295    & 99.876    & 99.979\\
-    \hline
-    \end{tabular}
-    \caption{Availability in a 100 machine cluster of a single FSB with different replication factors}
-    \label{tab:fsb-availability}
-\end{table}
-
-\begin{figure}[ht]
-  \centering
-    \begin{tikzpicture}
-            \begin{axis}[
-            %title={FSB Availability},
-            cycle list name=mline,
-            xlabel={Number of Machines Failed},
-            ylabel={\small Availability of Single FSB (\%)},
-            extra y ticks={99.9}, %to add extra ticks
-            mark options=solid,
-            legend pos=south west,
-            %legend columns=2,
-            %legend style={
-            %    at={(0.5,-0.2)},
-            %anchor=north}
-            ]
-            \addplot table[x=NodesFailed,y=Availability5] {figures/fsb_availability.txt};
-            \addplot table[x=NodesFailed,y=Availability4] {figures/fsb_availability.txt};
-            \addplot table[x=NodesFailed,y=Availability3] {figures/fsb_availability.txt};
-            \legend{$R=5$,$R=4$,$R=3$};
-            \end{axis}
-    \end{tikzpicture}
-    \caption{Availability of Individual FSBs in 100 Machine Cluster with different replication factors.}
-  \label{fig:fsb-availability}
-\end{figure}
 
 
 \begin{figure}[ht]
@@ -437,6 +442,10 @@ replication factor for popular blocks can have on reliability.
   \caption{Availability of VM backups as nodes fail in the VC model for different PDS Replication factors (Non-PDS replication fixed at 3, and average PDS block links set to 20)}
   \label{fig:pds-replication2}
 \end{figure}
+
+
+}
+
 
 
 \comments{
