@@ -52,7 +52,7 @@ As the result, different VMs tend to backup large amount of highly similar data.
 %and conducts \textit{Inner-VM} and \textit{cross-VM} detection separately. 
 
 \begin{itemize}
-\item \textbf{Local duplicate search with VM-specific bining.}
+\item \textbf{VM-specific local duplicate search within similar segments.}
 We start with the standard dirty bit approach in a coarse grain segment level.
 In our implementation with Xen at an Alibaba platform, the segment size is 2MB
 and  the device driver is extended to support  changed block tracking. 
@@ -80,14 +80,14 @@ we conduct additional local inner-VM deduplication by comparing
 dirty segment's chunk fingerprints to similar segments from its parent snapshot. 
 For every segment, the minimum value of all its chunk fingerprints is computed during backup
 and is recorded in the snapshot recipe.
-So when we are processing a dirty segment,
+When we are processing a dirty segment,
 we can easily find similar segments from the
-parent snapshot recipe and load their segment recipes. Then we can perform fingerprint matching 
-against them
-for further inner-VM deduplication.
-The amount of memory for maintaining those fingerprints is small, as we only
-load one segment at a time.
+parent snapshot recipe and load their segment recipes. Then 
+given a set of data chunks within a dirty segement,  we compare  these chunk fingerprints
+with those in similar segments.  
 For example, with a 2MB segment, there are about 500 fingerprints to compare.
+The amount of memory for maintaining those fingerprints in similar segment s is small, as we only
+load one dirty segment at a time.
 
 
 %If we use 4KB in level-1, then such a level-1 should have similar dedup efficiency 

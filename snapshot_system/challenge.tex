@@ -313,8 +313,8 @@ that divides the deduplication work with an approximation. This work
 is similar to Exreme Binning\cite{extreme_binning09} and 
 each request is routed  to a machine which holds
 a bloomer filter  or can fetch on-disk index for additional comparison.
-While this approach is VM-oblivious, we can have adopted some of ideas to build
-bins in a VM to faciliate VM-specific local search. 
+While this approach is VM-oblivious, it motivates us to  use  a combined signature of a dataset to narrow
+VM-specific local search.
  
 %We compared our solution to
 %content-based hash partitioning by running the algorithm on our set of 

@@ -573,19 +573,24 @@ The algorithm contains three aspects.
 \begin{itemize}
 \item {\bf Computation for snapshot fingerprint summary.}
 Every time there is a new snapshot created,
-we compute a bloom-filter as the summary of reference pointers for all non-PDS chunks used 
-in this snapshot.
+we compute a bloom-filter with $z$ bits as the summary of reference pointers for all non-PDS chunks used 
+in this snapshot. 
+
+%To control the false positive ratio $\epislon$ under $0.01$, an average snapshot of size 40 $GB$ with 
+%$u \approx 10$ million chunks, $z$ has 10 million bits. 
+
 %{\bf Creating bloom filter} Scan all the living snapshot recipess and their segment recipes,
 %for every reference pointing to append store, add it to the bloom filter.
 
 \item {\bf Approximate deletion with fast summary comparison.}
-Then when there is a snapshot deletion, 
-we use  the snapshot fingerprint summary to identify if  chunks to be deleted from one snapshot
+Then when there is a snapshot deletion,  
+we need to identify if  chunks to be deleted from one snapshot
 are still used by other snapshots. 
-This is done approximately and quickly by comparing the fingerprints of deleted snapshots with
-the fingerprint bloom-filter summary of other live snapshots.
+This is done approximately and quickly by comparing the reference pointers of deleted snapshots with
+the merged reference bloom-filter summary of other live snapshots.
+The merging of live snapshot bloom-filter bits uses the logical OR operator and the merged vector still takes $z$ bits.
 Since the number of live snapshots is limited for each VM (e.g. 10 in the Alibaba's production system), 
-the complexity of comparison is acceptable.
+the time cost of this comparison is small.
 %Instead of scanning the entire append store indices, we merge the type-1 summaries of all
 %valid snapshots. 
 %Since each VM has uniform bloom filter parameters to create snapshot summaries, 
@@ -597,6 +602,7 @@ the complexity of comparison is acceptable.
 However, there is a small false-positive ratio which
 would identify unused data as in use, resulting in temporary storage leakage.
 
+
 \item {\bf Periodic repair of leakage}
 %[exlpain why second bloom filter, why scan append store]
 Since there are certain unused chunks which are not deleted during
@@ -607,8 +613,9 @@ we mark the corresponding entry in the table as in use. Finally those unmarked (
 table represent chunks that can be safely deleted.
 
 The cost of leak repair mainly come from holding a table of reference pointers and scan of all snapshots metadata.
-Consider each reference pointer consumes 8 bytes plus 1 byte as mark field, a VM that has 40GB backup data will
-need 90MB of memory to construct such a table. Also, scanning all snapshots metadata is many times slower comparing
+Consider each reference pointer consumes 8 bytes plus 1 byte as mark field, a VM that has 40GB backup data with about
+10 million chunks will need 90MB of memory to construct such a table. 
+Also, scanning all snapshots metadata is many times slower comparing
 to the approximate deletion which only scans single snapshot's metadata.
 It's worth to mention that compare to previously-developed mark-and-sweep techniques, 
 our leak repair still has advantage because the scope of repair is restricted within single VM's snapshot 
@@ -642,37 +649,46 @@ store due to our VM-specific design, and we only do it periodically.
 
 
 %{\bf Discussion}
-We now give a model to estimate the storage leakage and how often leak repair needs to be conducted.
-Assuming a VM always maintain $B$ snapshots in the backup, and it creates and deletes one snapshot
-everyday. Let $c$ be the total number of chunks brought by the initial backup, $c^'$ be the average
-number of chunks brought by a consequancial backup, then the total number of chunks in use $C$ is:
+We now estimate the storage leakage and how often leak repair needs to be conducted.
+Assuming a VM always maintain $h$ snapshots in the backup, and it creates and deletes one snapshot
+everyday. Let $u$ be the total number of chunks brought by the initial backup, $\Delta u$ be the average
+number of additional unique chunks added from one snapshot to the next snapshot. Then the total number of unique
+chunks used is about:
 \[
-C = c + (B-1)c^'
+U = u + (h-1)\Delta u.
 \]
 
-Let $m$ be the bloom filter size in bits, $k$ be the number of hash functions used by bloom filter,
-then bloom filter's false-positive rate $\epsilon$ is:
+Each bloom filter vector has  $z$ bits for each snapshot and let $j$ be the number of hash functions used by the
+bloom filter. The probablity that a particular bit is still in all $h$ summary vectors is still 0 is 
+$(1- \frac{1}{z}) ^{j U}$. Notice that when a chunk appears multiple times in these summary vectors, it does not 
+increase the probability of a particular bit being 0 in all $h$ vectors.
+Then the false-positive rate $\epsilon$ is: 
 \[
-\epsilon = (1-e^{\frac{kC}{m}})^k
+\epsilon = (1-(1-\frac{z})^{jU})^j.
 \]
 
 For each snapshot deletion, the amount of chunks need to be deleted is nearly identical to the number of
-newly add chunks $c^'$. However, some of chunks among them are not detected as unused in our approximation
+newly add chunks $\Delta u$. However, some of chunks among them are not detected as unused in our approximation
 algorithm, thus forms the storage leakage. Let $R$ be the total number of runs of approximate deletion since
-last repair, the total leakage $L$ can be estimated as:
+last repair. we estimate  the total leakage $L$ after $R$ runs as:
 \[
-L = Rc^'\epsilon
+L = R \Delta u \epsilon
 \]
 
-When leakage ratio $L/C$ exceeds a pre-defined threshold $\tau$, we need to execute a repare:
+When leakage ratio $L/U$ exceeds a pre-defined threshold $\tau$, we need to execute a leak repair:
 \[
-\frac{L}{C} = \frac{Rc^'\epsilon}{c+(B-1)c^'} > \tau \rightarrow R > \frac{\tau}{\epsilon}\frac{c + (B-1)c^'}{c^'}
+\frac{L}{U} = \frac{R \Delta u \epsilon}{u+(h-1)\Delta u } > \tau 
+\Longrightarrow R > \frac{\tau}{\epsilon}\frac{u + (h-1)\Delta u}{\Delta u}
 \]
-For example, when $\epsilon = 0.01$ and $\tau=0.1$, when the VM keeps 10 snapshots and each snapshot contains
-about 5\% of new data, then
-we would expect leak repair be triggered once for 
+For example in our tested dataset,  
+each VM keeps $h=10$ snapshots and each snapshot has
+about 1-5\% of new data. Thus $\frac{\Delta u}{u}=0.05$ at most. With 40GB snapshot size, $u\approx = 10$ millions.
+Then $U=10.45$ millions.
+We choose  $\epsilon = 0.01$ and $\tau=0.1$. Then from the bloom filter  false positive formula, 
+$z=10U=100.45$ million bits. $R=290$.
+Then we would expect leak repair be triggered once for 
 every 290 runs of approximate deletion. 
 When one machine hosts 25 VMs and there is one snapshot deletion per day per VM, there would be 
-only one full leak repair scheduled for every 12 days, which is sufficiently small to offset the 
-heavy I/O workload of the mark-sweep process.
-
+only one full leak repair for one VM scheduled for every 12 days. Each repairs uses about 90MB memory on average
+as discussed and takes a few minutes.
+% which is sufficiently small to offset the heavy I/O workload of the mark-sweep process.
