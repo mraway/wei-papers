@@ -51,6 +51,60 @@ The final content copied to the backup storage is reduced by 94.4\% in total.
 \label{fig:memory}
 \end{figure}
 
+\begin{figure}[ht]
+  \centering
+	\begin{tikzpicture}
+		\begin{axis}[
+		%title={Network Buffer Size},
+		xlabel={Total Network Memory Buffer (MB)},
+		ylabel={Backup Time},
+		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
+		%legend pos=north west
+		]
+                \addplot table[x=mpibufmem,y=totaltime] {figures/mpibufmem.txt};
+                %\legend{Total Backup Time};
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Backup time for verying amounts of memory allocated to network communication. Other Settings: 10 Machines, 5x40GB VMs per machine, write buffer 6.25MB, Read Buffer 128KB}
+  \label{fig:mpibuf-mem}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+	\begin{tikzpicture}
+		\begin{axis}[
+		%title={Read Buffer Size},
+		xlabel={Read Buffer Size (MB)},
+		ylabel={Backup Time},
+		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
+		%legend pos=north west
+		]
+                \addplot table[x=rbufmem,y=totaltime] {figures/rbufmem.txt};
+                %\legend{Total Backup Time};
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Backup time for verying amounts of memory allocated to disk read buffering. Other Settings: 10 Machines, 5x40GB VMs per machine, network buffers 2.5MB, write buffer 6.25MB}
+  \label{fig:mpibuf-mem}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+	\begin{tikzpicture}
+		\begin{axis}[
+		%title={Write Buffer Size},
+		xlabel={Total Write Buffer Memory (MB)},
+		ylabel={Backup Time},
+		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
+		%legend pos=north west
+		]
+                \addplot table[x=wbufmem,y=totaltime] {figures/wbufmem.txt};
+                %\legend{Total Backup Time};
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Backup time for verying amounts of memory allocated to network communication. Other Settings: 10 Machines, 5x40GB VMs per machine, network buffer memory 2.5MB, Read Buffer 128KB}
+  \label{fig:mpibuf-mem}
+\end{figure}
+
 Figure~\ref{fig:memory} shows the total parallel time in hours to backup 2500 VMs on
  a 100-node cluster a  when 
 limit $M$ imposed on each node varies.
