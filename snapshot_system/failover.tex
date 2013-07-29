@@ -203,6 +203,28 @@ significant impact the number of links has on VM backup reliability.
   \label{fig:vm-links}
 \end{figure}
 
+\begin{figure}[htbp]
+  \centering
+	\begin{tikzpicture}
+		\begin{axis}[
+		%title={VO VM links},
+		xlabel={Number of VMs},
+		ylabel={\small Avg. Num. FSBs used by VM},
+                ymin=0,
+                mark options=solid,
+		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
+		legend pos=north west
+		]
+                \addplot table[x=VMs,y=No] {figures/vo_vm_links_105.txt};
+		\addplot table[x=VMs,y=N1] {figures/vc_vm_links_105.txt};
+                \addplot+[red,densely dashed] table[x=VMs,y=N2] {figures/vc_vm_links_105.txt};
+                \addplot+[red,dotted,mark=none] table[x=VMs,y expr=\thisrow{N1}+\thisrow{N2}] {figures/vc_vm_links_105.txt};
+                \legend{$N_o$, $N_1$, $N_2$, $N_1+N_2$};
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Measured Average number of 64MB FSBs used by a single VM. For VC both the number of PDS and Non-PDS FSBs used are shown.}
+  \label{fig:vm-links}
+\end{figure}
 The snapshot availability of is a VM is the likelyhood that
 there is no  data loss for all its file blocks.
 With replication degree $r$, the likelyhood of
