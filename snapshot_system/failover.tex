@@ -177,6 +177,24 @@ significant impact the number of links has on VM backup reliability.
   \label{fig:fsb-links}
 \end{figure}
 
+\begin{figure}[htbp]
+  \centering
+	\begin{tikzpicture}
+		\begin{axis}[
+		%title={VO FSB links},
+		xlabel={Number of VMs},
+		ylabel={\small Avg. Num. VMs sharing FSB},
+		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
+		legend pos=north west
+		]
+                \addplot table[x=VMs,y=FSBLinks] {figures/vo_fsb_links_105.txt};
+		\addplot table[x=VMs,y=cdslinks] {figures/cds_links_105.txt};
+                \legend{VO, PDS in VC};
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Measured Average number of VMs sharing a 64MB FSB with global dedup (VO), and in a 2\% PDS for VC.}
+  \label{fig:fsb-links}
+\end{figure}
 
 
 
