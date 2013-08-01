@@ -184,6 +184,7 @@ significant impact the number of links has on VM backup reliability.
 		%title={VO FSB links},
 		xlabel={Number of VMs},
 		ylabel={\small Avg. Num. VMs sharing FSB},
+                cycle list name=mline,
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
 		legend pos=north west
 		]
@@ -229,14 +230,13 @@ significant impact the number of links has on VM backup reliability.
 		xlabel={Number of VMs},
 		ylabel={\small Avg. Num. FSBs used by VM},
                 ymin=0,
-                mark options=solid,
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
 		legend pos=north west
 		]
-                \addplot table[x=VMs,y=No] {figures/vo_vm_links_105.txt};
-		\addplot table[x=VMs,y=N1] {figures/vc_vm_links_105.txt};
-                \addplot+[red,densely dashed] table[x=VMs,y=N2] {figures/vc_vm_links_105.txt};
-                \addplot+[red,dotted,mark=none] table[x=VMs,y expr=\thisrow{N1}+\thisrow{N2}] {figures/vc_vm_links_105.txt};
+                \addplot[blue,mark=none] table[x=VMs,y=No] {figures/vo_vm_links_105.txt};
+                \addplot[red,dashdotted] table[x=VMs,y=N1] {figures/vc_vm_links_105.txt};
+                \addplot[red,densely dashed,mark=none] table[x=VMs,y=N2] {figures/vc_vm_links_105.txt};
+                \addplot[red,dotted,mark=none] table[x=VMs,y expr=\thisrow{N1}+\thisrow{N2}] {figures/vc_vm_links_105.txt};
                 \legend{$N_o$, $N_1$, $N_2$, $N_1+N_2$};
 		\end{axis}
 	\end{tikzpicture}
@@ -414,13 +414,13 @@ replication factor for popular blocks can have on reliability.
                 %reverse legend,
 		]
                 \addplot table[x=NodesFailed,y=VC1]{figures/vm_availability.txt};
-                \addlegendentry{$VC\,20$ (measured)}
+                \addlegendentry{$VC\,1250$ (estimated)}
                 \addplot table[x=NodesFailed,y=VC2]{figures/vm_availability.txt};
                 \addlegendentry{$VC\,2500$ (worst-case)}
                 \addplot table[x=NodesFailed,y=VO1]{figures/vm_availability.txt};
-                \addlegendentry{$VO\,5$ (measured)}
-                \addplot table[x=NodesFailed,y=VO2]{figures/vm_availability.txt};
-                \addlegendentry{$VO\,20$ (optimistic)}
+                \addlegendentry{$VO\,6.3$ (optimistic)}
+                %\addplot table[x=NodesFailed,y=VO2]{figures/vm_availability.txt};
+                %\addlegendentry{$VO\,20$ (optimistic)}
 		\end{axis}
 	\end{tikzpicture}
   \caption{Availability of VM backups as nodes fail for VO and VC models for
