@@ -13,11 +13,17 @@
 
 \newcommand{\comments}[1]{}
 %pgfplots setup
-\pgfplotsset{every axis/.append style={
-	very thick,
-	tick style={thick}}}
 \pgfplotsset{
-        every mark/.append style={solid}
+    every axis/.append style={
+        very thick,
+        tick style={thick},
+        tick label style={font={\sffamily}},
+        font={\small\sffamily}
+    },
+    every legend/.append style={font={\small\sffamily}}
+}
+\pgfplotsset{
+    every mark/.append style={solid}
 }
 \pgfplotscreateplotcyclelist{mcolor}{%
     {blue,every mark/.append style={fill=blue},mark=*},
