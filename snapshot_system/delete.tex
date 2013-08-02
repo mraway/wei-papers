@@ -32,6 +32,13 @@ accomplishs our speed, resource usage and relibility goals very well.
 
 
 \subsection{Approximate Deletion}
+\begin{figure}[htbp]
+  \centering
+  \epsfig{file=images/deletion.png, width=3.5in}
+  \caption{Approximate deletion}
+  \label{fig:deletion_flow}
+\end{figure}
+
 We design approximate deletion to fast identify unused data in the append store.
 Instead of scanning the whold append store, it uses a bloom filter to check 
 if a data are still referenced by living snapshots. However, there is a small false-positive probility which
