@@ -521,12 +521,14 @@ Table~\ref{tab:replication_cost} shows the total storage space required by VC as
 \begin{table}
     \begin{tabular}{|c|c|c|c|c|}
     \hline
-    Tasks & CPU & Mem (MB) & Disk (MB/s) & Network \\ \hline
-    4                      & 63\% & 164 & 84     &    \\ \hline
-    6                      & 77\% & 201  & 88.5   &     \\ \hline
-    8                      & 82\% & 237   & 89.2   &    \\ \hline
-    10                      & 85\% & 273   & 90.4   &    \\ \hline
-    12                      & 91\% & 312    & 91.5   &   \\ \hline
+    Tasks & CPU & Mem (MB) & Disk W (MB/s) & Network \\ \hline
+    1                      & 19\% & 18.1 & 32.1     &    \\ \hline
+    2                      & 35\% & 31.8 & 53     &    \\ \hline
+    4                      & 63\% & 54.1 & 84     &    \\ \hline
+    6                      & 77\% & 71.9  & 88.5   &     \\ \hline
+    8                      & 82\% & 90.5   & 89.2   &    \\ \hline
+    10                      & 85\% & 97.2   & 90.4   &    \\ \hline
+    12                      & 91\% & 95.6    & 91.5   &   \\ \hline
     \end{tabular}
 \caption{Resource usage under concurrent backup tasks}
 \label{tab:resource_usage}

@@ -536,6 +536,13 @@ Since $B$, $D$ and $F$ are pre-configured constants, the deduplication efficienc
 
 \subsection{ VM-centric Approximate Snapshot Deletion with Leak Repair}
 
+\begin{figure}[htbp]
+  \centering
+  \epsfig{file=images/deletion.png, width=3.5in}
+  \caption{Approximate deletion}
+  \label{fig:deletion_flow}
+\end{figure}
+
 In a busy VM cluster, snapshot deletions are as frequent as snapshot creations.
 However, data deduplication complicates the deletion process because space saving relies on the sharing of data,
 thus making it difficult to decide which chunks are safe to delete.
