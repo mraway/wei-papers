@@ -162,6 +162,8 @@ significant impact the number of links has on VM backup reliability.
   \centering
 	\begin{tikzpicture}
 		\begin{axis}[
+                width=\linewidth,
+                height=0.7\linewidth,
 		%title={VO FSB links},
 		xlabel={Number of VMs},
 		ylabel={Avg. Num. VMs sharing FSB},
@@ -188,6 +190,8 @@ significant impact the number of links has on VM backup reliability.
 	\begin{tikzpicture}
 		\begin{axis}[
 		%title={VO VM links},
+                width=\linewidth,
+                height=0.7\linewidth,
 		xlabel={Number of VMs},
 		ylabel={Avg. Num. FSBs used by VM},
                 xmin=0,
@@ -303,6 +307,8 @@ reliability in Figure~\ref{fig:vm-availability}.
   \centering
     \begin{tikzpicture}
             \begin{axis}[
+                width=\linewidth,
+                height=0.7\linewidth,
             %title={FSB Availability},
             cycle list name=mline,
             xlabel={Number of Machines Failed},
@@ -324,131 +330,6 @@ reliability in Figure~\ref{fig:vm-availability}.
     \caption{Availability of Individual FSBs in 100 Machine Cluster with different replication factors.}
   \label{fig:fsb-availability}
 \end{figure}
-
-
-\comments{
-
-Figure~\ref{fig:vm-availability} shows the reliability of VM backups as storage
-nodes fail for different amounts of sharing of filesystem blocks in the index.
-We show 6.3 for the VO sharing because that is what we measured in our dataset,
-and while we expect it to continue to grow (thereby decreasing fault
-tolerance), it should do so slowly. for VC we use 1250, because that is what we
-estimate at 2500 VMs based on the linear growth up to 105 VMs. We also show
-2500 VMs sharing each PDS FSB because that is the absolute worst case for 2500
-VMs. Our results show that even the VC worst case provides better VM
-reliability than our optimistic amount of sharing in VO. 
-The key factor placed is that  $N_1 +N_2 <
-N_o$, caused by the fact that the VM-centric approach localizes deduplication
-and packs  data blocks for one VM as much as possible.  The extra replicaton
-for PDS blocks also signficantly increases the snapshot availability even when
-a PDS file block is shared by every VM.
-
-% while in VO even small increases in $L$ causes a large decrease in availability. 
-Figure~\ref{fig:pds-replication}
-shows the advantages of increasing the replication factor for PDS blocks. We
-use our estimate of 1250 VMs sharing each PDS block, which is what we expect
-for 2500 VMs, given the growth up to 105 VMs. It is easy to see though thatr
-increasing the replication of just
-the PDS blocks (which are the most popular blocks) can have a positive impact
-on the overall reliablity of the VM backups. Increasing the
-PDS replication is cheap because is makes up a very small percent of the
-stored data, but the impact is significant. These figures together show the
-advantages of the VM-centric model, and the advantages that separating the
-replication factor for popular blocks can have on reliability.
-
-\begin{figure}[ht]
-  \centering
-  %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
-	\begin{tikzpicture}
-		\begin{axis}[
-		%title={Node failure affect on VMs},
-                cycle multi list={
-                    mline\nextlist
-                    [2 of]mmark*\nextlist
-                },
-		xlabel={Failed storage nodes},
-		ylabel={VM Snapshot Availability (\%)},
-		extra y ticks={99.9}, %if important numbers are missing
-                mark options=solid,
-                legend style={
-                    cells={anchor=west}, %legend entry alignment
-                    legend pos=south west %legend position
-                },
-                %reverse legend,
-		]
-                \addplot table[x=NodesFailed,y=VC1]{figures/vm_availability.txt};
-                \addlegendentry{$VC\,1250$ (estimated)}
-                \addplot table[x=NodesFailed,y=VC2]{figures/vm_availability.txt};
-                \addlegendentry{$VC\,2500$ (worst-case)}
-                \addplot table[x=NodesFailed,y=VO1]{figures/vm_availability.txt};
-                \addlegendentry{$VO\,6.3$ (optimistic)}
-                %\addplot table[x=NodesFailed,y=VO2]{figures/vm_availability.txt};
-                %\addlegendentry{$VO\,20$ (optimistic)}
-		\end{axis}
-	\end{tikzpicture}
-  \caption{Availability of VM backups as nodes fail for VO and VC models for
-  varying degrees of block sharing (i.e. average number of VMs that use a
-  block). Non-PDS replication fixed at 3 and PDS replication increased to 4.
-  Graph shown for 100 machine cluster.
-  }
-  \label{fig:vm-availability}
-\end{figure}
-
-\end{figure}
-
-\begin{figure}[ht]
-  \centering
-	\begin{tikzpicture}
-		\begin{axis}[
-		%title={PDS Replication affect on availability},
-		xlabel={Failed storage nodes},
-		ylabel={VM Snapshot Availability (\%)},
-		extra y ticks={99.9}, %if important numbers are missing
-                mark options=solid,
-                legend style={
-                    cells={anchor=west}, %legend entry alignment
-                    legend pos=south west %legend position
-                },
-                reverse legend,
-		]
-                \addplot table[x=NodesFailed,y=VC1]{figures/cds_replication.txt};
-                \addplot table[x=NodesFailed,y=VC2]{figures/cds_replication.txt};
-                \addplot table[x=NodesFailed,y=VC3]{figures/cds_replication.txt};
-                %\addplot table[x=NodesFailed,y=VC4]{figures/cds_replication.txt};
-                \legend{$R_C=3$,$R_C=4$,$R_C=5$}%,$R_C=7$}
-		\end{axis}
-	\end{tikzpicture}
-  \caption{Availability of VM backups as nodes fail in the VC model for different PDS Replication factors (Non-PDS replication fixed at 3, and average PDS block links set to 1250)}
-  \label{fig:pds-replication}
-\end{figure}
-
-\begin{figure}[ht]
-  \centering
-	\begin{tikzpicture}
-		\begin{axis}[
-		%title={PDS Replication affect on availability},
-		xlabel={Failed storage nodes},
-		ylabel={VM Snapshot Availability (\%)},
-		%extra y ticks={99.99}, %if important numbers are missing
-                mark options=solid,
-                legend style={
-                    cells={anchor=west}, %legend entry alignment
-                    legend pos=south west %legend position
-                },
-                reverse legend,
-		]
-                \addplot table[x=NodesFailed,y=VC1]{figures/cds_replication2.txt};
-                \addplot table[x=NodesFailed,y=VC2]{figures/cds_replication2.txt};
-                \addplot table[x=NodesFailed,y=VC3]{figures/cds_replication2.txt};
-                %\addplot table[x=NodesFailed,y=VC4]{figures/cds_replication2.txt};
-                \legend{$R_C=3$,$R_C=4$,$R_C=5$}%,$R_C=7$}
-		\end{axis}
-	\end{tikzpicture}
-  \caption{Availability of VM backups as nodes fail in the VC model for different PDS Replication factors (Non-PDS replication fixed at 3, and average PDS block links set to 20)}
-  \label{fig:pds-replication2}
-\end{figure}
-
-}
 
 
 

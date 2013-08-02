@@ -14,6 +14,8 @@
 \newcommand{\comments}[1]{}
 %pgfplots setup
 \pgfplotsset{
+    %You are supposed to use append style rather than just setting
+    %parameters globally so they are easier to override to special cases
     every axis/.append style={
         very thick,
         tick style={thick},
