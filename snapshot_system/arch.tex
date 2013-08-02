@@ -112,7 +112,7 @@ the change status of every fix-size segment of the virtual disk.
 When the VM issue a disk write, the bits corresponding to the segments that covers 
 the modified disk region are set, thus letting snapshot deduplication component knows these
 segments must be checked during snapshot backup. After the snapshot backup is finished, 
-snapshot deduplication component acknowledges the driver to resume the dirty-bits map to
+snapshot deduplication component acknowledges the driver to reset the dirty-bits map to
 a clean state.
 
 %[brief the snapshot deduplication]
@@ -125,11 +125,11 @@ It contains an append store client which provides facilities to manage stored sn
 {\bf Snapshot Representation}
 The virtual device driver uses a bitmap to track the changes 
 that have been made to virtual disk.
-Every bit in the bitmap represents a fix-sized (2MB) region called \textit{segment}, indicates whether the segment
-is modified since last backup. Hence we could treat segment as the basic unit 
-in snapshot backup similar to
-file in normal backup: a snapshot could share a segment with previous snapshot it is not changed. 
-Moreover, we break segments into var-sized chunks (average 4KB) using content-based chunking algorithm,
+Every bit in the bitmap represents a fix-sized (2MB) region called a \textit{segment}, which indicates whether the segment
+has been modified since the last backup. Hence we could treat segment as the basic unit 
+in snapshot backup similar to a
+file in filesystem backup: a snapshot could share a segment with previous snapshot it has not been changed. 
+Moreover, we break segments into variable-sized chunks (average 4KB) using a content-based chunking algorithm,
 which brings the opportunity of fine-grained deduplication by
 allowing data sharing between segments.
 }
@@ -151,14 +151,14 @@ that have been made to virtual disk.
 When the VM issue a disk write, the bits corresponding to the segments that covers 
 the modified disk region are set, thus letting snapshot deduplication component knows these
 segments must be checked during snapshot backup. After the snapshot backup is finished, 
-snapshot deduplication component acknowledges the driver to resume the dirty-bits map to
+snapshot deduplication component acknowledges the driver to reset the dirty-bits map to
 a clean state.
-Every bit in the bitmap represents a fix-sized (2MB) region called \textit{segment}, indicates whether the segment
-is modified since last backup. Hence we could treat segment as the basic unit 
+Every bit in the bitmap represents a fix-sized (2MB) region called a \textit{segment}, indicates whether the segment
+is modified since last backup. Hence we think of segment as the basic unit 
 in snapshot backup similar to
-file in normal backup: a snapshot could share a segment with previous snapshot it is not changed. 
+file in normal filesystem backup: a snapshot could share a segment with previous snapshot it is not changed. 
 As a standard practice, segments are further divided into variable-sized chunks (average 4KB) 
-using content-based chunking algorithm, which brings the opportunity of fine-grained deduplication by
+using a content-based chunking algorithm, which brings the opportunity of fine-grained deduplication by
 allowing data sharing between segments.
 
 The representation of each snapshot has  a two-level index data structure.
@@ -180,8 +180,8 @@ metadata of its chunks (called segment recipe).
 %thus aggregating a large number of chunks as one segment can significantly reduce the space cost of snapshot metadata.
 %Furthermore, instead of using variables-sized segments, we use a dirty bit to capture the change status of fix-sized
 %segments which greatly ease the segment-level deduplication.
-In a snapshot recipes or a segment recipe, 
-the data structures  includes reference pointers to the actual data location.
+In snapshot and segment recipes, 
+the data structures  includes reference pointers to the actual data location to eliminate the need for additional indirection.
 %In our implementation the data reference is a 8 bytes field which is either an 
 %ASID (discuss in Section \ref{sect:append}) or an offset of an additional flag indicates
 %the location of PDS data.
@@ -241,25 +241,24 @@ the data structures  includes reference pointers to the actual data location.
 %[describe the data structure in underlying storage]
 \subsection{A VM-centric snapshot store for backup data}
 
-We build a snapshot storage on the top of a distributed file system.
+We build the snapshot storage on the top of a distributed file system.
 Following the VM-centric idea for the purpose of fault isolation,
 each VM has its own snapshot store, containing new data chunks which are considered
 to be non-duplicates.
 There is also a special store containing all PDS chunks shared among different VMs.
-The replication degree of file blocks of snapshot stores in the underlying file system
-Extra replication of this store is added as discussed in Section~\ref{sect:analysis}.
+This separation of PDS chunks allows us to change the replication degree of of those popular file blocks in the underlying file system
+Extra replication of this store is added and analyzed in Section~\ref{sect:analysis}.
 As shown in Fig.\ref{fig:as_arch}, we explain the data structure of snapshot stores as follows.
 
 \begin{itemize}
 \item The PDS snapshot contains a set of commonly used data chunks and is accessed by its offset and size
-in the corresponding DSF file.
+in the corresponding DFS file.
 The PDS index uses the offset and size as a reference in its index structure.
  
-\item Each non-PDS snapshot store is divided into a set of containers and each of them is approximately 
-1GB. The reason we divide the snapshot into containers is to simplify the compact process
-conducted periodically.  There are chunks deleted without any reference from other snapshots
-and to reclaim the space of these useless chunks, a compaction  routine can work on one container at a time
-and copy used data chunks to another container.
+\item Each non-PDS snapshot store is divided into a set of containers and each container is approximately 
+1GB. The reason we divide the snapshot into containers is to simplify the compaction process
+conducted periodically. Chunks without any reference from other snapshots can be removed by this process, and the compaction  routine can work on one container at a time
+and copy used data chunks to another container. By limiting the size of a container, we limit the cost of the compaction process.
 	\begin{itemize}
 	\item Each container is divided into a set of chunk data groups. Each group is composed of
 	a set of data chunks and is the basic unit for the snapshot in data access and retrieval. 
@@ -267,11 +266,11 @@ and copy used data chunks to another container.
 	When accessing a particular chunk, its chunk group is retrieved from the disk storage
 	and uncompressed. Given the high spatial locality 
 in snapshot data accessing~\cite{Sampling,FoundationPaper},
-	retrieval of  data chunks by group naturally fits in the prefetching scheme  to speedup
+	retrieval of  data chunks by group naturally works well with prefetching to speedup
 	snapshot access. A  typical chunk group contains 100 to 1000 chunks, with an average size of 
-200-600KB.
+200-600 chunks.
 Chunk grouping also reduces the  container index size as we discuss below. 
-Given  the average chunk size  4KB,  the index size for a 1GB container reduces from 10MB to 100KB when
+Given  the average chunk size of 4KB,  the index size for a 1GB container reduces from 10MB to 100KB when
 the chunk group size is 100.
 %%CBlock, then the overall index size is reduced to $1/m$. 
 %n our implementation, using $m=100$ reduces the index for
@@ -282,9 +281,9 @@ Each data container is represented by three data files in the DFS:
 2) the container index file is responsible for translating a data reference
 into its location within a container, and 
 3) a chunk deletion log file saving all the deletion requests within  the container.
-A VM snapshot store typically has a small number of containers because each container is fairly large with an average size of 1GB, it 
-maintains a limited number of snapshots (e.g. 10 in the Alibaba case),
-and new snapshot data chunks can be effectively compressed in chunk groups in addition to  deduplication.
+A VM snapshot store typically has a small number of containers because each container is fairly large, with an average size of 1GB, and 
+maintains a limited number of snapshots (e.g. 10 in the Alibaba case).
+New snapshot data chunks can be effectively compressed in chunk groups in addition to  deduplication.
 
 \item We maintain  a chunk counter and assign the current number 
 as a chunk ID (called CID) within this container as a reference of a new chunk added to a container. 
@@ -292,10 +291,10 @@ Since data chunks are always appended to the snapshot store,
  a CID is monotonically increasing.
 A data chunk reference stored in the index of snapshot recipes
 is composed of two parts: a container ID (2 bytes) and CID (6 bytes).
-Once a snapshot is to be accessed access, the receipt in this snapshot will point to either a data chunk
+When a snapshot chunk is to be accessed, the recipe for the snapshot will point to either a data chunk
 in the PDS or a reference number with a container ID and CID.
 With a container ID, the corresponding container index file is accessed and 
-the chunk group is identified using this CID. Once this chunk group is loaded to memory, its header contains the exact offset of the corresponding chunk and the content is then accessed from the memory buffer.
+the chunk group is identified using this CID. Once the chunk group is loaded to memory, its header contains the exact offset of the corresponding chunk and the content is then accessed from the memory buffer.
 
 %Every container  Store assign every piece of data a CID for its internal data referencing. 
 %When new data is appended, its CID is the current largest CID in that container plus one.
@@ -360,13 +359,13 @@ We also maintain a small data cache for the PDS data service to speedup the proc
 To read a non-PDS chunk using a reference,  the snapshot store client first loads the
 corresponding VM's container index file specified by the container ID, then searches the chunk
 group  that  covers the chunk by the group  CID range.
-After that, it reads the whole chunk group from DFS, decompresses it, seeks the exact chunk data 
+After that, it reads the whole chunk group from DFS, decompresses it, and seeks to the exact chunk data 
 specified by the CID. 
 Finally, the client updates its internal chunk data cache with the newly loaded content to 
 anticipate future sequential reads.
 \item {\em Delete(reference)}.
 A data chunk can be deleted when a snapshot expires or gets deleted explicitly by a user.
-We will discuss the snapshot deletion shortly in the following subsection.
+We will discuss the snapshot deletion in the following subsection.
 %deletes the data pointed by the reference.
 %Under the hood, small var-sized data are grouped and stored into larger data containers. Each VM has
 %its snapshot data stored in its own Append Store, specified by the VM ID. 
@@ -382,10 +381,10 @@ number of deletion requests to  compact and  reclaim the corresponding disk spac
 %The actual compaction will only take place when the number of deleted items 
 %reached $d\%$ of container's capacity. 
 During compaction, the snapshot store creates a new container (with the same container ID) to replace the 
-existing one. This is done by sequentially scan the old container, copying all the chunks that are not 
-found in the deletion log to the new container, creating new chunk groups and indices. 
-However, every chunk's CID is directly copied rather than re-generated. This
-process leaves holes in the CID values, but does not affect the sorted order.
+existing one. This is done by sequentially scanning the old container, copying all the chunks that are not 
+found in the deletion log to the new container, and creating new chunk groups and indices. 
+Every chunk's CID however is directly copied rather than re-generated. This
+process leaves holes in the CID values, but preserves the sorted order.
 As a result, all data references stored 
 in upper level recipes are permanent and stable, and the data reading process
 is as efficient as before. This CID stability also ensures that recipes do not
@@ -420,15 +419,15 @@ depend directly on physical storage locations.
 Our  deduplication scheme compares the fingerprints of the current snapshot
 with its parent snapshot and also other snapshots in the entire cloud.
 This process performs   the duplication in two categories: \textit{Inner-VM} and \textit{Cross-VM}. 
-Inner-VM duplication exists between VM's snapshots, because the majority of data are unchanged during each backup period. 
-Such localization increases data independence between different VM backups,
+Inner-VM duplication exists between a VM's snapshots, because the majority of data is unchanged during each backup period. 
+Such localization decreases data dependencies between different VM backups,
 simplifies snapshot management and statistics collection,
 and facilitates parallel execution of snapshot operations.
 On the other hand, Cross-VM duplication is mainly due to widely-used software and libraries. 
-As the result, different VMs tend to backup large amount of highly similar data.
+As the result, different VMs tend to backup a large amount of highly similar data.
 Our multi-level pipeline process can minimize 
 the cost of deduplication while maximize the its efficiency at each level,
-and it is parallel since each segment is processed independently.
+and is parallel since each segment is processed independently.
 
 \begin{itemize}
 \item \textbf{Dirty-based coarse-grain inner-VM deduplication.}
@@ -446,7 +445,7 @@ The best deduplication uses a nonuniform chunk size
 in the average of 4K or 8K~\cite{??}.
 Thus the second-level inner-VM deduplication is to assess in this
 level, but only for those dirty  segments. 
-We load the fingerprints of block chunks of the corresponding segment from the
+We load the fingerprints of chunks in the corresponding segment from the
 parent for a comparisons and compare near-by fingerprint matching within this segment.
 The amount of memory for maintaining those fingerprints  is small.
 For example, with a 2MB segment, there are about 500 fingerprints to compare.
@@ -565,7 +564,7 @@ a fast solution with a very low resource usage to delete snapshots.
 
 With this in mind, we develop an {\em approximate} deletion strategy to trade deletion accuracy for
 speed and resource usage. Our method sacrifices a small percent of storage leakage
-to effectively identify unused chunks in $O(n)$ speed, with $n$ being the logical number of non-PDS chunks 
+to effectively identify unused chunks in $O(n)$ time, with $n$ being the logical number of non-PDS chunks 
 to be deleted from a VM snapshot store.
 The algorithm contains three aspects.
 
@@ -619,14 +618,14 @@ then scan through all the snapshots' segment recipes. For each reference pointer
 we mark the corresponding entry in the table as in use. Finally those unmarked (and therefore unused) reference pointers in the
 table represent chunks that can be safely deleted.
 
-The cost of leak repair mainly come from holding a table of reference pointers and scan of all snapshots metadata.
+The cost of leak repair mainly come from holding a table of reference pointers and the scan of all snapshots' metadata.
 Consider each reference pointer consumes 8 bytes plus 1 byte as mark field, a VM that has 40GB backup data with about
 10 million chunks will need 90MB of memory to construct such a table. 
-Also, scanning all snapshots metadata is many times slower comparing
+Also, scanning all snapshots metadata is many times slower when compared
 to the approximate deletion which only scans single snapshot's metadata.
-It's worth to mention that compare to previously-developed mark-and-sweep techniques, 
-our leak repair still has advantage because the scope of repair is restricted within single VM's snapshot 
-store due to our VM-specific design, and we only do it periodically.
+It's worth mention that compared to previously-developed mark-and-sweep techniques, 
+our leak repair still has advantages because the scope of repair is restricted within a single VM's snapshot 
+store due to our VM-centric design, and we perform leakage repair periodically.
 %We cannot simply repeat the phase 1 multiple times to reduce temporary storage leakage, because:
 %\begin{enumerate} 
 %\item After several runs of phase-1, it is proven that the merged type-1 summaries cannot sieve remaining unused blocks, due to the false-positive property of bloom filter.
