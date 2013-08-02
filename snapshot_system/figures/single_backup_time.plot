@@ -16,5 +16,4 @@ set xlabel "Size of PDS over unique data in percentage (%)"
 set grid y
 plot 'single_backup_time.txt' using 7:xtic(1) ti "Read" fs pattern 2, \
 '' u 6 ti "Write" fs pattern 7, \
-'' u 4 ti "Level-2" fs pattern 4, \
-'' u 5 ti "Level-3" fs pattern 5
+'' u ($4+$5) ti "Dedup" fs pattern 5
