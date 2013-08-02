@@ -171,20 +171,67 @@ on the overall reliablity of the VM backups. These figures together show the
 advantages of the VM-centric model, and the advantages that separating the
 replication factor for popular blocks can have on reliability.
 
-
-\begin{figure}[htbp]
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}%{.5\textwidth}
+      \centering
+      %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
+            \begin{tikzpicture}
+                %\pgfplotsset{every axis legend/.append style={font={\tiny}}}
+                    \begin{axis}[
+                    %font={\tiny},
+                    tick label style={font=\scriptsize},
+                    tick style=thin,
+                    width=0.5\linewidth,
+                    title={\small $p=100$},
+                    cycle list={
+                        {blue,thin,solid,mark=none},
+                        {red,thin,densely dashed,mark=none},
+                        {red,thin,densely dotted,mark=none}
+                    },
+                    xlabel={\tiny Failed nodes},
+                    ylabel={\tiny VM Availability (\%)},
+                    extra y ticks={99.9}, %if important numbers are missing
+                    mark options=solid,
+                    legend columns=-1,
+                    legend style={
+                        font=\small,
+                        cells={anchor=west}, %legend entry alignment
+                        legend pos=south west %legend position
+                    },
+                    legend to name=legend:vm-availability,
+                    %reverse legend,
+                    ]
+                    \addplot table[x=NodesFailed,y=VO1]{figures/vm_availability.txt};
+                    \addlegendentry{$VO\,6.3$ (optimistic)}
+                    \addplot table[x=NodesFailed,y=VC1]{figures/vm_availability.txt};
+                    \addlegendentry{$VC$ (expected)}
+                    \addplot table[x=NodesFailed,y=VC2]{figures/vm_availability.txt};
+                    \addlegendentry{$VC$ (worst-case)}
+                    %\addplot table[x=NodesFailed,y=VO2]{figures/vm_availability.txt};
+                    %\addlegendentry{$VO\,20$ (optimistic)}
+                    \end{axis}
+            \end{tikzpicture}
+      %\caption{100 machine cluster.}
+      \label{fig:vm-availability-100}
+    \end{subfigure}%
+    \begin{subfigure}%{.5\textwidth}
   \centering
   %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
 	\begin{tikzpicture}
 		\begin{axis}[
-		%title={Node failure affect on VMs},
-                cycle multi list={
-                    mline\nextlist
-                    [2 of]mmark*\nextlist
+                    width=0.5\linewidth,
+                    tick label style={font=\scriptsize},
+                    tick style=thin,
+		title={\small $p=100000$},
+                cycle list={
+                    {blue,thin,solid,mark=none},
+                    {red,thin,densely dashed,mark=none},
+                    {red,thin,densely dotted,mark=none}
                 },
-		xlabel={Failed storage nodes},
-		ylabel={VM Snapshot Availability (\%)},
-		extra y ticks={99.9}, %if important numbers are missing
+		xlabel={\tiny Failed nodes},
+		ylabel={\tiny VM Availability (\%)},
+		extra y ticks={99.99}, %if important numbers are missing
                 mark options=solid,
                 legend style={
                     cells={anchor=west}, %legend entry alignment
@@ -192,23 +239,30 @@ replication factor for popular blocks can have on reliability.
                 },
                 %reverse legend,
 		]
-                \addplot table[x=NodesFailed,y=VC1]{figures/vm_availability.txt};
-                \addlegendentry{$VC\,1250$ (estimated)}
-                \addplot table[x=NodesFailed,y=VC2]{figures/vm_availability.txt};
-                \addlegendentry{$VC\,2500$ (worst-case)}
-                \addplot table[x=NodesFailed,y=VO1]{figures/vm_availability.txt};
-                \addlegendentry{$VO\,6.3$ (optimistic)}
+                \addplot table[x=NodesFailed,y=VO1]{figures/vm_availability_100000.txt};
+                %\addlegendentry{$VO\,6.3$ (optimistic)}
+                \addplot table[x=NodesFailed,y=VC1]{figures/vm_availability_100000.txt};
+                %\addlegendentry{$VC\,1250$ (estimated)}
+                \addplot table[x=NodesFailed,y=VC2]{figures/vm_availability_100000.txt};
+                %\addlegendentry{$VC\,2500000$ (worst-case)}
                 %\addplot table[x=NodesFailed,y=VO2]{figures/vm_availability.txt};
                 %\addlegendentry{$VO\,20$ (optimistic)}
 		\end{axis}
 	\end{tikzpicture}
-  \caption{Availability of VM backups as nodes fail for VO and VC models for
-  varying degrees of block sharing (i.e. average number of VMs that use a
-  block). Non-PDS replication fixed at 3 and PDS replication increased to 4.
-  Graph shown for 100 machine cluster.
-  }
-  \label{fig:vm-availability}
+        %\caption{100000 machine cluster.}
+  \label{fig:vm-availability-100000}
+\end{subfigure}
+    \pgfplotslegendfromname{legend:vm-availability}
+      \caption{Availability of VM backups for VO and VC models for
+          varying degrees of block sharing. Non-PDS replication fixed
+          at 3 and PDS replication increased to 4. VC worst-case
+          is $V=25*p$, and expected-case is $\frac{V}{2}$
+      }
+      \label{fig:vm-availability}
+    
 \end{figure}
+
+
 
 \begin{figure}[htbp]
   \centering

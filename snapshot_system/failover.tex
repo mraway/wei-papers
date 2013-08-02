@@ -165,25 +165,6 @@ significant impact the number of links has on VM backup reliability.
 		%title={VO FSB links},
 		xlabel={Number of VMs},
 		ylabel={\small Avg. Num. VMs sharing FSB},
-		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
-		legend pos=north west
-		]
-                \addplot table[x=VMs,y=FSBLinks] {figures/vo_fsb_links.txt};
-		\addplot table[x=VMs,y=cdslinks] {figures/cds_links.txt};
-                \legend{VO, PDS in VC};
-		\end{axis}
-	\end{tikzpicture}
-  \caption{Measured Average number of VMs sharing a 64MB FSB with global dedup (VO), and in a 2\% PDS for VC.}
-  \label{fig:fsb-links}
-\end{figure}
-
-\begin{figure}[htbp]
-  \centering
-	\begin{tikzpicture}
-		\begin{axis}[
-		%title={VO FSB links},
-		xlabel={Number of VMs},
-		ylabel={\small Avg. Num. VMs sharing FSB},
                 cycle list name=mline,
                 xmin=0,
                 ymin=0,
@@ -201,29 +182,6 @@ significant impact the number of links has on VM backup reliability.
 \end{figure}
 
 
-
-\begin{figure}[htbp]
-  \centering
-	\begin{tikzpicture}
-		\begin{axis}[
-		%title={VO VM links},
-		xlabel={Number of VMs},
-		ylabel={\small Avg. Num. FSBs used by VM},
-                ymin=0,
-                mark options=solid,
-		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
-		legend pos=north west
-		]
-                \addplot table[x=VMs,y=No] {figures/vo_vm_links.txt};
-		\addplot table[x=VMs,y=N1] {figures/vc_vm_links.txt};
-                \addplot+[red,densely dashed] table[x=VMs,y=N2] {figures/vc_vm_links.txt};
-                \addplot+[red,dotted,mark=none] table[x=VMs,y expr=\thisrow{N1}+\thisrow{N2}] {figures/vc_vm_links.txt};
-                \legend{$N_o$, $N_1$, $N_2$, $N_1+N_2$};
-		\end{axis}
-	\end{tikzpicture}
-  \caption{Measured Average number of 64MB FSBs used by a single VM. For VC both the number of PDS and Non-PDS FSBs used are shown.}
-  \label{fig:vm-links}
-\end{figure}
 
 \begin{figure}[htbp]
   \centering
@@ -436,6 +394,8 @@ replication factor for popular blocks can have on reliability.
   \label{fig:vm-availability}
 \end{figure}
 
+\end{figure}
+
 \begin{figure}[ht]
   \centering
 	\begin{tikzpicture}
@@ -487,7 +447,6 @@ replication factor for popular blocks can have on reliability.
   \caption{Availability of VM backups as nodes fail in the VC model for different PDS Replication factors (Non-PDS replication fixed at 3, and average PDS block links set to 20)}
   \label{fig:pds-replication2}
 \end{figure}
-
 
 }
 
