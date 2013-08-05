@@ -179,9 +179,7 @@ replication factor for popular blocks can have on reliability.
       \centering
       %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
             \begin{tikzpicture}
-                %\pgfplotsset{every axis legend/.append style={font={\tiny}}}
                     \begin{axis}[
-                    %font={\tiny},
                     tick label style={font=\scriptsize},
                     tick style=thin,
                     width=0.5\linewidth,
@@ -197,7 +195,7 @@ replication factor for popular blocks can have on reliability.
                     mark options=solid,
                     legend columns=-1,
                     legend style={
-                        font=\small,
+                        font=\small\sffamily,
                         cells={anchor=west}, %legend entry alignment
                         legend pos=south west %legend position
                     },
@@ -205,13 +203,13 @@ replication factor for popular blocks can have on reliability.
                     %reverse legend,
                     ]
                     \addplot table[x=NodesFailed,y=VO1]{figures/vm_availability.txt};
-                    \addlegendentry{$VO\,6.3$ (optimistic)}
+                    \addlegendentry{VO\,$6.3$ (optimistic)}
                     \addplot table[x=NodesFailed,y=VC1]{figures/vm_availability.txt};
-                    \addlegendentry{$VC$ (expected)}
+                    \addlegendentry{VC (expected)}
                     \addplot table[x=NodesFailed,y=VC2]{figures/vm_availability.txt};
-                    \addlegendentry{$VC$ (worst-case)}
+                    \addlegendentry{VC (worst-case)}
                     %\addplot table[x=NodesFailed,y=VO2]{figures/vm_availability.txt};
-                    %\addlegendentry{$VO\,20$ (optimistic)}
+                    %\addlegendentry{VO\,$20$ (optimistic)}
                     \end{axis}
             \end{tikzpicture}
       %\caption{100 machine cluster.}
@@ -273,7 +271,7 @@ replication factor for popular blocks can have on reliability.
 	\begin{tikzpicture}
 		\begin{axis}[
                         width=\linewidth,
-                        height=0.7\linewidth,
+                        height=0.6\linewidth,
 		%title={PDS Replication affect on availability},
 		xlabel={Failed storage nodes},
 		ylabel={VM Snapshot Availability (\%)},
@@ -301,7 +299,7 @@ replication factor for popular blocks can have on reliability.
 	\begin{tikzpicture}
 		\begin{axis}[
                         width=\linewidth,
-                        height=0.7\linewidth,
+                        height=0.6\linewidth,
 		%title={PDS Replication affect on availability},
 		xlabel={Failed storage nodes},
 		ylabel={VM Snapshot Availability (\%)},
@@ -456,7 +454,7 @@ delivers additional 10.5\% reduction.
 \end{figure}
 }
 
-%version of above graph using minhash algorithm
+\comments{%version of above graph using minhash algorithm
 \begin{figure}[ht]
   \centering
     \begin{tikzpicture}
@@ -491,6 +489,60 @@ delivers additional 10.5\% reduction.
     \caption{Deduplication Efficiency
         ($efficiency=\frac{d-du}{d-du_{complete}}$) comparison between
     Stateless Routing with Binning and VC. VC uses the minhash algorithm for Level-2.}
+  \label{fig-exbin-efficiency-graph2}
+\end{figure}
+}
+
+%this version combines the old and the minhash alg. to compare against srb
+\begin{figure}[ht]
+  \centering
+    \begin{tikzpicture}
+            \begin{axis}[
+            %title={Ex-Binning Efficiency},
+            width=\linewidth,
+            height=0.75\linewidth,
+            cycle list={%
+                {blue,solid,mark=square*},
+                {blue,solid,mark=triangle*,mark size=1.5},
+                {blue,solid,mark=diamond*,mark size=1.5},
+                {blue,solid,mark=pentagon*,mark size=1.4},
+                {red,draw=red,densely dotted,mark=square},
+                {red,densely dotted,mark=triangle,mark size=1.5},
+                {red,densely dotted,mark=diamond,mark size=1.5},
+                {brown,densely dashed,mark=*},
+                %{red,densely dotted,mark=o},
+                %{red,densely dotted,mark=pentagon,mark size=1.4},
+            },
+            mark repeat={5},
+            xlabel={Number of VMs added},
+            ylabel={Dedup. Efficiency (\%)},
+            xmin=0,
+            ymin=88.5,
+            ymax=100,
+            %extra y ticks={4.5,5.5,6.5} %to add extra ticks
+            mark options=solid,
+            legend pos=south west,
+            legend columns=2,
+            legend style={
+                font={\tiny\sffamily},
+                %at={(0.5,-0.2)},
+                %anchor=north
+            },
+            ]
+            \addplot table[x=VMs,y=MHcds4] {figures/exbin_efficiency_comparison2.txt};
+            \addplot table[x=VMs,y=MHcds2] {figures/exbin_efficiency_comparison2.txt};
+            \addplot table[x=VMs,y=MHcds1] {figures/exbin_efficiency_comparison2.txt};
+            \addplot table[x=VMs,y=MHNocds] {figures/exbin_efficiency_comparison2.txt};
+            \addplot table[x=VMs,y=cds4] {figures/exbin_efficiency_comparison.txt};
+            \addplot table[x=VMs,y=cds2] {figures/exbin_efficiency_comparison.txt};
+            \addplot table[x=VMs,y=cds1] {figures/exbin_efficiency_comparison.txt};
+            \addplot table[x=VMs,y=exbin] {figures/exbin_efficiency_comparison2.txt};
+            \legend{VC ($\sigma=4\%$),VC ($\sigma=2\%$),VC ($\sigma=1\%$),VC (No PDS),VC(MH\,$\sigma=4\%$),VC(MH\,$\sigma=2\%$),VC(MH\,$\sigma=1\%$),SRB};
+            \end{axis}
+    \end{tikzpicture}
+    \caption{Deduplication Efficiency
+        ($efficiency=\frac{d-du}{d-du_{complete}}$) comparison between
+    Stateless Routing with Binning and VC. Also compares old VC algorithm to new VC with Minhash for Level-2.}
   \label{fig-exbin-efficiency-graph2}
 \end{figure}
 
