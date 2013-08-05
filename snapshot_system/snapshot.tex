@@ -367,7 +367,8 @@ the better deduplication efficiency our PDS deduplication approach will have.
     \begin{tikzpicture}
             \begin{axis}[
             %title={PDS Coverage},
-            %width=\columnwidth,
+            width=\linewidth,
+            height=0.6\linewidth,
             cycle multi list={
                 mline\nextlist
                 [3 of]mmark*\nextlist
@@ -380,7 +381,7 @@ the better deduplication efficiency our PDS deduplication approach will have.
             %legend pos=outer north east,
             legend columns=2,
             legend style={
-                at={(0.5,-0.2)},
+                at={(0.5,-0.25)},
             anchor=north},
             ]
             \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=A1] {figures/cds_coverage.txt};
