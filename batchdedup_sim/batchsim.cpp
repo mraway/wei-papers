@@ -12,12 +12,16 @@ double model_time(const vector<vector<double> > &machine_loads);
 int main (int argc, char *argv[]) {
     int argi = 1;
     const char* machinefile = NULL;
+    vector<BackupScheduler*> schedulers;
     while(argi < argc && argv[argi][0] == '-') {
         if (!strcmp(argv[argi],"--")) {
             argi++; break;
         } else if (!strcmp(argv[argi],"--machinefile") || !strcmp(argv[argi],"-m")) {
             machinefile=argv[++argi];
             argi++;
+        } else if (!strcmp(argv[argi],"--allschedule")) {
+            argi++;
+            schedulers.push_back(new AllScheduler());
         } else {
             cout << "Unknown argument: " << argv[argi] << endl;
             return -1;
@@ -65,13 +69,23 @@ int main (int argc, char *argv[]) {
     //    }
     //}
 
-    vector<vector<double> > schedule;
-    BackupScheduler *scheduler = new AllScheduler();
-    scheduler->setMachineList(machinelist);
-    cout << "Scheduler: " << scheduler->getName() << endl;
-    scheduler->schedule_round(schedule);
-    cout << "Total Time: " << model_time(machinelist) << endl;
-    delete scheduler;
+    for(std::vector<BackupScheduler*>::iterator scheduler = schedulers.begin(); scheduler != schedulers.end(); ++scheduler) {
+        int round = 1;
+        double total_time = 0;
+        vector<vector<double> > schedule;
+        (*scheduler)->setMachineList(machinelist);
+        cout << "Scheduler: " << (*scheduler)->getName() << endl;
+        while((*scheduler)->schedule_round(schedule)) {
+            double round_time = model_time(schedule);
+            cout << "  Round " << round << ": Round Time=" << round_time << endl;
+            total_time += round_time;
+            schedule.clear();
+        }
+        cout << "  Total Time: " << total_time << endl;
+    }
+    for(std::vector<BackupScheduler*>::iterator it = schedulers.begin(); it != schedulers.end(); ++it) {
+        delete *it;
+    }
 }
 
 double schedule_round(vector<vector<double> > &machine_loads, vector<vector<double> > &round_schedule) {
@@ -79,6 +93,16 @@ double schedule_round(vector<vector<double> > &machine_loads, vector<vector<doub
 }
 
 double model_time(const vector<vector<double> > &machine_loads) {
-    return 0;
+    double max_cost = 0;
+    for(vector<vector<double> >::const_iterator machine = machine_loads.begin(); machine != machine_loads.end(); ++machine) {
+        double machine_cost = 0;
+        for(vector<double>::const_iterator vm = (*machine).begin(); vm != (*machine).end(); ++vm) {
+            machine_cost += (*vm);
+        }
+        if (machine_cost > max_cost) {
+            max_cost = machine_cost;
+        }
+    }
+    return max_cost;
 }
 
