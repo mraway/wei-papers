@@ -570,7 +570,6 @@ delivers additional 10.5\% reduction.
 %content can be eliminated using the PDS also.
 
 \subsection{Resource Usage}
-{\bf Storage cost of replication.}
 \begin{table}
     \begin{tabular}{|c|c|}
     \hline
@@ -585,24 +584,29 @@ delivers additional 10.5\% reduction.
 \label{tab:replication_cost}
 \end{table}
 
-Table~\ref{tab:replication_cost} shows the total storage space required by VC as the PDS replication degree is changed. The increase in storage cost is minimal because the PDS makes up a very small percent of the total storage space, but the increase in reliability can be much more significant (see Figure~\ref{fig:pds-replication}).
+{\bf Storage cost of replication.} Table ~\ref{tab:replication_cost} shows the total storage space required by VC as the PDS replication degree is changed. The increase in storage cost is minimal because the PDS makes up a very small percent of the total storage space, but the increase in reliability can be much more significant (see Figure~\ref{fig:pds-replication}).
 
 \begin{table}
-    \begin{tabular}{|c|c|c|c|c|}
+    \begin{tabular}{|c|c|c|c|}
     \hline
-    Tasks & CPU & Mem (MB) & Disk W (MB/s) & Network \\ \hline
-    1                      & 19\% & 18.1 & 32.1     &    \\ \hline
-    2                      & 35\% & 31.8 & 53     &    \\ \hline
-    4                      & 63\% & 54.1 & 84     &    \\ \hline
-    6                      & 77\% & 71.9  & 88.5   &     \\ \hline
-    8                      & 82\% & 90.5   & 89.2   &    \\ \hline
-    10                      & 85\% & 97.2   & 90.4   &    \\ \hline
-    12                      & 91\% & 95.6    & 91.5   &   \\ \hline
+    Tasks & CPU & Mem (MB) & Disk W (MB/s) \\ \hline
+    1     & 19\% & 18.1 & 32.1 \\ \hline
+    2     & 35\% & 31.8 & 53 \\ \hline
+    4     & 63\% & 54.1 & 84 \\ \hline
+    6     & 77\% & 71.9 & 88.5 \\ \hline
+    8     & 82\% & 90.5 & 89.2 \\ \hline
+%    10                      & 85\% & 97.2   & 90.4 \\ \hline
+%    12                      & 91\% & 95.6    & 91.5 \\ \hline
     \end{tabular}
-\caption{Resource usage under concurrent backup tasks}
+\caption{Resource usage of concurrent backup tasks in each node}
 \label{tab:resource_usage}
 \end{table}
 
+{\bf Resource usage and its impact to cluster} We further studied the resource usage when running concurrent snapshot backup tasks on each node. 
+Table ~\ref{tab:resource_usage} gives the CPU, memory and disk write workload of running different number of backup tasks at the same time. 
+Notice that memory and CPU used by PDS index and QFS are not included since they belong to the cloud infrastructure services and are shared among many applications.
+We see our hybrid deduplication scheme only occupies small amount of system resources in general, the memory usage is especially small because
+our efficient localized deduplication only needs to keep the parent snapshot recipe and a few similar segment recipes in memory for duplicate detection.
 
 \subsection{Processing Time and Throughput}
 %{\bf Single VM Backup} We start the evauluation of our system by examine the normal warmed-up
@@ -658,7 +662,7 @@ PDS lookup takes only a small amount of time.
 \end{figure}
 
 
-    Figure~\ref{fig:parallel_backup} shows the node throughput when all machine nodes run
+Figure~\ref{fig:parallel_backup} shows the node throughput when all machine nodes run
 the backup procedure in parallel.
 To begin, on each node we write snapshots for 4 VMs concurrently, and gradually 
 increase number of VMs to 12 to saturate our system capability. We observed 
@@ -670,7 +674,9 @@ manages one disk per node, which prevents it from fully utilizing the the
 benefits of parallel disk access. We expect our architecture can
 perform even better in production clusters, which often have ten or more disks on each node.
 
-
+Base on the observed performance numbers, even with a single backup task per node and enforcing the disk read speed to
+50 MB/s,  we can still process raw data at near 175 MB/s. If we consider the extreme case in which each machine has 25 VMs
+ at 40GB size, our snapshot system can finish backing up all the VMs (1TB total) in 1.58 hours.
 
 \begin{figure}
     \centering

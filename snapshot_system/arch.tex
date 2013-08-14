@@ -554,7 +554,7 @@ The PDS data chunks are commonly shared all VMs and we do not consider their ref
 counting during snapshot deletion.
 %The selection of PDS data chunks is updated periodically independent of snapshot deletion process.
 
-While we can use the standard mark-and-sweep technique~\cite{mark-sweep}, 
+While we can use the mark-and-sweep technique~\cite{Guo2011}, 
 it still takes significant time to conduct this process every time there is a snapshot deletion.
 In the case of Alibaba, snapshot backup is conducted automatically and there are 
 about 10 snapshot stored for every user. When there is
@@ -589,13 +589,16 @@ in this snapshot.
 %for every reference pointing to append store, add it to the bloom filter.
 
 \item {\bf Approximate deletion with fast summary comparison.}
-Then when there is a snapshot deletion,  
-we need to identify if  chunks to be deleted from one snapshot
+When there is a snapshot deletion,  
+we need to identify if  chunks to be deleted from that snapshot
 are still used by other snapshots. 
-This is done approximately and quickly by comparing the reference pointers of deleted snapshots with
+This is done approximately and quickly by comparing the 
+reference pointers of deleted snapshot with
 the merged reference bloom-filter summary of other live snapshots.
-The merging of live snapshot bloom-filter bits uses the logical OR operator and the merged vector still takes $z$ bits.
-Since the number of live snapshots is limited for each VM (e.g. 10 in the Alibaba's production system), 
+The merging of live snapshot bloom-filter bits uses the logical OR operator 
+and the merged vector still takes $z$ bits.
+Since the number of live snapshots is limited for 
+each VM (e.g. 10 in the Alibaba's production system), 
 the time cost of this comparison is small.
 %Instead of scanning the entire append store indices, we merge the type-1 summaries of all
 %valid snapshots. 
@@ -605,8 +608,12 @@ the time cost of this comparison is small.
 %Thus by the property of bloom filter, if a fingerprint is not found in merged summaries, 
 %we are certain that block is no longer used by any valid snapshot, it would be then added
 %to append store's deletion log.
-However, there is a small false-positive ratio which
-would identify unused data as in use, resulting in temporary storage leakage.
+
+If a chunk's reference pointer is not found in the merged summary vector, we are sure that
+this chunk is not used by any live snapshots, thus it's safe delete it. 
+However, among all the chunks that suppose to be deleted, 
+there is a small false-positive ratio which
+would identify unused chunks as in use, resulting in temporary storage leakage.
 
 
 \item {\bf Periodic repair of leakage}
@@ -684,7 +691,7 @@ L = R \Delta u \epsilon
 When leakage ratio $L/U$ exceeds a pre-defined threshold $\tau$, we need to execute a leak repair:
 \[
 \frac{L}{U} = \frac{R \Delta u \epsilon}{u+(h-1)\Delta u } > \tau 
-\Longrightarrow R > \frac{\tau}{\epsilon}\frac{u + (h-1)\Delta u}{\Delta u}
+\Longrightarrow R > \frac{\tau}{\epsilon}\times\frac{u + (h-1)\Delta u}{\Delta u}
 \]
 For example in our tested dataset,  
 each VM keeps $h=10$ snapshots and each snapshot has
