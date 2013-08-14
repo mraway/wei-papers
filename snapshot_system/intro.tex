@@ -44,18 +44,20 @@ a backup service with other cloud services and  uses a minimum amount of resourc
 %A recent study using subsampling~\cite{Guo2011}  can significantly reduce the memory requirement.
 We also consider the fact that after
 deduplication, most data chunks are shared by several to many virtual machines.
-Failure of shared data chunks can have a catastrophic effect and many
+Failure of few shared data chunks can have a 
+%catastrophic 
+broad effect and many
 snapshots of virtual machines would be affected.
 The previous work in deduplication focuses on the efficiency and approximation of
-finger print comparison, and has not addressed fault tolerance together with deduplication.
+finger print comparison, and has not addressed fault handling issues  together with deduplication.
 Thus we also seek deduplication options that yield better fault isolation.
 % along with a low-cost solution.
 Another issue considered is that
 that deletion of old snapshots compete for computing resource as well. 
 %That is because data dependence created deletion of old snapshots competes for computing resources.
 % as well so deletion needs to be considered in system design. 
-sharing of data chunks among oby multiple VMs and their snapshots needs to be detected during
-snapshot   deletion and such dependenec complicates deletion operations. 
+Sharing of data chunks among by multiple VMs needs to be detected during
+snapshot   deletion and such dependence complicates deletion operations. 
 %The additional complexity for deletions
 %come from the dependencies created by multiple links to the same problem, so
 %some solution is needed to determine blocks with no dependent snapshots after deletion.
@@ -73,9 +75,9 @@ based on  version  detection, inner VM duplicate search,
 and controlled cross-VM comparison. 
 This approach is VM centric by localizing duplicate detection within each VM  
 and by packaging data chunks from the same VM into a file system block as much as possible.
-By narrowing duplicate sharing within a small percent of data chunks,
+By narrowing duplicate sharing within a small percent of common data chunks and exploiting their popularity,
 this scheme can afford to allocate extra replicas of these shared chunks for better
-fault resilience.
+fault resilience while sustaining competitive deduplication efficiency.
 Localization also brings the benefits of greater ability to exploit parallelism so
 backup operations can run simultaneously without a central  bottleneck.
 This  VM-centric solution uses  a small amount of  memory while delivering a reasonable deduplication efficiency. 

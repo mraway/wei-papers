@@ -21,12 +21,13 @@ raw data for backup.
 Figure~\ref{fig:collocated} illustrates the cluster architecture where
 each physical runs a backup service and a distributed file system (DFS)~\cite{GFS2004,Hadoop} 
 serves a backup store  for the snapshots.
-The previous study shows that 
- deduplication can compress the backup copies 
-effectively in a 10:1 or even 15:1 rage. 
-Therefore  the portion of space in a cluster
-allocated for snapshots of data should not dominate
-the cluster storage usage.
+%The previous study shows that 
+% deduplication can compress the backup copies 
+%effectively in a 10:1 or even 15:1 rage. 
+%Therefore  the portion of space in a cluster
+%allocated for snapshots of data should not dominate
+%the cluster storage usage.
+%perhaps briefly discuss compression is high, incremental change is small from versions..???
 
 
 %The running of such a service is subject to the resource availability of the system and 
@@ -84,7 +85,6 @@ to reduce memory requirements with the tradeoff of a reduced deduplication ratio
 %the virtual device driver can easily keep track if  large data
 %segments have been modified using dirty bits and such information can avoid sending
 %unmodified data segments for deduplication, which significantly saves cost.
-
 Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,idedup}. 
 All of the above approaches have focused on optimization of deduplication
 efficiency, and none of them have considered the impact
@@ -140,12 +140,12 @@ Localizing the impact of deduplication can increase fault isolation and resilien
 Thus from the fault tolerance point of view,  duplicate sharing among multiple VMs is 
 discouraged. 
 Another disadvantage of sharing is that it complicates snapshot deletion, 
-which  occurs frequently when snapshots expire regularly and leads a cost concern. 
+which  occurs frequently when snapshots expire regularly. 
 The mark-sweep approach~\cite{mark-sweep} is effective for deletion, and its main cost
 is to count if a data chunk is still shared by other snapshots.
 Localizing deduplication can  minimize data sharing and simplify deletion while sacrificing 
 deduplication efficiency, and  can faciltate parallel execition of snaptshot operations.
-Thus we seek for a tradeoff. 
+%Thus we seek for a tradeoff. 
  
 % since storage for shared identical content chunks can become a failure point.
 %Without any control of such data sharing, we can only increase  
@@ -155,9 +155,9 @@ Thus we seek for a tradeoff.
 %is restricting the impact of  data loss to a limited number of VMs. 
 %It is not desirable that small scale of data failure affects the backup of many VMs.
 %when users access snapshots in a recovery process. 
-\item{\bf Management of file system blocks.}
+\item{\em  Management of file system blocks.}
 The file block size in a distributed file system such as  Hadoop and GFS is uniform and large (e.g.  64MB),
- a data chunk in a deduplication service is of a nonuniform size with 4KB or 8KB on average.
+ a data chunk in a typical deduplication system is of a nonuniform size with 4KB or 8KB on average.
 %We need to build an intermediate layer that supports large snapshot writing with append operations
 %and infrequent snapshot access.
 Packaging data chunks to a file system block can create more data dependence among VMs
@@ -282,7 +282,7 @@ capacity of the system, thus limiting its scalability.
 %\end{enumerate}
 
 
-We call the classical deduplication approach as   VM-oblivious (VO)
+We call the traditional deduplication approach as   VM-oblivious (VO)
 because they compare fingerprints of snapshots without consideration of VM.
 With the above  considerations in mind, we study a 
 VM-centric approach (called VC)
@@ -302,7 +302,7 @@ Such a scheme  is  VM-centric since deduplication is localized.
 %Active snapshots will contain all the information needed to restore the virtual disk
 %and when deleting a snapshot, data referenced by other snapshots are removed.
 We are seeking for a tradeoff since 
-cross-VM  signature comparison can deliver additional reduction~\cite{Guo2011,Dong,ExtremeBining}.
+cross-VM  signature comparison can deliver additional compression~\cite{Guo2011,Dong,ExtremeBining}.
 %We are seeking for additional optimization to improve duplication efficiency and design the 
 %association of data chunks with the underlying file blocks so that
 %file block sharing among VMs is minimized.
