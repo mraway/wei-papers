@@ -15,9 +15,12 @@
 %The traditional approach compares all fingerprints and 
 %stores one copy for all of a chunk's duplicates.
 %We call this as  the VM-oblivious (VO) approach.
-Our VC design has the following  objectives: 1)  localizing deduplication while identifying a decent amount of
-duplicates among VMs to maintain a competitive deduplication efficiency and simplify snapshot management;
-2) Minimizing the number of file system blocks shared among VMs and adding extra replicas for shared blocks.
+
+
+
+%Our VC design has the following  objectives: 1)  localizing deduplication while identifying a decent amount of
+%duplicates among VMs to maintain a competitive deduplication efficiency and simplify snapshot management;
+%2) Minimizing the number of file system blocks shared among VMs and adding extra replicas for shared blocks.
 
 \comments{
 \begin{itemize}
@@ -77,17 +80,21 @@ in the average of 4K or 8K~\cite{??},
 %This allows the system to achieve deduplication even when there are insertions/deletions which would
 %affect many fixed-size chunks.
 we conduct additional local inner-VM deduplication by comparing
-dirty segment's chunk fingerprints to similar segments from its parent snapshot. 
-For every segment, the minimum value of all its chunk fingerprints is computed during backup
-and is recorded in the snapshot recipe.
+dirty segment's chunk fingerprints within  {\em similar} segments from its parent snapshot. 
+We define two segments are similar if their approximated content signature is the same.
+This segment signature value is defined as the minimum value of all its chunk fingerprints 
+computed during backup and is recorded in the snapshot recipe.
 When we are processing a dirty segment,
 we can easily find similar segments from the
-parent snapshot recipe and load their segment recipes. Then 
-given a set of data chunks within a dirty segement,  we compare  these chunk fingerprints
+parent snapshot recipe and load their segment recipes and also set a limit on the 
+the number of  similar segments to be  searched. 
+ Then 
+given a set of data chunks within a dirty segment,  we compare  these chunk fingerprints
 with those in similar segments.  
-For example, with a 2MB segment, there are about 500 fingerprints to compare.
-The amount of memory for maintaining those fingerprints in similar segment s is small, as we only
-load one dirty segment at a time.
+For example, with a 2MB segment, there are about 500 fingerprints to compare. By limiting at most 10 similar
+segments to search,
+the amount of memory for maintaining those fingerprints in similar segment s is small.
+% as we only load one dirty segment at a time.
 
 
 %If we use 4KB in level-1, then such a level-1 should have similar dedup efficiency 
