@@ -15,6 +15,8 @@ bibtex:
 
 ${MAIN}.pdf: ${TEX} ${FIG} ${BIB} makefile
 	pdflatex ${MAIN}.tex
+	bibtex ${MAIN}
+	pdflatex ${MAIN}.tex
 
 clean:
 	rm -rf *.out *.aux *.log *.blg *.bbl *.dvi *.ps ${MAIN}.pdf
