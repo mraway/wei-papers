@@ -158,86 +158,108 @@ $\beta$ & time cost for in-memory duplicate comparison\\
 \label{tab:symbol}
 \end{table}
 
-The system keeps at most  $ x$ copies of snapshots for each VM on average.  The total size of  global content fingerprints is $x*s*v/c*u *(1-d1)*(1-d2)$ where $c$ is the average chunk size and $u$ is the meta data size of each chunk fingerprint. In practice $c=4K$ and $u/c$  is about 100.  $x=10$ in the case of Alibaba cloud.
+The system keeps at most  $ x$ copies of snapshots for each VM on average.  The
+total size of  global content fingerprints is $x*s*v/c*u *(1-d1)*(1-d2)$ where
+$c$ is the average chunk size and $u$ is the meta data size of each chunk
+fingerprint. In practice $c=4K$ and $u/c$  is about 100.  $x=10$ in the case of
+Alibaba cloud.
 
-Define $r = s v (1-d_1)/(ck)$  which is the total number of duplicate detection requests issued at each machine and at each iteration.
+Define $r = s v (1-d_1)/(ck)$  which is the average number of detection
+requests made by each machine, and the number of detection requests each
+machine must handle.  We assume the load, i.e., amount of data to backup at
+each machine, is not balanced, so there is also $r_max$, which is the number of
+requests at the most heavily loaded machine. This is the case in the Alibaba
+cluster, with some machines being terabytes while the average machine is 40GB.
 
-We first analyze the time cost of 5 stages assuming an evenly distributed load
-across the machines. Later we analyze the additional costs associated with an
-imbalanced load.
+Here we develop a model for the total backup time, which becomes important in
+trying to minimize the CoW cost during backup \emph{CoW should be explained and
+justified before this point in the paper}.  The backup process can be broken
+into 4 stages, where each stage has two parts, first an all-to-all exchange of
+data, then local processing to prepare for the next stage.
 
-In Stage 1, the dirty segments are read from the virtual disk, the hash of each
-block is computed, and dedup requests are sent to the machine hosting the
-blocks' respective partitions. Since we must read $r$ blocks from disk, send
-$r$ dedup requests, and then save the requests to temporary files (one for each
-parition), the time for the first stage can be expressed as:
+In Stage 1a, the dirty segments are read from the virtual disk, the hash of
+each block is computed, and dedup requests are sent to the machine hosting the
+blocks' respective partitions. Due to the synchronization in each stage, Stage
+1a needs to wait for the most heavily loaded machine to read all it's data - so
+the read stage depends on $r_{max}$, while the write stage, which is balanced
+by the hash partitioning, depends on $r$. We first read $r$ blocks from disk,
+send $r$ dedup requests, and then save the received requests to temporary files
+(one for each parition). The time for the first stage can be expressed as:
 \[
-    b_r r c + \alpha_n\frac{u r}{m_n} + b_w r u
+    r_{max} c + \alpha_n\frac{u r_{max}}{m_n} / b_r + r u / b_w
 \]
 
-In Stage 2, each partition index is read from disk, then the dedup requests for
-that paritition are processed and the results are written back out to disk to
-be sent in Stage 3. The results are broken into 3 groups: duplicate blocks, new
+In Stage 1b, each partition index is read from disk, then the dedup requests
+(from Stage 1a) for that paritition are processed and the results are written
+back out to disk. The results are broken into 3 groups: duplicate blocks, new
 blocks, and dup-with-new blocks, which are duplicates of blocks that are new to
 this batch.
 
-Let $n$ be the total number of index entries in the system.
-$n=(p v x)(1-d_1)(1-d_2)\frac{e}{c}$,
-which represents the index cost for all the deduped data in the system.
-Since each machine holds a constant number $q$ paritions, and the paritions
-should be uniform in size as they are from the hash of the block,
-the total number of index entries at each machine should be $n/p$
+Let $n$ be the total number of index entries at each machine before the backup
+was started.  $n=(v x)(1-d_1)(1-d_2)\frac{e}{c}$. Since each machine holds a
+constant number $q$ paritions, and the paritions are uniform in size as they
+are from the hash of the block, $n$ is very even across the machines, even when
+the vm load is imbalanced.
 
-The cost of Stage 2 is:
+The cost of Stage 1b is:
 \[
-    b_r r u + b_r\frac{n e}{p} + r \beta + b_w r e
+    r u / b_r + (n e)b_r + r \beta + r e / b_w
 \]
 
-In Stage 3 the new block results from Stage 2 are sent to the requesters, and
-in Stage 3b the new blocks are written out to the storage system. We will now
-mostly be dealing with the $r(1-d_2)$ blocks that are new to the system. In 3b
+In Stage 2a the new block results from Stage 1 are sent to the requesters, and
+in Stage 2b the new blocks are written out to the storage system. We will now
+mostly be dealing with the $r(1-d_2)$ blocks that are new to the system (or
+$r_{max}(1-d_2)$ when we must wait for the most heavily loaded machine). In 2b
 the dedup results must be read and the actual disk blocks for each new block
-must be re-read before they can be sent to the block store.
+must be re-read before they can be sent to the block store. The CoW locking on
+the filesystem cannot end until after the dirty data is re-read in Stage 2b.
 
-The cost of Stage 3 is:
+The cost of Stage 2a is:
 \[
-    b_r r(1-d_2)e + \alpha_n\frac{e r(1-d2)}{m_n} + b_w r(1-d_2)e
+    r(1-d_2)e / b_r + \alpha_n\frac{e r_{max}(1-d2)}{m_n} + r_{max}(1-d_2)e / b_w
 \]
-and the cost of Stage 3b is:
+and the cost of Stage 2b is:
 \[
-    b_r r(1-d_2)(e+c) + b_b r(1-d_2)c
+    r_{max}(1-d_2)(e+c) / b_r + r(1-d_2)c / b_b
 \]
 
 After the new blocks have been written to the block store, and references to
 them have been obtained, those references must be returned to the parition
-index holder so that those blocks may be deduped in the future. This Stage 4 (read the new index entries, return them to the parition master, and save the received references) costs:
+index holder so that those blocks may be deduped in the future (and also so
+dup-with-new requests can be handled in this run). This Stage 3a, to read the
+new index entries, return them to the parition index holder, and save the
+received references, costs:
 \[
-    b_r r (1-d_2)e + \alpha_n\frac{e r(1-d_2)}{m_n} + b_w r(1-d_2)e
+    r (1-d_2)e / b_r + \alpha_n\frac{e r(1-d_2)}{m_n} + r(1-d_2)e / b_w
 \]
 
-Stage 4b consists of updating the partition index with the new block references
-from Stage 4, and costs:
+Stage 3b consists of updating the partition index with the new block references
+from Stage 3a, and also updating the dup-with-new results from Stage 1. First
+we load the new references from Stage 2b into memory, and then dedup the
+dup-with-new requests against the new block references and save the dup-with
+new requests back to disk. We then add the new references to the corresponding
+partition index to handle future dedup requests. Stage 3b costs:
 \[
-    b_r r (1-d_2)e + b_w r(1-d_2)e
+    r (1-d_2)e / b_r + r(1-d_2)e / b_w
 \]
 
-In the final stage (Stage 5), dup-with-new references are returned to the
+In the final stage (Stage 4), dup-with-new references are returned to the
 requesters, so that the snapshot recipes may be updated with references to
 those blocks. This process costs:
 \[
-    b_r r d_3 e + \alpha_n\frac{e r d_3}{m_n} + b_w r e
+    r d_3 e / b_r + \alpha_n\frac{e r d_3}{m_n} + r e / b_w
 \]
 
 Memory Requirments:\\
 In every stage we need 1 disk read buffer, And then additionally we need the following:
 \begin{description}
-    \item[Stage 1] network buffers, and $q$ disk write buffers
-    \item[Stage 2] $n/q$ partition index space, and $p$ disk write buffers (for dedup responses)
-    \item[Stage 3] network buffers, $v$ disk write buffers (for dedup responses)
-    \item[Stage 3b] 1 disk write buffer (to write out new blocks)
-    \item[Stage 4] network buffers, $q$ disk write buffers (to write out new refs)
-    \item[Stage 4b] 1 disk write buffer (to update patition index with new blocks)
-    \item[Stage 5] network buffers
+    \item[Stage 1a] network buffers, and $q$ disk write buffers
+    \item[Stage 1b] $n/q$ partition index space, and $p$ disk write buffers (for dedup responses)
+    \item[Stage 2a] network buffers, $v$ disk write buffers (for dedup responses)
+    \item[Stage 2b] 1 disk write buffer (to write out new blocks)
+    \item[Stage 3a] network buffers, $q$ disk write buffers (to write out new refs)
+    \item[Stage 3b] 1 disk write buffer (to update patition index with new blocks)
+    \item[Stage 4] network buffers, $v$ disk write buffers
 \end{description}
 
 
