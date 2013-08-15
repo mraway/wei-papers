@@ -186,7 +186,7 @@ by the hash partitioning, depends on $r$. We first read $r$ blocks from disk,
 send $r$ dedup requests, and then save the received requests to temporary files
 (one for each parition). The time for the first stage can be expressed as:
 \[
-    r_{max} c + \alpha_n\frac{u r_{max}}{m_n} / b_r + r u / b_w
+    r_{max} c / b_d + \alpha_n\frac{p u r_{max}}{m_n} + r u / b_w
 \]
 
 In Stage 1b, each partition index is read from disk, then the dedup requests
@@ -203,7 +203,7 @@ the vm load is imbalanced.
 
 The cost of Stage 1b is:
 \[
-    r u / b_r + (n e)b_r + r \beta + r e / b_w
+    r u / b_r + n e / b_r + r \beta + r e / b_w
 \]
 
 In Stage 2a the new block results from Stage 1 are sent to the requesters, and
@@ -216,7 +216,7 @@ the filesystem cannot end until after the dirty data is re-read in Stage 2b.
 
 The cost of Stage 2a is:
 \[
-    r(1-d_2)e / b_r + \alpha_n\frac{e r_{max}(1-d2)}{m_n} + r_{max}(1-d_2)e / b_w
+    r(1-d_2)e / b_r + \alpha_n\frac{e r_{max}(1-d2) p}{m_n} + r_{max}(1-d_2)e / b_w
 \]
 and the cost of Stage 2b is:
 \[
@@ -230,37 +230,39 @@ dup-with-new requests can be handled in this run). This Stage 3a, to read the
 new index entries, return them to the parition index holder, and save the
 received references, costs:
 \[
-    r (1-d_2)e / b_r + \alpha_n\frac{e r(1-d_2)}{m_n} + r(1-d_2)e / b_w
+    r_{max} (1-d_2)e / b_r + \alpha_n\frac{e r_{max}(1-d_2) p}{m_n} + r(1-d_2)e / b_w
 \]
 
 Stage 3b consists of updating the partition index with the new block references
 from Stage 3a, and also updating the dup-with-new results from Stage 1. First
 we load the new references from Stage 2b into memory, and then dedup the
-dup-with-new requests against the new block references and save the dup-with
-new requests back to disk. We then add the new references to the corresponding
+dup-with-new requests against the new block references. Once the dup-with-new
+results have chunk references, we can add the dup-with-new results to the
+duplicate result files. We then add the new references to the corresponding
 partition index to handle future dedup requests. Stage 3b costs:
 \[
-    r (1-d_2)e / b_r + r(1-d_2)e / b_w
+    r ((1-d_2) + d_3)e/b_r + r (1-d_2)\beta + r((1-d_2) + d_3)e / b_w
 \]
 
-In the final stage (Stage 4), dup-with-new references are returned to the
-requesters, so that the snapshot recipes may be updated with references to
-those blocks. This process costs:
+In the final stage (Stage 4), all duplicate references (including the
+dup-with-new references from 3b) are returned to the requesters, so that the
+snapshot recipes may be updated with references to those blocks. This process
+costs:
 \[
-    r d_3 e / b_r + \alpha_n\frac{e r d_3}{m_n} + r e / b_w
+    r d_3 e / b_r + \alpha_n\frac{e r_{max} d_3 p}{m_n} + r e / b_w
 \]
 
-Memory Requirments:\\
-In every stage we need 1 disk read buffer, And then additionally we need the following:
-\begin{description}
-    \item[Stage 1a] network buffers, and $q$ disk write buffers
-    \item[Stage 1b] $n/q$ partition index space, and $p$ disk write buffers (for dedup responses)
-    \item[Stage 2a] network buffers, $v$ disk write buffers (for dedup responses)
-    \item[Stage 2b] 1 disk write buffer (to write out new blocks)
-    \item[Stage 3a] network buffers, $q$ disk write buffers (to write out new refs)
-    \item[Stage 3b] 1 disk write buffer (to update patition index with new blocks)
-    \item[Stage 4] network buffers, $v$ disk write buffers
-\end{description}
+%Memory Requirments:\\
+%In every stage we need 1 disk read buffer, And then additionally we need the following:
+%\begin{description}
+%    \item[Stage 1a] network buffers, and $q$ disk write buffers
+%    \item[Stage 1b] $n/q$ partition index space, and $p$ disk write buffers (for dedup responses)
+%    \item[Stage 2a] network buffers, $v$ disk write buffers (for dedup responses)
+%    \item[Stage 2b] 1 disk write buffer (to write out new blocks)
+%    \item[Stage 3a] network buffers, $q$ disk write buffers (to write out new refs)
+%    \item[Stage 3b] 1 disk write buffer (to update patition index with new blocks)
+%    \item[Stage 4] network buffers, $v$ disk write buffers
+%\end{description}
 
 
 
