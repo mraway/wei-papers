@@ -186,7 +186,7 @@ by the hash partitioning, depends on $r$. We first read $r$ blocks from disk,
 send $r$ dedup requests, and then save the received requests to temporary files
 (one for each parition). The time for the first stage can be expressed as:
 \[
-    r_{max} c / b_d + \alpha_n\frac{p u r_{max}}{m_n} + r u / b_w
+    r_{max} c / b_r + \alpha_n\frac{p u r_{max}}{m_n} + r u / b_w
 \]
 
 In Stage 1b, each partition index is read from disk, then the dedup requests
@@ -249,7 +249,7 @@ dup-with-new references from 3b) are returned to the requesters, so that the
 snapshot recipes may be updated with references to those blocks. This process
 costs:
 \[
-    r d_3 e / b_r + \alpha_n\frac{e r_{max} d_3 p}{m_n} + r e / b_w
+    r d_2 e / b_r + \alpha_n\frac{e r_{max} d_2 p}{m_n} + r e / b_w
 \]
 
 %Memory Requirments:\\
