@@ -164,7 +164,7 @@ $c$ is the average chunk size and $u$ is the meta data size of each chunk
 fingerprint. In practice $c=4K$ and $u/c$  is about 100.  $x=10$ in the case of
 Alibaba cloud.
 
-Define $r = s v (1-d_1)/(ck)$  which is the average number of detection
+Define $r = s v (1-d_1)/c$  which is the average number of detection
 requests made by each machine, and the number of detection requests each
 machine must handle.  We assume the load, i.e., amount of data to backup at
 each machine, is not balanced, so there is also $r_max$, which is the number of
@@ -211,8 +211,10 @@ in Stage 2b the new blocks are written out to the storage system. We will now
 mostly be dealing with the $r(1-d_2)$ blocks that are new to the system (or
 $r_{max}(1-d_2)$ when we must wait for the most heavily loaded machine). In 2b
 the dedup results must be read and the actual disk blocks for each new block
-must be re-read before they can be sent to the block store. The CoW locking on
-the filesystem cannot end until after the dirty data is re-read in Stage 2b.
+must be re-read before they can be sent to the block store. To avoid seeking
+we have found it faster to simply re-read all the dirty data and ignore the
+duplicate blocks rather than find only the new blocks on disk. The CoW locking
+on the filesystem cannot end until after the dirty data is re-read in Stage 2b.
 
 The cost of Stage 2a is:
 \[
@@ -220,7 +222,7 @@ The cost of Stage 2a is:
 \]
 and the cost of Stage 2b is:
 \[
-    r_{max}(1-d_2)(e+c) / b_r + r(1-d_2)c / b_b
+    r_{max}c / b_r + r_{max}(1-d_2)e / b_r + r(1-d_2)c / b_b
 \]
 
 After the new blocks have been written to the block store, and references to
