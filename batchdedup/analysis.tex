@@ -186,7 +186,7 @@ by the hash partitioning, depends on $r$. We first read $r$ blocks from disk,
 send $r$ dedup requests, and then save the received requests to temporary files
 (one for each parition). The time for the first stage can be expressed as:
 \[
-    r_{max} c / b_r + \alpha_n\frac{p u r_{max}}{m_n} + r u / b_w
+    r_{max} c / b_r + \alpha_n\frac{u r_{max}}{m_n} + r u / b_w
 \]
 
 In Stage 1b, each partition index is read from disk, then the dedup requests
@@ -218,7 +218,7 @@ on the filesystem cannot end until after the dirty data is re-read in Stage 2b.
 
 The cost of Stage 2a is:
 \[
-    r(1-d_2)e / b_r + \alpha_n\frac{e r_{max}(1-d2) p}{m_n} + r_{max}(1-d_2)e / b_w
+    r(1-d_2)e / b_r + \alpha_n\frac{e r_{max}(1-d2)}{m_n} + r_{max}(1-d_2)e / b_w
 \]
 and the cost of Stage 2b is:
 \[
@@ -232,7 +232,7 @@ dup-with-new requests can be handled in this run). This Stage 3a, to read the
 new index entries, return them to the parition index holder, and save the
 received references, costs:
 \[
-    r_{max} (1-d_2)e / b_r + \alpha_n\frac{e r_{max}(1-d_2) p}{m_n} + r(1-d_2)e / b_w
+    r_{max} (1-d_2)e / b_r + \alpha_n\frac{e r_{max}(1-d_2)}{m_n} + r(1-d_2)e / b_w
 \]
 
 Stage 3b consists of updating the partition index with the new block references
@@ -251,7 +251,7 @@ dup-with-new references from 3b) are returned to the requesters, so that the
 snapshot recipes may be updated with references to those blocks. This process
 costs:
 \[
-    r d_2 e / b_r + \alpha_n\frac{e r_{max} d_2 p}{m_n} + r e / b_w
+    r d_2 e / b_r + \alpha_n\frac{e r_{max} d_2}{m_n} + r e / b_w
 \]
 
 %Memory Requirments:\\
