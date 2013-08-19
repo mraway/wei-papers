@@ -202,9 +202,9 @@ significant impact the number of links has on VM backup reliability.
 		]
                 \addplot[blue,mark=none] table[x=VMs,y=No] {figures/vo_vm_links_105.txt};
                 \addplot[red,dotted,mark=none] table[x=VMs,y expr=\thisrow{N1}+\thisrow{N2}] {figures/vc_vm_links_105.txt};
-                \addplot[red,densely dashed,mark=none] table[x=VMs,y=N2] {figures/vc_vm_links_105.txt};
                 \addplot[red,dashdotted] table[x=VMs,y=N1] {figures/vc_vm_links_105.txt};
-                \legend{$N_o$, $N_1+N_2$, $N_2$, $N_1$};
+                \addplot[red,densely dashed,mark=none] table[x=VMs,y=N2] {figures/vc_vm_links_105.txt};
+                \legend{$N_o$, $N_1+N_2$, $N_1$, $N_2$};
 		\end{axis}
 	\end{tikzpicture}
   \caption{Measured Average number of 64MB FSBs used by a single VM. For VC both the number of PDS and Non-PDS FSBs used are shown.}
