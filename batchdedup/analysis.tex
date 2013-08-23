@@ -1,3 +1,4 @@
+\comments{
 \section{ Old Performance Analysis and Comparison}
 \label{sect:analysis-old}
 
@@ -100,9 +101,11 @@ The total disk requirement  per machine for hosting the global index  and meta  
 x*r *k*u*(1-d2) + r*u.
 \]
 That is not so big, and is acceptable as we show later.
+}
 
 
-\section{New Performance Analysis and Comparison}
+
+\section{Performance Analysis and Comparison}
 \label{sect:analysis}
 
 \begin{table}[ht]
@@ -222,7 +225,7 @@ The cost of Stage 2a is:
 \]
 and the cost of Stage 2b is:
 \[
-    r_{max}c / b_r + r_{max}(1-d_2)e / b_r + r(1-d_2)c / b_b
+    r_{max}c / b_r + r_{max}(1-d_2)e / b_r% + r_{max}(1-d_2)c / b_b
 \]
 
 After the new blocks have been written to the block store, and references to
@@ -243,7 +246,7 @@ results have chunk references, we can add the dup-with-new results to the
 duplicate result files. We then add the new references to the corresponding
 partition index to handle future dedup requests. Stage 3b costs:
 \[
-    r ((1-d_2) + d_3)e/b_r + r (1-d_2)\beta + r((1-d_2) + d_3)e / b_w
+    r ((1-d_2) + d_3)e/b_r + r d_3\beta + r((1-d_2) + d_3)e / b_w
 \]
 
 In the final stage (Stage 4), all duplicate references (including the
