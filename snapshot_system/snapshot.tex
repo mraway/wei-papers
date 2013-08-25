@@ -173,13 +173,12 @@ data chunks and  on average the number of consecutive data chunks is 7 among pop
 %The management for popular data chunks contains two aspects.
 
 
-
-We analyze how the choice of value  $k$ impacts the deduplication efficiency.
+Choosing the value  $k$ for the most popular chunks affects the deduplication efficiency.
 %It also  compares the  fault resilience of our VM-centric deduplication approach with a standand approach using 
 %global deduplication.
 %\subsubsection{Impact of PDS deduplication}
-The analysis is based on the characteristics  of the VM snapshot traces
-studied from  Alibaba's production user data.
+We analyze this impact based on the characteristics  of the VM snapshot traces
+studied from  application datasets.
 Our previous study shows that the popularity of data chunks after inner VM deduplication follows 
 a Zipf-like distribution\cite{zipf} and its
 exponent $\alpha$ is ranged between 0.65  and  0.7.~\cite{ieeecloud}. 
@@ -192,7 +191,7 @@ Table~\ref{tab:symbol} lists parameters used in this analysis.
 %\epsfig{file=log-log.disk,width=3in}
 %source ../vm_snapshot_sim/images/log-log.disk.eps
  \includegraphics[width=3in]{figures/log-log-disk}
-\caption{Duplicate frequency versus  chunk ranking in a log scale.}
+\caption{Duplicate frequency versus  chunk ranking in a log scale after inner-VM deduplication.}
 \label{fig:Datazipf}
 \end{figure}
 
@@ -200,7 +199,7 @@ Table~\ref{tab:symbol} lists parameters used in this analysis.
 \centering
 \begin{tabular}{|p{1.25cm}|p{6.5cm}|}
 \hline
-$k$ &  the number of top most popular chunks\\ 
+$k$ &  the number of top most popular chunks selected for deduplication\\ 
 \hline
 $c$ &  the total amount of data chunks\\ 
 \hline
@@ -210,21 +209,21 @@ $f_i$ &  the frequency for the $i$th most popular fingerprint\\
 \hline
 $\delta$ &  the percentage of duplicates detected in inner VM deduplication\\
 \hline
-$\sigma$ &  the number of unique non-PDS chunks over  the number of the PDS chunks.\\
+$\sigma$ & =$\frac{k}{c_u}$.  The percentage of unique data  belong to  PDS.\\
 \hline
 $p$ & the number of machines in the cluster\\
 \hline
-$V$ & the number of VMs on each machine\\
-\hline
-$D$ & the amount of unique data on each machine\\
-\hline
-$C$ & the average data chunk size. Our setting is  4K.\\
-\hline
-$s$ & the average size of file system blocks in the distributed file system. The default is  64MB.\\
-\hline
-$m$ & memory size on each node used by VC\\ 
-\hline
-$E$ & the size of an popular data index entry\\
+$V$ & the average number of VMs hosted on each machine\\
+%\hline
+%$D$ & the amount of unique data on each machine\\
+%\hline
+%$C$ & the average data chunk size. Our setting is  4K.\\
+%\hline
+%$s$ & the average size of file system blocks in the distributed file system. The default is  64MB.\\
+%\hline
+%$m$ & memory size on each node used by VC\\ 
+%\hline
+%$E$ & the size of an popular data index entry\\
 \hline
 $N_1$ & the average number  of non-PDS file system blocks  in a VM\\
 \hline
@@ -247,7 +246,7 @@ $c_u$ be the total number of fingerprints
 in the global index after complete deduplication, and
 $f_i$ be the frequency for the $i$th most popular fingerprint. 
 By Zipf-like distribution, $f_i = \frac{f_1}{i^\alpha}.$
-Since $ \sum_{i=1}^{c_u}f_i = c$,
+Since $ \sum_{i=1}^{c_u}f_i = c (1-\delta)$,
 \[
 f_1 \sum_{i=1}^{c_u}\frac{1}{i^\alpha} = c.
 \]
@@ -266,19 +265,18 @@ The  $k$ most popular fingerprints can cover the following number of chunks afte
 deduplication:
 \[
 f_1 \sum_{i=1}^{k}\frac{1}{i^\alpha} \approx  
-f_1 \int_{1}^{k}\frac{1}{x^\alpha} dx  \approx  f_1\frac{  k^{1-\alpha}} {1-\alpha}.
+f_1 \int_{1}^{k}\frac{1}{x^\alpha} dx  \approx  f_1\frac{  k^{1-\alpha}} {1-\alpha}
+=c(1-\delta) \sigma^{1-\alpha}.
 \]
 
 Deduplication efficiency of VC using top $k$ popular chunks
 is the percentage of duplicates that can be detected:  
 \begin{equation}
+\label{eq:dedupeff}
 %\begin{split}
 %e_k &= 
-\frac{ c(1-\delta) + f_1\frac{  k^{1-\alpha}} {1-\alpha}} 
-{c(1-\delta)  + \delta c - c_u }\\
-= 
-\frac{ (1-\delta) + \delta  (\frac{k}{c_u})^{1-\alpha}}
-{ 1- \frac{c_u}{c} }.
+\frac{ c\delta + c(1-\delta) \sigma^{1-\alpha}}
+{c  - c_u }\\
 %\end{split}
 \end{equation}
 
@@ -305,27 +303,31 @@ is the percentage of duplicates that can be detected:
 % \end{equation}
 
 %[Describe the dedup efficiency model in detail]
-Let $p$ be the number of physical machines in the cluster, $m$ be the memory on each node used by the popular
-index, $E$ be the size of an index entry,
-$D$ be the amount of unique data on each physical machine, and 
-$C$ be the average chunks size. We store the popular index using a distributed shared memory hashtable
-such as MemCacheD.  Then $k$ and $c_u$ can be expressed as:
-$
-k = p*m/E$, and $c_u = p*D/E.
-$
+%Let $p$ be the number of physical machines in the cluster, $m$ be the memory on each node used by the popular
+%index, $E$ be the size of an index entry,
+%$D$ be the amount of unique data on each physical machine, and 
+%$C$ be the average chunks size. 
+%Then $k$ and $c_u$ can be expressed as:
+%$ k = p*m/E$, and $c_u = p*D/E.  $
+We store the popular index using a distributed shared memory hashtable such as MemCacheD
+and allocate a fixed percentage of memory space   per physical machine for top $k$ popular items.
+As the number of physical machines ($p$) increases,
+the entire cloud cluster can host more VMs; however,  ratio $\sigma$ which is $k/c_u$ remains
+a constant because each physical machine on average still hosts a fixed constant number of 
+VMs. Then the overall deduplication efficiency of VC defined in Formula~\ref{eq:dedupeff}
+remains to be a constant.
+Thus the deduplication efficiency is stable  as $p$ increases as long as $\sigma$  is a constant.
 
-The overall deduplication efficiency of VC is
-\[
-\frac{ (1-\delta) + \delta (\frac{m*C}{D*E})^{1-\alpha}}
-{ 1- \frac{c_u}{c} }.
-\]
-where $(\frac{m*C}{D*E})^{1-\alpha}$ represents the percentage of the remaining
-chunks detected as duplicates after inner VM deduplication.
-Figure~\ref{fig:cds-coverage} shows measured PDS coverage in our 35 VM dataset.
-You can see from the graph that the coverage actually increases as the data size
-increases, which indicates that $\alpha$ increases with the data size (a
-fixed-$\alpha$ model would predict constant coverage). This makes the PDS even
-more effective, as the coverage of the PDS increases as more data is added.
+%where $(\frac{m*C}{D*E})^{1-\alpha}$ represents 
+Ratio $\sigma^{1-\alpha}$ represents the percentage of the remaining
+chunks detected as duplicates in global cross-VM deduplication due to PDS.
+We call it PDS coverage.
+Figure~\ref{fig:cds-coverage} shows predicted PDS coverage using $\sigma^{1-\alpha}$ when $\alpha$ is fixed as
+0.65 and measured PDS coverage in our test dataset.
+$\sigma=2\%$ represents that 100MB memory is used per machine for top $k$ PDS.
+While the predicted value remains flat, the  real coverage actually increases as the data size
+increases, which indicates that $\alpha$ increases with the data size. 
+Thus in practice, the coverage of the PDS increases as more VMs are involved.
 %Then the deduplication efficiency of PDS approach using top k most popular fingerprints is:
 %\begin{equation}
 %  e_k = (\frac{m*B}{F*D})^{1-\alpha}
@@ -369,7 +371,7 @@ the better deduplication efficiency our PDS deduplication approach will have.
 }
 
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
   \centering
     \begin{tikzpicture}
             \begin{axis}[
@@ -400,15 +402,15 @@ the better deduplication efficiency our PDS deduplication approach will have.
             \legend{Measured ($\sigma=1\%$),Measured ($\sigma=2\%$),Measured ($\sigma=4\%$),Predicted ($\sigma=1\%$),Predicted ($\sigma=2\%$),Predicted ($\sigma=4\%$)};
             \end{axis}
     \end{tikzpicture}
-  \caption{fixed-alpha predicted vs. actual PDS coverage as data size increases.}
+  \caption{Predicted vs. actual PDS coverage as data size increases.}
   \label{fig:cds-coverage}
 \end{figure}
 
 
 
-As illustrated in Figure~\ref{??},
-when the number of machines at each cluster increases, the number of total VMs increases.
-Then $k$ increases since more memory is available to host the popular chunks index.
-But for each physical machine, the number of VMs remains the same, and thus
-$D$ is  a constant. Then  the overall deduplication efficiency of VC remains
-a constant.
+%As illustrated in Figure~\ref{??},
+%when the number of machines at each cluster increases, the number of total VMs increases.
+%Then $k$ increases since more memory is available to host the popular chunks index.
+%But for each physical machine, the number of VMs remains the same, and thus
+%$D$ is  a constant. Then  the overall deduplication efficiency of VC remains
+%p constant.

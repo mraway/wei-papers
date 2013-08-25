@@ -2,18 +2,18 @@
  
 \begin{figure}
     \centering
-    \subfigure[Sharing of data under VM-oblivious dedup model]
+    \subfigure[Sharing of data under VM-centric dedup model]
     {
         \includegraphics[width=3in]{images/share_vc}
         \label{fig:share_vc}
     }
     \\
-    \subfigure[Sharing of data under VM-centric dedup model]
+    \subfigure[Sharing of data under VM-oblivious dedup model]
     {
         \includegraphics[width=3in]{images/share_vo}
         \label{fig:share_vo}
     }
-    \caption{Difference of sharing data under VO and VC approaches}
+    \caption{Bipartite association of VMs and file blocks under VO and VC approaches}
     \label{fig:share}
 \end{figure}
 
@@ -21,25 +21,26 @@ The replication degree of the backup storage
 is $r$ for regular file blocks and $r=3$ is a typical setting in the distributed
 file system~\cite{Hadoop,GFS}.
 In the VC approach, a special replica degree $r_c$ used for PDS blocks where $r_c>r$. 
-Notice that the ratio of non-PDS data size vs PDS data size for each VM is
+The storage cost for VO with full deduplication is $c_u *r$ and for VC, it is
+$ k*r_c  + (c_u-k)*r$. Thus The storage cost ratio of $VC$ over $VO$ is 
 \[
-\sigma=  \frac{c*\delta(1 -   (\frac{k}{c_u})^{1-\alpha})} {k}.
+\sigma \frac{r_c}{r} + 1-\sigma
 \]
-
-Thus  storage cost for VO with full deduplication is $c_u *r$ and for VC, it is
-\[ k*r_c  + k*\sigma *r.
-\]
-
-In our experiment with Alibaba data, the ratio $\sigma$ 
-is 162. Thus allocation of extra replicas for PDS only introduces a small amount of extra space
-cost.  Figure~\ref{fig:storagePDS} shows the storage cost ratio of VC and VO when 
-$r$=3, and $r_c$ varies from 3 to 10.
-The result shows that the storage cost for adding extra replication for PDS
-is insignificant.
+Since $sigma$ is small,  term $\sigma \frac{r_c}{r}$ is small in the above expression.  
+Thus the impact on storage increase is very small when we choose a large $\frac{r_c}{r}$ ratio. 
+For example, $\frac{r_c}{r}=2$. 
 
 
-Next we  compare the impact of losing $d$ machines 
+%In our experiment with Alibaba data, the ratio $\sigma$ 
+%is 162. Thus allocation of extra replicas for PDS only introduces a small amount of extra space
+%cost.  Figure~\ref{fig:storagePDS} shows the storage cost ratio of VC and VO when 
+%$r$=3, and $r_c$ varies from 3 to 10.
+%The result shows that the storage cost for adding extra replication for PDS
+%is insignificant.
+
+Next we  assess  the impact of losing $d$ machines 
 to the the VC and VO approaches.  
+A large $\frac{r_c}{r}$ ratio can have a positive impact on full availability of snapshot blocks.
 
 
 \comments{
@@ -78,63 +79,70 @@ N_2= \frac{b}{v*s}\delta (\frac{k}{b_u})^{1-\alpha}.
 
 
 %Thus the number of VMs using a block =    $(1-s_c)  + s_c *L$.
-In characterizing the reliability of VM backups in our model, 
-we consider the likely hood that a file system block fails,
-given some number of storage machine failures. 
-Every time a filesystem block fails,
-we say that we have lost data for that virtual machine, so it is no longer
-available. 
-In reality it may be only one snapshot that is affected, but it is the user
-who must decide which snapshots are important, so we consider the worst case. 
+%In characterizing the reliability of VM backups in our model, 
+%we consider the likely hood that a file system block fails,
+%given some number of storage machine failures. 
+%Every time a filesystem block fails,
+%we say that we have lost data for that virtual machine, so it is no longer
+%available. 
+%In reality it may be only one snapshot that is affected, but it is the user
+%who must decide which snapshots are important, so we consider the worst case. 
 We use filesystem blocks rather than a deduplication
 data chunk as our unit of failure because the DFS keeps
 filesystem blocks as its base unit of storage.
 % (in our case there are 
 %16384 blocks in a filesytem block on average, with 4KB block size and 
 %a 64MB block size).
-
-To  compute the probablity of losing snapshots of a virtual machine, 
-we estimate the number of file system blocks per VM in each apporach.
-We can build a bipartite graph representing the association from unique file system blocks
-to their corresponding VMs. An association edge is  drawn  from a file block  to a VM 
-if this file is used by this VM. 
+To  compute the full availability of all snapshots of a VM, we derive
+the probablity of losing a snapshot file block of a VM by
+estimating the number of file system blocks per VM in each approach.
+As illustrated in Figure~\ref{fig:share},
+we build a bipartite graph representing the association from unique file system blocks
+to their corresponding VMs in each approach. An association edge is  drawn  from a file block  to a VM 
+if this block is used by this VM. 
 For VC, each VM has an 
-averge number of $N_1$ file system blocks for non-PDS data. 
-It also refers  an average of   $N_2$ file system blocks for PDS data 
+average number of $N_1$ file system blocks for non-PDS data. 
+It also refers  an average of   $N_2$ file system blocks for PDS data. 
 For VO, each VM has an average  of  $N_o$ file system blocks
-and let $V_o$ be the averge number of VMs shared by each file system block.
-Figure~\ref{fig:shared} illustates the bipartite association.
+and let $V_o$ be the average number of VMs shared by each file system block.
+%Figure~\ref{fig:shared} illustates the bipartite association.
 
-In VC, each non-PDS file system block is associated with one VM while PDS file system blocks are
-shared among VMs  (at most $V$ VMs). Thus, 
+In VC, each non-PDS file system block is associated with one VM
+ and  PDS file system blocks are
+shared by an average of $V_c$ VMs. Let $s$ be the average number of chunks per file block. Thus, 
 \[
-V *N_1 *s  = pD  \frac{\delta} {\delta +1} \; \mbox{ and } \; 
-V *N_2 *s  \leq pD  \frac{1} {\delta +1} *V.
+V *p*N_1 *s  = C_u (1-\sigma)\; \mbox{ and } \; 
+V *p*N_2 *s  = C_u \sigma *V_c
 \]
 For the VO approach, 
 \[
-V *N_o *s  = pD  V_o.
+V *p*N_o *s  = C_u  V_o.
 \]
-Then
-\[
-N_1= \frac{pD \delta} {V s (\delta +1)},\; 
-N_2 \leq \frac{pD } {s (\delta +1)}, \; 
-\mbox{and} \; N_o = \frac{pD V_o } {s V}.
-\]
-Since each file block (with default size $s=64MB$) contains many chunks (on average 4KB),
-each file block contains the hot low-level chunks shared by many VMs, and it also contains
-rare chunks which are not shared.
-Figure~\ref{fig:fsb-links} shows the number of VMs sharing by each file block.
-In our experiment, we find that $V_o \approx 0.2 V$ when backing up VMs one by one.
-We can observe in Figure~\ref{fig:vm-links} that $N_1 +N_2 < N_o$. This is likely because the PDS FSBs tightly pack data used by many VMs, which decreases the overall number of FSBs required to backup a VM.
-If  the backup for multiple VMs is conducted concurrently, there would be more
-VMs shared  by each file block on average.
 
-Figure~\ref{fig:fsb-links} shows the average number of VMs sharing a
-filesystem block (FSB) as VMs are added. Though we don't expect the linear trend to continue indefinitely for
-much larger datasets, it should continue to increase, which has important implications
-on VM backup availability in the precense of failures. Below we show the
-significant impact the number of links has on VM backup reliability.
+Since each file block (with default size $64MB$) contains many chunks (on average 4KB),
+each file block contains the hot low-level chunks shared by many VMs, and it also contains
+rare chunks which are not shared.  From the about equations.
+\[
+\frac{N_1}{N_o}=  \frac{1-\sigma}{V_o}<1.
+\] 
+Thus when there is a failure in file blocks with replication degree $r$
+and there is no failure for PDS data with more replicas,   a VM in
+the VC approach has a lower chance to lose a snapshot than the VO approach because
+$N_1<N_o$. 
+Figure~\ref{fig:fsb-links} shows the number of VMs sharing by each file block.
+%In our experiment, we find that $V_o \approx 0.2 V$ when backing up VMs one by one.
+We can observe that $N_1 +N_2 < N_o$. 
+This is likely because the PDS FSBs tightly pack data used by many VMs, 
+which decreases the overall number of FSBs required to backup a VM.
+If  the backup for multiple VMs is conducted concurrently, there would be more
+VMs shared  by each file block on average. Therefore,
+even when there is a loss of a PDS block, the VC approach tolerates the fault better.
+
+%Figure~\ref{fig:fsb-links} shows the average number of VMs sharing a
+%filesystem block (FSB) as VMs are added. Though we don't expect the linear trend to continue indefinitely for
+%much larger datasets, it should continue to increase, which has important implications
+%on VM backup availability in the precense of failures. Below we show the
+%significant impact the number of links has on VM backup reliability.
 
 \comments{%dropping block links bec. we don't use it elsewhere
 \begin{figure}[htbp]
@@ -210,17 +218,21 @@ significant impact the number of links has on VM backup reliability.
   \caption{Measured Average number of 64MB FSBs used by a single VM. For VC both the number of PDS and Non-PDS FSBs used are shown.}
   \label{fig:vm-links}
 \end{figure}
-The snapshot availability of is a VM is the likelyhood that
-there is no  data loss for all its file blocks.
-With replication degree $r$, the likelyhood of
-a file block block is the probability that  
-all of its replicas appear in $d$ failed machines. 
-Namely, $\binom{d}{r}/ \binom{p}{r}$. This can be seen in Figure~\ref{fig:fsb-availability} for a 100 machine cluster for 3 different replication factors.
 
 
-When there are $r \le d<r_c$ machines failed and then there is no PDS data loss,  
+ The full snapshot availability of a VM is estimated as follows with parameters $N_1$, $N_2$, and $N_o$.
+%the likelyhood that there is no  data loss for all its file blocks.  
+With replication degree $r$, the availability of a file block is the probability that  
+all of its replicas do not appear in any group of $d$ failed machines. 
+Namely, $1-\binom{d}{r}/ \binom{p}{r}$. 
+The snapshot availability of a VM  in the VO approach is
+\[ 
+(1-\frac{ \binom{d}{r}} { \binom{p}{r} })^{N_o}. 
+\]
+%This can be seen in Figure~\ref{fig:fsb-availability} for a 100 machine cluster for 3 different replication factors.
+When there are $r \le d<r_c$ machines failed,  there is no PDS data loss and  
 %a file block failure depends on if all replicas of this container reside in the failed machines.
-the snapshot avaiability of a VM in the VC approach is 
+the full snapshot availability of a VM in the VC approach is 
 and is
 \[
 (1-\frac{\binom{d}{r}} { \binom{p}{r} })^{N_1}.
@@ -231,24 +243,25 @@ and is
 %= (1- Probability (\mbox{all replicas of its block fail}))^{N_1}\\
 %\end{multline}
 %\end{split}
+Since $N_1 <N_o$, the VC approach has a higher availability of VM snapshots than VO.
 
 When $r_c \leq d$, both non-PDS and PDS file blocks in VC can have a loss.
-The snapshot availability of  a VM in the VC approach is
+The full snapshot availability of  a VM in the VC approach is
 \[
 (1-\frac{ \binom{d}{r}} { \binom{p}{r} })^{N_1} 
 *
 (1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} })^{N_2}.
 \]
+Both conditions $N_1+N_2 <N_o$ 
+and  $1-\frac{ \binom{d}{r}} { \binom{p}{r} }
+< 1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} }$
+support the higher availability of VC.
 %= Probability(\mbox{ No non-PDS file block loss})^{N_1}
 %Probability(\mbox{ No PDS file block loss})^{N_2}\\
 %\begin{multline}
 %\end{split}
 %\end{multline}
 
-The snapshot availability of a VM  in the VO approach is
-\[ 
-(1-\frac{ \binom{d}{r}} { \binom{p}{r} })^{N_o}. 
-\]
 
 
 
@@ -303,6 +316,7 @@ reliability in Figure~\ref{fig:vm-availability}.
 \end{table}
 
 }
+\comments{
 \begin{figure}[htbp]
   \centering
     \begin{tikzpicture}
@@ -330,144 +344,9 @@ reliability in Figure~\ref{fig:vm-availability}.
     \caption{Availability of Individual FSBs in 100 Machine Cluster with different replication factors.}
   \label{fig:fsb-availability}
 \end{figure}
-
-
-
-\comments{
-We use the following parameters  during the analysis
-\begin{itemize}
-\item 	$V$ is the number of VMs. $m$ is the number of physical machines hosting the backup storage.
-$d$ is the number of machines failed.
-\item In the VC approach, $s_c$  of them in the backup storage
-are shared by others with a zipf distribution. $(1-s_c)$ 
-of them  is unique (nobody shares with them).
-$L_c$ is the average number of VMs sharing a block (if it is in PDS for the VC approach.
-$b_c$ is the number of shared blocks in VC.
-\item In the VO approach, $s_o$ is the number of blocks shared.
-$L_o$ is the average number of VMs sharing a block. 
-\item $b$ is the  number of blocks stored in the storage after deduplication.
- \end{itemize}
-
-The distribution of data blocks shared among VMs in VC follows a zipf distribution.
-Given a VM block, the probability of being rank $x$ block is $P(x) = P(1) * x^{-\alpha}$
-where $P(1)$ is the probability of being rank 1 most popular block.
-Since $\sum P(x)= 1$, $P(1)= \frac{1}{\sum_1^{b_c} x^{-\alpha} }$.
-Let $y$ be the number of VMs sharing rank $x$ block in VC, and  then  $y= V* P(x)$.
-
-Thus the average number of VMs sharing a data block in the VC backup storage is:
-\begin{equation}
-%\begin{align}
-\begin{split}
-L_c& =  (1-s_c)*1 + s_c \sum_1^{b_c} P(x) * y \\
-& =  (1-s_c)*1 + s_c \sum P(1)^2 *  x^{-2\alpha} *  V.
-\end{split}
-%\end{align}
-\end{equation}
-
-
-
-Under $d$ failed machines, the  expected number of VMs 
-which suffer from data loss in VC is
-\begin{multline}
-%\begin{split}
- \sum_{1}^{V}  ( Probability (\mbox{ a VM fails)}) \\
-= \sum_{1}^{V}  ( 1- Probability (\mbox{ a VM has no data loss)}) \\
-= V ( 1-  Probability(\mbox{ A block has no data loss} )^{L_c} ).
-%\end{split}
-\end{multline}
-
-%Thus the number of VMs using a block =    $(1-s_c)  + s_c *L$.
-
-When there are $d$ machines failed and the probability of
-a block failure depends on if all replicas of this block reside in the failed machines.
-When $r< d <r_c$,  only unshared data blocks can fail in VC. Then
-%Probablity(\mbox { no loss for this  block}) = 1 - Probability (\mbox{ this block in d failed machiens})
-\begin{multline}
-%\begin{split}
-Probability(\mbox{ A block has data loss})\\
-= (1-s_c) (1- Probability (\mbox{ this block in d failed machines}))\\
-= (1-s_c) (1- \frac{ \binom{d}{r}} { \binom{m}{r} }).
-%\end{split}
-\end{multline}
-When $r_c \leq d$, shared data blocks in VC can have a loss. 
-\[
-Probability(\mbox{A block has data loss})
-= 
-(1-s_c) (1- \frac{ \binom{d}{r}} { \binom{m}{r} })
-+ s_c (1- \frac{ \binom{r_c}{d}} { \binom{m}{r_c} }).
-\]
-
-By comparison, under $d$ failed machines, the  expected number of VMs 
-which suffer from data loss in VO is
-\[
-V ( 1-  (1- \frac{ \binom{d}{r}} { \binom{m}{r} })^{L_o} ).
-\]
-where
-\[
-L_o = (1-s_o) + s_o \sum_1^b  P(1)^2 *  (x')^{-2\alpha'} *V.  
-\]
-
-%the above model assumes uniform distribution of blocks and doesn't provide compelling numbers
-%with 3 replicas, 100 machines, and only 3 failures the chance of a single 10GB VM surviving is 9.11*10^-8
-%if we wanted to include it we probably want a model that includes containers, but that might be too complex
-%to be useful.
 }
 
 
-\comments{
-	=  sum _for_all_block(   Probablity (a block fails) *number of VM sharing this block ))
-               = Probability(a block fails) * sum_for_all_blocks (numb of VM shared)
-	= Probablity (a block fails) *b *aveageLengthVM
-	= [ 1-  C(r, k) /C(n,r)] * b* [ 1+ s *V(1-1/ln V)]
-  
-----------------------------------------------------------------------       
 
-\subsection{Empirical Validation}
-%To validate our theoritical model for the probability of data loss, we computed
-%the number of snapshots using each block in a global index for the 350 snapshot
-%traces. As you can see in Fig.~\ref{??}, The average number of VMs sharing a block
-%%TODO: insert figure generated from data/links_no_cds.dat
-%increases linearly with the number of snapshots. For 350 snapshots there are an
-%average of 13.1 links to a given block in the global index.
-To validate our theoretical model for the probability of data loss, we measured
-the number of snapshots and VMs sharing data blocks for our 350 snapshot
-dataset. As you can see in Fig.~\ref{??}, the average number of snapshots sharing
-a block increases linearly with the number of snapshots. For 350 snapshots
-there are an average of 13.1 incoming links to a given data block in the global
-index. If we look at the number of VMs sharing a data block rather than
-snapshots, in the full dataset on average 1.47 VMs point to a data block in the
-index.
-%What else do we need from the simulation to validate the model?
 
-\subsubsection{PDS and Fault Tolerance}
-%all numbers in this paragraph need to be corrected after I re-run the tests
-%using the actual cds generator code
-As part of our emprirical validation of our model, we also computed the effects
-of the PDS on fault tolerance. If we exclude the top 5\% most popular blocks
-and set aside those in the PDS, the average number of links to a non-PDS block
-%TODO: insert figure generated from data/links_cds.dat and data/links_wo_cds.dat
-drops to 10.3 for 350 snapshots. This means that on average, \~3 fewer
-snapshots will be affected by a lost data block in the general data store.
-The average number of links to a PDS block however, for 350 snapshots, is
-65.7. This suggests that a much higher replication factor is warranted for
-the PDS, as on average, a PDS block appears in \~20\% of all the snapshots.
-These measured numbers are different from our theoritical model due to the fact
-that duplicate data blocks are not uniformly distributed across all VMs.
-With uniform distribution of duplicates (and a zipf distribution on the number
-of duplicates), there should be on average 2.55 incoming VM links to each
-block. Since we show the average number of links to be 1.47 in our actual
-traces, the duplicates are
-more tighly grouped than the uniform model would predict. This supports
-the benefits of using a PDS plus more localized deduplication.
 
-The PDS gives a clear boundary for setting different replication factors,
-And our tests suggest that by separating the replication factor for the PDS
-and non-PDS blocks, greater fault tolerance can be acheived.
-
-----------------------------------------------------------------------
-
-For PDS model, 85\% blocks are using the data from the same VM while upto 10\% data is for PDS (we actually only use 5% perhaps).  Thus the overall speaking, at most 10% of data are shared.
-Thus  for PDS approach,   the # VM failure caused by k machines is at most  [ 1-  C(r, k) /C(n,r)] * b* [ 1+ 0.10 *V(1-1/ln V)].
-For original approach,  [ 1-  C(r, k) /C(n,r)] * b* [ 1+ 0.90 *V(1-1/ln V)].
-For large V, the reliability improves by 9 times.
-}
