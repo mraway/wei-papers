@@ -2,6 +2,8 @@
 %\usepackage[top=1in, bottom=1in, left=1.25in, right=1.25in]{geometry}
 \usepackage[colorlinks,linkcolor=red,anchorcolor=blue,citecolor=green,urlcolor=black]{hyperref}
 \usepackage{epsfig}
+\usepackage{listings}
+%\lstset{language=C}
 %\usepackage{breakurl}
 %% Define a new 'leo' style for the package that will use a smaller font.
 %\makeatletter
@@ -14,7 +16,7 @@
 %\setlength{\parskip}{1ex}
 
 \usepackage{pgfplots}
-\pgfplotsset{compat=1.7}
+\pgfplotsset{compat=1.5}
 \DeclareGraphicsExtensions{.pdf}
 
 
@@ -94,6 +96,7 @@ Wei Zhang$^{\star}$, Tao Yang$^\star$, Gautham Narayanasamy$^\star$, and Hong Ta
 \input{background} %related works, related solutions, 
 \input{arch} %, design considerations, architecture
 \input{analysis} %, design considerations, architecture
+\input{scheduling.tex} % CoW cost considerations and round scheduling
 \input{eval} %data study, zipf, model of cds size and dedup efficiency
 %\input{results}
 %\input{related}
