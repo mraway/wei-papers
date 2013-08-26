@@ -376,30 +376,27 @@ depend directly on physical storage locations.
   \label{fig:deletion_flow}
 \end{figure}
 
-In a busy VM cluster, snapshot deletions are as frequent as snapshot creations.
-However, data deduplication complicates the deletion process because space saving relies on the sharing of data,
-thus making it difficult to decide which chunks are safe to delete.
-In a traditional deduplication system, deletion often require looking at global scope to
-resolve the data dependency between logical backup entities and physical data chunks.
-Our VM-centric snapshot storage design simplifies the deletion process since 
-we only need to locate unreferenced chunks within each VM's snapshot store to free up space when deleting a snapshot.
-The PDS data chunks are commonly shared all VMs and we do not consider their reference
-counting during snapshot deletion.
-%The selection of PDS data chunks is updated periodically independent of snapshot deletion process.
-
+In a busy VM cluster, snapshot deletions can occur frequently.
+Deduplication complicates the deletion process because space saving relies on the sharing of data
+and it requires the global reference of deldted chunks to be identified before  they can be safely removed.
 While we can use the mark-and-sweep technique~\cite{Guo2011}, 
-it still takes significant time to conduct this process every time there is a snapshot deletion.
+it still takes significant resource to conduct this process every time there is a snapshot deletion.
 In the case of Alibaba, snapshot backup is conducted automatically and there are 
 about 10 snapshot stored for every user. When there is
 a new snapshot created every day,  there will be  a snapshot expired everyday to maintain
 a balanced storage use. Given the large number of snapshot deletion requests, we seek
 a fast solution with a very low resource usage to delete snapshots.
-
-With this in mind, we develop an {\em approximate} deletion strategy to trade deletion accuracy for
+%In a traditional deduplication system, deletion often require looking at global scope to
+%resolve the data dependency between logical backup entities and physical data chunks.
+Our VM-centric snapshot storage design simplifies the deletion process since 
+we can focus on  unreferenced chunks within each VM.
+The PDS data chunks are commonly shared all VMs and we do not consider them
+during snapshot deletion.  The selection of PDS data chunks is updated periodically independent of snapshot deletion process.
+Another resource-saving strategy we propose is
+an {\em approximate} deletion strategy to trade deletion accuracy for
 speed and resource usage. Our method sacrifices a small percent of storage leakage
-to effectively identify unused chunks in $O(n)$ time, with $n$ being the logical number of non-PDS chunks 
-to be deleted from a VM snapshot store.
-The algorithm contains three aspects.
+to efficiently identify unused chunks in $O(n)$ time, with $n$ being the logical number of non-PDS chunks 
+to be deleted from a VM snapshot store.  The algorithm contains three aspects.
 
 
 %Our system adopts VM-centric snapshot  lazy delete strategy so that all snapshot deletions are scheduled
