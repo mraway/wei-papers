@@ -110,7 +110,7 @@ That is not so big, and is acceptable as we show later.
 
 \begin{table}[ht]
 \centering
-\begin{tabular}{|p{1.25cm}|p{6.5cm}|}
+\begin{tabular}{|p{0.50cm}|p{7cm}|}
 \hline
 $p$ &  the number of machines in the cluster\\ 
 \hline
@@ -161,6 +161,13 @@ $\beta$ & time cost for in-memory duplicate comparison\\
 \label{tab:symbol}
 \end{table}
 
+Here we develop a model for the total backup time, which becomes important in
+trying to minimize the CoW cost during backup \emph{CoW should be explained and
+justified before this point in the paper}.  The backup process can be broken
+into 4 stages, where the first 3 stages each have two parts, first an
+all-to-all exchange of
+data, then local processing to prepare for the next stage.
+
 The system keeps at most  $ x$ copies of snapshots for each VM on average.  The
 total size of  global content fingerprints is $x*s*v/c*u *(1-d1)*(1-d2)$ where
 $c$ is the average chunk size and $u$ is the meta data size of each chunk
@@ -173,12 +180,6 @@ machine must handle.  We assume the load, i.e., amount of data to backup at
 each machine, is not balanced, so there is also $r_max$, which is the number of
 requests at the most heavily loaded machine. This is the case in the Alibaba
 cluster, with some machines being terabytes while the average machine is 40GB.
-
-Here we develop a model for the total backup time, which becomes important in
-trying to minimize the CoW cost during backup \emph{CoW should be explained and
-justified before this point in the paper}.  The backup process can be broken
-into 4 stages, where each stage has two parts, first an all-to-all exchange of
-data, then local processing to prepare for the next stage.
 
 In Stage 1a, the dirty segments are read from the virtual disk, the hash of
 each block is computed, and dedup requests are sent to the machine hosting the
@@ -193,8 +194,10 @@ send $r$ dedup requests, and then save the received requests to temporary files
 \]
 
 In Stage 1b, each partition index is read from disk, then the dedup requests
-(from Stage 1a) for that paritition are processed and the results are written
-back out to disk. The results are broken into 3 groups: duplicate blocks, new
+(from Stage 1a) for that paritition are processed and the dedup results are
+written
+back out to disk. The results are broken into 3 groups for each partition:
+duplicate blocks, new
 blocks, and dup-with-new blocks, which are duplicates of blocks that are new to
 this batch.
 
@@ -213,7 +216,8 @@ In Stage 2a the new block results from Stage 1 are sent to the requesters, and
 in Stage 2b the new blocks are written out to the storage system. We will now
 mostly be dealing with the $r(1-d_2)$ blocks that are new to the system (or
 $r_{max}(1-d_2)$ when we must wait for the most heavily loaded machine). In 2b
-the dedup results must be read and the actual disk blocks for each new block
+the dedup new block results must be read and the actual disk blocks for each
+new block
 must be re-read before they can be sent to the block store. To avoid seeking
 we have found it faster to simply re-read all the dirty data and ignore the
 duplicate blocks rather than find only the new blocks on disk. The CoW locking
@@ -231,7 +235,7 @@ and the cost of Stage 2b is:
 After the new blocks have been written to the block store, and references to
 them have been obtained, those references must be returned to the parition
 index holder so that those blocks may be deduped in the future (and also so
-dup-with-new requests can be handled in this run). This Stage 3a, to read the
+dup-with-new requests can be handled in this round). This Stage 3a, to read the
 new index entries, return them to the parition index holder, and save the
 received references, costs:
 \[
@@ -243,8 +247,9 @@ from Stage 3a, and also updating the dup-with-new results from Stage 1. First
 we load the new references from Stage 2b into memory, and then dedup the
 dup-with-new requests against the new block references. Once the dup-with-new
 results have chunk references, we can add the dup-with-new results to the
-duplicate result files. We then add the new references to the corresponding
-partition index to handle future dedup requests. Stage 3b costs:
+duplicate result files initially created in 1b. We then add the new references
+to the corresponding
+partition indices to handle future dedup requests. Stage 3b costs:
 \[
     r ((1-d_2) + d_3)e/b_r + r d_3\beta + r((1-d_2) + d_3)e / b_w
 \]
@@ -273,7 +278,7 @@ costs:
 
 
 \subsection{A Comparison with Other Approaches}
-
+\comments{
 The memory  space requirement for the data domain approach with bloom filter is:
 \[
 x*r k u (1-d2)/r
@@ -282,5 +287,5 @@ where $r$ is the bloom filter with about  1:10 ratio in practice.  The disk spac
 \[
 x*r *k *u*(1-d_2).
 \]
-
+}
 
