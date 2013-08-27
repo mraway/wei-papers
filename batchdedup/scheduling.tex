@@ -95,7 +95,7 @@ improvement. The first issue is that the round with the current lowest runtime
 is chosen.  Because backup time is dependent on a combination of the highest
 machine load and average machine load, if we add a VM to the currently most
 loaded machine in a round it will increase runtime much more than if we add the
-VM to a currently empty machine on an equally heavily loaded round
+VM to a currently empty machine on the same round
 \todo{(insert figure to show how this happens)}. Therefore a better scheduling
 would be obtained if we pick the round with the lowest runtime after we
 simulate adding the new VM to that round. This new round picking heuristic
