@@ -11,7 +11,7 @@ remake:
 
 .PHONY:bibtex
 bibtex:
-	biblatex ${MAIN}
+	bibtex ${MAIN}
 
 ${MAIN}.pdf: ${TEX} ${FIG} ${BIB} makefile
 	pdflatex ${MAIN}.tex
