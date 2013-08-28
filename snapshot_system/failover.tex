@@ -226,10 +226,15 @@ With replication degree $r$, the availability of a file block is the probability
 all of its replicas do not appear in any group of $d$ failed machines. 
 Namely, $1-\binom{d}{r}/ \binom{p}{r}$. 
 The snapshot availability of a VM  in the VO approach is
-\[ 
+\begin{equation}
+\label{eq:VO}
 (1-\frac{ \binom{d}{r}} { \binom{p}{r} })^{N_o}. 
-\]
+\end{equation}
+
 %This can be seen in Figure~\ref{fig:fsb-availability} for a 100 machine cluster for 3 different replication factors.
+For VC, there are two cases.
+\begin{itemize}
+\item
 When there are $r \le d<r_c$ machines failed,  there is no PDS data loss and  
 %a file block failure depends on if all replicas of this container reside in the failed machines.
 the full snapshot availability of a VM in the VC approach is 
@@ -245,6 +250,7 @@ and is
 %\end{split}
 Since $N_1 <N_o$, the VC approach has a higher availability of VM snapshots than VO.
 
+\item
 When $r_c \leq d$, both non-PDS and PDS file blocks in VC can have a loss.
 The full snapshot availability of  a VM in the VC approach is
 \[
@@ -252,10 +258,13 @@ The full snapshot availability of  a VM in the VC approach is
 *
 (1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} })^{N_2}.
 \]
-Both conditions $N_1+N_2 <N_o$ 
-and  $1-\frac{ \binom{d}{r}} { \binom{p}{r} }
-< 1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} }$
-support the higher availability of VC.
+Figure~\ref{fig:fsb-availability} illustrates that the availability of an individual file system block
+with different replication degree. This demonstrates inequality $1-\frac{ \binom{d}{r}} { \binom{p}{r} }
+< 1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} }$. As we have also observed
+$N_1+N_2 <N_o$ in our dataset, these two conditions support that VC has a  higher availability. 
+%comparing  Formula~\ref{eq:VO} and~\ref{eq:VC}. 
+\end{itemize} 
+
 %= Probability(\mbox{ No non-PDS file block loss})^{N_1}
 %Probability(\mbox{ No PDS file block loss})^{N_2}\\
 %\begin{multline}
@@ -316,7 +325,7 @@ reliability in Figure~\ref{fig:vm-availability}.
 \end{table}
 
 }
-\comments{
+
 \begin{figure}[htbp]
   \centering
     \begin{tikzpicture}
@@ -341,10 +350,9 @@ reliability in Figure~\ref{fig:vm-availability}.
             \legend{$R=5$,$R=4$,$R=3$};
             \end{axis}
     \end{tikzpicture}
-    \caption{Availability of Individual FSBs in 100 Machine Cluster with different replication factors.}
+    \caption{Availability of individual file system blocks in a 100 machine cluster with different replication degrees.}
   \label{fig:fsb-availability}
 \end{figure}
-}
 
 
 

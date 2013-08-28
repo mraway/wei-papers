@@ -3,17 +3,12 @@
 \label{sect:exper}
 
 We have implemented and evaluated a prototype of our VC scheme on a Linux cluster of machines with
-8-core AMD FX-8120 at 3.1 GHz with 16 GB RAM. 
-Our implementation is based on Alibaba's Xen cloud platform~\cite{Aliyun,WeiZhangIEEE}.
-Each machine  is equipped with a 
-a distributed file system (QFS) and overall the cluster manages six 3TB disks
-with default replication degree set to 3. The PDS replication is set to 5.
-Objectives of our evaluation are:
-1) Study the duplicate detection and removal effectiveness of the VC approach and compare with an alternative VO
-design.
-2) Examine the impacts of VC for fault isolation and tolerance. 
-3) Evaluate the backup throughput performance VC  for a large number of VMs.
-4) Assess the resource usage  of VC in terms of memory, storage, and network bandwidth.
+8-core 3.1Ghz AMD FX-8120 and 16 GB RAM. 
+Our implementation is based on Alibaba cloud platform~\cite{Aliyun,WeiZhangIEEE}
+and the underlying DFS uses  QFS with default replication degree 3 while the PDS replication degree is 5.
+Our evaluation objective is to
+study the benefit of fault tolerance and   deduplication efficiency  the VC approach and compare it
+with an alternative VO design, and assess backup throughput and  resource usage for a large number of VMs.
 % the backup throughput performance VC  for a large number of VMs.
 %Compare with the data domain approach~\cite{bottleneck08}.
 
@@ -26,13 +21,14 @@ design.
 %For each OS, 5 VMs are chosen, and every VM come with 10 full snapshots.
 %\subsection{Experimental setup}
 
-We will also compare our VC approach with  with
-a VO approach  using stateless routing with binning (SRB).
+We will compare our VC approach with
+a VO approach  using stateless routing with binning (call it SRB) 
+based on~\cite{ParallelDataDomain,Extremebining}
 SRB executes a distributed deduplication by routing a data chunk to a machine~\cite{ParallelDataDomain}
-using  the chunk hashing function discussed in \cite{??}. Within such a machine,
-the data chunk is compared with a local index. This minHash paritioning
-algorithm helps provide a greater degree of parallelism, but ignores the
-significant amount of parallelism within a single VM.
+using  a min-hash function discussed in \cite{Extremebining}. Once a data chunk is routed to
+a machine, this chunk is compared with the fingerprint index of this machine locally. 
+%algorithm helps provide a greater degree of parallelism, but ignores the
+%significant amount of parallelism within a single VM.
 
 \comments{
 %We are running our deduplication/backup  service on 100 nodes.
