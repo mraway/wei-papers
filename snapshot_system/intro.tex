@@ -47,17 +47,17 @@ deduplication, most data chunks are shared by several to many virtual machines.
 Failure of few shared data chunks can have a 
 %catastrophic 
 broad effect and many
-snapshots of virtual machines would be affected.
+snapshots of virtual machines could be affected.
 The previous work in deduplication focuses on the efficiency and approximation of
-finger print comparison, and has not addressed fault handling issues  together with deduplication.
+fingerprint comparison, and has not addressed fault tolerance issues  together with deduplication.
 Thus we also seek deduplication options that yield better fault isolation.
 % along with a low-cost solution.
 Another issue considered is that
-that deletion of old snapshots compete for computing resource as well. 
+that deletion of old snapshots competes for computing resource as well. 
 %That is because data dependence created deletion of old snapshots competes for computing resources.
 % as well so deletion needs to be considered in system design. 
 Sharing of data chunks among by multiple VMs needs to be detected during
-snapshot   deletion and such dependence complicates deletion operations. 
+snapshot   deletion and such dependencies complicate deletion operations. 
 %The additional complexity for deletions
 %come from the dependencies created by multiple links to the same problem, so
 %some solution is needed to determine blocks with no dependent snapshots after deletion.
@@ -74,7 +74,7 @@ The paper studies and evaluates  an integrated approach which uses  multiple dup
 based on  version  detection, inner VM duplicate search,
 and controlled cross-VM comparison. 
 This approach is VM centric by localizing duplicate detection within each VM  
-and by packaging data chunks from the same VM into a file system block as much as possible.
+and by packaging only data chunks from the same VM into a file system block as much as possible.
 By narrowing duplicate sharing within a small percent of common data chunks and exploiting their popularity,
 this scheme can afford to allocate extra replicas of these shared chunks for better
 fault resilience while sustaining competitive deduplication efficiency.
@@ -95,10 +95,10 @@ a standard distributed file system for the backup storage.
 The rest of this paper is organized as follows.
 Section~\ref{option} reviews the background and discusses the  design options for snapshot backup 
 with a VM-centric approach. 
-Section~\ref{sect:model}  analyzes the tradeoff and benefit of our approach. 
+Section~\ref{sect:model}  analyzes the tradeoffs and benefits of our approach. 
 Section~\ref{sect:arch}  describes our system architecture and implementation details.
 %   the benefit of our approach for fault isolation. 
-Section~\ref{exper} is our experimental evaluation that compare with the other approaches.
+Section~\ref{exper} is our experimental evaluation that compares with other approaches.
 Section~\ref{conc}  concludes this paper.
 
 %We are seeking Unlike the previous work dealing with general file-level backup and deduplication, our problem is focused on 
@@ -112,7 +112,7 @@ Section~\ref{conc}  concludes this paper.
 
 %,extreme_binning09,sparseindex09
 \comments{
-By observations on the VM snapshot data from production cloud, we found snapshot data duplication 
+By observations of the VM snapshot data from production cloud, we found snapshot data duplication 
 can be easily classified into two categories: \emph{inner-VM} and \emph{cross-VM}. Inner-VM duplication
 exists between VM's snapshots, because the majority of data are unchanged during each backup period. 
 On the other hand, Cross-VM duplication is mainly due to widely-used software and libraries such as Linux and MySQL.
@@ -124,9 +124,9 @@ It then makes cross-VM deduplication by excluding a small number of
 popular common data blocks from being backed up. Our study shows that common data blocks
 occupy significant amount of storage space while they only take
 a small amount of resources to deduplicate.
-Separating deduplication into multi levels effectively accomplish the major space saving goal
-compare the global complete deduplication scheme, at the same time it makes
-the backup of different VMs to be independent for better fault tolerance.
+Separating deduplication into multiple levels effectively accomplishes the major space saving goal
+compared the global complete deduplication scheme, but at the same time makes
+the backup of different VMs independent for better fault tolerance.
 
 The following table shows the strength and weakness of some well-know deduplication systems:
 \begin{table}

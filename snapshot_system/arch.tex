@@ -412,14 +412,14 @@ The algorithm contains three aspects.
 \begin{itemize}
 \item {\bf Computation for snapshot fingerprint summary.}
 Every time there is a new snapshot created,
-we compute a bloom-filter with $z$ bits as the summary of reference pointers for all non-PDS chunks used 
+we compute a Bloom-filter with $z$ bits as the summary of reference pointers for all non-PDS chunks used 
 in this snapshot. Given $h$ snapshots stored for a VM, there are $h$ summary vectors maintained.
 
 %To control the false positive ratio $\epislon$ under $0.01$, an average snapshot of size 40 $GB$ with 
 %$u \approx 10$ million chunks, $z$ has 10 million bits. 
 
-%{\bf Creating bloom filter} Scan all the living snapshot recipess and their segment recipes,
-%for every reference pointing to append store, add it to the bloom filter.
+%{\bf Creating Bloom filter} Scan all the living snapshot recipess and their segment recipes,
+%for every reference pointing to append store, add it to the Bloom filter.
 
 \item {\bf Approximate deletion with fast summary comparison.}
 When there is a snapshot deletion,  
@@ -427,18 +427,18 @@ we need to identify if  chunks to be deleted from that snapshot
 are still used by other snapshots. 
 This is done approximately and quickly by comparing the 
 reference pointers of deleted snapshot with
-the merged reference bloom-filter summary of other live snapshots.
-The merging of live snapshot bloom-filter bits uses the logical OR operator 
+the merged reference Bloom-filter summary of other live snapshots.
+The merging of live snapshot Bloom-filter bits uses the logical OR operator 
 and the merged vector still takes $z$ bits.
 Since the number of live snapshots $h$ is limited for
 each VM, 
 the time and memory cost of this comparison is small, linear to the number of chunks to be deleted.
 %Instead of scanning the entire append store indices, we merge the type-1 summaries of all
 %valid snapshots. 
-%Since each VM has uniform bloom filter parameters to create snapshot summaries, 
+%Since each VM has uniform Bloom filter parameters to create snapshot summaries, 
 %such merged summeries give us a compact representation of
 %all block fingerprints that are still in use.
-%Thus by the property of bloom filter, if a fingerprint is not found in merged summaries, 
+%Thus by the property of Bloom filter, if a fingerprint is not found in merged summaries, 
 %we are certain that block is no longer used by any valid snapshot, it would be then added
 %to append store's deletion log.
 
@@ -450,7 +450,7 @@ are misjudged as  being in use, resulting in a storage leakage.
 
 
 \item {\bf Periodic repair of leakage}.
-%[exlpain why second bloom filter, why scan append store]
+%[exlpain why second Bloom filter, why scan append store]
 %Since there are certain unused chunks which are not deleted during the approximate deletion, 
 Leakage repair is conducted periodically to fix the above approximation error.
 This procedure compares the live chunks for each VM with what are truly used through the VM snapshot metadata recipe.
@@ -472,7 +472,7 @@ consider each reference pointer consumes 8 bytes plus  1 mark bit, a VM that has
 %store due to our VM-centric design, and we perform leakage repair periodically.
 %We cannot simply repeat the phase 1 multiple times to reduce temporary storage leakage, because:
 %\begin{enumerate} 
-%\item After several runs of phase-1, it is proven that the merged type-1 summaries cannot sieve remaining unused blocks, due to the false-positive property of bloom filter.
+%\item After several runs of phase-1, it is proven that the merged type-1 summaries cannot sieve remaining unused blocks, due to the false-positive property of Bloom filter.
 %\item The recipes of deleted snapshots have been removed from the system, thus we are not able to obtain the deleted block fingerprints from any metadata, the only way to discover them is to scan the append store indices.
 %\end{enumerate}
 \end{itemize}
@@ -481,18 +481,18 @@ consider each reference pointer consumes 8 bytes plus  1 mark bit, a VM that has
 
 
 %\item {\bf Check existance} For every data reference in the deleted snapshot recipe and its segment recipes,
-%check the existance of that data reference in bloom filter. If not found, it is safe to delete that piece of data from append store
+%check the existance of that data reference in Bloom filter. If not found, it is safe to delete that piece of data from append store
 %because no living snapshots has referenced it.
 
 %The overall time of running a approximate deletion for one snapshot deletion would be scanning
-%all the living snapshots and deleted snapshots, since operations on the in-memory bloom filter can be done in
+%all the living snapshots and deleted snapshots, since operations on the in-memory Bloom filter can be done in
 %parallel and is much faster than loading recipes from DFS:
 %\begin{equation}
 %T = (N_{SS} + 1) * T_{scan\_recipes}
 %\end{equation}
 %
 %Using the example and analysis in previous section, this approximate deletion can be done in 5 minutes.
-%Memory usage of the bloom filter depends on its false-positive probility $P_{bl}$,
+%Memory usage of the Bloom filter depends on its false-positive probility $P_{bl}$,
 %when set $P_{bl}$ to 0.01, the memory footprint of approximate deletion is about 15 MB.
 %~
 
@@ -508,8 +508,8 @@ chunks used in a VM is about:
 U = u + (h-1)\Delta u.
 \]
 
-Each bloom filter vector has  $z$ bits for each snapshot and let $j$ be the number of hash functions used by the
-bloom filter. The probablity that a particular bit is 0  in all $h$ summary vectors is  
+Each Bloom filter vector has  $z$ bits for each snapshot and let $j$ be the number of hash functions used by the
+Bloom filter. The probablity that a particular bit is 0  in all $h$ summary vectors is  
 $(1- \frac{1}{z}) ^{j U}$. Notice that a chunk may appear multiple times in these summary vectors; however, this should not 
 increase the probability of being a 0 bit in all $h$ summary vectors.
 Then the misjudgment rate of being in use $\epsilon$ is: 

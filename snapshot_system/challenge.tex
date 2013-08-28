@@ -16,10 +16,10 @@ Backup systems have been developed to use content fingerprints to identify dupli
 content~\cite{venti02,Rhea2008}.  
 As discussed earlier, collocating a backup service on the existing
 cloud cluster avoids the extra cost to acquire a dedicated backup facility
-and reduces the network bandwidth consumption in transferring the un-deduplicated
+and reduces the network bandwidth consumption in transferring the
 raw data for backup. 
 Figure~\ref{fig:collocated} illustrates the cluster architecture where
-each physical runs a backup service and a distributed file system (DFS)~\cite{GFS2004,Hadoop} 
+each physical machine runs a backup service and a distributed file system (DFS)~\cite{GFS2004,Hadoop} 
 serves a backup store  for the snapshots.
 %The previous study shows that 
 % deduplication can compress the backup copies 
@@ -59,7 +59,7 @@ serves a backup store  for the snapshots.
 %Today's commercial data backup systems (e.g. from EMC and NetApp)
 %\cite{emc_avamar}\cite{datadomain_whitepaper}
 %use a variable-size chunking algorithm to detect duplicates in file data~\cite{similar94,hydrastor09}.
-Since it is expensive to compares a large number of chunk signatures for deduplication,
+Since it is expensive to compare a large number of chunk signatures for deduplication,
 several techniques have been proposed to speedup searching of duplicate
 fingerprints. For example, the data domain method ~\cite{bottleneck08} 
 uses  an in-memory Bloom filter and a prefetching cache for data chunks  which may be
@@ -128,7 +128,7 @@ Our key design consideration is VM dependence minimization during deduplication 
 %One important issue not considered in the previous work is how 
 Because a data chunk is compared with signatures collected from all VMs during
 the deduplication process, only one copy of duplicates is stored in the storage,
-this artificially creates data dependency among different VM users. 
+this artificially creates data dependencies among different VM users. 
 Content sharing via deduplication affects fault isolation since machine failures happen periodically 
 in a large-scale cloud and
 %failure of a shared block affects many VMs.
@@ -312,7 +312,7 @@ partitioning algorithm called stateless data routing~\cite{Dong20??}
 that divides the deduplication work with an approximation. This work 
 is similar to Exreme Binning\cite{extreme_binning09} and 
 each request is routed  to a machine which holds
-a bloomer filter  or can fetch on-disk index for additional comparison.
+a Bloom filter  or can fetch on-disk index for additional comparison.
 While this approach is VM-oblivious, it motivates us to  use  a combined signature of a dataset to narrow
 VM-specific local search.
  

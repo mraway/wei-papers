@@ -159,7 +159,7 @@ optimize large sequential read/write requests, while minimize the cost of key to
 \item {\em Fast Data Deletion.}
 Traditional deletion in deduplication systems involves reference counting, either online or offline. Both ways
 are costly due to the sharing of large amount of data objects.
-We avoid this cost of data deletion with an approxmation deletion method using bloom filters.
+We avoid this cost of data deletion with an approxmation deletion method using Bloom filters.
 
 \item {\em Fault-tolerant.}
 Golbal deduplication brings data sharing across different users VM snapshots, therefore a single failure
