@@ -1,0 +1,14 @@
+\section{Conclusion}
+\label{sect:final}
+In this paper we propose a collocated backup service built on
+the top of a cloud cluster to reduce network traffic and infrastructure.
+The key contribution is a VM-centric deduplication scheme to 
+maximize fault isolation while delivering competitive deduplication efficiency.
+Inner-VM deduplication localizes backup data dependency and exposes more parallelism  
+while cross-VM deduplication with a small common data set.
+VM-specific file block packing also reduces inter-VM dependence and enhances fault tolerance.
+The design places a special consideration for low-resource usages as a collocated cloud service.
+Evaluation using  VM backup data shows that
+our solution can accomplish 92\% of what complete global
+deduplication can do while the availability of snapshots increases substantially with this VM-centric
+and a small replication overhead for popular inter-VM chunks.

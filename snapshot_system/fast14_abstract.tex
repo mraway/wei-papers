@@ -1,0 +1,18 @@
+\begin{abstract}
+A cloud environment that hosts a large number of  virtual machines (VMs) has
+a high storage demand for frequent backup of system image snapshots and
+signature-based deduplication of data blocks is necessary to eliminate excessive 
+redundant blocks.  Collocating a cluster-based duplicate service with other cloud services
+reduces network traffic;
+
+however it is resource expensive and less fault-resilient to perform a global deduplication
+and let a data block share by many virtual machines. 
+This paper proposes a VM-centric collocated backup service that  
+localizes deduplication as much as possible within each virtual machine using similarity-guided
+search and associates  underlying file blocks with one VM for most cases.
+It restricts cross-VM deduplication under common blocks with extra replication support.
+Our analysis shows that  this VM centric scheme 
+can  provide  better fault tolerance while using a small amount of computing and storage resources. 
+This  paper  describes a comparative evaluation of this scheme in  accomplishing a competitive deduplication 
+efficiency while sustaining a good backup throughput. 
+\end{abstract}
