@@ -1,28 +1,34 @@
 \section{Conclusion}
 \label{sect:final}
-In this paper we propose a VM-centric deduplication scheme for 
-VM snapshot backup in the cloud for maximizing fault isolation and tolerance. 
+In this paper we propose a collocated backup service built on
+the top of a cloud cluster to reduce network traffic and infrastructure.
+The key contribution is a VM-centric deduplication scheme to 
+maximize fault isolation while delivering competitive deduplication efficiency.
 Inner-VM deduplication localizes backup data dependency and exposes more parallelism  
-while cross-VM deduplication with a small common data set
-effectively  covers a large percent of duplicate data.
-The scheme organizes the write of small data chunks into large file system blocks so
-that each underlying file block is associated with one VM for most cases.
-by keeping most of the FSBs only referenced by 1 VM, we isolate faults and improve overal fault tolerance.
-Our solution accomplishes reasonable and competitive deduplication efficiency while
-still meeting stringent cloud resource usage requirements. 
-Our analysis shows that  this VM centric scheme 
-can  provide  better fault tolerance than VM-oblivious global deduplication schemes
-while using a small amount of computing and storage resources. 
+while cross-VM deduplication with a small common data set.
+VM-specific file block packing also reduces inter-VM dependence and enhances fault tolerance.
+The design places a special consideration for low-resource usages as a collocated cloud service.
+Evaluation using  VM backup data shows that
+our solution can accomplish 92\% of what complete global
+deduplication can do while the availability of snapshots increases substantially with this VM-centric
+and a small replication overhead for popular inter-VM chunks.
+
+% effectively  covers a large percent of duplicate data.
+%The scheme organizes the write of small data chunks into large file system blocks so
+%that each underlying file block is associated with one VM for most cases.
+%by keeping most of the FSBs only referenced by 1 VM, we isolate faults and improve overal fault tolerance.
+%Our solution accomplishes reasonable and competitive deduplication efficiency while
+%still meeting stringent cloud resource usage requirements. 
+%Our analysis shows that  this VM centric scheme 
+%can  provide  better fault tolerance than VM-oblivious global deduplication schemes
+%while using a small amount of computing and storage resources. 
 
 
 %[Talk about more what we learn from Evaluation]
-Evaluation using real user's VM data shows
-our solution can accomplish 92\% of what complete global
-deduplication can do. 
-Compare to today's widely-used snapshot technique, our scheme reduces almost
-two-third of snapshot storage cost.
-Finally, our scheme uses a very small amount of memory on each node, and leaves
-room for additional optimization we are further studying.
+%Compare to today's widely-used snapshot technique, our scheme reduces almost
+%two-third of snapshot storage cost.
+%Finally, our scheme uses a very small amount of memory on each node, and leaves
+%room for additional optimization we are further studying.
 
 
 %This paper studies a cluster-based VM-centric scheme which collocates a lightweight
