@@ -98,6 +98,8 @@ stored data; however, the benefit to the snapshot availability is significant.
   \centering
   %\includegraphics[scale=.45,natwidth=511,natheight=276]{vo_links}
 	\begin{tikzpicture}
+            %the expressions in this plot are simply to trick pgfplots into not expanding the y range, and don't actually change the data
+            % expression used: (99.999+((y-99.999)*1000)/1000)
             \pgfplotsset{/pgf/number format/.cd,
                 fixed,precision=4}
 		\begin{axis}[
@@ -105,10 +107,14 @@ stored data; however, the benefit to the snapshot availability is significant.
                     tick label style={font=\scriptsize},
                     tick style=thin,
 		title={\small $p=1000$},
-                ymin=099.9991,
-                ymax=100.0002,
+                %ymin=099.9991,
+                %ymax=100.0002,
                 %ytick=data,
                 %yticklabels from table={figures/vm_availability_1000.txt}{[index]1},
+                yticklabel={%this is a hack to get around the small yrange
+                    \pgfmathfloatparse{99.999+\tick/1000}
+                    \pgfmathprintnumber{\pgfmathresult}
+                },
                 cycle list={
                     {blue,thin,solid,mark=none},
                     {red,thin,densely dashed,mark=none},
@@ -124,21 +130,21 @@ stored data; however, the benefit to the snapshot availability is significant.
                 },
                 %reverse legend,
 		]
-                \addplot table[x=NodesFailed,y=VO1]{figures/vm_availability_1000.txt};
-                %\addplot table[x=NodesFailed,y expr=(\thisrow{VO1}-99.999)*1000]{figures/vm_availability_1000.txt};
+                %\addplot table[x=NodesFailed,y=VO1]{figures/vm_availability_1000.txt};
+                \addplot table[x=NodesFailed,y expr=(\thisrow{VO1}-99.999)*1000]{figures/vm_availability_1000.txt};
                 %\addlegendentry{$VO\,6.3$ (optimistic)}
-                \addplot table[x=NodesFailed,y=VC1]{figures/vm_availability_1000.txt};
-                %\addplot table[x=NodesFailed,y expr=(\thisrow{VC1}-99.999)*1000]{figures/vm_availability_1000.txt};
+                %\addplot table[x=NodesFailed,y=VC1]{figures/vm_availability_1000.txt};
+                \addplot table[x=NodesFailed,y expr=(\thisrow{VC1}-99.999)*1000]{figures/vm_availability_1000.txt};
                 %\addlegendentry{$VC\,1250$ (estimated)}
-                \addplot table[x=NodesFailed,y=VC2]{figures/vm_availability_1000.txt};
-                %\addplot table[x=NodesFailed,y expr=(\thisrow{VC2}-99.999)*1000]{figures/vm_availability_1000.txt};
+                %\addplot table[x=NodesFailed,y=VC2]{figures/vm_availability_1000.txt};
+                \addplot table[x=NodesFailed,y expr=(\thisrow{VC2}-99.999)*1000]{figures/vm_availability_1000.txt};
                 %\addlegendentry{$VC\,2500000$ (worst-case)}
                 %\addplot table[x=NodesFailed,y=VO2]{figures/vm_availability.txt};
                 %\addlegendentry{$VO\,20$ (optimistic)}
 		\end{axis}
 	\end{tikzpicture}
-        %\caption{100000 machine cluster.}
-  \label{fig:vm-availability-100000}
+        %\caption{1000 machine cluster.}
+  \label{fig:vm-availability-1000}
 \end{subfigure}
     \pgfplotslegendfromname{legend:vm-availability}
       \caption{Availability of VM backup snapshots for VO and VC when failed machines vary
