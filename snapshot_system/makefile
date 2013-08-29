@@ -1,5 +1,5 @@
-MAIN	= main
-TEX	= ${MAIN}.tex arch.tex abs.tex intro.tex design.tex snapshot.tex append.tex cds.tex failover.tex result.tex delete.tex concl.tex background.tex challenge.tex eval1.tex
+MAIN	= fast14_main
+TEX	= ${MAIN}.tex fast14_abstract.tex fast14_introduction.tex fast14_background.tex fast14_deduplication.tex fast14_architecture.tex fast14_evaluation.tex fast14_conclusion.tex
 FIG	= 
 BIB	= library.bib
 
