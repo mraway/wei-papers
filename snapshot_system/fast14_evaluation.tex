@@ -1,5 +1,5 @@
 \section{Evaluation}
-\label{sect:exper}
+\label{sect:evaluation}
 We have implemented and evaluated a prototype of our VC scheme on a Linux cluster of machines with
 8-core 3.1Ghz AMD FX-8120 and 16 GB RAM. 
 Our implementation is based on Alibaba cloud platform~\cite{Aliyun,WeiZhangIEEE}
@@ -10,9 +10,9 @@ with an alternative VO design, and assess backup throughput and  resource usage 
 
 We will compare our VC approach with
 a VO approach  using stateless routing with binning (call it SRB) 
-based on~\cite{ParallelDataDomain,Extremebining}
-SRB executes a distributed deduplication by routing a data chunk to a machine~\cite{ParallelDataDomain}
-using  a min-hash function discussed in \cite{Extremebining}. Once a data chunk is routed to
+based on~\cite{Dong2011,extreme_binning09}
+SRB executes a distributed deduplication by routing a data chunk to a machine~\cite{Dong2011}
+using  a min-hash function discussed in \cite{extreme_binning09}. Once a data chunk is routed to
 a machine, this chunk is compared with the fingerprint index of this machine locally. 
 
 \subsection{Settings}
@@ -29,7 +29,7 @@ All data are divided into 2 MB fix-sized segments and each segment is divided in
 variable-sized content chunks ~\cite{similar94,rabin81} with an average size of 4KB.
 The signature for variable-sized blocks is computed using their SHA-1 hash. 
 Popularity of data blocks are collected through global counting and 
-and top popular ones ($\delta=1-2\%$)  are  kept in the PDS, as discussed in Section~\ref{sect:crossVM}.
+and top popular ones ($\delta=1-2\%$)  are  kept in the PDS, as discussed in Section~\ref{sect:store}.
 
 \subsection{Impact on Fault Tolerance}
 Figure~\ref{fig:vm-availability} shows the availability of VM snapshots when 
@@ -186,7 +186,7 @@ from 1 to 10.  Non-PDS replication is fixed
 \end{figure}
 
 \subsection{Deduplication Efficiency}
-Figure~\ref{fig:exbin-efficiency-graph} shows the deduplication efficiency for SRB and VC.
+Figure~\ref{fig:exbin-efficiency-graph2} shows the deduplication efficiency for SRB and VC.
 Deduplication efficiency is defined as the percent of duplicate chunks
 which are detected and deduplicated.
 The figure also compares several PDS sizes chosen for VC. ``$\sigma=2\%$'' 

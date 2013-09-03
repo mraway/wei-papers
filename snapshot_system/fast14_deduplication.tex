@@ -1,5 +1,5 @@
 \section{VM-centric Snapshot Deduplication}
-\label{sect:dedupe}
+\label{sect:deduplication}
 
 \subsection{Key VM-centric  Strategies}
 \label{sect:vc-strategies}
@@ -17,8 +17,15 @@ the changed areas since last backup.
 The Microsoft SDK provides an API that allows external applications to monitor 
 the VM's I/O traffic and implement  the changed block tracking feature.
 
+\begin{figure}[htbp]
+  \centering
+  \epsfig{file=images/mh_local_dedup.png, width=3in}
+  \caption{Min-hash based local deduplication}
+  \label{fig:local_dedup}
+\end{figure}
+
 Since the best deduplication uses a nonuniform chunk size 
-in the average of 4K or 8K~\cite{??},  
+in the average of 4K or 8K~\cite{Jin2009},
 we conduct additional local inner-VM deduplication by comparing
 dirty segment's chunk fingerprints within  {\em similar} segments from its parent snapshot. 
 We define two segments are similar if their approximated content signature is the same.
@@ -36,8 +43,8 @@ segments to search,
 the amount of memory for maintaining those fingerprints in similar segment s is small.
 
 \item \textbf{Cross-VM deduplication with popular chunks and replication support}
-This step accomplishes the standard global fingerprint  comparison as conducted
-in the previous work~\cite{??}.
+This step accomplishes the standard global fingerprint comparison as conducted
+in the previous work~\cite{WeiZhangIEEE}.
 One key observation is that the inner deduplication has removed many of the duplicates.
 There are fewer deduplication opportunities across VMs while the memory and network
 consumption for global comparison is more expensive.
@@ -56,7 +63,7 @@ we can afford to provide extra replicas for these popular chunks to enhance the 
 When a chunk is not detected as a duplicate to any existing chunk, this chunk will be written
 to the file system. Since the backend file system typically uses a large block size such as 64MB, each VM will 
 accumulate small local chunks. We manage this accumulation process using an append-store  scheme
-and discuss this in details in Section~\ref{sect:arch}.
+and discuss this in details in Section~\ref{sect:architecture}.
 The system allows all machines conduct the backup in parallel in different machines, and each machine
 conducts the backup of one VM at a time, and thus only requires a write  buffer for one VM.
 
@@ -75,8 +82,8 @@ Choosing the value  $k$ for the most popular chunks affects the deduplication ef
 We analyze this impact based on the characteristics  of the VM snapshot traces
 studied from  application datasets.
 Our previous study shows that the popularity of data chunks after inner VM deduplication follows 
-a Zipf-like distribution\cite{zipf} and its
-exponent $\alpha$ is ranged between 0.65  and  0.7.~\cite{ieeecloud}. 
+a Zipf-like distribution\cite{Breslau1999a} and its
+exponent $\alpha$ is ranged between 0.65  and  0.7.~\cite{WeiZhangIEEE}. 
 Table~\ref{tab:symbol} lists parameters used in this analysis.
 
 \begin{figure}
@@ -242,7 +249,7 @@ Thus in practice, the coverage of the PDS increases as more VMs are involved.
 
 The replication degree of the backup storage 
 is $r$ for regular file blocks and $r=3$ is a typical setting in the distributed
-file system~\cite{Hadoop,GFS}.
+file system~\cite{googlefs03,hdfs10}.
 In the VC approach, a special replica degree $r_c$ used for PDS blocks where $r_c>r$. 
 The storage cost for VO with full deduplication is $c_u *r$ and for VC, it is
 $ k*r_c  + (c_u-k)*r$. Thus The storage cost ratio of $VC$ over $VO$ is 

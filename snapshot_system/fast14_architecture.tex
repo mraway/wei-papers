@@ -1,5 +1,5 @@
 \section{Architecture and Implementation Details}
-\label{sect:arch}
+\label{sect:architecture}
 Our system runs on a cluster of Linux machines with Xen-based VMs.
 A distributed file system (DFS) manages  the physical disk storage and we use 
 an open source DFS called QFS~\cite{QFS}. 
@@ -7,8 +7,6 @@ All data needed for VM services, such as virtual disk images used by runtime VMs
 and snapshot data for backup purposes, reside in this distributed file system. 
 One physical node hosts tens of VMs, each of which accesses its virtual machine disk image through the
 virtual block device driver (called TapDisk\cite{Warfield2005} in Xen).
-
-
 
 \subsection{ Components of a cluster node } 
 As  depicted in Figure~\ref{fig:arch_vm}, 
@@ -23,7 +21,7 @@ that have been made to virtual disk.
 Every bit in the bitmap represents a fix-sized (2MB) region called a \textit{segment}, indicating whether the segment
 is modified since last backup. 
 Segments are further divided into variable-sized chunks (average 4KB) 
-using a content-based chunking algorithm~\cite{?}, 
+using a content-based chunking algorithm~\cite{frame05}, 
 which brings the opportunity of fine-grained deduplication.
 When the VM issues a disk write, the dirty bit for the corresponding segment is set
 and this indicates such a segments needs to be checked during snapshot backup. 
@@ -44,6 +42,7 @@ the data structures  includes reference pointers to the actual data location to 
 \end{figure*}
 
 \subsection{A VM-centric snapshot store for backup data}
+\label{sect:store}
 We build the snapshot storage on the top of a distributed file system.
 Following the VM-centric idea for the purpose of fault isolation,
 each VM has its own snapshot store, containing new data chunks which are considered
@@ -66,7 +65,7 @@ In writing a chunk during backup, the system accumulates data chunks and store t
 group as a unit after a compression.
 When accessing a particular chunk, its chunk group is retrieved from the storage
 and uncompressed. Given the high spatial locality and usefulness of prefetching  in 
-snapshot chunk accessing~\cite{Sampling,FoundationPaper},
+snapshot chunk accessing~\cite{Guo2011,foundation08},
 retrieval of  a data chunk  group naturally works well with prefetching. 
 A  typical chunk group contains 100 to 1000 chunks, with an average size of 
 200-600 chunks.
@@ -209,7 +208,7 @@ are misjudged as  being in use, resulting in a storage leakage.
 Leakage repair is conducted periodically to fix the above approximation error.
 This procedure compares the live chunks for each VM with what are truly used through the VM snapshot metadata recipe.
 That requires a scanning of all chunks in a VM; however it is a VM-specific procedure and thus
-the cost is relatively small compared to the traditional mark-sweep procedure~\cite{?} which scans snapshot 
+the cost is relatively small compared to the traditional mark-sweep procedure~\cite{Guo2011} which scans snapshot 
 chunks from all VMs.
 For example,
 consider each reference pointer consumes 8 bytes plus  1 mark bit, a VM that has 40GB backup data with about

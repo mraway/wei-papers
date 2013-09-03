@@ -1,5 +1,5 @@
 \section{Background and Design Considerations}
-\label{sect:option}
+\label{sect:background}
 At a cloud cluster node, each instance of a guest operating system runs on a virtual machine, accessing virtual hard disks 
 represented as virtual disk image files in the host operating system.
 For VM snapshot backup, file-level semantics are normally not provided.
@@ -12,7 +12,7 @@ cloud cluster avoids the extra cost to acquire a dedicated backup facility
 and reduces the network bandwidth consumption in transferring the
 raw data for backup. 
 Figure~\ref{fig:collocated} illustrates the cluster architecture where
-each physical machine runs a backup service and a distributed file system (DFS)~\cite{GFS2004,Hadoop} 
+each physical machine runs a backup service and a distributed file system (DFS)~\cite{googlefs03,hdfs10} 
 serves a backup store  for the snapshots.
 
 \begin{figure}[htb]
@@ -50,7 +50,7 @@ Thus from the fault tolerance point of view,  duplicate sharing among multiple V
 discouraged. 
 Another disadvantage of sharing is that it complicates snapshot deletion, 
 which  occurs frequently when snapshots expire regularly. 
-The mark-sweep approach~\cite{mark-sweep} is effective for deletion, and its main cost
+The mark-sweep approach~\cite{Guo2011} is effective for deletion, and its main cost
 is to count if a data chunk is still shared by other snapshots.
 Localizing deduplication can  minimize data sharing and simplify deletion while sacrificing 
 deduplication efficiency, and  can faciltate parallel execition of snaptshot operations.
@@ -84,10 +84,10 @@ VM snapshots can be  backed up  incrementally by identifying file  blocks that h
 changed from the previous version of the snapshot~\cite{Clements2009,Vrable2009,TanIPDPS2011}.
 Such a scheme  is  VM-centric since deduplication is localized. 
 We are seeking for a tradeoff since 
-cross-VM  signature comparison can deliver additional compression~\cite{Guo2011,Dong,ExtremeBining}.
+cross-VM  signature comparison can deliver additional compression~\cite{Guo2011,Dong2011,extreme_binning09}.
 \item {\bf Stateless  Data Routing}.
 One approach for scalable duplicate comparison is to use a content-based hash
-partitioning algorithm called stateless data routing~\cite{Dong20??}
+partitioning algorithm called stateless data routing~\cite{Dong2011}
 that divides the deduplication work with an approximation. This work 
 is similar to Exreme Binning\cite{extreme_binning09} and 
 each request is routed  to a machine which holds
