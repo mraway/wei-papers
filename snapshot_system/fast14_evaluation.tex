@@ -186,32 +186,6 @@ from 1 to 10.  Non-PDS replication is fixed
 \end{figure}
 
 \subsection{Deduplication Efficiency}
-Figure~\ref{fig:exbin-efficiency-graph2} shows the deduplication efficiency for SRB and VC.
-Deduplication efficiency is defined as the percent of duplicate chunks
-which are detected and deduplicated.
-The figure also compares several PDS sizes chosen for VC. ``$\sigma=2\%$'' 
-is defined in Table~\ref{tab:symbol}. 
-%we allocate the space of distributed shared memory  to accommodate 2\%
-%of data chunks shared among VMs, as defined in 
-With $\sigma=2\%$, memory usage for PDS index lookup per machine is about 100MB
-and  the deduplication efficiency can reach over 90\%.
-When $\sigma=4\%$, the deduplication efficiency can reach 92\%. 
-The loss of efficiency in VC is caused by the restriction of the total physical memory available
-in the cluster to support PDS index.  
-The loss of efficiency in SRB is caused by the routing of data chunks which restricts the search scope
-for global comparison.
-In all cases, VC provides similar or better deduplication efficiency than SRB.
-
-This result shows VC can remove  a competitive amount of duplicates.
-In general, our experiments show that
-dirty-bit detection at the segment level  can reduce the data size to about 23\% of original data, 
-which leads  about 77\% reduction.
-Local search within a segment can   further reduce the data size
-to about 18.5\% of original size, namely it delivers additional 4.5\% reduction.
-The PDS-based cross-VM detection with $\sigma=2\% $
-can reduce the  size further to 8\% of original size, namely it 
-delivers additional 10.5\% reduction.
-
 %this version combines the old and the minhash alg. to compare against srb
 \begin{figure}[ht]
   \centering
@@ -268,8 +242,34 @@ delivers additional 10.5\% reduction.
             \end{axis}
     \end{tikzpicture}
     \caption{Deduplication efficiency of VC and SRB.}
-  \label{fig-exbin-efficiency-graph2}
+  \label{fig:exbin-efficiency-graph2}
 \end{figure}
+
+Figure~\ref{fig:exbin-efficiency-graph2} shows the deduplication efficiency for SRB and VC.
+Deduplication efficiency is defined as the percent of duplicate chunks
+which are detected and deduplicated.
+The figure also compares several PDS sizes chosen for VC. ``$\sigma=2\%$'' 
+is defined in Table~\ref{tab:symbol}. 
+%we allocate the space of distributed shared memory  to accommodate 2\%
+%of data chunks shared among VMs, as defined in 
+With $\sigma=2\%$, memory usage for PDS index lookup per machine is about 100MB
+and  the deduplication efficiency can reach over 90\%.
+When $\sigma=4\%$, the deduplication efficiency can reach 92\%. 
+The loss of efficiency in VC is caused by the restriction of the total physical memory available
+in the cluster to support PDS index.  
+The loss of efficiency in SRB is caused by the routing of data chunks which restricts the search scope
+for global comparison.
+In all cases, VC provides similar or better deduplication efficiency than SRB.
+
+This result shows VC can remove  a competitive amount of duplicates.
+In general, our experiments show that
+dirty-bit detection at the segment level  can reduce the data size to about 23\% of original data, 
+which leads  about 77\% reduction.
+Local search within a segment can   further reduce the data size
+to about 18.5\% of original size, namely it delivers additional 4.5\% reduction.
+The PDS-based cross-VM detection with $\sigma=2\% $
+can reduce the  size further to 8\% of original size, namely it 
+delivers additional 10.5\% reduction.
 
 \subsection{Resource Usage and Processing Time}
 \begin{table}
@@ -338,7 +338,7 @@ Overall,  VC is faster than SRB, though data reading dominates the processing ti
 
 \begin{figure}[htbp]
   \centering
-  \epsfig{file=figures/srb_vs_vc, width=3.5in}
+  \epsfig{file=figures/srb_vs_vc, width=3in}
   \caption{Time to backup a dirty VM segment under SRB and VC}
   \label{fig:srb_vs_vc}
 \end{figure}
