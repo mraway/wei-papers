@@ -60,7 +60,8 @@ such inline duplicate detection in which  deduplication of an individual block  
 In our work, this constraint is relaxed and 
 there is a waiting time for many duplicate detection requests. This relaxation is acceptable because 
 in our context, finishing the backup of required VM images within a reasonable time window is more
-important than optimizing individual VM block  backup requests.
+important than optimizing individual VM block  backup requests, and by batch
+processing the deduplication requests we can decrease resource usage.
 
 
 

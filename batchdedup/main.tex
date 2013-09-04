@@ -27,6 +27,7 @@
 \pgfplotsset{
         every mark/.append style={solid}
 }
+%this is my preferred default cycle list for pgfplots.
 \pgfplotscreateplotcyclelist{mcolor}{%
     {blue,every mark/.append style={fill=blue},mark=*},
     {red,every mark/.append style={fill=red},mark=square*},
@@ -97,7 +98,7 @@ Wei Zhang$^{\star}$, Tao Yang$^\star$, Gautham Narayanasamy$^\star$, and Hong Ta
 \input{background} %related works, related solutions, 
 \input{arch} %, design considerations, architecture
 \input{analysis} %, design considerations, architecture
-\input{scheduling.tex} % CoW cost considerations and round scheduling
+\input{scheduling} % CoW cost considerations and round scheduling
 \input{eval} %data study, zipf, model of cds size and dedup efficiency
 %\input{results}
 %\input{related}
