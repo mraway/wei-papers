@@ -232,11 +232,11 @@ delivers additional 10.5\% reduction.
                 %{red,densely dotted,mark=o},
                 %{red,densely dotted,mark=pentagon,mark size=1.4},
             },
-            mark repeat={5},
+            mark repeat={2},
             xlabel={Number of VMs added},
             ylabel={Dedup. Efficiency (\%)},
             xmin=0,
-            ymin=88.5,
+            ymin=85,
             ymax=100,
             %extra y ticks={4.5,5.5,6.5} %to add extra ticks
             mark options=solid,
@@ -252,9 +252,9 @@ delivers additional 10.5\% reduction.
             \addplot table[x=VMs,y=MHcds2] {figures/exbin_efficiency_comparison2.txt};
             %\addplot table[x=VMs,y=MHcds1] {figures/exbin_efficiency_comparison2.txt};
             \addplot table[x=VMs,y=MHNocds] {figures/exbin_efficiency_comparison2.txt};
-            %\addplot table[x=VMs,y=cds4] {figures/exbin_efficiency_comparison.txt};
-            \addplot table[x=VMs,y=cds2] {figures/exbin_efficiency_comparison.txt};
-            %\addplot table[x=VMs,y=cds1] {figures/exbin_efficiency_comparison.txt};
+            %\addplot table[x=VMs,y=cds4] {figures/exbin_efficiency_comparison2.txt};
+            \addplot table[x=VMs,y=cds2] {figures/exbin_efficiency_comparison2.txt};
+            %\addplot table[x=VMs,y=cds1] {figures/exbin_efficiency_comparison2.txt};
             \addplot table[x=VMs,y=exbin] {figures/exbin_efficiency_comparison2.txt};
             \legend{VC MH( $\sigma=4\%$),
                 VC MH($\sigma=2\%$),
