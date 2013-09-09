@@ -136,19 +136,23 @@ the block metadata contains a reference pointer to the earlier block.
 
 
 
-\begin{figure*}[tbhp]
-\centering
+%\begin{figure*}[tbhp]
+%\centering
+%\includegraphics[width=0.95\textwidth]{images/DataFlow.pdf}
+%\caption{Processing flow of Stage  1 (dirty segment scan and request accumulation), Stage 2 
+%(fingerprint comparison and summary output),  and Stage 3 (non-duplicate block backup).}
+%\label{fig:flow}
+%\end{figure*}
 
-\includegraphics[width=0.95\textwidth]{images/DataFlow.pdf}
-\caption{Processing flow of Stage  1 (dirty segment scan and request accumulation), Stage 2 
-(fingerprint comparison and summary output),  and Stage 3 (non-duplicate block backup).}
-\label{fig:flow}
-\end{figure*}
+\begin{figure}[th]
+\centering
+\includegraphics[width=0.5\textwidth]{images/Stage1.pdf}
+\caption{Processing flow of Stage 1.}
+\label{fig:stage1}
+\end{figure}
 
 %\subsection{Processing flow and resource usage}
-The data flow of our multi-stage duplicate detection is depicted in Figure~\ref{fig:flow}. 
-%let $v$ be the total number of virtual machines hosted in  a cluster,  
-%we divide the backup into $k$  iterations. 
+%The data flow of our multi-stage duplicate detection is depicted in Figure~\ref{fig:flow}. 
 %\begin{itemize}
 %\item
 In Stage 1a, each machine independently reads  
@@ -201,6 +205,13 @@ logged during the index lookup.
 Our experience is that there is significant redundancy during the initial snapshot backup and after
 that, the percentage of redundant blocks due to concurrent processing  is small.
 
+\begin{figure}[th]
+\centering
+\includegraphics[width=0.5\textwidth]{images/Stage2.pdf}
+\caption{Processing flow of Stage 2.}
+\label{fig:stage2}
+\end{figure}
+
 In stage 2a the deduplication results corresponding to unique (new) data blocks
 are exchanged using $p$ send and receive buffers to route the responses to the
 deduplication requesters. Dup-with-new blocks are not exchanged, as they are
@@ -237,6 +248,13 @@ blocks. Our experiment shows that it is faster to read dirty segments in the tes
 
 %          In fetching non-duplicates,    it is sometime faster that we fetch a large number of consecutive chunk blocks from an accumulated  segment which contains duplicated chunks,  to avoid the random seek overhead.
 
+\begin{figure}[th]
+\centering
+\includegraphics[width=0.5\textwidth]{images/Stage3.pdf}
+\caption{Processing flow of Stage 3.}
+\label{fig:stage3}
+\end{figure}
+
 In Stage 3a the machines exchange references to new blocks. This is required
 because it is the VM holder that backs up the data, but the partition index
 holder that must perform index lookups. Each machine reads the references
@@ -247,6 +265,13 @@ Stage 3b is where the index update occurs; new blocks are added to each
 partition index, and additionally dup-with-new blocks are re-read to obtain
 references. The dup-with-new blocks, now with references, are added to the
 duplicate result lists to be returned in Stage 4.
+
+\begin{figure}[th]
+\centering
+\includegraphics[width=0.5\textwidth]{images/Stage4.pdf}
+\caption{Processing flow of Stage 4.}
+\label{fig:stage4}
+\end{figure}
 
 In the final Stage of our algorithm, Stage 4, All duplicate references,
 including dup-with-new blocks, are returned to the requesters and the snapshot
