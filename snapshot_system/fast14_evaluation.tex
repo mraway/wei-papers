@@ -312,8 +312,8 @@ We have further studied the memory and disk bandwidth usage
 when running concurrent VM snapshot backup on each node. 
 Table ~\ref{tab:resource_usage} gives the CPU, memory and disk write workload of backing up multiple VMs 
 at the same time on each physical machine. 
-[ NOT REASONABLE: Notice that memory and CPU used by PDS index and QFS are not included since they belong to 
-the cloud infrastructure services and are shared among many applications.]
+% [ NOT REASONABLE: Notice that memory and CPU used by PDS index and QFS are not included since they belong to 
+% the cloud infrastructure services and are shared among many applications.]
 We see our hybrid deduplication scheme only occupies a small amount of system resources. 
 The  local deduplication only needs to keep the parent snapshot recipe and a few similar segment recipes in 
 memory during duplicate detection.
@@ -399,9 +399,9 @@ perform even better in production clusters, which often have ten or more disks o
 \end{figure}
 
 Figure~\ref{fig:leakage} shows the average accumulated storage leakage in terms of percentage of
-snapshot space per VM caused  by approximate deletions.
+storage space per VM caused  by approximate deletions.
 The slot line is the predicted leakage using Formula~\ref{eq:leak} from Section~\ref{sect:delete}
 while the dashed line is the actual leakage measured during the experiment.
-[OTHER PARAMETERS USED]
+% [OTHER PARAMETERS USED]
 After 9 snapshot deletions, the actual leakage reaches 0.01\% and this means that
 there is only 1MB space leaked for every 10GB of stored data. 
