@@ -20,8 +20,8 @@ considering that significant networking  and computing resource  is required to 
 raw data and conduct signature comparison. 
 
 
-This paper seeks for a low-cost architecture option and considers that
-a backup service uses the existing cloud computing resource.
+This paper seeks for a low-cost architecture option and considers a backup
+service that uses the existing cloud computing resource.
 %Since most of backup data is not used in practice, system resource in such a service is not fully utilized. 
 Performing deduplication adds significant  memory cost for comparison of content fingerprints. 
 Since each physical machine in a cluster  hosts many VMs, memory contention happens frequently. 
@@ -54,8 +54,14 @@ reference counting management.
 %parition-wise  deletion. 
 The tradeoff is that every machine has to read dirty segments twice
 and that some deduplication requests are delayed for staged parallel processing.
+Another tradeoff of our efficient batched approach, related to reading each
+segment twice, is that we must maintain a consistent view of the disk between
+the first and second read. We use Copy on Write (CoW) to acheive this, at the
+cost of additional disk space.
 With careful parallelism and buffer  management,
-this multi-stage detection scheme can provide  a sufficient throughput for VM backup.   
+this multi-stage detection scheme can provide  a sufficient throughput for VM
+backup, and by adopting a multiple-batch approach we can minimize the cost
+of maintaining a consistent view.
 
 
 

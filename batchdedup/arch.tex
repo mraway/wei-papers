@@ -19,9 +19,9 @@ uses coarse-grain segment  dirty bits for version-based detection~\cite{Clements
 %We use a segment-level coarse-grain setting to reduce the efforts in detection and maintaining dirty bits. 
 Our experiment with Alibaba's production dataset shows that over 70 percentage of 
 duplicates can be detected using segment dirty bits when the segment size is 2M bytes.  
-This setting requires OS to maintain segment dirty bits and 
-the amount of space for this purpose is negligible. In the second level of deduplication, content blocks of dirty segments 
-are compared with the fingerprints of unique  blocks from the previous snapshots.
+This setting requires the virtual disk driver to maintain segment dirty bits,
+which has a negligible space cost (1 bit per 2 MB). In the second level of deduplication, content blocks of dirty segments 
+are compared with the fingerprints of unique  blocks from previous snapshots.
 Our key strategies are explained as follows.
 \begin{itemize}
 
@@ -57,13 +57,16 @@ in all VMs and  the reference pointers to the location of raw data.
 A logical way to distribute detection requests among machines is based on 
 fingerprint values of content blocks.
 % in a  disjointed manner.
-Initial data  blocks follows the VM distribution 
+Initial data  blocks follow the VM distribution 
 among machines 
 and the detected duplicate summary 
 should be collected following the same distribution.
-Therefore, there are two all-to-all data redistribution operations involved.
-One is to map detection requests from VM-based distribution to fingerprint based distribution.  
-Another one  is to map duplicate summary from fingerprint-based distribution to VM based distribution.  
+Therefore, there are four all-to-all data redistribution operations involved.
+One is to map detection requests from VM-based distribution to fingerprint based distribution, and
+another one  is to map duplicate summary from fingerprint-based distribution to VM based distribution.
+Two additional rounds are required to ensure no duplicate blocks are missed
+and that both the partition index holder and VM owning machines have correct
+data references.
 The redistributed data needs to be accumulated on the disk to reduce the use of memory.
 To minimize the disk seek cost, outgoing or incoming data exchange messages are buffered to 
 bundle small messages.
@@ -72,6 +75,12 @@ at each machine, space per each buffer  is small under the memory constraint for
 This counteracts the effort of seek cost reduction.  
 %Then there will be a large number of storage  IO operations involved, suffering the huge seek overhead.
 We have designed an efficient data exchange and disk data buffering  scheme to address this.
+\item {\bf Round Scheduling}.
+When all data is scheduled to be deduplicated in one round, the cost of Copy
+on Write (CoW) can be significant, as explored in other papers\cite{EMCIncrementalDataChanges}.
+We therefore develop an algorithm to break up the data into multiple rounds to
+make the best use of the efficiency of batch processing, while minimizing
+the cost of CoW.
 
 %As we detect and backup requests before actual backup takes place,  we need to store chunk data on 
 %temporary disks and once duplicates 
@@ -130,7 +139,7 @@ the block metadata contains a reference pointer to the earlier block.
 \begin{figure*}[tbhp]
 \centering
 
-\includegraphics[width=0.95\textwidth]{steps.pdf}
+\includegraphics[width=0.95\textwidth]{images/DataFlow.pdf}
 \caption{Processing flow of Stage  1 (dirty segment scan and request accumulation), Stage 2 
 (fingerprint comparison and summary output),  and Stage 3 (non-duplicate block backup).}
 \label{fig:flow}
@@ -142,7 +151,7 @@ The data flow of our multi-stage duplicate detection is depicted in Figure~\ref{
 %we divide the backup into $k$  iterations. 
 %\begin{itemize}
 %\item
-In Stage 1, each machine independently reads  
+In Stage 1a, each machine independently reads  
 %$v/k$  
 VM images that need a backup
 and forms duplicate  detection requests. 
@@ -172,7 +181,7 @@ less disk seek overhead.
 %disk storage startup cost such as seek is much mu
 %Note that we only accumulate requests with their meta data information.
 %\item
-Stage  2 is to load disk data and perform fingerprint comparison at each machine one request partition at a time.
+Stage 1b is to load disk data and perform fingerprint comparison at each machine one request partition at a time.
 % in the partitions.  
 %The system maintains the index of all chunk fingerprints divided in the buckets. 
 %The system loads the global index partition 
@@ -185,7 +194,18 @@ VM-based distribution.  The summary contains the block ID and  the reference poi
 Each machine uses memory space of the request partition as a send buffer with no extra memory requirement.
 But it needs to allocate $p$ receive buffers to collect duplicate summary from other machines.
 It also allocates $v$ request buffers to copy duplicate summary from $p$ receive buffers and output to the local disk
-when request buffers are full.
+when request buffers are full. One potential issue is that there may be
+multiple copies of a new block added to the system during the same round.
+We call these dup-with-new blocks and the redundandy is discovered and
+logged during the index lookup.
+Our experience is that there is significant redundancy during the initial snapshot backup and after
+that, the percentage of redundant blocks due to concurrent processing  is small.
+
+In stage 2a the deduplication results corresponding to unique (new) data blocks
+are exchanged using $p$ send and receive buffers to route the responses to the
+deduplication requesters. Dup-with-new blocks are not exchanged, as they are
+treated as duplicate blocks, only without data references (the data references
+to these blocks are added in Stage 3).
 
 %. In this way, it sends duplicate summary to the corresponding machines one by one to minimize the startup cost for sending a message.
 %In the receiving side, 
@@ -196,22 +216,20 @@ when request buffers are full.
 %These substeps are repeated as the stream of data is exchanged when each machine compares through all $q$ partitions.
 
 %\item 
-Stage 3 is to perform real backup.
+Stage 2b is to perform the real backup.
 % one VM at a time.
 The system loads the duplicate summary of a VM, 
 reads  dirty segments of a VM, and outputs non-duplicate blocks to the final backup 
-storage. Additionally, the global index on each machine is updated with the meta data of new chunk blocks. 
+storage. Additionally, references to each new data block are saved so that the
+global index may be updated.%the global index on each machine is updated with the meta data of new chunk blocks. 
 When a segment is not dirty, the system only needs to output the segment meta data such as a reference pointer. 
 There is an option to directly read dirty blocks instead of fetching a dirty segment which can include duplicate
 blocks. Our experiment shows that it is faster to read dirty segments in the tested workload.
-Another issue is that during global index update after new block creation,
+%Another issue is that during global index update after new block creation,
 % in the backup storage,
-the system  may find some  blocks with the same fingerprints have been 
-created redundantly. For example, two different VM blocks that have the same  fingerprint are not detected
-because  the  global index has not contained such a fingerprint yet. 
-The redundancy is discovered and logged during the index update and can be repaired
-periodically when necessary.  Our experience is that there is a redundancy during the initial snapshot backup and once 
-that is repaired, the percentage of redundant blocks due to concurrent processing  is insignificant.
+%the system  may find some  blocks with the same fingerprints have been 
+%created redundantly. For example, two different VM blocks that have the same  fingerprint are not detected
+%because  the  global index has not contained such a fingerprint yet. 
 
 %If a segment is dirty,  the system  use the duplicate summary information from Step 2 for internal 
 %duplicate blocks of this dirty segment and output the remaining non-duplicate blocks to the backup storage.
@@ -219,10 +237,26 @@ that is repaired, the percentage of redundant blocks due to concurrent processin
 
 %          In fetching non-duplicates,    it is sometime faster that we fetch a large number of consecutive chunk blocks from an accumulated  segment which contains duplicated chunks,  to avoid the random seek overhead.
 
+In Stage 3a the machines exchange references to new blocks. This is required
+because it is the VM holder that backs up the data, but the partition index
+holder that must perform index lookups. Each machine reads the references
+obtained for all new blocks written, and then sends those references to the
+partition index holder, and the received references are saved to disk during 3a.
 
-The above steps can be executed by each machine using one thread to minimize the use of computing resource.
+Stage 3b is where the index update occurs; new blocks are added to each
+partition index, and additionally dup-with-new blocks are re-read to obtain
+references. The dup-with-new blocks, now with references, are added to the
+duplicate result lists to be returned in Stage 4.
+
+In the final Stage of our algorithm, Stage 4, All duplicate references,
+including dup-with-new blocks, are returned to the requesters and the snapshot
+recipes are updated with those pointers.
+
+
+The above steps can be executed by each machine using one thread to minimize
+the use of computing resources.
 The  disk storage usage on each machine 
-is fairly small for  storing part of global index and
+is fairly small for  storing part of the global index and
 accumulating  duplicate detection requests that contain fingerprint information.   
 We impose a memory limit $M$ allocated for each stage of processing at each machine.
 The usage of $M$ is controlled as follows and space allocation among buffers is optimized based on the relative
