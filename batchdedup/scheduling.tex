@@ -112,6 +112,13 @@ Halt
 \caption{Na\"{\i}ve round packing heuristic based on VM size and current round runtime}
 \end{figure}
 
+\begin{figure}[thb]
+\centering
+\includegraphics[width=0.5\textwidth]{images/VMRound.pdf}
+\caption{Choosing a round to schedule a VM to. Though the rounds look
+identical in terms of total/average load, Round 1 is a much better choice.}
+\label{fig:VMRound}
+\end{figure}
 
 A0 does provide for shorter rounds (see Table~\ref{tab:schedule-costs}), but
 the efficiency of the packing is poor due to several issues
@@ -119,26 +126,32 @@ The first issue is that the round with the current lowest runtime
 is chosen. Because backup time is dependent on a combination of the highest
 machine load and average machine load, if we add a VM to the currently most
 loaded machine in a round it will increase runtime much more than if we add the
-VM to a different round where that machine is currently empty
-\todo{(insert figure to show how this happens)}. Therefore a better scheduling
-would be obtained if we pick the round with the lowest runtime after we
-simulate adding the new VM to that round. This new round picking heuristic
+VM to a different round where that machine is currently empty. You can see this
+in Figure~\ref{fig:VMRound}, where VM1D must be scheduled to one of two rounds
+which currently have the same average/total load. The effect of VM1D on round 1
+would be much less than the effect on round 2 because we wouldn't be increasing
+the maximum machine load of the round, so we should schedule to round 1.
+Therefore a better
+scheduling heuristic is one based on predicted runtime after adding the VM, and
+picking the round with the lowest runtime after adding the VM to that round.
+This new round picking heuristic
 takes into account that the same VM might have different affects on different
 rounds. This aspect of round picking must be considered because we assume a VM
 must be backed
 up by the machine that hosts it. If the VMs are located on a DFS such that they
 can be
 backed up by any machine in the cluster then the problem of load balancing
-becomes a simpler but much different problem, and isn't considered here. We
+becomes a simpler but much different problem, but isn't considered here. We
 also pick the most heavily loaded (i.e. most data remaing) machine in case of
-ties so we can make the most backup progress in a round.
+ties so we can make the most backup progress in a round, given equivalent
+equivalent options.
 
 Another improvement we can make to A0 is to the VM picking heuristic. For the
 same reason as given above, the largest VM may not always have the greatest
 impact on time (e.g. picking a slightly smaller VM on the most heavily loaded
 machine has a greater impact than selecting the largest VM on a lightly loaded
-machine). A better way to pick VMs than just by size is to simulate removing
-VM's, then model the new single round time, and pick the VM whose removal most
+machine). Our improved hueristic to pick VMs is to predict the one-round
+runtime after removing that VM, and pick the VM whose removal most
 decreases the single round time (i.e. the VM that has the greatest impact on
 overall backup time). By picking VMs this way we take into account
 the machine load in picking which VM to schedule next, and minimize the time
@@ -162,8 +175,8 @@ Halt
 \caption{More effective round packing heuristic based on minimizing remaining work and predicted round time}
 \end{figure}
 
-A1 significantly improves our simulated results, bringing our CoW costs much
-closer to the best case than the worst case, as can be seen in
+A1 significantly improves our simulated results, also bringing our CoW costs
+much closer to the best case than the worst case, as can be seen in
 Figure~\ref{tab:schedule-costs}.  Our current implementation of the algorithm
 focuses on the deduplication and so doesn't make use of CoW, but we can see
 that our simulated times closely match measured runtimes (hopefully). \todo{I
