@@ -274,7 +274,8 @@ duplicate result lists to be returned in Stage 4.
 \end{figure}
 
 In the final Stage of our algorithm, Stage 4, All duplicate references,
-including dup-with-new blocks, are returned to the requesters and the snapshot
+including dup-with-new blocks, are returned to the requesters from the index
+holders and the snapshot
 recipes are updated with those pointers.
 
 
@@ -284,17 +285,24 @@ The  disk storage usage on each machine
 is fairly small for  storing part of the global index and
 accumulating  duplicate detection requests that contain fingerprint information.   
 We impose a memory limit $M$ allocated for each stage of processing at each machine.
-The usage of $M$ is controlled as follows and space allocation among buffers is optimized based on the relative
-ratio between the cross-machine network  startup cost and disk access startup cost such as seek time.
-Using a bigger buffer  can mitigate the impact of slower startup cost. 
+%The usage of $M$ is controlled as follows and space allocation among buffers is optimized based on the relative
+%ratio between the cross-machine network  startup cost and disk access startup cost such as seek time.
+%Using a bigger buffer  can mitigate the impact of slower startup cost. 
+$M$ includes space for network communications and buffering data which is being
+sent to disk. We have found that as long as the write/read buffers are not
+unreasonably small (e.g. 4KB), the size of the disk buffers does not have a
+great impact on backup time, so we allocate small disk buffers (e.g. 128KB read
+and 2.5MB shared across all write buffers), and then allocate the remaining
+memory to index space or network buffers, depending on the stage.
 \begin{itemize}
-\item For Stage 1, $M$  is divided for 
-1) an I/O buffer to read dirty segments; 2) $2p$ send/receive buffers and $q$ request  buffers.
+\item For Stage 1, $M$ is divided for 
+1) an I/O buffer to read dirty segments; 2) $2p$ send/receive buffers and $q$
+disk buffers for deduplication requests.
 
 %1) $p$ send buffers. images, sends the fingerprint of a dirty block to a machine that is responsible for this fingerprint.
 %2) Buffer requests gathered from other machines and divide those requests into $q$ buckets. Once a buffer for each bucket is full, output to the disk storage.
 \item 
-For Stage 2,  $M$  is divided for 1) space for hosting a global index partition and 
+For Stage 2, $M$ is divided for 1) space for hosting a global index partition and 
 the corresponding request partition; 2) $p$ receive buffers and $v$ summary buffers.
 %%accumulating duplicate summary for each targeted VM.   Once  each machine processes a bucket of  duplicate detection requests, 
 %For each machine which hosts $v$  VMs, and will receive messages from many other machines, 
