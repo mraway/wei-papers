@@ -41,7 +41,9 @@ int main(int argc, char **argv)
 	ifstream is;
 	Block bl;
 	uint64_t size = 0, nblocks = 0;
-	uint64_t new_data = 0, l1_data = 0, l2_data = 0, l3_data = 0;
+	uint64_t new_data = 0, l1_data = 0, l2_data = 0, l3_data = 0, l3_cache = 0, other_data = 0;
+    uint64_t new_blocks = 0, l1_blocks = 0, l2_blocks = 0, l3_blocks = 0, l3_cache_blocks = 0, other_blocks = 0;
+    uint64_t gb = 1024 * 1024 * 1024;
 
 	is.open(argv[1], std::ios_base::in | std::ios_base::binary);
 	if (!is.is_open()) {
@@ -56,17 +58,35 @@ int main(int argc, char **argv)
         switch (bl.file_id_) {
         case 0:
             new_data += bl.size_;
+            new_blocks += 1;
             break;
-        case 1:
+        case IN_PARENT:
             l1_data += bl.size_;
+            l1_blocks += 1;
             break;
-        case 2:
+        case IN_CDS:
             l3_data += bl.size_;
+            l3_blocks += 1;
             break;
-        case 5:
+        case IN_DIRTY_SEG:
             l2_data += bl.size_;
+            l2_blocks += 1;
             break;
+        case (IN_PARENT | IN_CDS):
+            l1_data += bl.size_;
+            l1_blocks += 1;
+            break;
+        case (IN_DIRTY_SEG | IN_CDS):
+            l2_data += bl.size_;
+            l2_blocks += 1;
+            break;            
+        // case IN_CDS_CACHE:
+        //     l3_data += bl.size_;
+        //     l3_cache += bl.size_;
+        //     break;
         default:
+            other_data += bl.size_;
+            other_blocks += 1;
             //print_block("incorrect category", bl);
             //pr_msg("file broken: %s", argv[1]);
             break;
@@ -84,9 +104,16 @@ int main(int argc, char **argv)
 			*/
 		}
 	}
-	pr_msg("%s: %llu blocks, %llu bytes, %.6f new, %.6f l1, %.6f l2, %.6f l3",
-	       argv[1], nblocks, size, (float)new_data/size, (float)l1_data/size, 
-           (float)l2_data/size, (float)l3_data/size);
+	pr_msg("%s:", argv[1]);
+    pr_msg("Total: %llu blocks, %llu bytes", nblocks, size);
+    pr_msg("L1: %llu blocks, %llu bytes", l1_blocks, l1_data);
+    pr_msg("L2: %llu blocks, %llu bytes", l2_blocks, l2_data);
+    pr_msg("L3: %llu blocks, %llu bytes", l3_blocks, l3_data);
+    pr_msg("New: %llu blocks, %llu bytes", new_blocks, new_data);
+    pr_msg("Other: %llu blocks, %llu bytes", other_blocks, other_data);
+    pr_msg("Add: %llu blocks, %llu bytes", 
+           l1_blocks + l2_blocks + l3_blocks + new_blocks + other_blocks, 
+           l1_data + l2_data + l3_data + new_data + other_data);
 	is.close();
 	return 0;
 }

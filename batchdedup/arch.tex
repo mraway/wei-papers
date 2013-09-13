@@ -136,19 +136,23 @@ the block metadata contains a reference pointer to the earlier block.
 
 
 
-\begin{figure*}[tbhp]
-\centering
+%\begin{figure*}[tbhp]
+%\centering
+%\includegraphics[width=0.95\textwidth]{images/DataFlow.pdf}
+%\caption{Processing flow of Stage  1 (dirty segment scan and request accumulation), Stage 2 
+%(fingerprint comparison and summary output),  and Stage 3 (non-duplicate block backup).}
+%\label{fig:flow}
+%\end{figure*}
 
-\includegraphics[width=0.95\textwidth]{images/DataFlow.pdf}
-\caption{Processing flow of Stage  1 (dirty segment scan and request accumulation), Stage 2 
-(fingerprint comparison and summary output),  and Stage 3 (non-duplicate block backup).}
-\label{fig:flow}
-\end{figure*}
+\begin{figure}[th]
+\centering
+\includegraphics[width=0.5\textwidth]{images/Stage1.pdf}
+\caption{Processing flow of Stage 1.}
+\label{fig:stage1}
+\end{figure}
 
 %\subsection{Processing flow and resource usage}
-The data flow of our multi-stage duplicate detection is depicted in Figure~\ref{fig:flow}. 
-%let $v$ be the total number of virtual machines hosted in  a cluster,  
-%we divide the backup into $k$  iterations. 
+%The data flow of our multi-stage duplicate detection is depicted in Figure~\ref{fig:flow}. 
 %\begin{itemize}
 %\item
 In Stage 1a, each machine independently reads  
@@ -201,6 +205,13 @@ logged during the index lookup.
 Our experience is that there is significant redundancy during the initial snapshot backup and after
 that, the percentage of redundant blocks due to concurrent processing  is small.
 
+\begin{figure}[th]
+\centering
+\includegraphics[width=0.5\textwidth]{images/Stage2.pdf}
+\caption{Processing flow of Stage 2.}
+\label{fig:stage2}
+\end{figure}
+
 In stage 2a the deduplication results corresponding to unique (new) data blocks
 are exchanged using $p$ send and receive buffers to route the responses to the
 deduplication requesters. Dup-with-new blocks are not exchanged, as they are
@@ -237,6 +248,13 @@ blocks. Our experiment shows that it is faster to read dirty segments in the tes
 
 %          In fetching non-duplicates,    it is sometime faster that we fetch a large number of consecutive chunk blocks from an accumulated  segment which contains duplicated chunks,  to avoid the random seek overhead.
 
+\begin{figure}[th]
+\centering
+\includegraphics[width=0.5\textwidth]{images/Stage3.pdf}
+\caption{Processing flow of Stage 3.}
+\label{fig:stage3}
+\end{figure}
+
 In Stage 3a the machines exchange references to new blocks. This is required
 because it is the VM holder that backs up the data, but the partition index
 holder that must perform index lookups. Each machine reads the references
@@ -248,8 +266,16 @@ partition index, and additionally dup-with-new blocks are re-read to obtain
 references. The dup-with-new blocks, now with references, are added to the
 duplicate result lists to be returned in Stage 4.
 
+\begin{figure}[th]
+\centering
+\includegraphics[width=0.5\textwidth]{images/Stage4.pdf}
+\caption{Processing flow of Stage 4.}
+\label{fig:stage4}
+\end{figure}
+
 In the final Stage of our algorithm, Stage 4, All duplicate references,
-including dup-with-new blocks, are returned to the requesters and the snapshot
+including dup-with-new blocks, are returned to the requesters from the index
+holders and the snapshot
 recipes are updated with those pointers.
 
 
@@ -259,17 +285,24 @@ The  disk storage usage on each machine
 is fairly small for  storing part of the global index and
 accumulating  duplicate detection requests that contain fingerprint information.   
 We impose a memory limit $M$ allocated for each stage of processing at each machine.
-The usage of $M$ is controlled as follows and space allocation among buffers is optimized based on the relative
-ratio between the cross-machine network  startup cost and disk access startup cost such as seek time.
-Using a bigger buffer  can mitigate the impact of slower startup cost. 
+%The usage of $M$ is controlled as follows and space allocation among buffers is optimized based on the relative
+%ratio between the cross-machine network  startup cost and disk access startup cost such as seek time.
+%Using a bigger buffer  can mitigate the impact of slower startup cost. 
+$M$ includes space for network communications and buffering data which is being
+sent to disk. We have found that as long as the write/read buffers are not
+unreasonably small (e.g. 4KB), the size of the disk buffers does not have a
+great impact on backup time, so we allocate small disk buffers (e.g. 128KB read
+and 2.5MB shared across all write buffers), and then allocate the remaining
+memory to index space or network buffers, depending on the stage.
 \begin{itemize}
-\item For Stage 1, $M$  is divided for 
-1) an I/O buffer to read dirty segments; 2) $2p$ send/receive buffers and $q$ request  buffers.
+\item For Stage 1, $M$ is divided for 
+1) an I/O buffer to read dirty segments; 2) $2p$ send/receive buffers and $q$
+disk buffers for deduplication requests.
 
 %1) $p$ send buffers. images, sends the fingerprint of a dirty block to a machine that is responsible for this fingerprint.
 %2) Buffer requests gathered from other machines and divide those requests into $q$ buckets. Once a buffer for each bucket is full, output to the disk storage.
 \item 
-For Stage 2,  $M$  is divided for 1) space for hosting a global index partition and 
+For Stage 2, $M$ is divided for 1) space for hosting a global index partition and 
 the corresponding request partition; 2) $p$ receive buffers and $v$ summary buffers.
 %%accumulating duplicate summary for each targeted VM.   Once  each machine processes a bucket of  duplicate detection requests, 
 %For each machine which hosts $v$  VMs, and will receive messages from many other machines, 

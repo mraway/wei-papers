@@ -36,6 +36,7 @@ using namespace std;
 #define IN_PARENT 0x01		// 001
 #define IN_CDS 0x02			// 010
 #define IN_DIRTY_SEG 0x05	// 101
+#define IN_CDS_CACHE 0x0a	// 1010
 
 typedef uint8_t Checksum[CKSUM_LEN];	// checksum type
 
@@ -113,14 +114,24 @@ public:
         return size_;
     }
 
-	void Save(ofstream& os) {
+
+	void Save(ostream& os) const
+    {
+
+
+
 		os.write((char *)cksum_, CKSUM_LEN);
 		os.write((char *)&file_id_, sizeof(Block::file_id_));
 		os.write((char *)&size_, sizeof(Block::size_));
 		os.write((char *)&offset_, sizeof(Block::offset_));
 	}
 
-	bool Load(ifstream& is) {
+
+	bool Load(istream& is)
+    {
+
+
+
 		is.read((char *)cksum_, CKSUM_LEN);
 		if (is.gcount() != CKSUM_LEN)
 			return false;
@@ -233,7 +244,11 @@ public:
         return std::binary_search(blocklist_.begin(), blocklist_.end(), blk);
     }
 
-    void Save(ofstream& os) 
+
+    void Save(ostream& os) const
+
+
+
     {
         uint32_t num_blocks = blocklist_.size();
         os.write((char *)&num_blocks, sizeof(uint32_t));

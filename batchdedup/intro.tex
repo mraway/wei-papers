@@ -36,8 +36,7 @@ by duplicate relationship among snapshots  adds processing complexity.
 Among the three factors - time, cost and deduplication efficiency, one of them has to be compromised for the other two. For instance, if we were building a deduplication system that has a high rate of duplication detection and has a very fast response time, 
 it would need a lot of memory to hold fingerprint index and cache.  This leads to a compromise on cost. 
 Our objective is to lower the cost incurred while sustaining the highest de-duplication ratio
-and  a sufficient throughput in dealing with a large number of VM images. 
-% This business model partially  resembles that of Amazon Glacier.
+and  a sufficient throughput in dealing with a large number of VM images.% This business model partially  resembles that of Amazon Glacier.
 
 %Our solution  only uses a very small amount of memory space during backup while completing  snapshot backup and 
 %deletion in a reasonable amount of time. 
@@ -60,14 +59,9 @@ the first and second read. We use Copy on Write (CoW) to acheive this, at the
 cost of additional disk space.
 With careful parallelism and buffer  management,
 this multi-stage detection scheme can provide  a sufficient throughput for VM
-backup, and by adopting a multiple-batch approach we can minimize the cost
-of maintaining a consistent view.
-
-
-
-
-
-
+backup. To minimize the CoW cost and adjust the balance between total backup
+time and the backup times for individual VMs, we adopt a multiple-batch
+approach based on the dual bin packing problem.
 
 
 %Our study shows that common data blocks
@@ -96,7 +90,8 @@ Section ~\ref{sect:background}
 discusses on the background and related work.
 Section ~\ref{sect:arch} presents our snapshot backup solution with request and index partitioning.
 Section ~\ref{sect:analysis} summarizes  our analysis of the system performance.
-Section ~\ref{sect:exper} presents  our evaluation results on the effectiveness.
+Section ~\ref{sect:scheduling} presents our round scheduling algorithm based on our performance model.
+Section ~\ref{sect:exper} presents  our evaluation results on the effectiveness of our system.
 Section ~\ref{sect:final} concludes this paper.
 }
 % talks about Aliyun's VM snapshot system and deduplication process. In section 4 we present
