@@ -1,0 +1,24 @@
+\section{Implementation}
+\subsection{Snapshot Backup}
+\subsection{Snapshot Read}
+\subsection{Snapshot Deletion}
+The following steps would take place during an approximate deletion:
+
+\begin{enumerate}
+\item {\bf Creating Bloom filter} Scan all the living snapshot recipess and their segment recipes,
+for every reference pointing to append store, add it to the Bloom filter.
+\item {\bf Check existance} For every data reference in the deleted snapshot recipe and its segment recipes,
+check the existance of that data reference in Bloom filter. If not found, it is safe to delete that piece of data from append store
+because no living snapshots has referenced it.
+\end{enumerate}
+
+The overall time of running a approximate deletion for one snapshot deletion would be scanning
+all the living snapshots and deleted snapshots, since operations on the in-memory Bloom filter can be done in
+parallel and is much faster than loading recipes from DFS:
+\begin{equation}
+T = (N_{SS} + 1) * T_{scan\_recipes}
+\end{equation}
+ 
+Using the example and analysis in previous section, this approximate deletion can be done in 5 minutes. 
+Memory usage of the Bloom filter depends on its false-positive probility $P_{bl}$,
+when set $P_{bl}$ to 0.01, the memory footprint of approximate deletion is about 15 MB.

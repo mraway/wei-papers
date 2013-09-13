@@ -1,0 +1,39 @@
+\section{Conclusion}
+\label{sect:final}
+In this paper we propose a multi-level selective deduplication scheme for 
+snapshot service in VM cloud. 
+Inner-VM deduplication localizes backup data dependency and exposes more parallelism  
+while cross-VM deduplication with a small common data set
+effectively  covers a large amount of duplicated data.
+Our solution accomplishes the majority of
+potential global deduplication saving while still meets stringent cloud resources requirement. 
+Evaluation using real user's VM data shows
+our solution can accomplish 75\% of what complete global
+deduplication can do. 
+Compare to today's widely-used snapshot technique, our scheme reduces almost
+two-third of snapshot storage cost.
+Finally, our scheme uses a very small amount of memory on each node, and leaves
+room for additional optimization we are further studying.
+%\section*{Acknowledgments}
+%{
+%We would like to thank Weicai Chen and Shikun Tian from Alibaba for their kind support, 
+%and the anonymous referees for their comments.
+%Wei Zhang has received internship support from Alibaba  for VM backup system development.
+%This work was supported in part by NSF IIS-1118106.
+%Any opinions, findings, and conclusions or recommendations expressed in this material are those of the authors and
+%do not necessarily reflect the views of Alibaba or the National Science Foundation.
+%}
+%Noted that 6\% is still significant, which is about 24GB per each VM and for a 1000 node Aliyun cluster,
+%this is about 600 terabytes.
+ 
+%Our experiments show th
+%our solution can eliminate the majority of data duplication with a tiny fraction of
+%block hash index store in memory. It does not only saves valuable system resouces in
+%the VM cloud, but also makes deduplication much faster.
+%
+%
+%Using  50 user VM data out of 1322 data disks as the training data and
+%with  1.5\% as CDS threshold, we see the total 1198GB of new data is reduced by
+%755.8GB, while perfect deduplication can reduce 1017.4GB. So 74.3\% of duplicate blocks are eliminated
+%by pre-trained CDS, which is quite satisfactory.
+

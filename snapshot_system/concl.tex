@@ -1,0 +1,69 @@
+\section{Conclusion}
+\label{sect:final}
+In this paper we propose a collocated backup service built on
+the top of a cloud cluster to reduce network traffic and infrastructure.
+The key contribution is a VM-centric deduplication scheme to 
+maximize fault isolation while delivering competitive deduplication efficiency.
+Inner-VM deduplication localizes backup data dependency and exposes more parallelism  
+while cross-VM deduplication with a small common data set.
+VM-specific file block packing also reduces inter-VM dependence and enhances fault tolerance.
+The design places a special consideration for low-resource usages as a collocated cloud service.
+Evaluation using  VM backup data shows that
+our solution can accomplish 92\% of what complete global
+deduplication can do while the availability of snapshots increases substantially with this VM-centric
+and a small replication overhead for popular inter-VM chunks.
+
+% effectively  covers a large percent of duplicate data.
+%The scheme organizes the write of small data chunks into large file system blocks so
+%that each underlying file block is associated with one VM for most cases.
+%by keeping most of the FSBs only referenced by 1 VM, we isolate faults and improve overal fault tolerance.
+%Our solution accomplishes reasonable and competitive deduplication efficiency while
+%still meeting stringent cloud resource usage requirements. 
+%Our analysis shows that  this VM centric scheme 
+%can  provide  better fault tolerance than VM-oblivious global deduplication schemes
+%while using a small amount of computing and storage resources. 
+
+
+%[Talk about more what we learn from Evaluation]
+%Compare to today's widely-used snapshot technique, our scheme reduces almost
+%two-third of snapshot storage cost.
+%Finally, our scheme uses a very small amount of memory on each node, and leaves
+%room for additional optimization we are further studying.
+
+
+%This paper studies a cluster-based VM-centric scheme which collocates a lightweight
+%backup service with the cloud service and it integrates multiple duplicate detection strategies that  
+%localize the deduplication as much as possible within each virtual machine.
+%This  paper  provides a comparative evaluation of this scheme in  accomplishing a high deduplication 
+%efficiency while sustaining a good backup throughput. 
+
+%This paper studies the      a VM snapshot storage architecture which adopts multiple-level selective deduplication to bring the benefits of fine-grained data reduction into cloud backup storage systems.
+%In this work, we describe our working snapshot system implementation, and provide
+%early performance measurements for both deduplication impact and
+%snapshot operations.
+
+\comments{
+\section*{Acknowledgments}
+{
+We would like to thank Weicai Chen and Shikun Tian from Alibaba for their kind support, 
+and the anonymous referees for their comments.
+Wei Zhang has received internship support from Alibaba  for VM backup system development.
+This work was supported in part by NSF IIS-1118106.
+Any opinions, findings, and conclusions or recommendations expressed in this material are those of the authors and
+do not necessarily reflect the views of Alibaba or the National Science Foundation.
+}
+}
+%Noted that 6\% is still significant, which is about 24GB per each VM and for a 1000 node Aliyun cluster,
+%this is about 600 terabytes.
+ 
+%Our experiments show th
+%our solution can eliminate the majority of data duplication with a tiny fraction of
+%block hash index store in memory. It does not only saves valuable system resouces in
+%the VM cloud, but also makes deduplication much faster.
+%
+%
+%Using  50 user VM data out of 1322 data disks as the training data and
+%with  1.5\% as PDS threshold, we see the total 1198GB of new data is reduced by
+%755.8GB, while perfect deduplication can reduce 1017.4GB. So 74.3\% of duplicate blocks are eliminated
+%by pre-trained PDS, which is quite satisfactory.
+

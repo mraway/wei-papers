@@ -8,18 +8,18 @@ in a sense that it is optimized for large files and sequential read/append opera
 
 \subsection{Design considerations}
 While scalability has been handled by the DFS, there are still several challenges in 
-storing billions of var-sized small data chunks:
+storing billions of variable-sized small data chunks:
 \begin{description}
 \item[Locality perseveration] Chunk data must be placed next to each other in the order of their writing sequence,
 because reading a snapshot incurs large sequential reads of chunks under their logical sequence in the snapshot.
 \item[Flexible referencing] To avoid overwhelming metadata operation capbility of DFS's master, 
 we have to group small chunks into large data files in DFS.
-However, snapshot deletion brings chunk data deletion, and reclaiming disk space would require many chunk data being moved.
+However, snapshot deletion brings chunk data deletion, and reclaiming disk space would require many chunks being moved.
 If such chunk movement incurs updates of data referencing in snapshot and segment recipes, then the cost of deleting 
 a snapshot would be extremely high.
 \item[Efficient chunk lookup] The translation from data reference to data location must be very efficient in two ways: 
-first, a sorted index is necessary to fast locate the data location in $O(log(n)$ time; 
-second, the size of index must be optimized to minimized its memory footprint and the cost of fetching index. 
+first, a sorted index is necessary to quickly find the data location in $O(log(n)$ time; 
+second, the size of the index must be optimized to minimize its memory footprint and the cost of fetching index. 
 \end{description}
 
 
@@ -27,7 +27,7 @@ second, the size of index must be optimized to minimized its memory footprint an
 \subsection{Architecture}
 \begin{figure}[htbp]
   \centering
-  \epsfig{file=images/append_store_arch.eps, width=3.5in}
+  \epsfig{file=images/append_store_arch, width=3.5in}
   \caption{Architecture of Append Store}
   \label{fig:as_arch}
 \end{figure}
@@ -97,13 +97,13 @@ Snapshot operation performance analysis:
         $P_{dirty}$ & Probablity of a segment is dirty & ~ \\ [1ex] \\ [-1.5ex]
         $P_{new}$ & Percentage of new data & ~ \\ [1ex] \\ [-1.5ex]
         $P_{change}$ & Probablity that a chunk is not found in parent snapshot & ~ \\ [1ex] \\ [-1.5ex]
-        $P_{in\_CDS}$ & Percentage of chunks in CDS & ~ \\ [1ex] \\ [-1.5ex]
+        $P_{in\_PDS}$ & Percentage of chunks in PDS & ~ \\ [1ex] \\ [-1.5ex]
         $T_{scan}$ & Time to scan segment data and caculate content hash & 74 ms \\ [1ex] \\ [-1.5ex]
         $T_{write\_AS}$ & Time of writing a chunk into append store & 0.24 ms \\ [1ex] \\ [-1.5ex]
         $T_{read\_AS}$ & Time of reading a chunk from append store & ~ \\ [1ex] \\ [-1.5ex]
         $T_{read\_chunk}$ & Time of reading a chunk & ~ \\ [1ex] \\ [-1.5ex]
-        $T_{check\_CDS}$ & Time of checking CDS & ~ \\ [1ex] \\ [-1.5ex]
-        $T_{read\_CDS}$ & Time of reading a chunk data from CDS data store& ~ \\
+        $T_{check\_PDS}$ & Time of checking PDS & ~ \\ [1ex] \\ [-1.5ex]
+        $T_{read\_PDS}$ & Time of reading a chunk data from PDS data store& ~ \\
         \hline
     \end{tabular}
     \caption{List of performance factors}
@@ -113,19 +113,19 @@ Snapshot operation performance analysis:
 The overall time of writing a snapshot is:
 
 \begin{dmath}
-T_{write} = P_{dirty} * N_{seg} * [max(T_{scan}, T_{read\_AS}) + P_{change} * N_{chunk} * T_{check\_CDS} + P_{new} * N_{chunk} * T_{write\_AS}]
+T_{write} = P_{dirty} * N_{seg} * [max(T_{scan}, T_{read\_AS}) + P_{change} * N_{chunk} * T_{check\_PDS} + P_{new} * N_{chunk} * T_{write\_AS}]
 \end{dmath}
 
 The overall time to read a snapshot is:
 
 \begin{dmath}
-T_{read} = N_{seg} * {T_{read\_AS} + N_{chunks} * [P_{in\_CDS} * T_{read_CDS} + (1 - P_{in\_CDS}) * T_{read\_chunk}]}
+T_{read} = N_{seg} * {T_{read\_AS} + N_{chunks} * [P_{in\_PDS} * T_{read_PDS} + (1 - P_{in\_PDS}) * T_{read\_chunk}]}
 \end{dmath}
 
 Average time of reading a chunk:
 
 \begin{dmath}
-T_{read\_chunk} = P_{in\_CDS} * T_{read\_CDS} + (1 - P_{in\_CDS}) * T_{read\_AS}
+T_{read\_chunk} = P_{in\_PDS} * T_{read\_PDS} + (1 - P_{in\_PDS}) * T_{read\_AS}
 \end{dmath}
 
 Time of reading append store:

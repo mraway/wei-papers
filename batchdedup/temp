@@ -1,0 +1,21 @@
+The inner VM deduplication contains two levels of duplicate detection efforts and the representation of
+each snapshot is correspondingly designed as a two-level level index data structure in the form of a hierarchical
+directed acyclic graph as shown in Figure~\ref{fig:snapshot}.
+An image file is divided into a set of segments and each  segment contains hundreds of content blocks from the bottom level.
+These blocks are of variable-size, partitioned using
+the standard chunking technique~\cite{similar94} with 4KB as the average block size. 
+%To simplify the deduplication process, segments are aligned to fix-sized boundaries, currently using 2MB.
+Segment metadata (called segment recipe) records its  content block hashes and data pointers. 
+The snapshot recipe contains a list of segments and other meta data information.
+\begin{itemize}
+\item {\em Level 1 Segment modification  detection}.
+If a segment is not changed, indicated by a dirty bit embedded in the virtual disk driver, its content blocks are not changed as well, thus its segment recipe can be simply reused. Operations at this level have almost no cost and most of unmodified data are filtered here. 
+
+\item {\em Level 2  Block fingerprint comparison.}
+If a segment is modified, we perform fine-grained deduplication using content blocks of this segment to compared with 
+the same segment in
+the previous snapshot (also called parent snapshot). Partial duplication
+within the segment can be detected and eliminated. 
+\end{itemize}
+
+We choose this two-level structure because in practice we observe that during each backup period only a small amount

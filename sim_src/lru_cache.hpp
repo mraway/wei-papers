@@ -2,7 +2,6 @@
 #define _LRU_CACHE_H_
 
 #include <vector>
-#include <map>
 #include <sys/time.h>
 #include "dedup_types.hpp"
 
@@ -31,24 +30,25 @@ private:
 class LruCache 
 {
 public:
-    LruCache(int size = DEFAULT_CACHE_SIZE);
+    LruCache(int size);
 
     /*
      * add all the blocks into cache, discard old entries by timestamp
      */
-    void AddItems(const Segment& seg);
+    void AddSegment(const Segment& seg);
 
-    bool SearchItem(const Block& blk);
+    bool SearchEntry(const Block& blk);
 
 private:
     /*
      * discard the n oldest entries from cache
      */
-    void RemoveItems(int n);
+    void RemoveEntries(int n);
     std::vector<LruCacheEntry> cache_;
     uint32_t capacity_;
 };
 
+<<<<<<< HEAD
 typedef std::map<Block, struct timeval>::iterator CacheIterator;
 
 class TimeComparison
@@ -88,4 +88,6 @@ private:
     uint32_t capacity_;
 };
 
+=======
+>>>>>>> 7834a15b90088558f0705350af4f8fe970eae28b
 #endif

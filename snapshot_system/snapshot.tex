@@ -1,151 +1,416 @@
-\section{Multi-level Snapshot Deduplication}
+\section{VM-centric Snapshot Deduplication}
 \label{sect:dedupe}
-
-\subsection{Snapshot System}
-%system arch
-Our architecture is built on the Aliyun platform which provides the largest public VM cloud in China. 
-A typical VM cluster in our cloud environment
-consists of from hundreds to thousands of physical machines, each of which can
-host tens of xen-based\cite{Barham2003} VMs.
-
-Aliyun has built a hadoop-like platform, which includes
-several highly scalable cloud infrastructure services to support
- runing large scale VM cloud service:
-\begin{itemize}
-\item \textbf{DFS}: a distributed file system that is optimized for many large and sequential reads or appends.
-\item \textbf{KV}: a distributed key-value store for managing structured data.
-\item \textbf{MP}: a distributed data processing framework which is similar to Map-Reduce\cite{Dean2004}.
-\item \textbf{MemCache}: a distributed memory object caching system.
-\end{itemize}
-%GFS-like\cite{googlefs03} 
-%BigTable-like\cite{Chang2008a} 
-Our snapshot system and the virtual machine management service rely on these basic cloud services
-to be functional:
-DFS holds the responsibility of managing physical disk storage
-in the cloud, all data needed for VM services, such as virtual disk images used by runtime VMs,
-and snapshot data for backup purposes, reside in this distributed file system. 
-In addition, our snapshot system 
-places the index of CDS in MemCache for deduplication, 
-stores small amount of snapshot metadata in KV, and uses FX to facilitate the offline
-data processing. All the above services can easily find their open-source counterparts,
-which shows the generality of our architecture and deduplication scheme.
-
-User control VMs through the virtual machine management service.
-During VM creation, a user chooses a pre-configured VM image or
-a snapshot that contains an OS,
-then the VM management service 
-copies the corresponding VM image to her VM as the OS disk.
-Data disks can be created and mounted onto the VM in the same way,
-either empty or from an existing snapshot. 
-All these virtual disks are represented as virtual disk image files in our
-underline runtime VM storage system.  
-To avoid network latency and congestion, 
-our distributed file system place the primary replica of VM's 
-image files at physical machine of VM instance.
-When user deletes her VM, all the runtime virtual disk images and
-their snapshot data are removed from DFS.
-
-%ss operations
-In each VM, 
-the runtime I/O between virtual machine and its virtual
-disks is tunneled by the virtual device driver (called TapDisk\cite{Warfield2005} at Xen).
-This is also where our snapshot system is built in. Three major snapshot operations are supported:
-\begin{itemize}
-\item \textit{Write snapshot}: save the current state of virtual disk as a snapshot.
-This is also where data deduplication would take place.
-During snapshot backup, concurrent disk write is logged 
-to ensure a consistent snapshot version is captured. 
-\item \textit{Read snapshot}: restore the state of virtual disk from a snapshot.
-\item \textit{Delete snapshot}: delete a snapshot and reclaim the disk space for unused data.
-\end{itemize}
-
-\begin{figure}[htbp]
-  \centering
-  %\epsfig{file=images/arch.eps, height=2in, width=2.66in}
-  \epsfig{file=images/arch.eps, width=3.9in}
-  \caption{Snapshot backup architecture of each node.}
-  \label{fig:arch}
-\end{figure}
-
-Figure~\ref{fig:arch} shows the architecture view of our snapshot service
-at each node. The snapshot broker provides the functional interface for  snapshot backup, access, and deletion.
-The inner-VM  deduplication is conducted by the broker to access meta data in the snapshot data store
-and we discuss this in details in Section~\ref{sect:innerVM}.
-The cross-VM deduplication is conducted by the broker to access 
-a common data set (CDS) (will discuss in Section~\ref{sect:crossVM},
-whose block hash index is stored in a distributed memory cache. 
-
 %snapshot representation
-\subsection{Snapshot Representation}
-The virtual device driver uses a bitmap to track the changes 
-that have been made to virtual disk.
-Every bit in the bitmap represents a fix-sized (2MB) region called \textit{segment}, indicates whether the segment
-is modified since last backup. Hence we could treat segment as the basic unit in snapshot backup similar to
-file in normal backup: a snapshot could share a segment with previous snapshot it is not changed. 
-Moreover, we break 
-segments into var-sized chunks (average 4KB) using content-based chunking algorithm,
-which brings the opportunity of fine-grained deduplication by
-allowing data sharing between segments.
+
+%We use the The deduplication process is first conducted among snapshots within each VM
+%and then is conducted across VMs.
+%Given the concern that searching duplicates across VMs is a global feature which can affect parallel performance
+%and complicate failure management,
+%we only eliminate the duplication of a small but popular data set while still maintaining a cost-effective deduplication ratio.
+%For this purpose, we exploit the data characteristics of snapshots and collect most popular data.
+%Data sharing across VMs is limited within this small data set such that adding replicas for it could enhance fault tolerance
+
+%A deduplication scheme compares the fingerprints of the current snapshot
+%with its parent snapshot and also other snapshots in the entire cloud.
+%The traditional approach compares all fingerprints and 
+%stores one copy for all of a chunk's duplicates.
+%We call this as  the VM-oblivious (VO) approach.
+
+
+
+%Our VC design has the following  objectives: 1)  localizing deduplication while identifying a decent amount of
+%duplicates among VMs to maintain a competitive deduplication efficiency and simplify snapshot management;
+%2) Minimizing the number of file system blocks shared among VMs and adding extra replicas for shared blocks.
+
+\comments{
+\begin{itemize}
+\item
+1) Localize the deduplication and data blocking within each VM as much as possible so 
+that any failure of a file system block mainly affects the associated VM.
+Localizing the snapshot data deduplication within a VM
+improves the system by increasing data independence between different VM backups,
+simplifying snapshot management and statistics collection,
+and facilitating parallel execution of snapshot operations.
+\item
+2) Maintain a competitive deduplication efficiency while being resource-friendly to other
+existing cloud services.
+Cross-VM duplication can be desirable since  there are many cloud images
+use widely-used software and libraries and their data blocks are duplicate. 
+As the result, different VMs tend to backup large amount of highly similar data.
+\item
+\end{itemize}
+}
+\subsection{Key VM-centric  Strategies}
+\label{sect:vc-strategies}
+
+%Inner-VM duplication can be very effective within VM's snapshots. There
+%are typically a large number of duplicates existing among the snapshots
+%for a single VM.  
+
+%Our multi-level pipeline process can minimize 
+%the cost of deduplication while maximize the its efficiency at each level,
+%and it is parallel since each segment is processed independently.
+
+%Our VC differentiates duplicates within a VM and cross VMs,
+%and conducts \textit{Inner-VM} and \textit{cross-VM} detection separately. 
+
+\begin{itemize}
+\item \textbf{VM-specific local duplicate search within similar segments.}
+We start with the standard dirty bit approach in a coarse grain segment level.
+In our implementation with Xen at an Alibaba platform, the segment size is 2MB
+and  the device driver is extended to support  changed block tracking. 
+Since every write for a segment will touch a dirty bit, the device driver maintains dirty bits in memory
+and cannot afford a small segment  size.
+%Xen doesn't directly support it, However, their open-source 
+%architecture allows anyone to extend 
+%and use the  Xen virtual device driver to implement a feature called ``changed block tracking''
+%for the storage device and the dirty bit setting is maintained in a coarse grain level we call it a segment.
+It should be noted that dirtybit tracking is supported or can be easily implemented in 
+major virtualization solution vendors. For example,
+%(VMware, Xen, Microsoft).  
+%VMware support it directly; 
+the VMWare hypervisor has an API to let external backup applications know 
+the changed areas since last backup. 
+%We implement dirty bit tracking this way in Alibaba's platform.  
+The Microsoft SDK provides an API that allows external applications to monitor 
+the VM's I/O traffic and implement  the changed block tracking feature.
+
+Since the best deduplication uses a nonuniform chunk size 
+in the average of 4K or 8K~\cite{??},  
+%This allows the system to achieve deduplication even when there are insertions/deletions which would
+%affect many fixed-size chunks.
+we conduct additional local inner-VM deduplication by comparing
+dirty segment's chunk fingerprints within  {\em similar} segments from its parent snapshot. 
+We define two segments are similar if their approximated content signature is the same.
+This segment signature value is defined as the minimum value of all its chunk fingerprints 
+computed during backup and is recorded in the snapshot recipe.
+When we are processing a dirty segment,
+we can easily find similar segments from the
+parent snapshot recipe and load their segment recipes and also set a limit on the 
+the number of  similar segments to be  searched. 
+ Then 
+given a set of data chunks within a dirty segment,  we compare  these chunk fingerprints
+with those in similar segments.  
+For example, with a 2MB segment, there are about 500 fingerprints to compare. By limiting at most 10 similar
+segments to search,
+the amount of memory for maintaining those fingerprints in similar segment s is small.
+% as we only load one dirty segment at a time.
+
+
+%If we use 4KB in level-1, then such a level-1 should have similar dedup efficiency 
+%as the current level-1 and level-2 combined, because finally they equal to comparing  
+%parent snapshot at 4KB granularity.
+%
+%However, at level-3 things are different. If we use 4KB fix-size block uniformly, it would be harder for different VM to share data through PDS, because there is no guarantee that the location of duplicate data on different VM disks are always aligned at 4KB boundary. For example, if two VMs each has a copy of duplicate data, but they are not aligned, then we won't be able to detect them. Our study at the current small data set has shown that using 4KB fix-size block will make PDS method less efficient by nearly 10%. Over the long time, more and more OS variations will co-exist in the cluster, making this 4KB fix-size approach inefficient in reducing duplicate data across VMs.
+
+%\item \textit{Level 2  Chunk fingerprint comparison.}
+%If a segment is modified, we perform fine-grained deduplication 
+%by comparing the fingerprints of its chunks to the same segment's recipe in the previous snapshot,
+%thus eliminate partial data duplication within the segment.
+%\end{itemize}
+%
+%In general, operations at level 1 have almost no cost and most of unmodified data are filtered here. 
+%To process a dirty segment at level 2, 
+%there requires no more than one DFS access to load the segment recipe from previous snapshot,
+%and a tiny amount of memory to hold it in main memory.
+
+\item \textbf{Cross-VM deduplication with popular chunks and replication support}
+This step accomplishes the standard global fingerprint  comparison as conducted
+in the previous work~\cite{??}.
+One key observation is that the inner deduplication has removed many of the duplicates.
+There are fewer deduplication opportunities across VMs while the memory and network
+consumption for global comparison is more expensive.
+Thus our approximation is that the global fingerprint comparison only searches for the top $k$
+most popular items. This dataset is called PDS (common data set). 
+%Since duplicate sharing patterns among  VM follows a zip-like distribution,  
+The popularity of a chunk is the number  of data chunks  from different VMs
+that are duplicates of this chunk after the inner VM deduplication.
+This number can be computed periodically on a weekly basis.
+Once the popularity of all data chunks is collected, the system only maintains the top $k$
+most popular chunk signatures in a distributed shared memory.  
+%For cross-VM comparison, we only store  top $k$ items and $k$ is chosen to be relatively small.
+
+Since $k$ is relatively small and these top $k$ chunks are shared among multiple VMs, 
+we can afford to provide extra replicas for these popular chunks to enhance the fault resilience.
+%We will provide an analysis of the space need and fault tolerance in the next subsection.
+
+\item \textbf{VM-centric file system block management.}
+When a chunk is not detected as a duplicate to any existing chunk, this chunk will be written
+to the file system. Since the backend file system typically uses a large block size such as 64MB, each VM will 
+accumulate small local chunks. We manage this accumulation process using an append-store  scheme
+and discuss this in details in Section~\ref{sect:arch}.
+The system allows all machines conduct the backup in parallel in different machines, and each machine
+conducts the backup of one VM at a time, and thus only requires a write  buffer for one VM.
+
+PDS chunks are stored in a separate append-store instance. In this way, each
+file block for non-PDS chunks is associated with one VM and does not contain
+any PDS chunks. 
+\end{itemize}
+
+We have not  adopted the  sampled index~\cite{Guo2011} 
+for  popular data chunks and  this is because sampling requires the use of prefetching to be effective.
+%For a small set of popular data chunks, the prefetching strategy
+%used In the sampled index will not work well because 
+For the data sets we have tested, the spatial locality is limited among popular
+data chunks and  on average the number of consecutive data chunks is 7 among popular chinks, which is not sufficient.
+%to be effective for index sampling.
+
+
+ \subsection{Impact on deduplication efficiency}
+%VM-oriented Fault Isolation}
+%Our objective for fault isolation is to minimize the number of VMs affected when there are failures
+%in the cluster.  
+%The inner-VM deduplication does not depend on any global service and the comparison
+%for each VM is localized within the parent and the current snapshot.
+%Lack of data dependence between VMs brings 
+%Our analysis below will show that the algorithm can still deliver competitive
+%deduplication efficiency after making these approximations.
+%With cross-VM deduplication, shared data chunks
+%create an artificial dependence  among VMs. 
+%Thus we only maintain the index for the most popular chunks to reduce the inter-VM dependence
+%while still accomplishing competitive deduplication efficiency. 
+
+%The management for popular data chunks contains two aspects.
+
+
+Choosing the value  $k$ for the most popular chunks affects the deduplication efficiency.
+%It also  compares the  fault resilience of our VM-centric deduplication approach with a standand approach using 
+%global deduplication.
+%\subsubsection{Impact of PDS deduplication}
+We analyze this impact based on the characteristics  of the VM snapshot traces
+studied from  application datasets.
+Our previous study shows that the popularity of data chunks after inner VM deduplication follows 
+a Zipf-like distribution\cite{zipf} and its
+exponent $\alpha$ is ranged between 0.65  and  0.7.~\cite{ieeecloud}. 
+%As a result, it can be proved that deduplication efficiency of PDS index is scalable:
+Table~\ref{tab:symbol} lists parameters used in this analysis.
+
+
+\begin{figure}
+\centering
+%\epsfig{file=log-log.disk,width=3in}
+%source ../vm_snapshot_sim/images/log-log.disk.eps
+ \includegraphics[width=3in]{figures/log-log-disk}
+\caption{Duplicate frequency versus  chunk ranking in a log scale after inner-VM deduplication.}
+\label{fig:Datazipf}
+\end{figure}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{|p{1.25cm}|p{6.5cm}|}
+\hline
+$k$ &  the number of top most popular chunks selected for deduplication\\ 
+\hline
+$c$ &  the total amount of data chunks\\ 
+\hline
+$c_u$ &  the total amount of unique fingerprints after inner VM  deduplication\\
+\hline
+$f_i$ &  the frequency for the $i$th most popular fingerprint\\
+\hline
+$\delta$ &  the percentage of duplicates detected in inner VM deduplication\\
+\hline
+$\sigma$ & =$\frac{k}{c_u}$.  The percentage of unique data  belong to  PDS.\\
+\hline
+$p$ & the number of machines in the cluster\\
+\hline
+$V$ & the average number of VMs hosted on each machine\\
+%\hline
+%$D$ & the amount of unique data on each machine\\
+%\hline
+%$C$ & the average data chunk size. Our setting is  4K.\\
+%\hline
+%$s$ & the average size of file system blocks in the distributed file system. The default is  64MB.\\
+%\hline
+%$m$ & memory size on each node used by VC\\ 
+%\hline
+%$E$ & the size of an popular data index entry\\
+\hline
+$N_1$ & the average number  of non-PDS file system blocks  in a VM\\
+\hline
+$N_2$ & the average number  of PDS file system blocks  in a VM\\
+\hline
+$N_o$ & the average number  of file system blocks  in a VM for VO\\
+\hline
+\end{tabular}
+\caption{Modeling  parameters and symbols.}
+\label{tab:symbol}
+\end{table}
+
+{\it [Need to find a place to put these numbers in: Total number of chunks 
+in 350 snapshots: 1,546,635,485. 
+Total number of chunks after localized dedup: 283,121,924. Total number of unique chunks: 87,692,682.]}
+
+As summarized in Table~\ref{tab:symbol},
+let $c$ be the total number of data chunks. 
+$c_u$ be the total number of fingerprints 
+in the global index after complete deduplication, and
+$f_i$ be the frequency for the $i$th most popular fingerprint. 
+By Zipf-like distribution, $f_i = \frac{f_1}{i^\alpha}.$
+Since $ \sum_{i=1}^{c_u}f_i = c (1-\delta)$,
+\[
+f_1 \sum_{i=1}^{c_u}\frac{1}{i^\alpha} = c.
+\]
+Given $\alpha <1$, $f_1$ can be approximated with integration:
+\begin{equation}
+f_1=\frac{c(1-\alpha)}{c_u^{1-\alpha}}.
+\end{equation}
+
+%We define deduplication efficiency $e$ to be the proportion of raw data that can be deduplicated,
+%In complete deduplication scenario, it deduplication efficiency $e_c$ is:
+%\begin{equation}
+%e_c = \frac{b-b_u}{b} = 1 - \frac{b_u}{b}
+%\end{equation}
+
+The  $k$ most popular fingerprints can cover the following number of chunks after inner VM 
+deduplication:
+\[
+f_1 \sum_{i=1}^{k}\frac{1}{i^\alpha} \approx  
+f_1 \int_{1}^{k}\frac{1}{x^\alpha} dx  \approx  f_1\frac{  k^{1-\alpha}} {1-\alpha}
+=c(1-\delta) \sigma^{1-\alpha}.
+\]
+
+Deduplication efficiency of VC using top $k$ popular chunks
+is the percentage of duplicates that can be detected:  
+\begin{equation}
+\label{eq:dedupeff}
+%\begin{split}
+%e_k &= 
+\frac{ c\delta + c(1-\delta) \sigma^{1-\alpha}}
+{c  - c_u }\\
+%\end{split}
+\end{equation}
+
+
+%\begin{equation}
+%\begin{split}
+%e_k &= (\sum_{i=1}^{k}C_i - k)/{b} = (b * \frac{1-\alpha}{b_u^{1-\alpha}} * \sum_{i=1}^{k}\frac{1}{i^\alpha} - k)/b \\
+%&\approx \frac{b*\frac{1-\alpha}{b_u^{1-\alpha}}*\frac{k^{1-alpha}}{1-\alpha} - k}{b}
+%&\approx (\frac{k}{b_u})^{1-\alpha} - \frac{k}{b} \approx (\frac{k}{b_u})^{1-\alpha},\; (since\; k \ll b)
+%\end{split}
+%\end{equation}
+
+% For the Zipf-like distribution, an approximation to the sum of the first $n$ 
+% elements of the distribution can be derived as follows:
+% \begin{equation}
+% \sum_{i=1}^{n}\frac{1}{i^\alpha}\approx \int_{1}^{n}\frac{1}{x^\alpha}\mathrm{d}x=\frac{x^{1-\alpha}}{1-\alpha}=\frac{n^{1-\alpha}}{1-\alpha}\;  for\;  \alpha<1
+% \end{equation}
+
+% So the cumulative distribution function for a PDS holding top $S_c$ fingerprints
+% of global index with size $S_g$ is:
+
+% \begin{equation}
+%   E = (S_c / S_g)^{1-\alpha} \;  for\;  \alpha<1
+% \end{equation}
+
+%[Describe the dedup efficiency model in detail]
+%Let $p$ be the number of physical machines in the cluster, $m$ be the memory on each node used by the popular
+%index, $E$ be the size of an index entry,
+%$D$ be the amount of unique data on each physical machine, and 
+%$C$ be the average chunks size. 
+%Then $k$ and $c_u$ can be expressed as:
+%$ k = p*m/E$, and $c_u = p*D/E.  $
+We store the popular index using a distributed shared memory hashtable such as MemCacheD
+and allocate a fixed percentage of memory space   per physical machine for top $k$ popular items.
+As the number of physical machines ($p$) increases,
+the entire cloud cluster can host more VMs; however,  ratio $\sigma$ which is $k/c_u$ remains
+a constant because each physical machine on average still hosts a fixed constant number of 
+VMs. Then the overall deduplication efficiency of VC defined in Formula~\ref{eq:dedupeff}
+remains to be a constant.
+Thus the deduplication efficiency is stable  as $p$ increases as long as $\sigma$  is a constant.
+
+%where $(\frac{m*C}{D*E})^{1-\alpha}$ represents 
+Ratio $\sigma^{1-\alpha}$ represents the percentage of the remaining
+chunks detected as duplicates in global cross-VM deduplication due to PDS.
+We call it PDS coverage.
+Figure~\ref{fig:cds-coverage} shows predicted PDS coverage using $\sigma^{1-\alpha}$ when $\alpha$ is fixed as
+0.65 and measured PDS coverage in our test dataset.
+$\sigma=2\%$ represents that 100MB memory is used per machine for top $k$ PDS.
+While the predicted value remains flat, the  real coverage actually increases as the data size
+increases, which indicates that $\alpha$ increases with the data size. 
+Thus in practice, the coverage of the PDS increases as more VMs are involved.
+%Then the deduplication efficiency of PDS approach using top k most popular fingerprints is:
+%\begin{equation}
+%  e_k = (\frac{m*B}{F*D})^{1-\alpha}
+%\end{equation}
+
+
+% is mainly affected by the its memory usage,
+%and the Zipf-like distribution parameter $\alpha$.
+%From the memory usage perspective, the more memory we give to PDS index, the more duplicates it can found.
+%From the data characteristics perspective, if the system tends to backup arbitrarily random data, 
+%$\alpha$ would be small and thus PDS approach would not be effective. But in a VM cluster all VMs
+%have a large portion of similar data, thus leading to a bigger $\alpha$. The more VM join the cluster,
+%the better deduplication efficiency our PDS deduplication approach will have.
+
+
+
+
+\comments{
+Since $B$, $D$ and $F$ are environment constants, the deduplication efficiency of PDS is mainly affected by its memory usage,
+and the Zipf-like distribution parameter $\alpha$.
+From the memory usage perspective, the more memory we give to PDS index, the more duplicates it can found.
+From the data characteristics perspective, if the system tends to backup arbitrarily random data, 
+$\alpha$ would be small and thus PDS approach would not be effective. But in a VM cluster all VMs
+have a large portion of similar data, thus leading to a bigger $\alpha$. The more VM join the cluster,
+the better deduplication efficiency our PDS deduplication approach will have.
+}
+
+\comments{ %this table is superceded by the graph below it
+\begin{table}
+    \begin{tabular}{llll}
+    Data size (GB) & 1\%    & 2\%    & 4\%    \\
+    14.6           & 18.6\% & 22.1\% & 31.4\% \\
+    28.1           & 19.5\% & 26.2\% & 38.8\% \\
+    44.2           & 21.7\% & 26.5\% & 36\%   \\
+    61.6           & 23.2\% & 32.9\% & 35\%   \\
+    74.2           & 23.6\% & 33.6\% & 37.5\% \\
+    \end{tabular}
+    \caption{Deduplication effectiveness of top k\% of global index}
+    \label{tab:cds}
+\end{table}
+}
+
 
 \begin{figure}[htbp]
   \centering
-  \epsfig{file=images/snapshot_representation.eps, width=3.7in}
-  \caption{An example of snapshot representation.}
-  \label{fig:snapshot}
+    \begin{tikzpicture}
+            \begin{axis}[
+            %title={PDS Coverage},
+            width=\linewidth,
+            height=0.6\linewidth,
+            cycle multi list={
+                mline\nextlist
+                [3 of]mmark*\nextlist
+            },
+            %cycle list name=mcolor,
+            xlabel={Total num. chunks stored (in billions)},
+            ylabel={PDS Coverage (\%)},
+            %extra y ticks={4.5,5.5,6.5} %to add extra ticks
+            mark options=solid,
+            %legend pos=outer north east,
+            legend columns=2,
+            legend style={
+                at={(0.5,-0.25)},
+            anchor=north},
+            ]
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=A1] {figures/cds_coverage.txt};
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=A2] {figures/cds_coverage.txt};
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=A4] {figures/cds_coverage.txt};
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=T1] {figures/cds_coverage.txt};
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=T2] {figures/cds_coverage.txt};
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=T4] {figures/cds_coverage.txt};
+            \legend{Measured ($\sigma=1\%$),Measured ($\sigma=2\%$),Measured ($\sigma=4\%$),Predicted ($\sigma=1\%$),Predicted ($\sigma=2\%$),Predicted ($\sigma=4\%$)};
+            \end{axis}
+    \end{tikzpicture}
+  \caption{Predicted vs. actual PDS coverage as data size increases.}
+  \label{fig:cds-coverage}
 \end{figure}
-As a result, the representation of each snapshot is designed as a two-level index data structure 
-in the form of a hierarchical directed acyclic graph as shown in Figure \ref{fig:snapshot}.
-A snapshot recipe contains a list of segments, each of which is represented as a segment recipe
-that holds the meatdata of its chunks. We choose this two-level structure because in practice we
-observe that during each backup period only a small amount of VM data are added or modified. 
-As the result, even the metadata of two snapshots can be highly similar, 
-thus aggregating a large number of chunks as one segment can significantly reduce the space cost of snapshot metadata.
-Furthermore, instead of using variables-sized segments, we use a dirty bit to capture the change status of fix-sized
-segments which greatly ease the segment-level deduplication.
 
-In both two kind of recipes, 
-they do not include the actual data but only have
- references point to the data which are either stored in append store or CDS.
-In our implementation the data reference is a 8 bytes field which is either an 
-ASID (discuss in \ref{sect:append} or an offset of 
-An additional flag indicates
 
-\subsection{Multi-level Deduplication}
-The multi-level deduplication scheme is designed base on the observations on the VM snapshot data from production cloud.
-We found snapshot data duplication can be easily classified into two categories: \textit{Inner-VM} and \textit{Cross-VM}. 
-Inner-VM duplication exists between VM's snapshots, because the majority of data are unchanged during each backup period. 
-On the other hand, Cross-VM duplication is mainly due to widely-used software and libraries such as Linux and MySQL. 
-As the result, different VMs tend to backup large amount of highly similar data.
-Our multi-level pipeline process can minimize the cost of deduplication while maximize the its efficiency at each level,
-and it is highly parallelizable since each segment is processed independently.
 
-\subsubsection{Inner-VM Deduplication}
-\label{sect:InnerVM}
-The first-level deduplication is logically localized within each VM.
-Such localization increases data independency between different VM backups,
-simplifies snapshot management and statistics collection,
-and facilitates parallel execution of snapshot operations.
-
-The inner VM deduplication contains two levels of duplicate detection efforts:
-\begin{itemize}
-\item \textit{Level 1 Segment modification detection}.
-If a segment is not changed, then its segment recipe can be simply reused by copying the data
-reference from previous snapshot recipe. 
-\item \textit{Level 2  Chunk fingerprint comparison.}
-If a segment is modified, we perform fine-grained deduplication 
-by comparing the fingerprints of its chunks to the same segment's recipe in the previous snapshot,
-thus eliminate partial data duplication within the segment.
-\end{itemize}
-
-In general, operations at level 1 have almost no cost and most of unmodified data are filtered here. 
-To process a dirty segment at level 2, 
-there requires no more than one DFS access to load the segment recipe from previous snapshot,
-and a tiny amount of memory to hold it in main memory.
-\textit{may need details here}
-
-\subsubsection{Cross-VM Deduplication}
-\label{sect:CrossVM}
-
-\subsection{Common Data Set}
-%arch
-%analysis
+%As illustrated in Figure~\ref{??},
+%when the number of machines at each cluster increases, the number of total VMs increases.
+%Then $k$ increases since more memory is available to host the popular chunks index.
+%But for each physical machine, the number of VMs remains the same, and thus
+%$D$ is  a constant. Then  the overall deduplication efficiency of VC remains
+%p constant.

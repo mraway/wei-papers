@@ -1,0 +1,291 @@
+\comments{
+\section{ Old Performance Analysis and Comparison}
+\label{sect:analysis-old}
+
+We assume a flat architecture that we use all machines in a cluster to host virtual machines, and also evenly host  raw data and meta data of the temporarily accumulated requests.  We call global index to be the meta data of all non-duplicate chunks such as chunk fingerprints and reference pointers.
+
+Following parameters are used to analyze the performance of our system.
+\begin{itemize}
+\item
+$p$ is the number of machines in a cluster. These machines can run in parallel for backup. The request buckets are evenly distributed among these machines.
+\item $v$ is the number of virtual machines per machine. At Alibaba, $v=25$.
+\item $x$ is the number of snapshots saved for each VM.
+\item $k$ is the number of iterations to complete all virtual machine backup. Each iteration performs v/k backups.
+\item $t$  is the  amount of temporary disk space used per physical machine for deduplication.
+\item $m$ is the amount of memory used per each physical machine for deduplication. Our goal is to minimize 
+\item $s$ is the average size of virtual machine image. At Alibaba data we have tested, $s=40GB$.
+\item $d_1$  is the average  deduplication ratio using  segment-based dirtbit.  s*d1 represents the amount of data items that are duplicates and can be avoided for backup. For Alabalba dataset tested, 
+$d_1$=77\%.
+\item $d_2$ is the average  deduplication ratio using content chunk fingerprints after segment-based deduplication. For Alaba dataset tested,  $d_2=50$\%.
+\item $b$ is the average disk bandwidth for reading from local storage at each machine. 
+\item $q$ is the number of buckets to accumulate requests at each machine. Thus the total number of buckets is $p*q$.
+\item $c$ is the chunk block size in bytes.  In practice $c=4KB$.
+\item $u$ is the record size of detection request per block.  In practice, 
+\item $u$=40. That includes block ID and fingerprint.
+\item $m$ is the maximum memory allocated for deduplication purpose.  A $g$ fraction used for 
+machine-machine network  request buffering and $(1-g)$ fraction used for memory-disk bucket buffering.
+\item $e$ is the size of a duplicate summary record for each chunk block.
+\item $\alpha_n$ is the startup cost for sending a message in a cluster. $\alpha_d$ is the startup cost 
+such as seek for disk IO. $\beta$ is the time cost for in-memory duplicate comparison.
+\end{itemize}
+The system keeps at most  $ x$ copies of snapshots for each VM on average.  The total size of  global content fingerprints is $x*s*v/c*u *(1-d1)*(1-d2)$ where $c$ is the average chunk size and $u$ is the meta data size of each chunk fingerprint. In practice $c=4K$ and $u/c$  is about 100.  $x=10$ in the case of Alibaba cloud.
+
+Define $r = s v (1-d_1)/(ck)$  which is the total number of duplicate detection requests issued at each machine and at each iteration.
+
+We first discuss the memory usage and processing time  of 3 steps. 
+ For Step 1,  the buffer for sending requests from one machine to another has a size of  $g*m/p$, and with such a buffering, the total number of outgoing communication messages from  each machine to other machines  can be 
+\[
+r u p/(g*m)
+\]
+The total  amount of data communicated among machines is relatively small: $r u p$ in the cluster, distributed among $p$ machines.
+
+Once every machine receives detection requests and divide them into buckets, it writes the content to the disk once the buffer is full. The buffer for each bucket is $(1-g)m/q$ and the total number of disk write requests issued after the bucket buffer is full is:
+\[
+r u q/((1-g)*m)
+\]
+The total time for step 1  which  reads VM images and write accumulated detection requests  is:   
+\[
+r  ( c+  u) /b   +r u /m (\alpha_n  p/g  + \alpha_d q/(1-g)  )
+\].
+
+For Step 2,  part of memory at each machine is  to hold  a bucket of global index and accumulated requests. That is
+\[
+m_b= x*r *u*k(1-d_2)/q + r*u/q
+\]
+Thus the memory requirement for this portion can be made very small when setting a large q. On the other hand, as the system detects duplicates per hash bucket, we need to allocate buffer space for receiving  duplicate summary for each VM.  The total buffer size is $m-m_b$ which is used evenly for $v$ VMs.
+
+The size of  the duplicate summary for each bucket is
+\[
+S_{sum}= sv(1-d_1)e /(k c q)
+\]
+We can buffer the outcome of multiple buckets. The total buffer factor is 
+\[
+(m-m_b)/ S_{sum}.
+\]
+The final bucket buffer for each VM is still fairly small, and writing such a buffer to the disk may involve two I/O requests (one to fetch the old block, and one is to update). The total seek cost involved 
+\[
+2*v*\alpha_d*q/ ((m-m_b)/S_{sum})= 2v r e  \alpha_d / (m-m_b)
+\]
+Thus the total time of Step 2 takes
+\[
+( x*r *k*u*(1-d_2) + r*u) / b_d  + r* \beta+   2v *r*e \alpha_d /  (m-m_b).
+\]
+
+
+The key cost of step 3  is to read the nonduplicate parts of each VM and output the backend storage. The time of Step 3  takes:
+\[
+2 r *c* (1-d_2) /b_d
+\]
+That assumes that when a content chunk is not a duplicate, there is a significant number of non-duplicate  chunks following that  chunk. 
+
+Thus the total time to process all $v$ virtual machines after $k$ iterations are:
+\[
+k [
+r  ( c+  u) /b   +r u /m (\alpha_n  p/g  + \alpha_d q/(1-g)  )
+\]
+\[
++( x*r *k*u*(1-d_2) + r*u) / b_d  + r* \beta+   
+\]
+\[
+2v *r*e \alpha_d /  (m-m_b)
++2 r *c* (1-d_2) /b_d
+]
+\]
+subject to conditions that
+\[
+m - m_b> 0
+\]
+
+The total disk requirement  per machine for hosting the global index  and meta  data of  accumulated requests is:
+\[
+x*r *k*u*(1-d2) + r*u.
+\]
+That is not so big, and is acceptable as we show later.
+}
+
+
+
+\section{Performance Analysis and Comparison}
+\label{sect:analysis}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{|p{0.50cm}|p{7cm}|}
+\hline
+$p$ &  the number of machines in the cluster\\ 
+\hline
+$v$ & the number of VMs per machine. At Alibaba, $v=25$\\
+\hline
+$x$ & is the number of snapshots saved for each VM. At Alibaba, $x=10$\\
+\hline
+%$k$ & the number of iterations to complete all virtual machine backup. Each iteration performs v/k backups.\\
+%\hline
+$t$ & the amount of temporary disk space used per machine for deduplication\\
+\hline
+$m$ & the amount of memory used per machine for deduplication. Our goal is to minimize this\\
+\hline
+$s$ & the average size of virtual machine image. At Alibaba, from our collected data, $s=40GB$\\
+\hline
+$d_1$ & the average  deduplication ratio using segment-based dirty-bit. $d_1=77\%$\\
+\hline
+$d_2$ & the average  deduplication ratio using content chunk fingerprints after segment-based deduplication. For Alaba dataset tested,  $d_2=50$\%\\
+\hline
+$d_3$ & the average number of dup-with-new blocks, as a fraction of $r$ (defined below)\\
+\hline
+$b_r$ & the average disk bandwidth for reading from local storage at each machine\\
+\hline
+$b_w$ & the average disk bandwidth for writing to local storage at each machine\\
+\hline
+$b_b$ & average write bandwidth to back-end storage (block store)\\
+\hline
+$q$ & the number of buckets to accumulate requests at each machine. (total number of buckets is $p*q$)\\
+\hline
+$c$ & the chunk block size in bytes.  In practice $c=4KB$\\
+\hline
+$u$ & the record size of detection request per block.  In practice, $u$=40. That includes block ID and fingerprint\\
+\hline
+$e$ & the size of a duplicate summary record for each chunk block\\
+\hline
+$m_n$ & the memory allocated to network send \& receive buffering. Total network memory is $2m_n$, wich each buffer of size $m_n/p$\\
+\hline
+%$m$ & the maximum memory allocated for deduplication purpose.  A $g$ fraction used for machine-machine network  request buffering and $(1-g)$ fraction used for memory-disk bucket buffering\\
+%\hline
+$\alpha_n$ & the latency for sending a message in a cluster\\
+\hline
+%$\alpha_d$ disk latency\\
+%\hline
+$\beta$ & time cost for in-memory duplicate comparison\\
+\hline
+\end{tabular}
+\caption{Modeling  parameters and symbols.}
+\label{tab:symbol}
+\end{table}
+
+Here we develop a model for the total backup time, which becomes important in
+trying to minimize the CoW cost during backup \emph{CoW should be explained and
+justified before this point in the paper}.  The backup process can be broken
+into 4 stages, where the first 3 stages each have two parts, first an
+all-to-all exchange of
+data, then local processing to prepare for the next stage.
+
+The system keeps at most  $ x$ copies of snapshots for each VM on average.  The
+total size of  global content fingerprints is $x*s*v/c*u *(1-d1)*(1-d2)$ where
+$c$ is the average chunk size and $u$ is the meta data size of each chunk
+fingerprint. In practice $c=4K$ and $u/c$  is about 100.  $x=10$ in the case of
+Alibaba cloud.
+
+Define $r = s v (1-d_1)/c$  which is the average number of detection
+requests made by each machine, and the number of detection requests each
+machine must handle.  We assume the load, i.e., amount of data to backup at
+each machine, is not balanced, so there is also $r_max$, which is the number of
+requests at the most heavily loaded machine. This is the case in the Alibaba
+cluster, with some machines being terabytes while the average machine is 40GB.
+
+In Stage 1a, the dirty segments are read from the virtual disk, the hash of
+each block is computed, and dedup requests are sent to the machine hosting the
+blocks' respective partitions. Due to the synchronization in each stage, Stage
+1a needs to wait for the most heavily loaded machine to read all it's data - so
+the read stage depends on $r_{max}$, while the write stage, which is balanced
+by the hash partitioning, depends on $r$. We first read $r$ blocks from disk,
+send $r$ dedup requests, and then save the received requests to temporary files
+(one for each parition). The time for the first stage can be expressed as:
+\[
+    r_{max} c / b_r + \alpha_n\frac{u r_{max}}{m_n} + r u / b_w
+\]
+
+In Stage 1b, each partition index is read from disk, then the dedup requests
+(from Stage 1a) for that paritition are processed and the dedup results are
+written
+back out to disk. The results are broken into 3 groups for each partition:
+duplicate blocks, new
+blocks, and dup-with-new blocks, which are duplicates of blocks that are new to
+this batch.
+
+Let $n$ be the total number of index entries at each machine before the backup
+was started.  $n=(v x)(1-d_1)(1-d_2)\frac{e}{c}$. Since each machine holds a
+constant number $q$ paritions, and the paritions are uniform in size as they
+are from the hash of the block, $n$ is very even across the machines, even when
+the vm load is imbalanced.
+
+The cost of Stage 1b is:
+\[
+    r u / b_r + n e / b_r + r \beta + r e / b_w
+\]
+
+In Stage 2a the new block results from Stage 1 are sent to the requesters, and
+in Stage 2b the new blocks are written out to the storage system. We will now
+mostly be dealing with the $r(1-d_2)$ blocks that are new to the system (or
+$r_{max}(1-d_2)$ when we must wait for the most heavily loaded machine). In 2b
+the dedup new block results must be read and the actual disk blocks for each
+new block
+must be re-read before they can be sent to the block store. To avoid seeking
+we have found it faster to simply re-read all the dirty data and ignore the
+duplicate blocks rather than find only the new blocks on disk. The CoW locking
+on the filesystem cannot end until after the dirty data is re-read in Stage 2b.
+
+The cost of Stage 2a is:
+\[
+    r(1-d_2)e / b_r + \alpha_n\frac{e r_{max}(1-d2)}{m_n} + r_{max}(1-d_2)e / b_w
+\]
+and the cost of Stage 2b is:
+\[
+    r_{max}c / b_r + r_{max}(1-d_2)e / b_r% + r_{max}(1-d_2)c / b_b
+\]
+
+After the new blocks have been written to the block store, and references to
+them have been obtained, those references must be returned to the parition
+index holder so that those blocks may be deduped in the future (and also so
+dup-with-new requests can be handled in this round). This Stage 3a, to read the
+new index entries, return them to the parition index holder, and save the
+received references, costs:
+\[
+    r_{max} (1-d_2)e / b_r + \alpha_n\frac{e r_{max}(1-d_2)}{m_n} + r(1-d_2)e / b_w
+\]
+
+Stage 3b consists of updating the partition index with the new block references
+from Stage 3a, and also updating the dup-with-new results from Stage 1. First
+we load the new references from Stage 2b into memory, and then dedup the
+dup-with-new requests against the new block references. Once the dup-with-new
+results have chunk references, we can add the dup-with-new results to the
+duplicate result files initially created in 1b. We then add the new references
+to the corresponding
+partition indices to handle future dedup requests. Stage 3b costs:
+\[
+    r ((1-d_2) + d_3)e/b_r + r d_3\beta + r((1-d_2) + d_3)e / b_w
+\]
+
+In the final stage (Stage 4), all duplicate references (including the
+dup-with-new references from 3b) are returned to the requesters, so that the
+snapshot recipes may be updated with references to those blocks. This process
+costs:
+\[
+    r d_2 e / b_r + \alpha_n\frac{e r_{max} d_2}{m_n} + r e / b_w
+\]
+
+%Memory Requirments:\\
+%In every stage we need 1 disk read buffer, And then additionally we need the following:
+%\begin{description}
+%    \item[Stage 1a] network buffers, and $q$ disk write buffers
+%    \item[Stage 1b] $n/q$ partition index space, and $p$ disk write buffers (for dedup responses)
+%    \item[Stage 2a] network buffers, $v$ disk write buffers (for dedup responses)
+%    \item[Stage 2b] 1 disk write buffer (to write out new blocks)
+%    \item[Stage 3a] network buffers, $q$ disk write buffers (to write out new refs)
+%    \item[Stage 3b] 1 disk write buffer (to update patition index with new blocks)
+%    \item[Stage 4] network buffers, $v$ disk write buffers
+%\end{description}
+
+
+
+
+\subsection{A Comparison with Other Approaches}
+\comments{
+The memory  space requirement for the data domain approach with bloom filter is:
+\[
+x*r k u (1-d2)/r
+\]
+where $r$ is the bloom filter with about  1:10 ratio in practice.  The disk space used  is 
+\[
+x*r *k *u*(1-d_2).
+\]
+}
+

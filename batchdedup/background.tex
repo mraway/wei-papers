@@ -1,0 +1,111 @@
+
+\section{Background and Related Work}
+\label{sect:background}
+
+
+At a cloud cluster node providing access to multiple virtual machines, each
+instance of a guest operating system runs on a virtual machine (VM), accessing
+virtual hard disks represented as virtual disk image files in the host
+operating system. For VM snapshot backups, file-level semantics are normally
+not provided, and snapshot operations take place at the virtual device driver
+level.  This meands no fine-grained file system metadata can be used to
+determine the changed data.
+
+Another issue is the sheer size of the backups. to maintain mutiple daily
+uncompressed snapshots of each VM would be very expensive, even though
+most of the data remains the same from day to day, and even between VMs common
+software packages and operating systems mean that the amount of unique data is
+much smaller. Backup systems have been developed to use content fingerprints to
+identify duplicate content~\cite{venti02,Rhea2008}. Offline deduplication is
+used in~\cite{EMC,NetAppOffline} to remove previously written duplicate blocks
+during idle time.  Several techniques have been proposed to speedup searching
+of duplicate fingerprints. For example, the data domain method
+~\cite{bottleneck08} uses  an in-memory Bloom filter and a prefetching cache
+for data blocks  which may be accessed.  An improvement to this work with
+parallelization is in ~\cite{MAD210,DEBAR}.  As discussed in
+Section~\ref{sect:intro}, there is no dedicated resource for deduplication in
+our targeted setting and low memory usage is required so that the resource
+impact to other cloud services is minimized. Approximation techniques which
+reduce the memory requirement at the expense of deduplication efficiency are
+studied in~\cite{extreme_binning09,Guo2011,WeiZhangIEEE}.  In comparison, this
+paper focuses on full deduplication without approximation
+
+%%In a virtualized cloud environment such as ones provided by Amazon EC2\cite{AmazonEC2} and Alibaba Aliyun\cite{Aliyun}, 
+%At a cloud cluster node, each instance of a guest operating system runs on a virtual machine, accessing virtual hard disks 
+%represented as virtual disk image files in the host operating system.
+%For VM snapshot backup, file-level semantics are normally not provided.
+%Snapshot operations take place at the virtual device driver level, which means no fine-grained file system metadata can be used to determine the changed data. 
+%%Only raw access information at disk block level are provided. 
+%%Each physical machine hosts many VMs and petabytes of data in a cloud cluster need a frequent  backup. 
+%%Ideally speaking, snapshot backup must not affect the normal cloud service, which means that 
+%%only a very small slice of cluster resource can be used for the backup purpose.
+
+
+
+%%The previous work for storage backup has extensively used  data deduplication techniques can eliminate redundancy globally among different files from different users.
+%Backup systems have been developed to use content fingerprints to identify duplicate
+%content~\cite{venti02,Rhea2008}.
+%Offline deduplication is 
+%used in ~\cite{EMC,NetAppOffline} to remove previously written duplicate blocks during idle time.
+%%,NGmiddleware2011}.
+%%Today's commercial data backup systems (e.g. from EMC and NetApp)
+%%\cite{emc_avamar}\cite{datadomain_whitepaper}
+%%use a variable-size chunking algorithm to detect duplicates in file data~\cite{similar94,hydrastor09}.
+%Several techniques have been proposed to speedup searching of duplicate
+%fingerprints. For example, the data domain method ~\cite{bottleneck08} 
+%uses  an in-memory Bloom filter and a prefetching cache for data blocks  which may be
+%accessed.  An improvement to this work with parallelization is in ~\cite{MAD210,DEBAR}.
+%As discussed in Section~\ref{sect:intro},
+%there is no dedicated resource for deduplication in our targeted setting and low memory usage
+% is required so that the resource impact to other cloud services is minimized.
+%%NG et al.~\cite{ NGmiddleware2011}  use
+%%a related filtering technique for integrating deduplication in Linux  file system and the memory
+%%consumed is up to 2GB for a single machine. That is still too big in our context discussed below.
+%%Lillibridge et al.~\cite{sparseindex09} break list of chunks
+%%into large segments, the chunk IDs in each incoming segment are sampled and the segment is
+%%deduplicated by comparing with the chunk IDs of only a few carefully selected backed up segments.
+%%These are segments that share many chunk IDs with the incoming segment with high probability.
+%The approximation techniques are studied in~\cite{extreme_binning09,Guo2011,WeiZhangIEEE}  
+%%Deepavali et al.~\cite{extreme_binning09} and Zhang et al.~\cite{WeiZhangIEEE}  
+%to reduce memory requirement with a tradeoff of the reduced deduplication ratio.
+%%use fingerprint-based file similarity  and group similar files into the same physical location (bins) to deduplicate against each other.
+%%That leads  to a smaller amount of memory usage for storing meta data in fingerprint
+%%lookup  
+%In comparison, this paper focuses on  full deduplication without approximation.
+%%We also take advantages of the fact that in a VM cloud environment,
+%%the virtual device driver can easily keep track if  large data
+%%segments have been modified using dirty bits and such information can avoid sending
+%%unmodified data segments for deduplication, which significantly saves cost.
+
+
+
+Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,idedup}. 
+All of the above approaches have focused on
+such inline duplicate detection in which  deduplication of an individual block  is on the critical write path.
+In our work, this constraint is relaxed and 
+there is a waiting time for many duplicate detection requests. This relaxation is acceptable because 
+in our context, efficiently finishing the backup of VM images within a reasonable time window is more
+important than optimizing individual VM block  backup requests, and by batch
+processing the deduplication requests we can decrease resource usage.
+
+
+
+
+\comments{
+This paper considers a backup service uses the existing cluster computing resource. 
+Another option is to attach  a separate backup system with deduplication
+support the cluster, and  every machine can periodically transfer snapshots to
+the attached backup system.
+%One  weakness of this approach is communication bottleneck between a large number of machines
+%in a cloud to this centralized  service.
+The cost of allocating the above dedicated backup  resource can be expensive.
+Since most of backup data is not used eventually, CPU and memory resource in such a backup service may 
+not be fully utilized. This paper seeks for a low-cost architecture option.
+}
+%It should be emphasized that our approach does not  accumulate raw backup data temporarily for deduplication
+%and does not require a significant amount of extra storage capacity.
+%Our strategy is to perform a drity  scan to collect
+% a small amount of disk space  to accumulate
+%deduplicate requests along with necessary meta data, and perform actual backup after deduplicate detection completes.
+  
+%affecting the overall time of backup. 

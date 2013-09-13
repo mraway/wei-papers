@@ -1,7 +1,7 @@
 MAIN = main
-TEX = ${MAIN}.tex overall.tex locality.tex dup.tex con.tex abs.tex intro.tex cds.tex
+TEX = main.tex abs.tex background.tex arch.tex eval.tex 2012concl.tex
 FIG = 
-BIB = dedup.bib
+BIB = dedup1.bib library.bib
 
 all: ${MAIN}.pdf 
 

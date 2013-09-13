@@ -1,0 +1,96 @@
+\documentclass[letterpaper,twocolumn,10pt]{article}
+\usepackage{usenix}
+\usepackage{mathptmx}
+\usepackage[colorlinks,linkcolor=red,anchorcolor=blue,citecolor=green,urlcolor=black]{hyperref}
+\usepackage{subfigure}
+\usepackage{epsfig}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{breqn}
+\usepackage{pgfplots}
+\usepackage{sansmath}
+\pgfplotsset{compat=1.5}
+\DeclareGraphicsExtensions{.pdf}
+
+
+\newcommand{\comments}[1]{}
+
+%pgfplots setup
+\pgfplotsset{
+    %You are supposed to use append style rather than just setting
+    %parameters globally so they are easier to override to special cases
+    %thickness options:thin,ultra thin,very thin,semithick,thick,very thick
+    every axis/.append style={
+        thick,
+        tick style={thick},
+        tick label style={font=\small\mathversion{sans}\sffamily},
+        label style={font=\small\sffamily},
+        font={\small\sffamily},
+        mark size=1.0
+    },
+    every legend/.append style={font={\small\mathversion{sans}\sffamily}}
+}
+\pgfplotsset{
+    every mark/.append style={solid}
+}
+\pgfplotscreateplotcyclelist{mcolor}{%
+    {blue,every mark/.append style={fill=blue},mark=*},
+    {red,every mark/.append style={fill=red},mark=square*},
+    {brown,every mark/.append style={fill=brown},mark=triangle*,mark size=1.5},
+    {black,every mark/.append style={fill=black},mark=diamond*,mark size=1.5},
+    {green!60!black,every mark/.append style={fill=green!60!black},mark=pentagon*,mark size=1.4},
+    {magenta!90!black,every mark/.append style={fill=magenta!90!black},mark=star,mark size=1.5},
+    {densely dashed,blue,every mark/.append style={fill=blue},mark=*},
+    {densely dashed,red,every mark/.append style={fill=red},mark=square*},
+    {densely dashed,brown,every mark/.append style={fill=brown},mark=triangle*,mark size=1.5},
+    {densely dashed,black,every mark/.append style={fill=black},mark=diamond*,mark size=1.5},
+    {densely dashed,green!60!black,every mark/.append style={fill=green!60!black},mark=pentagon*,mark size=1.4},
+    {densely dashed,magenta!90!black,every mark/.append style={fill=magenta!90!black},mark=star,mark size=1.5}}
+
+\pgfplotscreateplotcyclelist{mmark*}{
+    {mark=*},
+    {mark=square*},
+    {mark=triangle*,mark size=1.5},
+    {mark=diamond*,mark size=1.5},
+    {mark=pentagon*,mark size=1.4},
+    {mark=star,mark size=1.5},
+    {mark=asterisk,mark size=1.5},
+    {mark=+,mark size=1.5},
+    {mark=Mercedes star,mark size=1.5}}
+
+\pgfplotscreateplotcyclelist{mline}{
+    {solid,blue,every mark/.append style={fill=blue}},
+    {densely dashed,red,every mark/.append style={fill=red}},
+    {densely dotted,brown,every mark/.append style={fill=brown}},
+    {loosely dotted,black,every mark/.append style={fill=black}},
+    {loosely dashed,green!60!black,every mark/.append style={fill=green!60!black}},
+    {densely dashdotted,magenta!90!black,every mark/.append style={fill=magenta!90!black}},
+    {densely dashdotdotted,teal,every mark/.append style={fill=teal}},
+    {loosely dashdotted,orange,every mark/.append style={fill=orange}},
+    {loosely dashdotdotted,violet,every mark/.append style={fill=violet}}}
+
+    \pgfplotsset{cycle list name=mcolor}
+
+\begin{document}
+
+\title{Collocated Deduplication with Fault Isolation for Virtual Machine Snapshot Backup}
+
+\author{
+  Wei Zhang$^{\star}$, Michael Agun$^\star$, Tao Yang$^\star$, and Hong Tang$^\dagger$ \\
+  {\normalsize$^\star$  University of California at Santa Barbara}, {\normalsize$^\dagger$Alibaba Inc.} \\
+  {wei, tyang, dagun}@cs.ucsb.edu, hongtang@alibaba-inc.com
+}
+
+\maketitle
+
+\input{fast14_abstract}
+\input{fast14_introduction}
+\input{fast14_background}
+\input{fast14_deduplication}
+\input{fast14_architecture}
+\input{fast14_evaluation}
+\input{fast14_conclusion}
+
+\bibliographystyle{abbrv}
+\bibliography{library,dedup1}
+\end{document}

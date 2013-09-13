@@ -1,0 +1,108 @@
+\section{Conclusion Remarks}
+\label{sect:final}
+
+The contribution  of this work is a low-cost multi-stage parallel deduplication solution.
+Because of separation  of duplicate detection and actual backup,
+we are able to evenly distribute  fingerprint comparison among clustered machine
+nodes, and only load one partition at time at each machine for in-memory comparison.
+%The tradeoff is that every machine has to read dirty segments twice 
+%and that some deduplication requests are delayed for staged processing.  
+
+The proposed  scheme is resource-friendly to the existing cloud services.
+The evaluation shows that the overall 
+deduplication time and throughput of 100 machines  are satisfactory with 
+about 8.76GB per second for 2500 VMs. During processing, each machine uses 
+35MB memory, 8GB disk space, and 10-13\% of one CPU core with a single thread  execution.
+%and a modest use of IO and network resource.
+%Thus the proposed  scheme does not take a significant  amount of the resource away
+%to compete with the existing cloud services.
+%While using an insignificant system resource,
+%When the cluster size changes, our experiment also shows a linear speedup of overall throughputs
+%because highly parallel fingerprint comparisons.  
+%The cluster  of 100 nodes and 2500 VMs can deliver about 
+%8.8GB per second deduplication performance.  We expect the system performs well in a larger cloud 
+%setting and 
+Our future work is to conduct more experiments with production workloads.
+%We currently assume each machine performs backup for all VMs hosted and in practice, the system only
+%needs to backup active VMs and thus the overall backup time would actually be much smaller.
+
+%in parallel among all machines and  each machine full duplication detection is 
+%Another optimization is to allocate and control
+%buffer space for exchanging  detection messages and duplicate summary among machines.
+%snapshot service in VM cloud. 
+%Inner-VM deduplication localizes backup data dependency and exposes more parallelism  
+%while cross-VM deduplication with a small common data set
+%effectively  covers a large amount of duplicated data.
+%Our solution accomplishes the majority of
+%potential global deduplication saving while still meets stringent cloud resources requirement. 
+%Evaluation using real user's VM data shows
+%our solution can accomplish 75\% of what complete global
+%deduplication can do. 
+%Compare to today's widely-used snapshot technique, our scheme reduces almost
+%two-third of snapshot storage cost.
+%Finally, our scheme uses a very small amount of memory on each node, and leaves
+%room for additional optimization we are further studying.
+
+
+%The memory requirement and disk usage for the proposed solution is very small while the overall thoughput
+%and backup process timing is not compromised. 
+%Our experiments show that  the proposed scheme 
+%uses a very small amount of system resources while accomplishing a satisfactory backup throughput
+%in a large cloud setting.
+%which only reqiires a very small amount of memory and CPU resource.  
+%Experimental results  show the proposed scheme  can achieve high deduplication ratio while using
+%a  small  amount of cloud resources. 
+
+%Our system compares well with Amazon Glacier, in that, both of them are low-cost archival systems, 
+%supporting lazy storage with asynchronous notification mechanisms and achieve parallelism by 
+%reading/writing from multiple storage nodes/disks simultaneously. At the same time, 
+
+
+%While dirtybit-based technique can identify unmodified data between versions, 
+%full deduplication with fingerprint comparison  can remove more redundant content
+%at the cost of computing resources.
+%with  for similarity comparison and   reliability handling.
+%Current snapshot deduplication is mainly done through copy-on-write 
+%on fixed-size disk blocks. Such solutions cannot handle the
+% cross VM data duplication because VMs do not share any data. 
+%In addition, storing VM images and their snapshots
+%in the same storage engine reduce the underline design flexibility because 
+%these two kinds of data have distinct access requirements.
+%In this paper, 
+%we show that there is a large amount of duplicated data shared amongy virtual machines
+%through a production VM data study and thus it is expective to perform cross-machine deduplication. 
+% first perform a large scale study in production VM clusters 
+%to show that cross VM data duplication is severe due to they have large amount of
+%common data. Then our data analysis finds out that the overall data duplication pattern follows the Zipf's law.
+%Base on these discoveries, we propose a snapshot storage deduplication scheme using variable-size chunking
+%to address the above problem efficiently.
+%We eliminate the majority of cross VM data duplication by pre-select
+%a small set of frequently seen data blocks to be shared globally, and we also remove
+%many cross snapshot duplication by using smaller chunking granuarity and locality.
+
+
+
+
+%\section*{Acknowledgments}
+%{
+%We would like to thank Weicai Chen and Shikun Tian from Alibaba for their kind support, 
+%and the anonymous referees for their comments.
+%Wei Zhang has received internship support from Alibaba  for VM backup system development.
+%This work was supported in part by NSF IIS-1118106.
+%Any opinions, findings, and conclusions or recommendations expressed in this material are those of the authors and
+%do not necessarily reflect the views of Alibaba or the National Science Foundation.
+%}
+%Noted that 6\% is still significant, which is about 24GB per each VM and for a 1000 node Aliyun cluster,
+%this is about 600 terabytes.
+ 
+%Our experiments show th
+%our solution can eliminate the majority of data duplication with a tiny fraction of
+%block hash index store in memory. It does not only saves valuable system resouces in
+%the VM cloud, but also makes deduplication much faster.
+%
+%
+%Using  50 user VM data out of 1322 data disks as the training data and
+%with  1.5\% as CDS threshold, we see the total 1198GB of new data is reduced by
+%755.8GB, while perfect deduplication can reduce 1017.4GB. So 74.3\% of duplicate blocks are eliminated
+%by pre-trained CDS, which is quite satisfactory.
+

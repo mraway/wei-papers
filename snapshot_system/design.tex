@@ -146,7 +146,7 @@ Data sharing across VMs is limited within this small data set such that adding r
 
 Overall, our contributions are:
 \begin{enumerate}
-\item {\em CDS. parallelism, localized}
+\item {\em PDS. parallelism, localized}
 We designed a highly efficient global deduplication scheme using common data between VMs as the primary
 deduplication target, which adopts to our resource-constrained production environment very well. We developed a fast
 approxmation algorithm to extract the commonly used data from VM snapshot backups.
@@ -159,12 +159,12 @@ optimize large sequential read/write requests, while minimize the cost of key to
 \item {\em Fast Data Deletion.}
 Traditional deletion in deduplication systems involves reference counting, either online or offline. Both ways
 are costly due to the sharing of large amount of data objects.
-We avoid this cost of data deletion with an approxmation deletion method using bloom filters.
+We avoid this cost of data deletion with an approxmation deletion method using Bloom filters.
 
 \item {\em Fault-tolerant.}
 Golbal deduplication brings data sharing across different users VM snapshots, therefore a single failure
 on some data can break many VMs' snapshots. We avoid such all-to-all data dependency by restricting
-the cross VM data sharing with the CDS. By taking extra care of protecting CDS data, 
+the cross VM data sharing with the PDS. By taking extra care of protecting PDS data, 
 the overall degree of fault tolerancy is guaranteed.
 
 \end{enumerate}
@@ -207,7 +207,7 @@ Inline deduplication requires more resources and can suffer from latency issues 
 % The inner-VM  deduplication is conducted by the broker to access meta data in the snapshot data store
 % and we discuss this in details in Section~\ref{sect:innerVM}.
 % The cross-VM deduplication is conducted by the broker to access 
-% a common data set (CDS) (will discuss in Section~\ref{sect:crossVM},
+% a common data set (PDS) (will discuss in Section~\ref{sect:crossVM},
 % whose block hash index is stored in a distributed memory cache. 
 % \begin{figure}[htbp]
 %   \centering
@@ -245,7 +245,7 @@ Inline deduplication requires more resources and can suffer from latency issues 
 
 
 % \subsection{Block Storage Device}
-\subsection{CDS}
+\subsection{PDS}
 Although locality based data reduction can remove most of the inner-VM duplications,
 it's not able to solve the data duplication cross VMs. Different VMs still share large amount
 of common data such that their snapshot backups would have a lot of data in common.
@@ -258,31 +258,31 @@ Our observations on Aliyun's real VM user data reveals several major sources of 
   \end{enumerate}
 
 Without eliminating the data duplication between VM snapshot backups, storage space is severely wasted when the number of VMs increases.
-To address this problem, we developed a technique called \emph{Common Data Set (CDS)} to eliminate data duplication for all three situations above. 
-CDS is a public data library that shared by all VM snapshot backups in the cluster, 
+To address this problem, we developed a technique called \emph{Common Data Set (PDS)} to eliminate data duplication for all three situations above. 
+PDS is a public data library that shared by all VM snapshot backups in the cluster, 
 which consists of the most popular data blocks in VM snapshot backups. It is generated, 
 managed and accessed in an uniform manner by all VMs such that [write some fancy system characteristic stuff here].
 
-\subsection{CDS Size V.S. Coverage}
-As a shared data library, we expect CDS to collect almost all the system related data, the most popular user-generated data and the zero-filled data block.
-With CDS as a public data reference, each VM's snapshot backup has no need to store its own copies for data that can be found in CDS, instead they can just
+\subsection{PDS Size V.S. Coverage}
+As a shared data library, we expect PDS to collect almost all the system related data, the most popular user-generated data and the zero-filled data block.
+With PDS as a public data reference, each VM's snapshot backup has no need to store its own copies for data that can be found in PDS, instead they can just
 store a reference.
 
-The more data we put into CDS, the closer we come to complete deduplication. But in reality we are facing a list of restrictions such like [blabla].
-We borrowed the idea of web caching[refs here] to analysis the size of CDS vesus its effectiveness on data reduction.
+The more data we put into PDS, the closer we come to complete deduplication. But in reality we are facing a list of restrictions such like [blabla].
+We borrowed the idea of web caching[refs here] to analysis the size of PDS vesus its effectiveness on data reduction.
 
 We let $M$ be the number of nodes in a cluster, $N$ be the number of VMs hosted per node,
 and let $D$ denotes the average size of one VM's snapshot backups (after level 1 and 2 reduction, which is near 40 GB in our production environment).
-And let $C_0$, $C_s$ and $C_u$ denote the size of zero-filled block, system-related data and user-generated data in CDS,
-then the total size of CDS is represented by $C=C_0+C_s+C_u$.
+And let $C_0$, $C_s$ and $C_u$ denote the size of zero-filled block, system-related data and user-generated data in PDS,
+then the total size of PDS is represented by $C=C_0+C_s+C_u$.
 We let $S_0$, $S_s$ and $S_u$ denote the corresponding data coverage ratio (with respect to $D$) by $C_0$, $C_s$ and $C_u$,
 so the total space saving ratio is $S=S_0+S_s+S_u$.
 
-Zero-filled block at maximum length is the first item we need to put into CDS. This is the one and only special data block, 
-and because CDS only stores unique data blocks, $C_0$ is almost equal to 0. In practice we found zero-filled blocks account
+Zero-filled block at maximum length is the first item we need to put into PDS. This is the one and only special data block, 
+and because PDS only stores unique data blocks, $C_0$ is almost equal to 0. In practice we found zero-filled blocks account
 for near 20\% of total data, so $S_0$ is 20\%.
 
-The rarely modified system-related data are the second to be added to CDS. We have thousands of VMs in each cluster, 
+The rarely modified system-related data are the second to be added to PDS. We have thousands of VMs in each cluster, 
 but all these VMs fall into only a few OS types, using a limited selection of software, therefore data duplication in this category
 is highly noticable in a global block counting. In particular, most of such data already exist in the VM base images. 
 We analyzed VMs running various services from 7 mainstream OS types in our cluster, and found close to 50GB of such data in total. 
@@ -296,18 +296,18 @@ It follows a zipf-like distribution with $\alpha$ between 0.65 to 0.7.
 Let $T_u$ be the total size of unique data blocks in $D_u$,
 in practice we notice that complete deduplication for such data always result in a 2:1 reduction ratio,
 , so $T_u=D_u/2$.
-Since we collect the most popular user-generated data into CDS, the coverage of CDS on user-generated data
+Since we collect the most popular user-generated data into PDS, the coverage of PDS on user-generated data
 is $(C_u/T_u)^{1-\alpha}$.
 
-The following table lists CDS coverage on user-generated data under different $\alpha$ and $C_u/T_u$.
+The following table lists PDS coverage on user-generated data under different $\alpha$ and $C_u/T_u$.
 
 [a table of coverage with alpha from 0.65-0.70, ratio from 0.002 0.005 0.01 0.02 0.05]
 
 It's obviously that at least 30\% of user-generated data can be reduced in this way, using about 0.02 of $T_u$, or 0.01 of $D_u$.
-The size of user-generated data in CDS would be 0.006$D$, with coverage $S_u=0.18D$.
+The size of user-generated data in PDS would be 0.006$D$, with coverage $S_u=0.18D$.
 
-Thus the estimation of CDS coverage is $S=S_0+S_s+S_u=0.58$, with the size of CDS to be no more than $(200 + 0.006*D*N)$ GB.
-In a VM cluster of 100 machines, with 25 VMs on each physical machine, the size of CDS is 800 GB in total, or 8 GB per machine.
-The total size of CDS index would be 8 GB, which will cost 80 MB memory on each machine. 
+Thus the estimation of PDS coverage is $S=S_0+S_s+S_u=0.58$, with the size of PDS to be no more than $(200 + 0.006*D*N)$ GB.
+In a VM cluster of 100 machines, with 25 VMs on each physical machine, the size of PDS is 800 GB in total, or 8 GB per machine.
+The total size of PDS index would be 8 GB, which will cost 80 MB memory on each machine. 
 
 \subsection{Append Store}

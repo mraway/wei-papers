@@ -1,0 +1,28 @@
+\section{Background and Related Work}
+\label{sect:background}
+At a cloud cluster node, each instance of a guest operating system runs on a virtual machine, accessing virtual hard disks 
+represented as virtual disk image files in the host operating system.
+For VM snapshot backup, file-level semantics are normally not provided.
+Snapshot operations take place at the virtual device driver level, which
+means no fine-grained file system metadata can be used to determine the changed data. 
+
+The previous work for storage backup has extensively studied  data deduplication techniques that
+can eliminate redundancy 
+globally among different files from different users.
+Backup systems have been developed to use content fingerprints to identify duplicate
+content~\cite{venti02,Rhea2008}.  Offline deduplication is 
+used in ~\cite{EMC,NetAppOffline} to remove previously written duplicates during idle time.
+Several techniques have been proposed to speedup searching of duplicate
+fingerprints. For example, the data domain method ~\cite{bottleneck08} 
+uses  an in-memory Bloom filter and a prefetching cache for data chunks  which may be
+accessed.  An improvement to this work with parallelization is in ~\cite{MAD210,DEBAR}.
+The approximation techniques are studied in~\cite{extreme_binning09,Guo2011,WeiZhangIEEE}  
+to reduce memory requirements with the tradeoff of a reduced deduplication ratio.
+
+Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,idedup}. 
+All of the above approaches have focused on optimization of deduplication
+efficiency, and none of them have considered the impact
+of deduplication on fault tolerance in the cluster-based environment that we have considered
+in this paper.
+We will describe the motivation of using the cluster-based   approach
+for running the backup service and then present our solution  with fault isolation.

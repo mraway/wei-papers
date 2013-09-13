@@ -1,0 +1,23 @@
+In evaluating our approach, we also looked at other methodologies.
+One methodology which provides a very low memory footprint system is
+maintaining a subsampled index\cite{Guo2011}. By indexing a subsampling of the data
+and pulling entire containers into a cache on an index hit, as long as
+there is locality between data in the store and data in inputs to be
+deduplicated, and the input data causes index hits, a high rate of
+deduplication can be acheived. In our small scale testing, subsampling
+performed quite well (acheiving over 98% of the theoretically possible 
+deduplication for deduplicating highly similar VM traces). The main disadvantage of subsampling is that
+it doesn't scale easily to many nodes. subsampling performance doesn't
+scale as well because it requires global data to perform all deduplication
+(each index hit could pull in a container from anywhere), and because index
+size is directly proportional to storage size, which requires
+linear increase in memory as target storage size increases. With a sampling
+rate of 1/101 4KB blocks and 22 byte entries, the index requires a minimum
+of 55GB RAM per 1PB of storage, not including cache.
+By performing most deduplication locally, the
+performance becomes much more scalable to many nodes as most deduplication
+doesn't require network traffic, and could even theoretically
+allow most of the
+dedulication to proceed during a complete network partition. Performing local
+deduplication also reduces the amount of global data required for high
+efficency, and our tests show that the CDS size increases at a sublinear rate (see Sec.\ref{}).

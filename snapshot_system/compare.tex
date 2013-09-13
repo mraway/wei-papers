@@ -1,0 +1,53 @@
+\section{A Comparison  with Other Approaches}
+
+{\bf Sampled Index}.
+One alternative approach to avoiding a single global index is to use a sampled
+index. This is the approach taken by Guo and Efstathopoulos\cite{Guo2011}. We
+compare their solution to ours by running their algorithm on our 350 traces
+using a sampling rate of 1 out of 101 blocks, and always including the first
+block in a container (which we fix at 16MB in size). The results of running this
+test are shown in Table~\ref{??}, and the memory usage comparison can be found
+Sec.~\ref{??}. Our results show that using a sampled index achieves a very high
+rate of deduplication, and so a sampled index might be a good way to do dedup
+in a single node setup.
+
+The problems for sampling are in distributing the
+algorithm and in deduplicating extremely large bodies of data. The algorithm
+stores the entire (sampled) index in memory, which is required for high
+throughput to avoid the disk-bottleneck problem - since the index itself has no
+locality information, lookups are essentially random, so the index must be
+somehow optimized to prevent excessive disk seeking (the sampling algorithm does
+this by storing the index in memory). To distribute this index, each node would
+either require a complete copy of the index which would have a prohibitive cost in
+memory, or something like memcached must be used, which leaves the same problem
+as the disk bottleneck with every index check potentially using the network.
+The difficulty in storing extremely large bodies of data
+is related, as once 1PB is stored in the system, assuming a sampling rate of 
+1/101 with 22 byte index entires, 55GB of (in memory) index are required.
+
+Our solution uses more total memory (??how much??), but is more scalable both in
+terms of capactity and distributing the deduplication. The only part of our
+algorithm which requires significant network traffic is the PDS deduplication,
+but this is done after Levels 1 and 2 (dirty bits and comparison to parent), and
+so is only done for a small percent of blocks (?? 5-10\% ??).
+
+{\bf Scalable Data Routing}.
+Another approach to avoiding a global index is to use a content-based hash
+partitioning algorithm to break up the deduplication work. This approach is
+taken by Dong et al. in their Scalable Data Routing paper, and is similar to
+Exreme Binning\cite{??}\cite{extreme_binning09}. We compared our solution to
+content-based hash partitioning by running the algorithm on our set of 
+traces. We used 2MB superchunks and 4KB chunks to partition the data, and use
+the minhashes of the superchunks for routing. The results of this are shown in
+Table~\ref{??}. Routing each chunk to a bin provides good deduplication
+efficiency, and only requires each storage node to keep an index of local data
+and the bin mapping, but misses significant opportunities in our indended use
+case.
+
+The problem with the Data Routing algorithm is in the very high network traffic.
+Our intended use case is a backup system which runs alongside a number of VMs,
+in order to save costs. Data Routing makes no use of the inherent locality in
+such a system, and therefore puts a much higher network burden on machines which
+are also running 35 VMs each. This will reduce the available network bandwidth
+to users of the VMs, and/or reduce the possible deduplication throughput.
+

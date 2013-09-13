@@ -1,51 +1,129 @@
-\documentclass{acm_proc_article-sp}
+\documentclass{sig-alternate-10pt}
+\usepackage{mathptmx}
 \usepackage[colorlinks,linkcolor=red,anchorcolor=blue,citecolor=green,urlcolor=black]{hyperref}
+\usepackage{subfigure}
 \usepackage{epsfig}
+\usepackage{multirow}
+\usepackage{array}
 \usepackage{breqn}
+\usepackage{pgfplots}
+\usepackage{sansmath}
+\pgfplotsset{compat=1.5}
+\DeclareGraphicsExtensions{.pdf}
+
+
+\newcommand{\comments}[1]{}
+%pgfplots setup
+
+\pgfplotsset{
+    %You are supposed to use append style rather than just setting
+    %parameters globally so they are easier to override to special cases
+    %thickness options:thin,ultra thin,very thin,semithick,thick,very thick
+    every axis/.append style={
+        thick,
+        tick style={thick},
+        tick label style={font=\small\mathversion{sans}\sffamily},
+        label style={font=\small\sffamily},
+        font={\small\sffamily},
+        mark size=1.0
+    },
+    every legend/.append style={font={\small\mathversion{sans}\sffamily}}
+}
+\pgfplotsset{
+    every mark/.append style={solid}
+}
+\pgfplotscreateplotcyclelist{mcolor}{%
+    {blue,every mark/.append style={fill=blue},mark=*},
+    {red,every mark/.append style={fill=red},mark=square*},
+    {brown,every mark/.append style={fill=brown},mark=triangle*,mark size=1.5},
+    {black,every mark/.append style={fill=black},mark=diamond*,mark size=1.5},
+    {green!60!black,every mark/.append style={fill=green!60!black},mark=pentagon*,mark size=1.4},
+    {magenta!90!black,every mark/.append style={fill=magenta!90!black},mark=star,mark size=1.5},
+    {densely dashed,blue,every mark/.append style={fill=blue},mark=*},
+    {densely dashed,red,every mark/.append style={fill=red},mark=square*},
+    {densely dashed,brown,every mark/.append style={fill=brown},mark=triangle*,mark size=1.5},
+    {densely dashed,black,every mark/.append style={fill=black},mark=diamond*,mark size=1.5},
+    {densely dashed,green!60!black,every mark/.append style={fill=green!60!black},mark=pentagon*,mark size=1.4},
+    {densely dashed,magenta!90!black,every mark/.append style={fill=magenta!90!black},mark=star,mark size=1.5}}
+
+\pgfplotscreateplotcyclelist{mmark*}{
+    {mark=*},
+    {mark=square*},
+    {mark=triangle*,mark size=1.5},
+    {mark=diamond*,mark size=1.5},
+    {mark=pentagon*,mark size=1.4},
+    {mark=star,mark size=1.5},
+    {mark=asterisk,mark size=1.5},
+    {mark=+,mark size=1.5},
+    {mark=Mercedes star,mark size=1.5}}
+
+\pgfplotscreateplotcyclelist{mline}{
+    {solid,blue,every mark/.append style={fill=blue}},
+    {densely dashed,red,every mark/.append style={fill=red}},
+    {densely dotted,brown,every mark/.append style={fill=brown}},
+    {loosely dotted,black,every mark/.append style={fill=black}},
+    {loosely dashed,green!60!black,every mark/.append style={fill=green!60!black}},
+    {densely dashdotted,magenta!90!black,every mark/.append style={fill=magenta!90!black}},
+    {densely dashdotdotted,teal,every mark/.append style={fill=teal}},
+    {loosely dashdotted,orange,every mark/.append style={fill=orange}},
+    {loosely dashdotdotted,violet,every mark/.append style={fill=violet}}}
+
+    \pgfplotsset{cycle list name=mcolor}
 
 \begin{document}
 
-\title{An In-Cloud Backup System With Deduplication for VM Snapshot}
+%\title{Deduplication Localization for Virtual Machine Snapshot Backup}
+\title{Collocated Deduplication with Fault Isolation for Virtual Machine Snapshot Backup}
+%\title{BigArchive: Low-cost and Scalable Deduplication Storage for VM Snapshot}
 
-% \numberofauthors{7}
-% \author{
-% \alignauthor Wei Zhang\\
-%        \affaddr{CS Dept.}\\
-%        \affaddr{UC Santa Barbara}\\
-%        \email{wei@cs.ucsb.edu}
-% \alignauthor Hong Tang\\
-%        \affaddr{Aliyun Inc.}\\
-%        \affaddr{Alibaba Group}\\
-%        \email{hongtang@alibaba-inc.com}
-% \alignauthor Tao Yang\\
-%        \affaddr{CS Dept.}\\
-%        \affaddr{UC Santa Barbara}\\
-%        \email{tyang@cs.ucsb.edu}
-% }
+
+
+\author{
+Wei Zhang, Michael Agun,  Tao Yang \\
+%Wei Zhang$^{\star}$, Michael Agun,  Tao Yang$^\star$
+%{\normalsize$^\star$  University of California at Santa Barbara}, {\normalsize$^\dagger$Alibaba Inc.}
+%Wei Zhang, Tao Yang, Gautham Narayanasamy\\
+Department of Computer Science\\
+University of California,  Santa Barbara, CA 93106
+%\and
+%Hong Tang\\
+%Alibaba Inc.
+}
+%, Gautham Narayanasamy$^\star$, and Hong Tang$^\dagger$ \\
+
+
 
 \maketitle
 
 \input{abs}
 
 % A category with the (minimum) three required fields
-\category{H.4}{Information Systems Applications}{Miscellaneous}
+%\category{H.4}{Information Systems Applications}{Miscellaneous}
 %A category including the fourth, optional field follows...
-\category{D.2.8}{Software Engineering}{Metrics}[complexity measures, performance measures]
+%\category{D.2.8}{Software Engineering}{Metrics}[complexity measures, performance measures]
 
-\terms{Theory}
+%\terms{Theory}
 
-\keywords{ACM proceedings, \LaTeX, text tagging} % NOT required for Proceedings
+%\keywords{ACM proceedings, \LaTeX, text tagging} % NOT required for Proceedings
 
 \input{intro}
-\input{design}
+%\input{design}
+%\input{background}
+\input{challenge}
 \input{snapshot}
-\input{append}
-%\input{cds}
-\input{delete}
 \input{failover}
-\input{result}
-\input{con}
+%\input{compare}
+%\input{design1}
+\input{arch}
+%\input{impl}
+%\input{sampling-comparison.txt}
+\input{eval1}
+%\input{cds}
+%\input{delete}
+%\input{failover}
+%\input{result}
+\input{concl}
 
 \bibliographystyle{abbrv}
-\bibliography{library}
+\bibliography{library,dedup1}
 \end{document}
