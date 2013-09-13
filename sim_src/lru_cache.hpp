@@ -72,6 +72,14 @@ public:
 
     bool SearchItem(const Block& blk);
 
+    /*
+     * save and load cache contents
+     * timestamp is ignored
+     */
+    void Save(std::ostream& os);
+
+    void Load(std::istream& is);
+
 private:
     void RemoveItems(size_t n);
     

@@ -156,7 +156,6 @@ void CdsLruCache::BatchAddItem(const std::vector<Block> &blklist)
 
 void CdsLruCache::RemoveItems(size_t n)
 {
-    cout << "need to remove: " << n << std::endl;
     std::priority_queue<CacheIterator, std::vector<CacheIterator>, TimeComparison> myheap;
     for (CacheIterator it = cache_.begin(); it != cache_.end(); it ++)
     {
@@ -176,7 +175,43 @@ void CdsLruCache::RemoveItems(size_t n)
     myvector = reinterpret_cast<std::vector<CacheIterator> *>(&myheap);
     for (std::vector<CacheIterator>::iterator it = myvector->begin(); it != myvector->end(); it ++)
     {
-        cout << "remove: " << (*it)->first.size_ << std::endl;
         cache_.erase(*it);
     }
 }
+
+void CdsLruCache::Save(std::ostream &os)
+{
+    for (CacheIterator it = cache_.begin(); it != cache_.end(); it++)
+        it->first.Save(os);
+}
+
+void CdsLruCache::Load(std::istream &is)
+{
+    struct timeval tv;
+    struct timezone tz;
+    gettimeofday(&tv, &tz);
+
+    Block blk;
+    while (blk.Load(is))
+        cache_[blk] = tv;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
