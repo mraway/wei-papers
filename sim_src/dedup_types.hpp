@@ -114,24 +114,24 @@ public:
         return size_;
     }
 
-<<<<<<< HEAD
+
 	void Save(ostream& os) const
     {
-=======
-	void Save(ofstream& os) {
->>>>>>> 7834a15b90088558f0705350af4f8fe970eae28b
+
+
+
 		os.write((char *)cksum_, CKSUM_LEN);
 		os.write((char *)&file_id_, sizeof(Block::file_id_));
 		os.write((char *)&size_, sizeof(Block::size_));
 		os.write((char *)&offset_, sizeof(Block::offset_));
 	}
 
-<<<<<<< HEAD
+
 	bool Load(istream& is)
     {
-=======
-	bool Load(ifstream& is) {
->>>>>>> 7834a15b90088558f0705350af4f8fe970eae28b
+
+
+
 		is.read((char *)cksum_, CKSUM_LEN);
 		if (is.gcount() != CKSUM_LEN)
 			return false;
@@ -244,11 +244,11 @@ public:
         return std::binary_search(blocklist_.begin(), blocklist_.end(), blk);
     }
 
-<<<<<<< HEAD
+
     void Save(ostream& os) const
-=======
-    void Save(ofstream& os) 
->>>>>>> 7834a15b90088558f0705350af4f8fe970eae28b
+
+
+
     {
         uint32_t num_blocks = blocklist_.size();
         os.write((char *)&num_blocks, sizeof(uint32_t));
