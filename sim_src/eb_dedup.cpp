@@ -9,7 +9,8 @@
 #include <map>
 #include <sstream>
 
-#include "dedup_types.h"
+#include "trace_types.h"
+#include "dedup_types.hpp"
 
 using namespace std;
 
@@ -39,8 +40,8 @@ int main(int argc, char **argv)
     map<string, Bin> binmap;
     map<string, Bin>::iterator it;
     Segment seg;
-    while (seg.Load(is)) {
-        binmap[seg.GetMinHashString()].AddSegment(seg);
+    while (seg.LoadFixSize(is)) {
+        binmap[seg.GetMinHash().ToString()].AddSegment(seg);
     }
 
     /*
