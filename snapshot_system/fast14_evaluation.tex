@@ -292,14 +292,14 @@ small percent of the total storage space, while increasing replication degree ha
 availability as shown in Figure~\ref{fig:pds-replication}.
 
 \begin{table}
-    \begin{tabular}{|c|c|c|c|}
+    \begin{tabular}{|c|c|c|c|c|}
     \hline
-    Tasks & CPU & Mem (MB) & Disk W (MB/s) \\ \hline
-    1     & 19\% & 18.1 & 32.1 \\ \hline
-    2     & 35\% & 31.8 & 53 \\ \hline
-    4     & 63\% & 54.1 & 84 \\ \hline
-    6     & 77\% & 71.9 & 88.5 \\ \hline
-    8     & 82\% & 90.5 & 89.2 \\ \hline
+    Tasks & CPU & Mem (MB) & Write (MB/s) & Time (hrs) \\ \hline
+    1     & 19\% & 18.1 & 8.37 & 1.314\\ \hline
+    2     & 35\% & 31.8 & 8.97 & 1.226\\ \hline
+    4     & 63\% & 54.1 & 9.33 & 1.179\\ \hline
+    6     & 77\% & 71.9 & 9.46 & 1.162\\ \hline
+%    8     & 82\% & 90.5 & 89.2 & \\ \hline
 %    10                      & 85\% & 97.2   & 90.4 \\ \hline
 %    12                      & 91\% & 95.6    & 91.5 \\ \hline
     \end{tabular}
@@ -312,8 +312,8 @@ We have further studied the memory and disk bandwidth usage
 when running concurrent VM snapshot backup on each node. 
 Table ~\ref{tab:resource_usage} gives the CPU, memory and disk write workload of backing up multiple VMs 
 at the same time on each physical machine. 
-[ NOT REASONABLE: Notice that memory and CPU used by PDS index and QFS are not included since they belong to 
-the cloud infrastructure services and are shared among many applications.]
+% [ NOT REASONABLE: Notice that memory and CPU used by PDS index and QFS are not included since they belong to 
+% the cloud infrastructure services and are shared among many applications.]
 We see our hybrid deduplication scheme only occupies a small amount of system resources. 
 The  local deduplication only needs to keep the parent snapshot recipe and a few similar segment recipes in 
 memory during duplicate detection.
@@ -323,7 +323,7 @@ Base on the observed performance numbers, even with a single backup task per nod
  at 40GB size, our snapshot system can finish backing up all the VMs (1TB total) in 1.58 hours.
 
 {\bf Processing Time breakdown}.
-Figure~\ref{fig:srb_vs_vc} shows
+Figure~\ref{fig:vc_srb_combined} shows
 the  average  processing  time of  a VM segment under VC and SRB. 
 It has a breakdown of time for reading data, updating the metadata, network latency to visit
 a remote machine, and index access for fingerprint comparison.
@@ -338,12 +338,19 @@ Overall,  VC is faster than SRB, though data reading dominates the processing ti
 
 \begin{figure}[htbp]
   \centering
-  \epsfig{file=figures/srb_vs_vc, width=3in}
-  \caption{Time to backup a dirty VM segment under SRB and VC}
-  \label{fig:srb_vs_vc}
+  \epsfig{file=figures/vc_srb_combined, width=3in}
+  \caption{Time to backup a dirty VM segment under SRB and VC appraoches}
+  \label{fig:vc_srb_combined}
 \end{figure}
 
-Figure~\ref{fig:single_vm_backup} reports the average backup time for a VM in VC when
+% \begin{figure}[htbp]
+%   \centering
+%   \epsfig{file=figures/srb_vs_vc, width=3in}
+%   \caption{Time to backup a dirty VM segment under SRB and VC}
+%   \label{fig:srb_vs_vc}
+% \end{figure}
+
+Figure~\ref{fig:vc_srb_combined} also reports the average backup time for a VM in VC when
 varying the PDS size.  It lists the time distribution for data reading,
 similarity-guided local search, cross-VM PDS lookup, and non-duplicate data writing. 
 While data reading dominates the backup process, PDS lookup spends about a similar amount
@@ -351,12 +358,12 @@ of time as local search.
 The change of $\sigma$ does not significantly affect the overall backup speed as
 PDS lookup takes only a small amount of time.
 
-\begin{figure}
-    \centering
-    \includegraphics[width=3in]{figures/single_backup_time}
-    \caption{Average time to backup a VM in VC with varying PDS sizes}
-    \label{fig:single_vm_backup}
-\end{figure}
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=3in]{figures/single_backup_time}
+%     \caption{Average time to backup a VM in VC with varying PDS sizes}
+%     \label{fig:single_vm_backup}
+% \end{figure}
 
 
 {\bf Throughput.}
@@ -399,9 +406,9 @@ perform even better in production clusters, which often have ten or more disks o
 \end{figure}
 
 Figure~\ref{fig:leakage} shows the average accumulated storage leakage in terms of percentage of
-snapshot space per VM caused  by approximate deletions.
+storage space per VM caused  by approximate deletions.
 The slot line is the predicted leakage using Formula~\ref{eq:leak} from Section~\ref{sect:delete}
 while the dashed line is the actual leakage measured during the experiment.
-[OTHER PARAMETERS USED]
+% [OTHER PARAMETERS USED]
 After 9 snapshot deletions, the actual leakage reaches 0.01\% and this means that
 there is only 1MB space leaked for every 10GB of stored data. 
