@@ -19,7 +19,7 @@ and 4)  a PDS client to support PDS index access.
 We use the virtual device driver in Xen that employs a bitmap to track the changes 
 that have been made to virtual disk.
 Every bit in the bitmap represents a fix-sized (2MB) region called a \textit{segment}, indicating whether the segment
-is modified since last backup. 
+has been modified since last backup. 
 Segments are further divided into variable-sized chunks (average 4KB) 
 using a content-based chunking algorithm~\cite{frame05}, 
 which brings the opportunity of fine-grained deduplication.
@@ -56,7 +56,7 @@ each container is approximately 1GB.
 The reason for dividing the snapshot into containers is to simplify the compaction process
 conducted periodically. As discussed later, data chunks are deleted from old snapshots
 and chunks without any reference from other snapshots can be removed by this compaction process.
-By limiting the size of a container, we can effectively control the length of each compaction process.
+By limiting the size of a container, we can effectively control the length of each round of compaction.
 The compaction  routine can work on one container at a time and copy used data chunks to another container. 
 
 Each container is further divided into a set of chunk data groups. Each chunk group is composed of
@@ -81,7 +81,7 @@ is composed of two parts: a container ID with 2 bytes and a local chunk ID with 
 Each container maintains a local  chunk counter and assigns the current number 
 as a chunk ID  when  a new chunk is added to this  container. 
 Since data chunks are always appended to a snapshot store during backup, 
-a local chunk ID is monotonically increasing.
+local chunk IDs are monotonically increasing.
 When a snapshot chunk is to be accessed, the recipe for the snapshot will point a data chunk
 in the PDS store or in a non-PDS VM snapshot  store. 
 Using  a container ID, the corresponding container index file of this VM is accessed and 
@@ -95,7 +95,7 @@ Each reference to a PDS data chunk in the PDS index is the offset within the PDS
 
 \end{itemize}
 
-A snapshot  store supports three API calls.
+The snapshot  store supports three API calls.
 \begin{itemize}
 \item {\em Put(data)}. This places data chunk into the snapshot store and returns a reference to be stored in 
 the recipe metadata of a snapshot. 
@@ -103,7 +103,7 @@ The write requests to append data chunks to a VM store are accumulated at the cl
 When the number of write requests reaches a fixed group size, the snapshot store client compresses
 the accumulated   chunk group, adds a chunk group index  to the beginning of the group, and then
 appends the header and data  to the corresponding VM file.
-A new container  index entry is also created for each chunk group and is written the corresponding
+A new container  index entry is also created for each chunk group and is written to the corresponding
 container index file.
 The writing of PDS data chunks is conducted periodically when there is a new PDS calculation.
 \item{\em Get(reference)}.
@@ -132,7 +132,7 @@ During compaction, the snapshot store creates a new container (with the same con
 existing one. This is done by sequentially scanning the old container, copying all the chunks that are not 
 found in the deletion log to the new container, and creating new chunk groups and indices. 
 Every local chunk ID however is directly copied rather than re-generated. This
-process leaves holes in the CID values, but preserves the sorted order.
+process leaves holes in the CID values, but preserves the order and IDs of chunks.
 As a result, all data references stored 
 in upper level recipes are permanent and stable, and the data reading process
 is as efficient as before. Maintaining the stability of chunk IDs also ensures that recipes do not
@@ -160,16 +160,16 @@ In a busy VM cluster, snapshot deletions can occur frequently.
 Deduplication complicates the deletion process because space saving relies on the sharing of data
 and it requires the global reference of deleted chunks to be identified before  they can be safely removed.
 While we can use the mark-and-sweep technique~\cite{Guo2011}, 
-it still takes significant resource to conduct this process every time there is a snapshot deletion.
+it still takes significant resources to conduct this process every time there is a snapshot deletion.
 In the case of Alibaba, snapshot backup is conducted automatically and there are 
 about 10 snapshot stored for every user. When there is
 a new snapshot created every day,  there will be  a snapshot expired everyday to maintain
 a balanced storage use. 
 
-We seek a fast solution with a low resource usage to delete snapshots.
+We seek a fast solution with low resource usage to delete snapshots.
 Our VM-centric snapshot storage design simplifies the deletion process since 
 we can focus on  unreferenced chunks within each VM.
-The PDS data chunks are commonly shared all VMs and we do not consider them
+The PDS data chunks are commonly shared among all VMs and we do not consider them
 during snapshot deletion.  The selection of PDS data chunks is updated periodically independent of snapshot deletion process.
 Another resource-saving strategy we propose is
 an {\em approximate} deletion strategy to trade deletion accuracy for
@@ -236,7 +236,7 @@ Then the misjudgment rate of being in use $\epsilon$ is:
 \end{equation}
 
 
-For each snapshot deletion, the amount of chunks need to be deleted is nearly identical to the number of
+For each snapshot deletion, the number of chunks to be deleted is nearly identical to the number of
 newly add chunks $\Delta u$. 
 Let $R$ be the total number of runs of approximate deletion between two consecutive 
 repairs. we estimate  the total leakage $L$ after $R$ runs as:
