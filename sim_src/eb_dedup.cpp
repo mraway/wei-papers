@@ -40,9 +40,14 @@ int main(int argc, char **argv)
     map<string, Bin> binmap;
     map<string, Bin>::iterator it;
     Segment seg;
-    while (seg.LoadFixSize(is)) {
+    uint64_t blocks = 0;
+    uint64_t bytes = 0;
+    while (seg.FromStream(is)) {
         binmap[seg.GetMinHash().ToString()].AddSegment(seg);
+        blocks += seg.blocklist_.size();
+        bytes += seg.size_;
     }
+    cout << "Partition summary: blocks: " << blocks << " bytes: " << bytes << endl;
 
     /*
      * step 2: eliminate duplicates inside the bin

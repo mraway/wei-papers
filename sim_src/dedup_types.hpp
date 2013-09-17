@@ -328,8 +328,10 @@ private:
     uint32_t num_segments_;
     string min_hash_;
     uint32_t num_blocks_;
+    uint32_t num_blocks_1_;
     uint32_t num_dedup_blocks_;
     uint32_t size_;
+    uint32_t size_1_;
     uint32_t dedup_size_;
 
 public:
@@ -337,8 +339,10 @@ public:
     {
         num_segments_ = 0;
         num_blocks_ = 0;
+        num_blocks_1_ = 0;
         num_dedup_blocks_ = 0;
         size_ = 0;
+        size_1_ = 0;
         dedup_size_ = 0;
         blocklist_.reserve(200);
     }
@@ -346,12 +350,20 @@ public:
     void AddSegment(Segment& seg)
     {
         blocklist_.insert(blocklist_.end(), seg.blocklist_.begin(), seg.blocklist_.end());
+        for (uint32_t i = 0; i < seg.blocklist_.size(); i++) {
+            size_1_ += seg.blocklist_[i].size_;
+            num_blocks_1_++;
+        }
         num_segments_ ++;
         min_hash_ = seg.GetMinHash().ToString();
     }
 
     void Deduplication()
     {
+        num_blocks_ = 0;
+        size_ = 0;
+        dedup_size_ = 0;
+        num_dedup_blocks_ = 0;
         sort(blocklist_.begin(), blocklist_.end());
         for (uint32_t i = 0; i < blocklist_.size(); i++) {
             num_blocks_ ++;
@@ -371,7 +383,8 @@ public:
         stringstream ss;
         ss << "raw: " << num_segments_ << " segments, " << num_blocks_ << " blocks, "
            << size_ << " bytes. " << "dedup: " << num_dedup_blocks_ << " blocks, "
-           << dedup_size_ << " bytes.";
+           << dedup_size_ << " bytes." << "addseg: " << num_blocks_1_ << " blocks, " 
+           << size_1_ << " bytes.";
         return ss.str();
     }
 };

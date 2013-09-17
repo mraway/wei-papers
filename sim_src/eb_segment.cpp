@@ -42,8 +42,12 @@ int main(int argc, char **argv)
         os[i].open(output_file.str().c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::app);
     }
 
+    uint64_t blocks = 0;
+    uint64_t bytes = 0;
     //seg.Init();
     while (seg.LoadFixSize(is)) {//(blk.Load(is)) {
+        blocks += seg.blocklist_.size();
+        bytes += seg.size_;
         //seg.AddBlock(blk);
         //nblocks ++;
 
@@ -64,10 +68,11 @@ int main(int argc, char **argv)
         //    continue;
 
         //seg.Final();	// too big, enforce a break
-        seg.SaveRaw(os[seg.GetMinHash().Middle4Bytes() % 256]);
+        seg.ToStream(os[seg.GetMinHash().Middle4Bytes() % 256]);
         //seg.Init();
         //nblocks = 0;
     }
+    cout << "Trace summary: blocks: " << blocks << " bytes: " << bytes << endl;
 
     //if (nblocks != 0) {	// the tail
     //    seg.Final();
