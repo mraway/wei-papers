@@ -379,31 +379,41 @@ manages one disk per node, which prevents it from fully utilizing the the
 benefits of parallel disk access. We expect our architecture can
 perform even better in production clusters, which often have ten or more disks on each node.
 
+\begin{table}
+    \begin{tabular}{l|lll|lll}
+    Num. of concurrent      & \multicolumn{2}{l}{Throughput without I/O throttling (MB/s)} & \multicolumn{2}{l}{Throughput with I/O throttling (MB/s)} \\
+    backup streams per node & Raw                                       & Snapshot Store & QFS  & Raw                                    & Snapshot Store & QFS  \\
+    1                       & 1369.6                                    & 148.0          & 18.0 & 171.3                                  & 18.5           & 2.26 \\
+    2                       & 2408.5                                    & 260.2          & 31.7 & 201.3                                  & 21.8           & 2.66 \\
+    4                       & 4101.8                                    & 443.3          & 54.1 & 217.8                                  & 23.5           & 2.87 \\
+    6                       & 5456.5                                    & 589.7          & 72.0 & 224.1                                  & 24.2           & 2.96 \\
+    \end{tabular}
+\end{table}
 
-\begin{figure}
-    \centering
-    \subfigure[Backup throughput per node under controlled I/O bandwidth usage]
-    {
-        \includegraphics[width=3in]{figures/parallel_backup_with_read}
-        \label{fig:withread}
-    }
-    \\
-    \subfigure[Deduplication and storage system performance]
-    {
-        \includegraphics[width=3in]{figures/parallel_backup_no_read}
-        \label{fig:noread}
-    }
-    \caption{Throughput per-node with concurrent snapshot backup tasks}
-    \label{fig:parallel_backup}
-\end{figure}
+% \begin{figure}
+%     \centering
+%     \subfigure[Backup throughput per node under controlled I/O bandwidth usage]
+%     {
+%         \includegraphics[width=3in]{figures/parallel_backup_with_read}
+%         \label{fig:withread}
+%     }
+%     \\
+%     \subfigure[Deduplication and storage system performance]
+%     {
+%         \includegraphics[width=3in]{figures/parallel_backup_no_read}
+%         \label{fig:noread}
+%     }
+%     \caption{Throughput per-node with concurrent snapshot backup tasks}
+%     \label{fig:parallel_backup}
+% \end{figure}
 
-\subsection{Effectiveness of Approximate Deletion}
-\begin{figure}
-    \centering
-    \includegraphics[width=3in]{figures/leakage}
-    \caption{Accumulated storage leakage by approximate snapshot deletions}
-    \label{fig:leakage}
-\end{figure}
+% \subsection{Effectiveness of Approximate Deletion}
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=3in]{figures/leakage}
+%     \caption{Accumulated storage leakage by approximate snapshot deletions}
+%     \label{fig:leakage}
+% \end{figure}
 
 Figure~\ref{fig:leakage} shows the average accumulated storage leakage in terms of percentage of
 storage space per VM caused  by approximate deletions.
