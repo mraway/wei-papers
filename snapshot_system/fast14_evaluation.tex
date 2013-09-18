@@ -407,7 +407,7 @@ perform even better in production clusters, which often have ten or more disks o
 
 Figure~\ref{fig:leakage} shows the average accumulated storage leakage in terms of percentage of
 storage space per VM caused  by approximate deletions.
-The slot line is the predicted leakage using Formula~\ref{eq:leak} from Section~\ref{sect:delete}
+The solid line is the predicted leakage using Formula~\ref{eq:leakrepair} from Section~\ref{sect:delete}
 while the dashed line is the actual leakage measured during the experiment.
 % [OTHER PARAMETERS USED]
 After 9 snapshot deletions, the actual leakage reaches 0.01\% and this means that
