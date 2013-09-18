@@ -99,7 +99,7 @@ public:
 		os.write((char *)&offset_, sizeof(Block::offset_));
 	}
 
-	bool Load(ifstream& is) {
+	bool Load(istream& is) {
 		is.read((char *)cksum_, CKSUM_LEN);
 		if (is.gcount() != CKSUM_LEN)
 			return false;
@@ -114,6 +114,13 @@ public:
 			return false;
 		return true;
 	}
+
+        uint32_t Middle4Bytes() const
+        {
+            uint32_t tmp;
+            memcpy((char*)&tmp, &cksum_[(CKSUM_LEN - 4)/2], 4);
+            return tmp;
+        }
 
 	bool operator==(const Block& other) const {
 		return memcmp(this->cksum_, other.cksum_, CKSUM_LEN) == 0;
@@ -181,6 +188,13 @@ public:
 		return blocklist_[min_idx_].cksum_;
 	}
 
+    uint32_t Middle4Bytes() const
+    {
+        uint32_t tmp;
+        memcpy((char*)&tmp, &blocklist_[min_idx_].cksum_[(CKSUM_LEN - 4)/2], 4);
+        return tmp;
+    }
+
     // put minhash into a string so other stl containers can use it
     string GetMinHashString() const
     {
@@ -190,7 +204,14 @@ public:
         return s;
     }
 
-    void Save(ofstream& os) 
+    void SaveRaw(ofstream& os) 
+    {
+        uint32_t num_blocks = blocklist_.size();
+        for (uint32_t i = 0; i < num_blocks; i ++)
+            blocklist_[i].Save(os);
+    }
+
+    /*void Save(ofstream& os) 
     {
         uint32_t num_blocks = blocklist_.size();
         os.write((char *)&num_blocks, sizeof(uint32_t));
@@ -216,7 +237,26 @@ public:
 
         Final();
         return true;
+    }*/
+
+bool LoadFixSize(istream &is)
+{
+    Block blk;
+    Init();
+    while (blk.Load(is)) {
+        if (blk.size_ == 0) {       // fix the zero-sized block bug in scanner
+            continue;
+        }
+        AddBlock(blk);
+        if (size_ >= 1024*1024*2)
+            break;
     }
+    Final();
+    if (size_ == 0)
+        return false;
+    else
+        return true;
+}
 };
 
 class Bin {

@@ -5,11 +5,11 @@ We have implemented and evaluated a prototype of our VC scheme on a Linux cluste
 Our implementation is based on Alibaba cloud platform~\cite{Aliyun,WeiZhangIEEE}
 and the underlying DFS uses  QFS with default replication degree 3 while the PDS replication degree is 5.
 Our evaluation objective is to
-study the benefit of fault tolerance and   deduplication efficiency  the VC approach and compare it
-with an alternative VO design, and assess backup throughput and  resource usage for a large number of VMs.
+study the benefit in fault tolerance and   deduplication efficiency of the VC approach and compare it
+with an alternative VO design. We also and assess backup throughput and  resource usage for a large number of VMs.
 
 We will compare our VC approach with
-a VO approach  using stateless routing with binning (call it SRB) 
+a VO approach  using stateless routing with binning (SRB) 
 based on~\cite{Dong2011,extreme_binning09}
 SRB executes a distributed deduplication by routing a data chunk to a machine~\cite{Dong2011}
 using  a min-hash function discussed in \cite{extreme_binning09}. Once a data chunk is routed to
@@ -20,7 +20,7 @@ We have performed a trace-driven study using a production dataset~\cite{WeiZhang
 Alibaba Aliyun's cloud platform with about 100 machines. 
 The VMs  of the sampled  data set   use popular operating systems such as 
 Debian, Ubuntu, Redhat, CentOS, and win2008. 
-Each machine hosts upto 25 VMs and each VM keeps 10 automatically-backed snapshots in the storage while
+Each machine hosts upto 25 VMs and each VM keeps 10 automatically-generated snapshots in the storage system while
 a user may instruct extra snapshots to be saved.
 The backup of VM snapshots is completed within a few  hours every night.
 Based on our study of production  data,  each VM has about  40GB of storage  data  on average
@@ -36,7 +36,7 @@ Figure~\ref{fig:vm-availability} shows the availability of VM snapshots when
 there are up to 10 storage nodes failed in a 100-node cluster. 
 Two VC curves use $V_c=1250$ and $V_c=2500$ representing the average number of VMs that share a PDS file system block. 
 $V_c=2500$ represents  the absolute worst case for 2500 VMs. 
-A  VO curve has  $V_o=150$ which is  the average number of VMs that share a file system block. 
+The VO curve has  $V_o=6.3$ which is  the average number of VMs that share a file system block in our smaller dataset. 
 Our results show that the VC approach even with $V_c=2500$ has a higher availability than VO.
 For example, with 10 machines failed, VO with 98.5\% availability would lose snapshots of 37 VMs 
 while VC with 99.9\% loses snapshots of 2.5 VMs.
@@ -318,9 +318,9 @@ We see our hybrid deduplication scheme only occupies a small amount of system re
 The  local deduplication only needs to keep the parent snapshot recipe and a few similar segment recipes in 
 memory during duplicate detection.
 
-Base on the observed performance numbers, even with a single backup task per node and enforcing the disk read speed to
+Based on the observed performance numbers, even with a single backup task per node and enforcing the disk read speed to
 50 MB/s,  we can still process raw data at near 175 MB/s. If we consider the extreme case in which each machine has 25 VMs
- at 40GB size, our snapshot system can finish backing up all the VMs (1TB total) in 1.58 hours.
+at 40GB size, our snapshot system can finish backing up all the VMs (1TB total) in 1.58 hours.
 
 {\bf Processing Time breakdown}.
 Figure~\ref{fig:vc_srb_combined} shows
@@ -328,7 +328,7 @@ the  average  processing  time of  a VM segment under VC and SRB.
 It has a breakdown of time for reading data, updating the metadata, network latency to visit
 a remote machine, and index access for fingerprint comparison.
 SRB has a higher index access and fingerprint comparison because once a chunk is routed to a machine,
-it relies on this local machine to access its index (often on the disk, supported by a bloomer filter) 
+it relies on this local machine to access its index (often on the disk, supported by a Bloom filter) 
 and perform comparison.
 VC is faster for index access because it conducts in-memory local search first and then
 accesses  the PDS on distributed shared memory.  
@@ -417,7 +417,7 @@ perform even better in production clusters, which often have ten or more disks o
 
 Figure~\ref{fig:leakage} shows the average accumulated storage leakage in terms of percentage of
 storage space per VM caused  by approximate deletions.
-The slot line is the predicted leakage using Formula~\ref{eq:leak} from Section~\ref{sect:delete}
+The solid line is the predicted leakage using Formula~\ref{eq:leakrepair} from Section~\ref{sect:delete}
 while the dashed line is the actual leakage measured during the experiment.
 % [OTHER PARAMETERS USED]
 After 9 snapshot deletions, the actual leakage reaches 0.01\% and this means that
