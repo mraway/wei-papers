@@ -314,12 +314,13 @@ our test dataset.
 For VC, we only show
 the sharing degree of  PDS-oriented file blocs  because non-PDS blocks always belong to
 one VM.
-%We can also observe that $N_1 +N_2 < N_o$ in Figure~\ref{fig:vm-links}. 
-%This is likely because the PDS FSBs tightly pack data used by many VMs, 
-%which decreases the overall number of FSBs required to backup a VM.
-%If  the backup for multiple VMs is conducted concurrently, there would be more
-%VMs shared  by each file block on average. Therefore,
-%even when there is a loss of a PDS block, the VC approach tolerates the fault better.
+From data, 
+we have observed that $N_1 +N_2 < N_o$ in Figure~\ref{fig:vm-links}. 
+This is likely because the PDS FSBs tightly pack data used by many VMs, 
+which decreases the overall number of FSBs required to backup a VM.
+Also if  the backup for multiple VMs were conducted concurrently, there would be more
+VMs shared  by each file block on average in VO. 
+%Therefore, even when there is a loss of a PDS block, the VC approach tolerates the fault better.
 
 \begin{figure}[htbp]
   \centering
@@ -368,7 +369,7 @@ one VM.
                 \legend{$N_o$, $N_1+N_2$, $N_1$, $N_2$};
 		\end{axis}
 	\end{tikzpicture}
-  \caption{Measured Average number of 64MB FSBs used by a single VM. For VC both the number of PDS and Non-PDS FSBs used are shown.}
+  \caption{Measured average number of 64MB FSBs used by a single VM. For VC both the number of PDS and Non-PDS FSBs used are shown.}
   \label{fig:vm-links}
 \end{figure}
 
@@ -403,8 +404,8 @@ The full snapshot availability of  a VM in the VC approach is
 \]
 Figure~\ref{fig:fsb-availability} illustrates that the availability of an individual file system block
 with different replication degree. This demonstrates inequality $1-\frac{ \binom{d}{r}} { \binom{p}{r} }
-< 1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} }$. As we have also observed
-$N_1+N_2 <N_o$ in our dataset, these two conditions support that VC has a  higher availability. 
+< 1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} }$.  Since $N_1$ is much smaller than $N_o$ as discussed previously, 
+these two conditions support that VC has a  higher availability. 
 %comparing  Formula~\ref{eq:VO} and~\ref{eq:VC}. 
 \end{itemize} 
 
@@ -432,6 +433,7 @@ $N_1+N_2 <N_o$ in our dataset, these two conditions support that VC has a  highe
             \legend{$R=5$,$R=4$,$R=3$};
             \end{axis}
     \end{tikzpicture}
-    \caption{Availability of individual file system blocks in a 100 machine cluster with different replication degrees.}
+    \caption{Availability of a file system block in a 100 machine cluster with different replication 
+and failure settings.}
   \label{fig:fsb-availability}
 \end{figure}
