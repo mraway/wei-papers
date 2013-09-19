@@ -29,7 +29,9 @@ uses  an in-memory Bloom filter and a prefetching cache for data chunks  which m
 accessed.  An improvement to this work with parallelization is in ~\cite{MAD210,DEBAR}.
 The approximation techniques are studied in~\cite{extreme_binning09,Guo2011,WeiZhangIEEE}  
 to reduce memory requirements with the tradeoff of a reduced deduplication ratio.
-Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,idedup}. 
+Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,idedup}
+and a parallel batch solution for cluster-based deduplication is 
+studied in ~\cite{WeiZhangHotStorage13}. 
 All of the above approaches have focused on optimization of deduplication
 efficiency, and none of them have considered the impact
 of deduplication on fault tolerance in the cluster-based environment that we have considered
@@ -87,9 +89,9 @@ We are seeking for a tradeoff since
 cross-VM  signature comparison can deliver additional compression~\cite{Guo2011,Dong2011,extreme_binning09}.
 \item {\bf Stateless  Data Routing}.
 One approach for scalable duplicate comparison is to use a content-based hash
-partitioning algorithm called stateless data routing~\cite{Dong2011}
+partitioning algorithm called stateless data routing by Dong et al.~\cite{Dong2011} 
 that divides the deduplication work with a similarity approximation. This work 
-is similar to Extreme Binning\cite{extreme_binning09} and 
+is similar to Extreme Binning by Bhagwat et al.~\cite{extreme_binning09} and 
 each request is routed  to a machine which holds
 a Bloom filter  or can fetch on-disk index for additional comparison.
 While this approach is VM-oblivious, it motivates us to  use  a combined signature of a dataset to narrow
@@ -99,7 +101,7 @@ One effective approach that reduces memory usage is
 to use a sampled index with prefetching, proposed  by Guo and Efstathopoulos\cite{Guo2011}. 
 The algorithm is VM oblivious and it is not easy  to adopt for a distributed architecture. 
 To use a distributed memory version of the sampled index, every deduplication request
-may access a remote machine for index lookup and the overall overhead of latency for all requests
+may access a remote machine for index lookup and the overall overhead of access latency for all requests
 can be significant.  
 \end{itemize}
 

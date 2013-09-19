@@ -366,8 +366,22 @@ PDS lookup takes only a small amount of time.
 % \end{figure}
 
 
+\begin{table*}[t]
+    \centering
+    \begin{tabular}{c|ccc|ccc}
+    Num. of concurrent      & \multicolumn{3}{c|}{Throughput without}    & \multicolumn{3}{c}{Throughput with} \\
+    backup tasks            & \multicolumn{3}{c|}{I/O throttling (MB/s)} & \multicolumn{3}{c}{I/O throttling (MB/s)} \\ \cline{2-7}
+    per node                & Raw                                        & Snapshot Store & QFS  & Raw                                    & Snapshot Store & QFS  \\ \hline
+    1                       & 1369.6                                     & 148.0          & 18.0 & 171.3                                  & 18.5           & 2.26 \\
+    2                       & 2408.5                                     & 260.2          & 31.7 & 201.3                                  & 21.8           & 2.66 \\
+    4                       & 4101.8                                     & 443.3          & 54.1 & 217.8                                  & 23.5           & 2.87 \\
+    6                       & 5456.5                                     & 589.7          & 72.0 & 224.1                                  & 24.2           & 2.96 \\
+    \end{tabular}
+\caption{Backup throughput under different concurrency}
+\label{tab:throughput}
+\end{table*}
 {\bf Throughput.}
-Figure~\ref{fig:parallel_backup} shows the  backup throughput per each machine when all machine nodes 
+Table~\ref{tab:throughput} shows the  backup throughput per each machine when all machine nodes 
 handle  several VMs in parallel.
 To begin, on each node we write snapshots for 4 VMs concurrently, and gradually 
 increase number of VMs to 12 to saturate our system capability. We observed 
@@ -380,34 +394,34 @@ benefits of parallel disk access. We expect our architecture can
 perform even better in production clusters, which often have ten or more disks on each node.
 
 
-\begin{figure}
-    \centering
-    \subfigure[Backup throughput per node under controlled I/O bandwidth usage]
-    {
-        \includegraphics[width=3in]{figures/parallel_backup_with_read}
-        \label{fig:withread}
-    }
-    \\
-    \subfigure[Deduplication and storage system performance]
-    {
-        \includegraphics[width=3in]{figures/parallel_backup_no_read}
-        \label{fig:noread}
-    }
-    \caption{Throughput per-node with concurrent snapshot backup tasks}
-    \label{fig:parallel_backup}
-\end{figure}
+% \begin{figure}
+%     \centering
+%     \subfigure[Backup throughput per node under controlled I/O bandwidth usage]
+%     {
+%         \includegraphics[width=3in]{figures/parallel_backup_with_read}
+%         \label{fig:withread}
+%     }
+%     \\
+%     \subfigure[Deduplication and storage system performance]
+%     {
+%         \includegraphics[width=3in]{figures/parallel_backup_no_read}
+%         \label{fig:noread}
+%     }
+%     \caption{Throughput per-node with concurrent snapshot backup tasks}
+%     \label{fig:parallel_backup}
+% \end{figure}
 
-\subsection{Effectiveness of Approximate Deletion}
-\begin{figure}
-    \centering
-    \includegraphics[width=3in]{figures/leakage}
-    \caption{Accumulated storage leakage by approximate snapshot deletions}
-    \label{fig:leakage}
-\end{figure}
+% \subsection{Effectiveness of Approximate Deletion}
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=3in]{figures/leakage}
+%     \caption{Accumulated storage leakage by approximate snapshot deletions}
+%     \label{fig:leakage}
+% \end{figure}
 
 Figure~\ref{fig:leakage} shows the average accumulated storage leakage in terms of percentage of
 storage space per VM caused  by approximate deletions.
-The slot line is the predicted leakage using Formula~\ref{eq:leak} from Section~\ref{sect:delete}
+The solid line is the predicted leakage using Formula~\ref{eq:leakrepair} from Section~\ref{sect:delete}
 while the dashed line is the actual leakage measured during the experiment.
 % [OTHER PARAMETERS USED]
 After 9 snapshot deletions, the actual leakage reaches 0.01\% and this means that
