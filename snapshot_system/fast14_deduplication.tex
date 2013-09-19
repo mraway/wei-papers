@@ -362,10 +362,10 @@ VMs shared  by each file block on average in VO.
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
 		legend pos=south west
 		]
-                \addplot[blue,mark=none] table[x=VMs,y=No] {figures/vo_vm_links_105.txt};
-                \addplot[red,dotted,mark=none] table[x=VMs,y expr=\thisrow{N1}+\thisrow{N2}] {figures/vc_vm_links_105.txt};
-                \addplot[red,dashdotted] table[x=VMs,y=N1] {figures/vc_vm_links_105.txt};
-                \addplot[red,densely dashed,mark=none] table[x=VMs,y=N2] {figures/vc_vm_links_105.txt};
+                \addplot[blue,mark=none] table[x=VMs,y=N_O] {figures/vm_links_all.txt};
+                \addplot[red,dotted,mark=none] table[x=VMs,y expr=\thisrow{N_1}+\thisrow{N_2}] {figures/vm_links_all.txt};
+                \addplot[red,dashdotted] table[x=VMs,y=N_1] {figures/vm_links_all.txt};
+                \addplot[red,densely dashed,mark=none] table[x=VMs,y=N_2] {figures/vm_links_all.txt};
                 \legend{$N_o$, $N_1+N_2$, $N_1$, $N_2$};
 		\end{axis}
 	\end{tikzpicture}
