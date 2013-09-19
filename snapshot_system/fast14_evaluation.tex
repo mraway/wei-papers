@@ -33,7 +33,7 @@ and top popular ones ($\delta=1-2\%$)  are  kept in the PDS, as discussed in Sec
 
 \subsection{Impact on Fault Tolerance}
 Figure~\ref{fig:vm-availability} shows the availability of VM snapshots when 
-there are up to 10 storage nodes failed in a 100-node cluster. 
+there are up to 25 storage nodes failed in a 1000-node cluster. 
 Two VC curves use $V_c=1250$ and $V_c=2500$ representing the average number of VMs that share a PDS file system block. 
 $V_c=2500$ represents  the absolute worst case for 2500 VMs. 
 The VO curve has  $V_o=6.3$ which is  the average number of VMs that share a file system block in our smaller dataset. 
@@ -70,7 +70,7 @@ stored data; however, the benefit to the snapshot availability is significant.
                     },
                     xlabel={\tiny Failed nodes},
                     ylabel={\tiny VM Availability (\%)},
-                    extra y ticks={99.9}, %if important numbers are missing
+                    %extra y ticks={99.9}, %if important numbers are missing
                     mark options=solid,
                     legend columns=-1,
                     legend style={
@@ -81,14 +81,12 @@ stored data; however, the benefit to the snapshot availability is significant.
                     legend to name=legend:vm-availability,
                     %reverse legend,
                     ]
-                    \addplot table[x=NodesFailed,y=VO1]{figures/vm_availability.txt};
+                    \addplot table[x=NodesFailed,y=VO]{figures/node_failures_100.txt};
                     \addlegendentry{VO}
-                    \addplot table[x=NodesFailed,y=VC1]{figures/vm_availability.txt};
+                    \addplot table[x=NodesFailed,y=VC3]{figures/node_failures_100.txt};
                     \addlegendentry{VC}
-                    \addplot table[x=NodesFailed,y=VC2]{figures/vm_availability.txt};
+                    \addplot table[x=NodesFailed,y=VCWC1]{figures/node_failures_100.txt};
                     \addlegendentry{VC (worst-case)}
-                    %\addplot table[x=NodesFailed,y=VO2]{figures/vm_availability.txt};
-                    %\addlegendentry{VO\,$20$ (optimistic)}
                     \end{axis}
             \end{tikzpicture}
       %\caption{100 machine cluster.}
@@ -131,13 +129,13 @@ stored data; however, the benefit to the snapshot availability is significant.
                 %reverse legend,
 		]
                 %\addplot table[x=NodesFailed,y=VO1]{figures/vm_availability_1000.txt};
-                \addplot table[x=NodesFailed,y expr=(\thisrow{VO1}-99.999)*1000]{figures/vm_availability_1000.txt};
+                \addplot table[x=NodesFailed,y expr=(\thisrow{VO}-99.999)*1000]{figures/node_failures_1000.txt};
                 %\addlegendentry{$VO\,6.3$ (optimistic)}
                 %\addplot table[x=NodesFailed,y=VC1]{figures/vm_availability_1000.txt};
-                \addplot table[x=NodesFailed,y expr=(\thisrow{VC1}-99.999)*1000]{figures/vm_availability_1000.txt};
+                \addplot table[x=NodesFailed,y expr=(\thisrow{VC3}-99.999)*1000]{figures/node_failures_1000.txt};
                 %\addlegendentry{$VC\,1250$ (estimated)}
                 %\addplot table[x=NodesFailed,y=VC2]{figures/vm_availability_1000.txt};
-                \addplot table[x=NodesFailed,y expr=(\thisrow{VC2}-99.999)*1000]{figures/vm_availability_1000.txt};
+                \addplot table[x=NodesFailed,y expr=(\thisrow{VCWC1}-99.999)*1000]{figures/node_failures_1000.txt};
                 %\addlegendentry{$VC\,2500000$ (worst-case)}
                 %\addplot table[x=NodesFailed,y=VO2]{figures/vm_availability.txt};
                 %\addlegendentry{$VO\,20$ (optimistic)}
@@ -148,8 +146,8 @@ stored data; however, the benefit to the snapshot availability is significant.
 \end{subfigure}
     \pgfplotslegendfromname{legend:vm-availability}
       \caption{Availability of VM backup snapshots for VO and VC when failed machines vary
-from 1 to 10.  Non-PDS replication is fixed
-          at 3 and PDS replication is 4. 
+from 1 to 40.  Non-PDS replication is fixed
+at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE} 
       }
       \label{fig:vm-availability}
     
@@ -165,7 +163,9 @@ from 1 to 10.  Non-PDS replication is fixed
 		%title={PDS Replication affect on availability},
 		xlabel={Failed storage nodes},
 		ylabel={VM Snapshot Availability (\%)},
-		extra y ticks={99.9}, %if important numbers are missing
+                xmin=0,
+                xmax=10,
+		%extra y ticks={99.9}, %if important numbers are missing
                 mark options=solid,
                 legend style={
                     cells={anchor=west}, %legend entry alignment
@@ -173,15 +173,15 @@ from 1 to 10.  Non-PDS replication is fixed
                 },
                 reverse legend,
 		]
-                \addplot table[x=NodesFailed,y=VC1]{figures/cds_replication.txt};
-                \addplot table[x=NodesFailed,y=VC2]{figures/cds_replication.txt};
-                \addplot table[x=NodesFailed,y=VC3]{figures/cds_replication.txt};
-                %\addplot table[x=NodesFailed,y=VC4]{figures/cds_replication.txt};
-                \legend{$R_C=4$,$R_C=5$,$R_C=6$}%,$R_C=7$}
+                \addplot table[x=NodesFailed,y=VC1]{figures/node_failures_100.txt};
+                \addplot table[x=NodesFailed,y=VC2]{figures/node_failures_100.txt};
+                \addplot table[x=NodesFailed,y=VC3]{figures/node_failures_100.txt};
+                \addplot table[x=NodesFailed,y=VC4]{figures/node_failures_100.txt};
+                \legend{$R_C=4$,$R_C=5$,$R_C=6$, $R_C=9$}
 		\end{axis}
 	\end{tikzpicture}
   \caption{Theoretical Availability of VM backup snapshots as nodes fail in VC
- (Non-PDS replication fixed at 3, and average PDS block links set to 1250, 1000 node cluster)}
+ (Non-PDS replication fixed at 3, and average PDS block links set to 1250 for 100 node cluster)}
   \label{fig:pds-replication}
 \end{figure}
 
@@ -230,12 +230,12 @@ from 1 to 10.  Non-PDS replication is fixed
             \addplot table[x=VMs,y=cds2] {figures/exbin_efficiency_comparison2.txt};
             %\addplot table[x=VMs,y=cds1] {figures/exbin_efficiency_comparison2.txt};
             \addplot table[x=VMs,y=exbin] {figures/exbin_efficiency_comparison2.txt};
-            \legend{VC MH( $\sigma=4\%$),
-                VC MH($\sigma=2\%$),
-                %VC MH($\sigma=1\%$),
-                VC MH(No PDS),
-                %VC($\sigma=4\%$),
+            \legend{VC( $\sigma=4\%$),
                 VC($\sigma=2\%$),
+                %VC MH($\sigma=1\%$),
+                VC(No PDS),
+                %VC($\sigma=4\%$),
+                VC(No MH\,$\sigma=2\%$),
                 %VC($\sigma=1\%$),
                 SRB
             };
@@ -247,9 +247,8 @@ from 1 to 10.  Non-PDS replication is fixed
 
 Figure~\ref{fig:exbin-efficiency-graph2} shows the deduplication efficiency for SRB and VC.
 Deduplication efficiency is defined as the percent of duplicate chunks
-which are detected and deduplicated.
-The figure also compares several PDS sizes chosen for VC. ``$\sigma=2\%$'' 
-is defined in Table~\ref{tab:symbol}. 
+which are detected and deduplicated. We also compare several PDS sizes chosen for VC
+(see Table~\ref{tab:symbol} for definition of ``$\sigma=2\%$'')
 %we allocate the space of distributed shared memory  to accommodate 2\%
 %of data chunks shared among VMs, as defined in 
 With $\sigma=2\%$, memory usage for PDS index lookup per machine is about 100MB
