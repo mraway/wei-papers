@@ -52,7 +52,6 @@ each VM has its own snapshot store, containing new data chunks which are conside
 to be non-duplicates.
 There is also a special store containing all PDS chunks shared among different VMs.
 As shown in Figure~\ref{fig:as_arch}, we explain the data structure of snapshot stores as follows.
-\end{itemize}
 \begin{figure}[htbp]
   \centering
   \epsfig{file=images/sstore_arch, width=3in}
@@ -110,6 +109,7 @@ a new PDS data  set is computed, in-memory PDS index is replaced, but
 the PDS file on the disk appends the  new PDS data identified and the growth of this file is very slow. 
 The old data is not removed because they can still be referenced by the existing snapshots. 
 A periodic cleanup is conducted  to remove unused PDS chunks (e.g. in every few months). 
+\end{itemize}
 
 
 The snapshot  store supports three API calls.
