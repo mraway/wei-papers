@@ -3,7 +3,7 @@
 We have implemented and evaluated a prototype of our VC scheme on a Linux cluster of machines with
 8-core 3.1Ghz AMD FX-8120 and 16 GB RAM. 
 Our implementation is based on Alibaba cloud platform~\cite{Aliyun,WeiZhangIEEE}
-and the underlying DFS uses  QFS with default replication degree 3 while the PDS replication degree is 5.
+and the underlying DFS uses  QFS with default replication degree 3 while the PDS replication degree is 6.
 Our evaluation objective is to
 study the benefit in fault tolerance and   deduplication efficiency of the VC approach and compare it
 with an alternative VO design. We also and assess backup throughput and  resource usage for a large number of VMs.
@@ -18,12 +18,12 @@ a machine, this chunk is compared with the fingerprint index of this machine loc
 \subsection{Settings}
 We have performed a trace-driven study using a production dataset~\cite{WeiZhangIEEE} from 
 Alibaba Aliyun's cloud platform with about 100 machines. 
-The VMs  of the sampled  data set   use popular operating systems such as 
-Debian, Ubuntu, Redhat, CentOS, and win2008. 
 Each machine hosts upto 25 VMs and each VM keeps 10 automatically-generated snapshots in the storage system while
 a user may instruct extra snapshots to be saved.
+The VMs of the sampled data set use popular operating systems such as 
+Debian, Ubuntu, Redhat, CentOS, win2008 and win2003. 
 The backup of VM snapshots is completed within a few  hours every night.
-Based on our study of production  data,  each VM has about  40GB of storage  data  on average
+Based on our study of production  data,  each VM has about 40GB of storage  data  on average
 including OS and user data disk.
 All data are divided into 2 MB fix-sized segments and each segment is divided into 
 variable-sized content chunks ~\cite{similar94,rabin81} with an average size of 4KB.
@@ -36,7 +36,11 @@ Figure~\ref{fig:vm-availability} shows the availability of VM snapshots when
 there are up to 25 storage nodes failed in a 1000-node cluster. 
 Two VC curves use $V_c=1250$ and $V_c=2500$ representing the average number of VMs that share a PDS file system block. 
 $V_c=2500$ represents  the absolute worst case for 2500 VMs. 
-The VO curve has  $V_o=6.3$ which is  the average number of VMs that share a file system block in our smaller dataset. 
+The VO curve has  $V_o=6.3$ which is the average number of VMs that share a file system block in our smaller dataset.
+To get this number, we perform perfect deduplication over 105 VMs, append unique chunks to a DFS file and
+count the number of dependencies from a file system block to VM.
+In the scenario of having 2500 VMs, this number can only increase, thus this number represents the best
+case for VO approach. 
 Our results show that the VC approach even with $V_c=2500$ has a higher availability than VO.
 For example, with 10 machines failed, VO with 98.5\% availability would lose snapshots of 37 VMs 
 while VC with 99.9\% loses snapshots of 2.5 VMs.
