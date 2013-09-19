@@ -1,12 +1,11 @@
 \section{Architecture and Implementation Details}
 \label{sect:architecture}
-Our system runs on a cluster of Linux machines with Xen-based VMs.
-A distributed file system (DFS) manages the physical disk storage and we use 
-an open source DFS called QFS~\cite{QFS}. 
-% All data needed for VM services, such as virtual disk images used by runtime VMs,
-% and snapshot data for backup purposes, reside in this distributed file system. 
-All data needed for VM snapshot services, such as snapshot and segment recipes,
-chunk data and PDS data are reside in this distributed file system. 
+
+Our system runs on a cluster of Linux machines with Xen-based VMs and
+an open-source package for the distributed file system  called QFS~\cite{QFS} to 
+manages  the physical disk storage. 
+All data needed for VM services, such as virtual disk images used by runtime VMs,
+and snapshot data for backup purposes, reside in this distributed file system. 
 One physical node hosts tens of VMs, each of which accesses its virtual machine disk image through the
 virtual block device driver (called TapDisk\cite{Warfield2005} in Xen).
 
@@ -16,7 +15,7 @@ there are four key service components running on each cluster
 node  for supporting backup and deduplication: 
 1) a virtual block device driver, 2) a snapshot deduplication component,
 3) an append store client to store  and access snapshot data,
-and 4)  a PDS client to support PDS index access. 
+and 4)  a PDS client to support PDS metadata access. 
 
 We use the virtual device driver in Xen that employs a bitmap to track the changes 
 that have been made to virtual disk.
@@ -28,13 +27,14 @@ which brings the opportunity of fine-grained deduplication.
 When the VM issues a disk write, the dirty bit for the corresponding segment is set
 and this indicates such a segments needs to be checked during snapshot backup. 
 After the snapshot backup is finished, the driver resets the dirty bit map to a clean state.
-[What happens with modification during snapshot backup stage.]
+For data modification during snapshot backup stage, a copy-on-write scheme is set so that backup
+still copies a frozen version while the modification can still carry on.
 
 The representation of each snapshot has  a two-level index data structure.
 The snapshot meta data (called snapshot recipe) contains a list of segments, each of which contains segment
 metadata of its chunks (called segment recipe).
 In snapshot and segment recipes, 
-the data structures  includes reference pointers to the actual data location to eliminate the need for additional indirection.
+the data structures  includes reference to the actual data location to eliminate the need for additional indirection.
 
 \begin{figure*}[t]
     \centering

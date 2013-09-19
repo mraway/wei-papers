@@ -261,29 +261,39 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
 \end{figure}
 
 Figure~\ref{fig:exbin-efficiency-graph2} shows the deduplication efficiency for SRB and VC.
+% <<<<<<< HEAD
+% Our deduplication efficiency is defined as the percent of duplicate chunks
+% which are detected and deduplicated, so only global perfect deduplication can have 100\% efficiency.
+% The figure also compares several PDS sizes chosen for VC. ``$\sigma=2\%$'' 
+% is defined in Table~\ref{tab:symbol}. 
+% =======
 Deduplication efficiency is defined as the percent of duplicate chunks
-which are detected and deduplicated. We also compare several PDS sizes chosen for VC
+which are detected and deduplicated, so only global perfect deduplication can have 100\% efficiency.
+ We also compare several PDS sizes chosen for VC
 (see Table~\ref{tab:symbol} for definition of ``$\sigma=2\%$'')
 %we allocate the space of distributed shared memory  to accommodate 2\%
 %of data chunks shared among VMs, as defined in 
 With $\sigma=2\%$, memory usage for PDS index lookup per machine is about 100MB
-and  the deduplication efficiency can reach over 90\%.
-When $\sigma=4\%$, the deduplication efficiency can reach 92\%. 
+and  the deduplication efficiency can reach over 96\%.
+When $\sigma=4\%$, the deduplication efficiency can reach 97\%. 
 The loss of efficiency in VC is caused by the restriction of the total physical memory available
-in the cluster to support PDS index.  
+in the cluster to support PDS index. 
+In the extreme case if we put all the fingerprint into PDS 
+index ($\sigma=100\%$) then VC will have 100\% efficiency.
 The loss of efficiency in SRB is caused by the routing of data chunks which restricts the search scope
-for global comparison.
-In all cases, VC provides similar or better deduplication efficiency than SRB.
+of duplicate detection.
+Our VC approach delivers slightly worse deduplication efficiency compare to SRB, which is totally acceptable
+because we are rewarded by architecture-wise benefits such as fault-tolerant and fast approximate deletion.
 
 This result shows VC can remove  a competitive amount of duplicates.
 In general, our experiments show that
-dirty-bit detection at the segment level  can reduce the data size to about 23\% of original data, 
-which leads  about 77\% reduction.
-Local search within a segment can   further reduce the data size
-to about 18.5\% of original size, namely it delivers additional 4.5\% reduction.
+dirty-bit detection at the segment level can reduce the data size to about 24\% of original data, 
+which leads  about 76\% reduction.
+Similarity-guided local search can further reduce the data size
+to about 12\% of original size, namely it delivers additional 12\% reduction.
 The PDS-based cross-VM detection with $\sigma=2\% $
-can reduce the  size further to 8\% of original size, namely it 
-delivers additional 10.5\% reduction.
+can reduce the  size further to 5.6\% of original size, namely it 
+delivers additional 6.4\% reduction.
 
 \subsection{Resource Usage and Processing Time}
 \begin{table}

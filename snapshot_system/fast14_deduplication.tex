@@ -302,12 +302,13 @@ Since each file block (with default size $64MB$) contains many chunks (on averag
 each file block contains the hot low-level chunks shared by many VMs, and it also contains
 rare chunks which are not shared.  From the above equations:
 \[
-\frac{N_1}{N_o}=  \frac{1-\sigma}{V_o}<1.
+\frac{N_1}{N_o} \approx  \frac{1-\sigma}{V_o}.
 \] 
-Thus when there is a failure in file blocks with replication degree $r$
+
+Thus $N_1$ is much smaller than $N_o$. 
+When there is a failure in file blocks with replication degree $r$
 and there is no failure for PDS data with more replicas,   a VM in
-the VC approach has a lower chance to lose a snapshot than the VO approach because
-$N_1<N_o$. 
+the VC approach has a much lower chance to lose a snapshot than VO. 
 Figure~\ref{fig:fsb-links} shows the average number of VMs sharing each file block from
 our test dataset.
 %which shows how many VMs the failure of a single block can affect. 
