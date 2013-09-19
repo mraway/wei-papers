@@ -366,6 +366,20 @@ PDS lookup takes only a small amount of time.
 % \end{figure}
 
 
+\begin{table*}[t]
+    \centering
+    \begin{tabular}{c|ccc|ccc}
+    Num. of concurrent      & \multicolumn{3}{c|}{Throughput without}    & \multicolumn{3}{c}{Throughput with} \\
+    backup tasks            & \multicolumn{3}{c|}{I/O throttling (MB/s)} & \multicolumn{3}{c}{I/O throttling (MB/s)} \\ \cline{2-7}
+    per node                & Raw                                        & Snapshot Store & QFS  & Raw                                    & Snapshot Store & QFS  \\ \hline
+    1                       & 1369.6                                     & 148.0          & 18.0 & 171.3                                  & 18.5           & 2.26 \\
+    2                       & 2408.5                                     & 260.2          & 31.7 & 201.3                                  & 21.8           & 2.66 \\
+    4                       & 4101.8                                     & 443.3          & 54.1 & 217.8                                  & 23.5           & 2.87 \\
+    6                       & 5456.5                                     & 589.7          & 72.0 & 224.1                                  & 24.2           & 2.96 \\
+    \end{tabular}
+\caption{Backup throughput under different concurrency}
+\label{tab:throughput}
+\end{table*}
 {\bf Throughput.}
 Table~\ref{tab:throughput} shows the  backup throughput per each machine when all machine nodes 
 handle  several VMs in parallel.
@@ -379,19 +393,6 @@ manages one disk per node, which prevents it from fully utilizing the the
 benefits of parallel disk access. We expect our architecture can
 perform even better in production clusters, which often have ten or more disks on each node.
 
-\begin{table*}[t]
-    \begin{tabular}{l|lll|lll}
-    Num. of concurrent      & \multicolumn{3}{l}{Throughput without}   & \multicolumn{3}{l}{Throughput with} \\
-    backup tasks per node & \multicolumn{3}{l}{I/O throttling (MB/s)} & \multicolumn{3}{l}{I/O throttling (MB/s)} \\ \hline
-                            & Raw                                       & Snapshot Store & QFS  & Raw                                    & Snapshot Store & QFS  \\
-    1                       & 1369.6                                    & 148.0          & 18.0 & 171.3                                  & 18.5           & 2.26 \\
-    2                       & 2408.5                                    & 260.2          & 31.7 & 201.3                                  & 21.8           & 2.66 \\
-    4                       & 4101.8                                    & 443.3          & 54.1 & 217.8                                  & 23.5           & 2.87 \\
-    6                       & 5456.5                                    & 589.7          & 72.0 & 224.1                                  & 24.2           & 2.96 \\
-    \end{tabular}
-\caption{Backup throughput under different concurrency}
-\label{tab:throughput}
-\end{table*}
 
 % \begin{figure}
 %     \centering
