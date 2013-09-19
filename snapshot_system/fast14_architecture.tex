@@ -27,8 +27,9 @@ which brings the opportunity of fine-grained deduplication.
 When the VM issues a disk write, the dirty bit for the corresponding segment is set
 and this indicates such a segments needs to be checked during snapshot backup. 
 After the snapshot backup is finished, the driver resets the dirty bit map to a clean state.
-For data modification during snapshot backup stage, a copy-on-write scheme is set so that backup
-still copies a frozen version while the modification can still carry on.
+For data modification during backup, a copy-on-write protection is set so that backup can continue to
+copy  a specific version while new changes are still recorded.
+%copies a frozen version while the modification can still carry on.
 
 The representation of each snapshot has  a two-level index data structure.
 The snapshot meta data (called snapshot recipe) contains a list of segments, each of which contains segment
@@ -50,7 +51,14 @@ Following the VM-centric idea for the purpose of fault isolation,
 each VM has its own snapshot store, containing new data chunks which are considered
 to be non-duplicates.
 There is also a special store containing all PDS chunks shared among different VMs.
-As shown in Fig.\ref{fig:as_arch}, we explain the data structure of snapshot stores as follows.
+As shown in Figure~\ref{fig:as_arch}, we explain the data structure of snapshot stores as follows.
+\end{itemize}
+\begin{figure}[htbp]
+  \centering
+  \epsfig{file=images/sstore_arch, width=3in}
+  \caption{Data structure of a VM snapshot store.}
+  \label{fig:as_arch}
+\end{figure}
 
 \begin{itemize}
 \item Data of each VM snapshot store excluding PDS is divided into a set of containers and 
@@ -59,11 +67,11 @@ The reason for dividing the snapshot into containers is to simplify the compacti
 conducted periodically. As discussed later, data chunks are deleted from old snapshots
 and chunks without any reference from other snapshots can be removed by this compaction process.
 By limiting the size of a container, we can effectively control the length of each round of compaction.
-The compaction  routine can work on one container at a time and copy used data chunks to another container. 
+The compaction  routine can work on one container at a time and move used data chunks to another container. 
 
 Each container is further divided into a set of chunk data groups. Each chunk group is composed of
 a set of data chunks and is the basic unit in data access and retrieval. 
-In writing a chunk during backup, the system accumulates data chunks and store the entire
+In writing a chunk during backup, the system accumulates data chunks and stores the entire
 group as a unit after a compression.
 When accessing a particular chunk, its chunk group is retrieved from the storage
 and uncompressed. Given the high spatial locality and usefulness of prefetching  in 
@@ -84,22 +92,30 @@ Each container maintains a local  chunk counter and assigns the current number
 as a chunk ID  when  a new chunk is added to this  container. 
 Since data chunks are always appended to a snapshot store during backup, 
 local chunk IDs are monotonically increasing.
-When a snapshot chunk is to be accessed, the recipe for the snapshot will point a data chunk
+When a snapshot chunk is to be accessed, the snapshot recipe contains a reference pointing to  a data chunk
 in the PDS store or in a non-PDS VM snapshot  store. 
 Using  a container ID, the corresponding container index file of this VM is accessed and 
 the chunk group is identified using a simple chunk ID range search. Once the chunk group is loaded to memory, 
 its header contains the exact offset of the corresponding chunk ID and the content is then accessed from the memory buffer.
 
-\item The PDS chunks are a set of commonly used data and they are stored in one PDS file.
-Since the total file size is relatively small, and
-PDS data is re-calculated periodically, the PDS data file and its index are rebuilt completely. 
-Each reference to a PDS data chunk in the PDS index is the offset within the PDS file, and the chunk size.
+\item The PDS chunks are  stored in one PDS file. 
+Each reference to a PDS data chunk in the PDS index is the offset within the PDS file.
+There is an option to use the data structure similar to the non-PDS store. We opt to this simple format because
+PDS chunks have less spatial locality in data access and it is not so effective to group a large number of chunks
+as a compression and data fetch unit. 
 
-\end{itemize}
+PDS data is re-calculated periodically, but 
+the total data size is small.  When
+a new PDS data  set is computed, in-memory PDS index is replaced, but 
+the PDS file on the disk appends the  new PDS data identified and the growth of this file is very slow. 
+The old data is not removed because they can still be referenced by the existing snapshots. 
+A periodic cleanup is conducted  to remove unused PDS chunks (e.g. in every few months). 
+
 
 The snapshot  store supports three API calls.
 \begin{itemize}
-\item {\em Put(data)}. This places data chunk into the snapshot store and returns a reference to be stored in 
+\item {\em Append()}. For non-PDS data, this call places a chunk into 
+the snapshot store and returns a reference to be stored in 
 the recipe metadata of a snapshot. 
 The write requests to append data chunks to a VM store are accumulated at the client side. 
 When the number of write requests reaches a fixed group size, the snapshot store client compresses
@@ -107,10 +123,11 @@ the accumulated   chunk group, adds a chunk group index  to the beginning of the
 appends the header and data  to the corresponding VM file.
 A new container  index entry is also created for each chunk group and is written to the corresponding
 container index file.
-The writing of PDS data chunks is conducted periodically when there is a new PDS calculation.
-\item{\em Get(reference)}.
+
+For PDS data, the chunk is appended to the end of the PDS file and the offset is returned as the  reference.
+\item{\em Get()}.
 The fetch operation for the PDS data chunk is straightforward since each reference contains 
-the offset and size within the PDS  underlying  file.
+the file offset and the size of a PDS chunk is available from a segment receipt.
 We also maintain a small data cache for the PDS data service to speedup common data fetching.
 
 To read a non-PDS chunk using its reference with container ID and local chunk ID,  the snapshot store client first loads the
@@ -120,7 +137,7 @@ After that, it reads the identified chunk group from DFS, decompresses it, and s
 specified by the chunk ID. 
 Finally, the client updates its internal chunk data cache with the newly loaded content to 
 anticipate future sequential reads.
-\item {\em Delete(reference)}.
+\item {\em Delete()}.
 Chunk deletion occurs when a snapshot expires or gets deleted explicitly by a user
 and we will discuss the snapshot deletion in detail in the following subsection.
 When deletion requests are issued for a specific container,
@@ -136,17 +153,11 @@ found in the deletion log to the new container, and creating new chunk groups an
 Every local chunk ID however is directly copied rather than re-generated. This
 process leaves holes in the CID values, but preserves the order and IDs of chunks.
 As a result, all data references stored 
-in upper level recipes are permanent and stable, and the data reading process
+in recipes are permanent and stable, and the data reading process
 is as efficient as before. Maintaining the stability of chunk IDs also ensures that recipes do not
-depend directly on physical storage locations.
+depend directly on physical storage locations and thus simplifies data migration.
 \end{itemize}
 
-\begin{figure}[htbp]
-  \centering
-  \epsfig{file=images/sstore_arch, width=3in}
-  \caption{Data structure of a VM snapshot store.}
-  \label{fig:as_arch}
-\end{figure}
 
 \subsection{ VM-centric Approximate Snapshot Deletion with Leak Repair}
 \label{sect:delete}
@@ -164,15 +175,15 @@ and it requires the global reference of deleted chunks to be identified before  
 While we can use the mark-and-sweep technique~\cite{Guo2011}, 
 it still takes significant resources to conduct this process every time there is a snapshot deletion.
 In the case of Alibaba, snapshot backup is conducted automatically and there are 
-about 10 snapshot stored for every user. When there is
+about 10 snapshot stored for every VM customer. When there is
 a new snapshot created every day,  there will be  a snapshot expired everyday to maintain
 a balanced storage use. 
 
-We seek a fast solution with low resource usage to delete snapshots.
-Our VM-centric snapshot storage design simplifies the deletion process since 
-we can focus on  unreferenced chunks within each VM.
-The PDS data chunks are commonly shared among all VMs and we do not consider them
-during snapshot deletion.  The selection of PDS data chunks is updated periodically independent of snapshot deletion process.
+We seek a fast solution with low resource usage to delete snapshots and
+the VM-centric design simplifies the deletion process. 
+Since PDS is small and separated, we can focus on  unreferenced non-PDS chunks within each VM. 
+%The PDS data chunks are commonly shared among all VMs and we do not consider them
+%during snapshot deletion.  The selection of PDS data chunks is updated periodically independent of snapshot deletion process.
 Another resource-saving strategy we propose is
 an {\em approximate} deletion strategy to trade deletion accuracy for
 speed and resource usage. Our method sacrifices a small percent of storage leakage
@@ -183,7 +194,7 @@ The algorithm contains three aspects.
 \begin{itemize}
 \item {\bf Computation for snapshot fingerprint summary.}
 Every time there is a new snapshot created,
-we compute a Bloom-filter with $z$ bits as the summary of reference pointers for all non-PDS chunks used 
+we compute a Bloom-filter with $z$ bits as the reference summary for all non-PDS chunks used 
 in this snapshot. Given $h$ snapshots stored for a VM, there are $h$ summary vectors maintained.
 
 \item {\bf Approximate deletion with fast summary comparison.}
@@ -191,15 +202,15 @@ When there is a snapshot deletion,
 we need to identify if  chunks to be deleted from that snapshot
 are still used by other snapshots. 
 This is done approximately and quickly by comparing the 
-reference pointers of deleted snapshot with
-the merged reference Bloom-filter summary of other live snapshots.
+reference of deleted chunks  with
+the merged Bloom-filter reference summary in other live snapshots.
 The merging of live snapshot Bloom-filter bits uses the logical OR operator 
 and the merged vector still takes $z$ bits.
 Since the number of live snapshots $h$ is limited for
 each VM, 
 the time and memory cost of this comparison is small, linear to the number of chunks to be deleted.
 
-If a chunk's reference pointer is not found in the merged summary vector, we are sure that
+If a chunk's reference is not found in the merged summary vector, we are sure that
 this chunk is not used by any live snapshots, thus it's safe delete it. 
 However, among all the chunks to be deleted, 
 there is a small percentage of unused chunks  which
@@ -208,19 +219,19 @@ are misjudged as  being in use, resulting in a storage leakage.
 \item {\bf Periodic repair of leakage}.
 %[exlpain why second Bloom filter, why scan append store]
 Leakage repair is conducted periodically to fix the above approximation error.
-This procedure compares the live chunks for each VM with what are truly used through the VM snapshot metadata recipe.
-That requires a scanning of all chunks in a VM; however it is a VM-specific procedure and thus
-the cost is relatively small compared to the traditional mark-sweep procedure~\cite{Guo2011} which scans snapshot 
+This procedure compares the live chunks for each VM with what are truly used in the VM snapshot metadata recipe.
+That requires a scanning of all chunks in a VM. Since it is a VM-specific procedure 
+the space and time cost is relatively small compared to the traditional mark-sweep procedure~\cite{Guo2011} which scans snapshot 
 chunks from all VMs.
 For example,
-consider each reference pointer consumes 8 bytes plus  1 mark bit, a VM that has 40GB backup data with about
+consider each reference consumes 8 bytes plus  1 mark bit, a VM that has 40GB backup data with about
 10 million chunks will need less than 90MB of memory to complete a VM-specific mark-sweep process.
 \end{itemize}
 
 %{\bf Discussion}
-We now estimate the size of storage leakage and how often leak repair needs to be conducted,
-given  a VM which keeps $h$ snapshots in the backup storage, and it creates and deletes one snapshot
-everyday. Let $u$ be the total number of chunks brought by the initial backup, $\Delta u$ be the average
+We now estimate the size of storage leakage and how often leak repair needs to be conducted.
+Assume that  a VM keeps $h$ snapshots in the backup storage, creates and deletes one snapshot
+everyday. Let $u$ be the total number of chunks brought by the initial backup for a VM, $\Delta u$ be the average
 number of additional unique chunks added from one snapshot to the next snapshot version. Then the total number of unique
 chunks used in a VM is about:
 \[
@@ -228,9 +239,10 @@ U = u + (h-1)\Delta u.
 \]
 
 Each Bloom filter vector has  $z$ bits for each snapshot and let $j$ be the number of hash functions used by the
-Bloom filter. The probablity that a particular bit is 0  in all $h$ summary vectors is  
-$(1- \frac{1}{z}) ^{j U}$. Notice that a chunk may appear multiple times in these summary vectors; however, this should not 
+Bloom filter.  Notice that a chunk may appear multiple times in these summary vectors; however, this should not 
 increase the probability of being a 0 bit in all $h$ summary vectors.
+Thus the probablity that a particular bit is 0  in all $h$ summary vectors is  
+$(1- \frac{1}{z}) ^{j U}$. 
 Then the misjudgment rate of being in use $\epsilon$ is: 
 \begin{equation}
 \label{eq:falserate}
@@ -239,19 +251,19 @@ Then the misjudgment rate of being in use $\epsilon$ is:
 
 
 For each snapshot deletion, the number of chunks to be deleted is nearly identical to the number of
-newly add chunks $\Delta u$. 
+newly added chunks $\Delta u$. 
 Let $R$ be the total number of runs of approximate deletion between two consecutive 
-repairs. we estimate  the total leakage $L$ after $R$ runs as:
+repairs. We estimate  the total leakage $L$ after $R$ runs as:
 \[
-L = R \Delta u \epsilon
+L = R \Delta u \epsilon.
 \]
 
-When leakage ratio $L/U$ exceeds a pre-defined threshold $\tau$, we need to execute a leak repair:
+When leakage ratio $L/U$ exceeds a pre-defined threshold $\tau$, we derive the condition to execute a leak repair as:
 
 \begin{equation}
 \label{eq:leakrepair}
 \frac{L}{U} = \frac{R \Delta u \epsilon}{u+(h-1)\Delta u } > \tau 
-\Longrightarrow R > \frac{\tau}{\epsilon}\times\frac{u + (h-1)\Delta u}{\Delta u}
+\Longrightarrow R > \frac{\tau}{\epsilon}\times\frac{u + (h-1)\Delta u}{\Delta u}.
 \end{equation}
 
 For example in our tested dataset,  
@@ -262,6 +274,7 @@ We choose  $\epsilon = 0.01$ and $\tau=0.1$.  From Equation~\ref{eq:falserate},
 $z=10U=100.45$ million bits. From Equation~\ref{eq:leakrepair}, 
 leak repair should be triggered once for every R=290 runs of approximate deletion. 
 When one machine hosts 25 VMs and there is one snapshot deletion per day per VM, there would be 
-only one full leak repair for one VM scheduled for every 12 days. Each repairs uses at most  90MB memory on average
+only one full leak repair for one physical machine scheduled for every 12 days. 
+Each repairs uses at most  90MB memory on average
 as discussed earlier and takes a short period of time.
 
