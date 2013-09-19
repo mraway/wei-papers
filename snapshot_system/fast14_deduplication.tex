@@ -271,10 +271,10 @@ Next we  assess  the impact of losing $d$ machines
 to the the VC and VO approaches.  
 A large $\frac{r_c}{r}$ ratio can have a positive impact on full availability of VM snapshot blocks.
 
-We use filesystem blocks rather than a deduplication
+We use file system blocks rather than a deduplication
 data chunk as our unit of failure because the DFS keeps
 filesystem blocks as its base unit of storage.
-To  compute the full availability of all snapshots of a VM, we derive
+To compute the full availability of all snapshots of a VM, we derive
 the probablity of losing a snapshot file block of a VM by
 estimating the number of file system blocks per VM in each approach.
 As illustrated in Figure~\ref{fig:share},
@@ -292,10 +292,10 @@ V *p*N_1 *s  \approx c_u (1-\sigma)\; \mbox{ and } \;
 V *p*N_2 *s  \approx c_u \sigma *V_c
 \]
 For the VO approach, 
-For VO, each VM has an average  of  $N_o$ file system blocks
+For VO, each VM has an average of $N_o$ file system blocks
 and let $V_o$ be the average number of VMs shared by each file system block.
 \[
-V *p*N_o *s  \approx c_u  V_o.
+V *p*N_o *s  = c_u  V_o.
 \]
 
 Since each file block (with default size $64MB$) contains many chunks (on average 4KB),
@@ -376,13 +376,19 @@ VMs shared  by each file block on average in VO.
 
 The full snapshot availability of a VM is estimated as follows with parameters $N_1$ and
  $N_2$ for VC and $N_o$ for VO.
-With replication degree $r$, the availability of a file block is the probability that  
-all of its replicas do not appear in any group of $d$ failed machines. 
-Namely, $1-\binom{d}{r}/ \binom{p}{r}$. 
-The snapshot availability of a VM  in the VO approach is
+Given normal data replication degree $r$, PDS data replication degree $r_c$, 
+the availability of a file system block is the probability that  
+all of its replicas do not appear in any group of $d$ failed machines among the total of $p$ machines. 
+Namely, we define it as
+\[
+A(r) = 1-\binom{d}{r}/ \binom{p}{r}. 
+\]
+Then the availability of one VM's snapshot data under VO approach is the probability that
+ all its file system blocks are unaffected during the system failure:
 \begin{equation}
 \label{eq:VO}
-(1-\frac{ \binom{d}{r}} { \binom{p}{r} })^{N_o}. 
+%(1-\frac{ \binom{d}{r}} { \binom{p}{r} })^{N_o}. 
+A(r)^{N_o}. 
 \end{equation}
 
 For VC, there are two cases for $d$ failed machines.
@@ -390,22 +396,29 @@ For VC, there are two cases for $d$ failed machines.
 \item
 When $r \le d<r_c$,  there is no PDS data loss and  
 the full snapshot availability of a VM in the VC approach is 
-\[
-(1-\frac{\binom{d}{r}} { \binom{p}{r} })^{N_1}.
-\]
-Since $N_1 <N_o$, the VC approach has a higher availability of VM snapshots than VO.
+\begin{equation}
+\label{eq:VC1}
+%(1-\frac{\binom{d}{r}} { \binom{p}{r} })^{N_1}.
+A(r)^{N_1}.
+\end{equation}
+Since $N_1$ is typically much smaller than $N_o$, 
+the VC approach has a higher availability of VM snapshots than VO.
 
 \item
 When $r_c \leq d$, both non-PDS and PDS file blocks in VC can have a loss.
 The full snapshot availability of  a VM in the VC approach is
-\[
-(1-\frac{ \binom{d}{r}} { \binom{p}{r} })^{N_1} 
-*
-(1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} })^{N_2}.
-\]
+\begin{equation}
+\label{eq:VC2}
+% (1-\frac{ \binom{d}{r}} { \binom{p}{r} })^{N_1} 
+% *
+% (1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} })^{N_2}.
+A(r)^{N_1} * A(r_c)^{N_2}
+\end{equation}
 Figure~\ref{fig:fsb-availability} illustrates that the availability of an individual file system block
-with different replication degree. This demonstrates inequality $1-\frac{ \binom{d}{r}} { \binom{p}{r} }
-< 1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} }$.  Since $N_1$ is much smaller than $N_o$ as discussed previously, 
+with different replication degree. This demonstrates inequality 
+% $1-\frac{ \binom{d}{r}} { \binom{p}{r} } < 1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} }$
+$A(r) < A(r_c)$
+.  Since $N_1$ is much smaller than $N_o$ as discussed previously, 
 these two conditions support that VC has a  higher availability. 
 %comparing  Formula~\ref{eq:VO} and~\ref{eq:VC}. 
 \end{itemize} 
@@ -420,7 +433,7 @@ these two conditions support that VC has a  higher availability.
             cycle list name=mline,
             xlabel={Number of Machines Failed},
             ylabel={Availability of Single FSB (\%)},
-            extra y ticks={99.9}, %to add extra ticks
+            %extra y ticks={99.9}, %to add extra ticks
             mark options=solid,
             legend pos=south west,
             %legend columns=2,
@@ -435,6 +448,6 @@ these two conditions support that VC has a  higher availability.
             \end{axis}
     \end{tikzpicture}
     \caption{Availability of a file system block in a 100 machine cluster with different replication 
-and failure settings.}
+and failure settings.THIS PLOT WILL BE REPLACED BY TABLE}
   \label{fig:fsb-availability}
 \end{figure}

@@ -1,5 +1,6 @@
 \section{Architecture and Implementation Details}
 \label{sect:architecture}
+
 Our system runs on a cluster of Linux machines with Xen-based VMs and
 an open-source package for the distributed file system  called QFS~\cite{QFS} to 
 manages  the physical disk storage. 
@@ -9,7 +10,7 @@ One physical node hosts tens of VMs, each of which accesses its virtual machine 
 virtual block device driver (called TapDisk\cite{Warfield2005} in Xen).
 
 \subsection{ Components of a cluster node } 
-As  depicted in Figure~\ref{fig:arch_vm}, 
+As depicted in Figure~\ref{fig:arch_vm}, 
 there are four key service components running on each cluster
 node  for supporting backup and deduplication: 
 1) a virtual block device driver, 2) a snapshot deduplication component,
