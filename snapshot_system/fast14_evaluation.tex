@@ -177,11 +177,11 @@ from 1 to 10.  Non-PDS replication is fixed
                 \addplot table[x=NodesFailed,y=VC2]{figures/cds_replication.txt};
                 \addplot table[x=NodesFailed,y=VC3]{figures/cds_replication.txt};
                 %\addplot table[x=NodesFailed,y=VC4]{figures/cds_replication.txt};
-                \legend{$R_C=3$,$R_C=4$,$R_C=5$}%,$R_C=7$}
+                \legend{$R_C=4$,$R_C=5$,$R_C=6$}%,$R_C=7$}
 		\end{axis}
 	\end{tikzpicture}
-  \caption{Availability of VM backup snapshots as nodes fail in VC with different PDS Replication degree
- (Non-PDS replication fixed at 3, and average PDS block links set to 1250)}
+  \caption{Theoretical Availability of VM backup snapshots as nodes fail in VC
+ (Non-PDS replication fixed at 3, and average PDS block links set to 1250, 1000 node cluster)}
   \label{fig:pds-replication}
 \end{figure}
 
@@ -206,7 +206,7 @@ from 1 to 10.  Non-PDS replication is fixed
                 %{red,densely dotted,mark=o},
                 %{red,densely dotted,mark=pentagon,mark size=1.4},
             },
-            mark repeat={2},
+            mark repeat={10},
             xlabel={Number of VMs added},
             ylabel={Dedup. Efficiency (\%)},
             xmin=0,
