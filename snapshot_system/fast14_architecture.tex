@@ -211,7 +211,7 @@ each VM,
 the time and memory cost of this comparison is small, linear to the number of chunks to be deleted.
 
 If a chunk's reference is not found in the merged summary vector, we are sure that
-this chunk is not used by any live snapshots, thus it's safe delete it. 
+this chunk is not used by any live snapshots, thus can be deleted safely.
 However, among all the chunks to be deleted, 
 there is a small percentage of unused chunks  which
 are misjudged as  being in use, resulting in a storage leakage.
