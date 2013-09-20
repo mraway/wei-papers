@@ -33,7 +33,7 @@ The signature for variable-sized blocks is computed using their SHA-1 hash~\cite
 
 \subsection{Impact on Fault Tolerance}
 
-Figure~\ref{fig:vm-availability} shows the availability of VM snapshots when 
+ Table~\ref{tab:vm-availability} shows the availability of VM snapshots when 
 there are up to 25 machine nodes failed in a 100-node cluster and  a 1000-node cluster. 
 We show three snapshot  availability curves as the number of machines failed increases.
 %Two VC curves use $V_c=1250$ and $V_c=2500$ representing the average number of VMs that share a PDS file system block. 
@@ -60,37 +60,40 @@ Curve ``VC(worst-case)" represents the situation that each PDS file system block
 %on but we take the conservative approach. We compare VO, the expected case for
 %VC ($V_c=p*V/2$), and the worst case for VC ($V_c=p*V/2$). We set $V_o=6.3$
 %based on measured values in our dataset.
-%To get this number, we perform perfect deduplication over 105 VMs, append unique chunks to a DFS file and
-%count the number of dependencies from a file system block to VM.
+To obtain VM sharing of file blocs, we perform perfect deduplication over 105 VMs, 
+append unique chunks to a DFS file and
+count the number of dependencies from a file system block to VM.
 %In the case of having 2500 or even 25000 VMs, this number can only increase, thus this number represents the best
 %case for VO approach. 
 Our results show that even the worst case for VC has a higher availability than VO.
-By having extra replicas for the PDS data, we reduce the failure rate of PDS
-FSBs enough that the failure rate for the VM approaches the failure rate of the
-Non-PDS blocks. This minimizes the drop in availability between the expected
-and worst case for VC.
-
-
-Our VM-centric approach shows significant improvements
-in VM availability.
+%Our VM-centric approach shows significant improvements
+%in VM availability.
 For example, with 5/100 machines failed, VO with 93.3\% availability would lose data in 169 VMs 
 while VC with 99.9\% loses data for 2 VMs.
-The key reason is that for most data in VC ($1-\sigma$), only a single
-VM can be affected by the loss of a single FSB, because our VM-centric approach
-localizes deduplication.  Although the loss of a PDS block affects many VMs,
-by increasing replication for those blocks we minimize the affect on VM
-availability.
+The key reason is that for most data in VC, only a single
+VM can be affected by the loss of a single FSB.
+% because our VM-centric approach
+%localizes deduplication.  
 
-One of the advantages of VC is that there is a division between
-popular and non-popular data to facilitate improved reliability. An important
-consideration then is how much to increase PDS data replication. The additional
-cost is relatively small, but based on our model we evaulated several
-difference PDS replication factors (see Figure~\ref{fig:pds-replication}),
-and found that beyond 6 replicas there is minimal improvement in data reliability.
-This is because, as described before, the availability of the VM approaches the
-availiability of the Non-PDS data as the failure rate of PDS data gets very small.
-In the graph, the lines for $r_c=6$ and $r_c=9$ overlap because of this effect.
+Although the loss of a PDS block affects many VMs,
+by increasing replication for those blocks we minimize the affect on VM availability.
+%By having extra replicas for the PDS data, we reduce the failure rate of PDS
+%FSBs enough that the failure rate for the VM approaches the failure rate of the
+%Non-PDS blocks. This minimizes the drop in availability between the expected
+%and worst case for VC.
+%
+%One of the advantages of VC is that there is a division between
+%popular and non-popular data to facilitate improved reliability. 
+Figure~\ref{fig:pds-replication}) shows
+the impact of  to increasing PDS data replication. 
+While the impact on replication storage cost is small, 
+the replication degree 6  has a significant improvement over 4, but  the availability is about
+the same for $r_c=6$ and $r_c=9$.
+ 
+%This is because, as described before, the availability of the VM approaches the
+%availiability of the Non-PDS data as the failure rate of PDS data gets very small.
 
+\comments{
 \begin{figure}[ht]
     \centering
     \begin{subfigure}%{.5\textwidth}
@@ -184,19 +187,21 @@ In the graph, the lines for $r_c=6$ and $r_c=9$ overlap because of this effect.
   \label{fig:vm-availability-1000}
 \end{subfigure}
     \pgfplotslegendfromname{legend:vm-availability}
-      \caption{Availability of VM backup snapshots for VO and VC when failed machines vary
+      \caption{Availability of VM snapshots for VO and VC when failed machines vary
 from 1 to 40.  Non-PDS replication is fixed
 at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE} 
       }
       \label{fig:vm-availability}
-    
+   
+ 
 \end{figure}
+}
 \begin{table}
     \footnotesize
     \tabcolsep=0.11cm
     \begin{tabular}{|l|l|l|l|l|l|l|}
         \hline
-        \multirow{3}{*}{Failures}   & \multicolumn{6}{c|}{VM Availability} \\
+        \multirow{3}{*}{Failures}   & \multicolumn{6}{c|}{Snapshot Availability} \\
                                     %\cline{2-7}
                                     & \multicolumn{3}{c|}{$p=100$} & \multicolumn{3}{c|}{$p=1000$} \\
                                     %\cline{2-7}
@@ -208,8 +213,8 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
         20 & 0.034 & 24.953 & 21.571 & 99.228 & 99.879 & 99.879\\
         \hline
     \end{tabular}
-    \caption{Availability of VM backups for VO and VC models. VC is shown
-    for the expected and worst case (WC) values for $V_c$}
+    \caption{Availability of VM snapshots for VO and VC. VC(WC) stands for the case that a 
+PDS file block is shared by all VMs.}
     \label{tab:vm-availability}
 \end{table}
 
@@ -240,8 +245,7 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
                 \legend{$R_C=4$,$R_C=5$,$R_C=6$, $R_C=9$}
 		\end{axis}
 	\end{tikzpicture}
-  \caption{Theoretical Availability of VM backup snapshots as nodes fail in VC
- (Non-PDS replication fixed at 3, and average PDS block links set to 1250 for 100 node cluster)}
+  \caption{Availability of VM snapshots in VC with different PDS replication degrees}
   \label{fig:pds-replication}
 \end{figure}
 
@@ -314,23 +318,33 @@ Figure~\ref{fig:exbin-efficiency-graph2} shows the deduplication efficiency for 
 % =======
 Deduplication efficiency is defined as the percent of duplicate chunks
 which are detected and deduplicated, so only global perfect deduplication can have 100\% efficiency.
- We also compare several PDS sizes chosen for VC
-(see Table~\ref{tab:symbol} for definition of ``$\sigma=2\%$'')
+ We also compare several PDS sizes chosen for VC.
+%(see Table~\ref{tab:symbol} for definition of ``$\sigma=2\%$'')
 %we allocate the space of distributed shared memory  to accommodate 2\%
 %of data chunks shared among VMs, as defined in 
-With $\sigma=2\%$, memory usage for PDS index lookup per machine is about 100MB
-and  the deduplication efficiency can reach over 96\%.
-When $\sigma=4\%$, the deduplication efficiency can reach 97\%. 
-The loss of efficiency in VC is caused by the restriction of the total physical memory available
-in the cluster to support PDS index. 
-In the extreme case if we put all the fingerprint into PDS 
-index ($\sigma=100\%$) then VC will have 100\% efficiency.
-The loss of efficiency in SRB is caused by the routing of data chunks which restricts the search scope
-of duplicate detection.
-SRB provides slightly better deduplication efficiency than our VC approach, which we accept
-because we are rewarded by architecture-wise benefits such as fault-tolerance and fast approximate deletion.
+With $\sigma=2\%$, memory usage for PDS index lookup per machine is about 100MB per machine
+and  the deduplication efficiency can reach over 96.??\%.
+When $\sigma=4\%$, the deduplication efficiency can reach 97.??\% while space consumption increases to 200MB per machine. 
+The loss of efficiency in VC is caused by the restriction of the physical memory available
+in the cluster to support fast in-memory PDS index lookup. 
+%In the extreme case if we put all the fingerprint into PDS 
+%index ($\sigma=100\%$) then VC will have 100\% efficiency.
+SRB can deliver up to 97.6??\% deduplication efficiency which is slightly better than VC.
+Thus this represents a tradeoff that VC provides better fault tolerance and fast approximate deletion
+with a competitive deduplication efficiency.
+%its loss of efficiency is caused by the routing of data chunks which restricts the search scope
+%of duplicate detection.
+%SRB provides slightly better deduplication efficiency than our VC approach, which we accept
+%because we are rewarded by architecture-wise benefits such as fault-tolerance and fast 
+%Though not our primary goal, this result does show that VC can remove a competitive amount of duplicates.
 
-Though not our primary goal, this result does show that VC can remove a competitive amount of duplicates.
+Figure~\ref{fig:exbin-efficiency-graph2} also shows the effectiveness of VC without local similarity-based search.
+Without this, when an entire
+segment is moved to another location on disk (e.g. when a file is rewritten
+rather than modified in place), searching only the segment in the same location
+in the parent will miss the deduplication opportunity. We have found that in
+approximately 1/3 of the VMs in our dataset this movement happens frequently,
+so the similarity search becomes important for those VMs.
 In general, our experiments show that
 dirty-bit detection at the segment level can reduce the data size to about 24\% of original data, 
 which leads  about 76\% reduction.
@@ -340,15 +354,12 @@ The PDS-based cross-VM detection with $\sigma=2\% $
 can reduce the  size further to 5.6\% of original size, namely it 
 delivers additional 6.4\% reduction.
 
-Figure~\ref{fig:exbin-efficiency-graph2} also shows the benefits of our minhash
-similar segment search in the parent snapshot. Without this, when an entire
-segment is moved to another location on disk (e.g. when a file is rewritten
-rather than modified in place), searching only the segment in the same location
-in the parent will miss the deduplication opportunity. We have found that in
-approximately 1/3 of the VMs in our dataset this movement happens frequently,
-so the similarity search becomes important for those VMs.
+%Figure~\ref{fig:exbin-efficiency-graph2} also shows the benefits of our minhash
+%similar segment search in the parent snapshot. 
 
 \subsection{Resource Usage and Processing Time}
+
+\comments{
 \begin{table}
     \begin{tabular}{|c|c|}
     \hline
@@ -362,42 +373,60 @@ so the similarity search becomes important for those VMs.
 \caption{Storage space cost per machine for DFS under different PDS replication degree}
 \label{tab:replication_cost}
 \end{table}
+}
 
-{\bf Storage cost of replication.} Table ~\ref{tab:replication_cost} shows the total storage space required by 
-VC as the PDS replication degree changes. The increase in storage cost is minimal because the PDS makes up a 
-small percent of the total storage space, while increasing replication degree has a  more significant benefit for
-availability as shown in Figure~\ref{fig:pds-replication}.
+{\bf Storage cost of replication.} 
+%Table ~\ref{tab:replication_cost} shows the total storage space required by 
+%VC as the PDS replication degree changes while non-PDS replication degree is fixed as 3. 
+The total storage  for all VM snapshots in each physical machine takes about 3.065TB on aveage when
+the replication degree of both PDS and non-PDS data is 3. 
+Allocating  one extra  copy for PDS data only adds  7GB in total per machine.
+Thus PDS replication degree 6 only adds the total space by 0.685\% while PDS replication degree 9 adds 1.37\% 
+space overhead, which is still small.
+%The increase in storage cost is minimal because the PDS makes up a 
+%small percent of the total storage space, while increasing replication degree has a  more significant benefit for
+%availability as shown in Figure~\ref{fig:pds-replication}.
 
 \begin{table}
-    \begin{tabular}{|c|c|c|c|c|}
+    \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    Tasks & CPU & Mem (MB) & Write (MB/s) & Time (hrs) \\ \hline
-    1     & 19\% & 18.1 & 8.37 & 1.314\\ \hline
-    2     & 35\% & 31.8 & 8.97 & 1.226\\ \hline
-    4     & 63\% & 54.1 & 9.33 & 1.179\\ \hline
-    6     & 77\% & 71.9 & 9.46 & 1.162\\ \hline
+    Tasks & CPU & Mem &Read &  Write  & Time  \\ \hline
+    & & (MB)          &(MB/s) &  (MB/s) & (hrs) \\ \hline
+%    1     & 19\% & 118.1 & 50MB/s 8.37 & 1.314\\ \hline
+    1     & 19\% & 118 & 50 & 8.4 & 1.31\\ \hline
+%    2     & 35\% & 131.8 & 9.0 & 1.226\\ \hline
+    2     & 35\% & 132 &50  & 9.0 & 1.23\\ \hline
+    %4     & 63\% & 154.1 & 9.3 & 1.179\\ \hline
+    4     & 63\% & 154&50   & 9.3 & 1.18\\ \hline
+%    6     & 77\% & 171.9 & 9.46 & 1.162\\ \hline
 %    8     & 82\% & 90.5 & 89.2 & \\ \hline
 %    10                      & 85\% & 97.2   & 90.4 \\ \hline
 %    12                      & 91\% & 95.6    & 91.5 \\ \hline
     \end{tabular}
-\caption{Resource usage of concurrent backup tasks in each node}
+\caption{Resource usage of concurrent backup tasks at each machine}
 \label{tab:resource_usage}
 \end{table}
 
 {\bf Memory and disk bandwidth usage with multi-VM processing}. 
 We have further studied the memory and disk bandwidth usage 
-when running concurrent VM snapshot backup on each node. 
-Table ~\ref{tab:resource_usage} gives the CPU, memory and disk write workload of backing up multiple VMs 
-at the same time on each physical machine. 
+when running concurrent VM snapshot backup on each machine with $\delta=2\%$. 
+Table ~\ref{tab:resource_usage} gives the CPU, memory and disk read/write  workload when
+running 1 or multiple  backing tasks at the same time on each physical machine. 
+Disk read is controled as 50MB/s bandwidth usage so that other cloud services are not impacted a lot.
 % [ NOT REASONABLE: Notice that memory and CPU used by PDS index and QFS are not included since they belong to 
 % the cloud infrastructure services and are shared among many applications.]
-We see our hybrid deduplication scheme only occupies a small amount of system resources. 
-The  local deduplication only needs to keep the parent snapshot recipe and a few similar segment recipes in 
-memory during duplicate detection.
+The memory usage includes 100MB of PDS index and other space cost for executing deduplication tasks such as 
+receipt metadata and cache. 
+%We see our hybrid deduplication scheme only occupies a small amount of system resources. 
+%The  local deduplication only needs to keep the parent snapshot recipe and a few similar segment recipes in 
+%memory during duplicate detection.
 
-Based on the observed performance numbers, even with a single backup task per node and enforcing the disk read speed to
-50 MB/s,  we can still process raw data at near 175 MB/s. If we consider the extreme case in which each machine has 25 VMs
-at 40GB size, our snapshot system can finish backing up all the VMs (1TB total) in 1.58 hours.
+Table ~\ref{tab:resource_usage} shows that  a single backup task per node can complete the backup of the entire
+VM cluster in about 1.58 hours. Since there are about 25 VMs per machine, we could execute
+more tasks in parallel at each machine. But adding more bakcup concurrency does not shorten the overall time
+a lot because of the controlled  disk read time.
+%,  we can still process raw data at near 175 MB/s. If we consider the extreme case in which each machine has 25 VMs
+%at 40GB size, our snapshot system can finish backing up all the VMs (1TB total) in 1.58 hours.
 
 {\bf Processing Time breakdown}.
 Figure~\ref{fig:vc_srb_combined} shows
@@ -416,7 +445,7 @@ Overall,  VC is faster than SRB, though data reading dominates the processing ti
 \begin{figure}[htbp]
   \centering
   \epsfig{file=figures/vc_srb_combined, width=3in}
-  \caption{Time to backup a dirty VM segment under SRB and VC appraoches}
+  \caption{Average time to backup a dirty VM segment under SRB and VC}
   \label{fig:vc_srb_combined}
 \end{figure}
 

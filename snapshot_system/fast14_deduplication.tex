@@ -417,7 +417,7 @@ The full snapshot availability of  a VM in the VC approach is
 % (1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} })^{N_2}.
 A(r)^{N_1} * A(r_c)^{N_2}
 \end{equation}
-Figure~\ref{fig:fsb-availability} illustrates the $A(r)$ values with
+Table~\ref{tab:fsb-availability} lists the $A(r)$ values with
 %that the availability of an individual file system block
 with different replication degrees. This demonstrates inequality 
 % $1-\frac{ \binom{d}{r}} { \binom{p}{r} } < 1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} }$
@@ -426,6 +426,7 @@ these two conditions support that VC has a  higher availability.
 %comparing  Formula~\ref{eq:VO} and~\ref{eq:VC}. 
 \end{itemize} 
 
+\comments{
 \begin{figure}[htbp]
   \centering
     \begin{tikzpicture}
@@ -454,6 +455,7 @@ these two conditions support that VC has a  higher availability.
 and failure settings.THIS PLOT WILL BE REPLACED BY TABLE}
   \label{fig:fsb-availability}
 \end{figure}
+}
 
 \begin{table}
     \footnotesize
