@@ -453,3 +453,23 @@ these two conditions support that VC has a  higher availability.
 and failure settings.THIS PLOT WILL BE REPLACED BY TABLE}
   \label{fig:fsb-availability}
 \end{figure}
+
+\begin{table}
+    \footnotesize
+    \tabcolsep=0.11cm
+    \begin{tabular}{|l|l|l|l|}
+        \hline
+        \multirow{2}{*}{Failures}   & \multicolumn{3}{c|}{FSB Availability} \\
+                                    %\cline{2-4}
+                                    & $R_c=3$ & $R_c=6$ & $R_c=9$ \\
+        \hline
+        3 & 99.999 & 100 & 100\\
+        5 & 99.994 & 100 & 100\\
+        10 & 99.925 & 99.999 & 99.999\\
+        20 & 99.295 & 99.997 & 99.999 \\
+        \hline
+    \end{tabular}
+    \caption{Availability of individual 64MB Filesystem blocks (FSBs) as storage
+    nodes fail in a 100 node cluster.}
+    \label{tab:fsb-availability}
+\end{table}
