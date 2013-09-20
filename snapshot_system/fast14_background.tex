@@ -80,14 +80,14 @@ for a collocated backup service with resource usage friendly
 to the existing applications.  
 In designing a VC duplication algorithm, we have considered and adopted some of
 the following previously-developed techniques.
-\begin{itemize}
-\item {\bf Version-based change detection}.
+1)
+{\em Version-based change detection}.
 VM snapshots can be  backed up  incrementally by identifying file  blocks that have
 changed from the previous version of the snapshot~\cite{Clements2009,Vrable2009,TanIPDPS2011}.
 Such a scheme  is  VM-centric since deduplication is localized. 
 We are seeking for a tradeoff since 
 cross-VM  signature comparison can deliver additional compression~\cite{Guo2011,Dong2011,extreme_binning09}.
-\item {\bf Stateless  Data Routing}.
+2) {\em Stateless  data Routing}.
 One approach for scalable duplicate comparison is to use a content-based hash
 partitioning algorithm called stateless data routing by Dong et al.~\cite{Dong2011} 
 that divides the deduplication work with a similarity approximation. This work 
@@ -96,14 +96,14 @@ each request is routed  to a machine which holds
 a Bloom filter  or can fetch on-disk index for additional comparison.
 While this approach is VM-oblivious, it motivates us to  use  a combined signature of a dataset to narrow
 VM-specific local search.
-\item {\bf Sampled Index}.
+3) {\em Sampled Index}.
 One effective approach that reduces memory usage is 
 to use a sampled index with prefetching, proposed  by Guo and Efstathopoulos\cite{Guo2011}. 
 The algorithm is VM oblivious and it is not easy  to adopt for a distributed architecture. 
 To use a distributed memory version of the sampled index, every deduplication request
 may access a remote machine for index lookup and the overall overhead of access latency for all requests
 can be significant.  
-\end{itemize}
+
 
 We will first discuss and analyze the integration of the VM-centric deduplication strategies with fault isolation, 
 and then present
