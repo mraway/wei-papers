@@ -1,7 +1,7 @@
 \section{VM-centric Snapshot Deduplication}
 \label{sect:deduplication}
 
-\subsection{Key VM-centric  Strategies}
+\subsection{Key VC  Strategies}
 \label{sect:vc-strategies}
 \begin{itemize}
 \item \textbf{VM-specific local duplicate search within similar segments.}
@@ -35,15 +35,15 @@ computed during backup and is recorded in the snapshot metadata (called recipe).
 content similarity is  an approximation~\cite{AdnriBroader}.  When processing a dirty segment,
 its  similar segments can be found easily from the
 parent snapshot recipe.  Then recipes of the similar segments are loaded to memory,
-which contain chunk fingerpints which can  potentially be duplicates.
-To limit the search scope, we set a limit on the the number of  similar segments to be  searched. 
+which contain chunk fingerpints to be compared.
+To control the time cost of search, we set a limit on the the number of  similar segments to be  fetched. 
 % Then,
 %given a set of data chunks within a dirty segment,  we compare  these chunk fingerprints
 %with those in similar segments.  
 For example, a 2MB segment contains about 500 fingerprints and by limiting at most 10 similar
 segments to search, the amount of memory for maintaining those fingerprints in similar segments is small.
 
-\item \textbf{Cross-VM deduplication with popular chunks and replication support}
+\item \textbf{Cross-VM deduplication with popular chunks and replication support.}
 This step accomplishes the standard global fingerprint comparison as conducted
 in the previous work~\cite{WeiZhangIEEE}.
 One key observation is that the inner-VM deduplication has removed many of the duplicates.
@@ -272,7 +272,6 @@ For example, $\frac{r_c}{r}=2$ or 3.
 Next we  assess  the impact of losing $d$ machines 
 to the the VC and VO approaches.  
 A large $\frac{r_c}{r}$ ratio can have a positive impact on full availability of VM snapshot blocks.
-
 We use file system blocks rather than a deduplication
 data chunk as our unit of failure because the DFS keeps
 filesystem blocks as its base unit of storage.
@@ -291,9 +290,9 @@ Each non-PDS file system block is associated with one VM
 shared by an average of $V_c$ VMs. Let $s$ be the average number of chunks per file block. Then, 
 \[
 V *p*N_1 *s  \approx c_u (1-\sigma)\; \mbox{ and } \; 
-V *p*N_2 *s  \approx c_u \sigma *V_c
+V *p*N_2 *s  \approx c_u \sigma V_c.
 \]
-For the VO approach, 
+
 For VO, each VM has an average of $N_o$ file system blocks
 and let $V_o$ be the average number of VMs shared by each file system block.
 \[
@@ -317,11 +316,13 @@ our test dataset.
 For VC, we only show
 the sharing degree of  PDS-oriented file blocs  because non-PDS blocks always belong to
 one VM.
-From data, 
-we have observed that $N_1 +N_2 < N_o$ in Figure~\ref{fig:vm-links}. 
-This is likely because the PDS FSBs tightly pack data used by many VMs, 
-which decreases the overall number of FSBs required to backup a VM.
-Also if  the backup for multiple VMs were conducted concurrently, there would be more
+Figure~\ref{fig:fsb-links} shows the average number of VMs sharing each file block from our test data.
+Figure~\ref{fig:vm-links} shows the average number of file system blocks for each VM in VC and in VO. 
+%From data, 
+%we have observed that $N_1 +N_2 < N_o$ in Figure~\ref{fig:vm-links}. 
+%This is likely because the PDS FSBs tightly pack data used by many VMs, 
+%which decreases the overall number of FSBs required to backup a VM.
+Noted that  if  the backup for multiple VMs were conducted concurrently, there would be more
 VMs shared  by each file block on average in VO. 
 %Therefore, even when there is a loss of a PDS block, the VC approach tolerates the fault better.
 
@@ -416,11 +417,11 @@ The full snapshot availability of  a VM in the VC approach is
 % (1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} })^{N_2}.
 A(r)^{N_1} * A(r_c)^{N_2}
 \end{equation}
-Figure~\ref{fig:fsb-availability} illustrates that the availability of an individual file system block
-with different replication degree. This demonstrates inequality 
+Figure~\ref{fig:fsb-availability} illustrates the $A(r)$ values with
+%that the availability of an individual file system block
+with different replication degrees. This demonstrates inequality 
 % $1-\frac{ \binom{d}{r}} { \binom{p}{r} } < 1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} }$
-$A(r) < A(r_c)$
-.  Since $N_1$ is much smaller than $N_o$ as discussed previously, 
+$A(r) < A(r_c)$.  Since $N_1$ is much smaller than $N_o$ as discussed previously, 
 these two conditions support that VC has a  higher availability. 
 %comparing  Formula~\ref{eq:VO} and~\ref{eq:VC}. 
 \end{itemize} 

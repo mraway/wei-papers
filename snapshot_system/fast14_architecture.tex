@@ -2,8 +2,8 @@
 \label{sect:architecture}
 
 Our system runs on a cluster of Linux machines with Xen-based VMs and
-an open-source package for the distributed file system  called QFS~\cite{QFS} to 
-manages  the physical disk storage. 
+an open-source package for the distributed file system  called QFS~\cite{QFS}. 
+%to %manage  the physical disk storage. 
 All data needed for VM services, such as virtual disk images used by runtime VMs,
 and snapshot data for backup purposes, reside in this distributed file system. 
 One physical node hosts tens of VMs, each of which accesses its virtual machine disk image through the
@@ -66,7 +66,7 @@ The reason for dividing the snapshot into containers is to simplify the compacti
 conducted periodically. As discussed later, data chunks are deleted from old snapshots
 and chunks without any reference from other snapshots can be removed by this compaction process.
 By limiting the size of a container, we can effectively control the length of each round of compaction.
-The compaction  routine can work on one container at a time and move used data chunks to another container. 
+The compaction  routine can work on one container at a time and move the used data chunks to another container. 
 
 Each container is further divided into a set of chunk data groups. Each chunk group is composed of
 a set of data chunks and is the basic unit in data access and retrieval. 
@@ -99,7 +99,7 @@ its header contains the exact offset of the corresponding chunk ID and the conte
 
 \item The PDS chunks are  stored in one PDS file. 
 Each reference to a PDS data chunk in the PDS index is the offset within the PDS file.
-There is an option to use the data structure similar to the non-PDS store. We opt to this simple format because
+There is an option to use the data structure similar to the non-PDS store. We opt for this simple format because
 PDS chunks have less spatial locality in data access and it is not so effective to group a large number of chunks
 as a compression and data fetch unit. 
 
@@ -114,7 +114,9 @@ A periodic cleanup is conducted  to remove unused PDS chunks (e.g. in every few 
 
 The snapshot  store supports three API calls.
 \begin{itemize}
-\item {\em Append()}. For non-PDS data, this call places a chunk into 
+\item {\em Append()}. 
+For PDS data, the chunk is appended to the end of the PDS file and the offset is returned as the  reference.
+For non-PDS data, this call places a chunk into 
 the snapshot store and returns a reference to be stored in 
 the recipe metadata of a snapshot. 
 The write requests to append data chunks to a VM store are accumulated at the client side. 
@@ -124,7 +126,6 @@ appends the header and data  to the corresponding VM file.
 A new container  index entry is also created for each chunk group and is written to the corresponding
 container index file.
 
-For PDS data, the chunk is appended to the end of the PDS file and the offset is returned as the  reference.
 \item{\em Get()}.
 The fetch operation for the PDS data chunk is straightforward since each reference contains 
 the file offset and the size of a PDS chunk is available from a segment receipt.
@@ -155,7 +156,7 @@ process leaves holes in the CID values, but preserves the order and IDs of chunk
 As a result, all data references stored 
 in recipes are permanent and stable, and the data reading process
 is as efficient as before. Maintaining the stability of chunk IDs also ensures that recipes do not
-depend directly on physical storage locations and thus simplifies data migration.
+depend directly on physical storage locations, which simplifies data migration.
 \end{itemize}
 
 
@@ -188,7 +189,6 @@ Another resource-saving strategy we propose is
 an {\em approximate} deletion strategy to trade deletion accuracy for
 speed and resource usage. Our method sacrifices a small percent of storage leakage
 to efficiently identify unused chunks.
-
 The algorithm contains three aspects.
 
 \begin{itemize}
@@ -219,7 +219,7 @@ are misjudged as  being in use, resulting in a storage leakage.
 \item {\bf Periodic repair of leakage}.
 %[exlpain why second Bloom filter, why scan append store]
 Leakage repair is conducted periodically to fix the above approximation error.
-This procedure compares the live chunks for each VM with what are truly used in the VM snapshot metadata recipe.
+This procedure compares the live chunks for each VM with what are truly used in the VM snapshot recipe.
 That requires a scanning of all chunks in a VM. Since it is a VM-specific procedure 
 the space and time cost is relatively small compared to the traditional mark-sweep procedure~\cite{Guo2011} which scans snapshot 
 chunks from all VMs.
@@ -243,7 +243,7 @@ Bloom filter.  Notice that a chunk may appear multiple times in these summary ve
 increase the probability of being a 0 bit in all $h$ summary vectors.
 Thus the probablity that a particular bit is 0  in all $h$ summary vectors is  
 $(1- \frac{1}{z}) ^{j U}$. 
-Then the misjudgment rate of being in use $\epsilon$ is: 
+Then the misjudgment rate of being in use  is: 
 \begin{equation}
 \label{eq:falserate}
 \epsilon = (1-(1-\frac{1}{z})^{jU})^j.
