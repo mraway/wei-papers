@@ -31,13 +31,13 @@ The signature for variable-sized blocks is computed using their SHA-1 hash~\cite
 %Popularity of data blocks are collected through global counting and 
 %and top popular ones ($\delta=2\%$)  are  kept in the PDS, as discussed in Section~\ref{sect:store}.
 
-\subsection{Impact on Fault Tolerance}
+\subsection{Impact on Fault Isolation}
 
  Table~\ref{tab:vm-availability} shows the availability of VM snapshots when 
 there are up to 25 machine nodes failed in a 100-node cluster and  a 1000-node cluster. 
 We show three snapshot  availability curves as the number of machines failed increases.
 %Two VC curves use $V_c=1250$ and $V_c=2500$ representing the average number of VMs that share a PDS file system block. 
-Curve ``VC(worst-case)" represents the situation that each PDS file system block is shared by all VMs.
+Curve ``VC(WC)" represents a worst-case  situation that each PDS file system block is shared by all VMs.
 %$V_c=2500$ represents  the absolute worst case for 2500 VMs. 
 %The VO curve has  $V_o=6.3$ which is the average number of VMs that share a file system block in our smaller dataset.
 %To get this number, we perform perfect deduplication over 105 VMs, append unique chunks to a DFS file and
@@ -213,8 +213,7 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
         20 & 0.034 & 24.953 & 21.571 & 99.228 & 99.879 & 99.879\\
         \hline
     \end{tabular}
-    \caption{Availability of VM snapshots for VO and VC. VC(WC) stands for the case that a 
-PDS file block is shared by all VMs.}
+    \caption{Availability of VM snapshots for VO and VC.}
     \label{tab:vm-availability}
 \end{table}
 
@@ -378,7 +377,7 @@ delivers additional 6.4\% reduction.
 {\bf Storage cost of replication.} 
 %Table ~\ref{tab:replication_cost} shows the total storage space required by 
 %VC as the PDS replication degree changes while non-PDS replication degree is fixed as 3. 
-The total storage  for all VM snapshots in each physical machine takes about 3.065TB on aveage when
+The total storage  for all VM snapshots in each physical machine takes about 3.065TB on average when
 the replication degree of both PDS and non-PDS data is 3. 
 Allocating  one extra  copy for PDS data only adds  7GB in total per machine.
 Thus PDS replication degree 6 only adds the total space by 0.685\% while PDS replication degree 9 adds 1.37\% 
@@ -410,20 +409,23 @@ space overhead, which is still small.
 {\bf Memory and disk bandwidth usage with multi-VM processing}. 
 We have further studied the memory and disk bandwidth usage 
 when running concurrent VM snapshot backup on each machine with $\delta=2\%$. 
-Table ~\ref{tab:resource_usage} gives the CPU, memory and disk read/write  workload when
-running 1 or multiple  backing tasks at the same time on each physical machine. 
-Disk read is controled as 50MB/s bandwidth usage so that other cloud services are not impacted a lot.
-% [ NOT REASONABLE: Notice that memory and CPU used by PDS index and QFS are not included since they belong to 
-% the cloud infrastructure services and are shared among many applications.]
+Table ~\ref{tab:resource_usage} gives the resource usage  when
+running 1 or multiple  VM backup tasks at the same time on each physical machine. 
+CPU column is the percentage of a core usage. 
 The memory usage includes 100MB of PDS index and other space cost for executing deduplication tasks such as 
 receipt metadata and cache. 
+Disk read is controlled as 50MB/s bandwidth usage so that other cloud services are not impacted a lot.
+Disk write is the write usage of QFS and notice that each QFS write leads writes in multiple machines due to
+data replication.     
+% [ NOT REASONABLE: Notice that memory and CPU used by PDS index and QFS are not included since they belong to 
+% the cloud infrastructure services and are shared among many applications.]
 %We see our hybrid deduplication scheme only occupies a small amount of system resources. 
 %The  local deduplication only needs to keep the parent snapshot recipe and a few similar segment recipes in 
 %memory during duplicate detection.
 
 Table ~\ref{tab:resource_usage} shows that  a single backup task per node can complete the backup of the entire
 VM cluster in about 1.58 hours. Since there are about 25 VMs per machine, we could execute
-more tasks in parallel at each machine. But adding more bakcup concurrency does not shorten the overall time
+more tasks in parallel at each machine. But adding more backup concurrency does not shorten the overall time
 a lot because of the controlled  disk read time.
 %,  we can still process raw data at near 175 MB/s. If we consider the extreme case in which each machine has 25 VMs
 %at 40GB size, our snapshot system can finish backing up all the VMs (1TB total) in 1.58 hours.
@@ -431,8 +433,11 @@ a lot because of the controlled  disk read time.
 {\bf Processing Time breakdown}.
 Figure~\ref{fig:vc_srb_combined} shows
 the  average  processing  time of  a VM segment under VC and SRB. 
+VC uses $\sigma=2\%$ and $4\%$.
 It has a breakdown of time for reading data, updating the metadata, network latency to visit
 a remote machine, and index access for fingerprint comparison.
+The change of $\sigma$ does not significantly affect the overall backup speed as
+PDS lookup takes only a small amount of time.
 SRB has a higher index access and fingerprint comparison because once a chunk is routed to a machine,
 it relies on this local machine to access its index (often on the disk, supported by a Bloom filter) 
 and perform comparison.
@@ -441,6 +446,11 @@ accesses  the PDS on distributed shared memory.
 SRB spends  slighter more time in  reading data and updates because it also updates the on-disk
 local meta data index.
 Overall,  VC is faster than SRB, though data reading dominates the processing time for both algorithms.
+%Figure~\ref{fig:vc_srb_combined} also reports the average backup time for a VM in VC when
+%varying the PDS size.  It lists the time distribution for data reading,
+%similarity-guided local search, cross-VM PDS lookup, and non-duplicate data writing. 
+%While data reading dominates the backup process, PDS lookup spends about a similar amount
+%of time as local search.
 
 \begin{figure}[htbp]
   \centering
@@ -456,13 +466,6 @@ Overall,  VC is faster than SRB, though data reading dominates the processing ti
 %   \label{fig:srb_vs_vc}
 % \end{figure}
 
-Figure~\ref{fig:vc_srb_combined} also reports the average backup time for a VM in VC when
-varying the PDS size.  It lists the time distribution for data reading,
-similarity-guided local search, cross-VM PDS lookup, and non-duplicate data writing. 
-While data reading dominates the backup process, PDS lookup spends about a similar amount
-of time as local search.
-The change of $\sigma$ does not significantly affect the overall backup speed as
-PDS lookup takes only a small amount of time.
 
 % \begin{figure}
 %     \centering
@@ -483,21 +486,32 @@ PDS lookup takes only a small amount of time.
     4                       & 4101.8                                     & 443.3          & 54.1 & 217.8                                  & 23.5           & 2.87 \\
     6                       & 5456.5                                     & 589.7          & 72.0 & 224.1                                  & 24.2           & 2.96 \\
     \end{tabular}
-\caption{Backup throughput under different concurrency}
+\caption{Throughput of software layers under different concurrency}
 \label{tab:throughput}
 \end{table*}
-{\bf Throughput.}
-Table~\ref{tab:throughput} shows the  backup throughput per each machine when all machine nodes 
-handle  several VMs in parallel.
-To begin, on each node we write snapshots for 4 VMs concurrently, and gradually 
-increase number of VMs to 12 to saturate our system capability. We observed 
-the per-node throughput peaked at 2700 MB/s when writing 10 VM snapshots in parallel, 
-which is far beyond our QFS file system capability. The reason behind it is our efficient
-deduplication architecture and compression which greatly reduce the amount of data that needs to be written to
-the file system. The main bottleneck here is that our QFS installation only
-manages one disk per node, which prevents it from fully utilizing the the
-benefits of parallel disk access. We expect our architecture can
-perform even better in production clusters, which often have ten or more disks on each node.
+{\bf Throughput of software layers.}
+Table~\ref{tab:throughput} shows the  average throughput of software layer
+when I/O is throttled under 50MB/second and when there is no restriction.
+%machine when all machine nodes execute one or multiple MV backup tasks.
+``Raw'' column is the throughput  of the backup service  per machine.
+``Snapshot store" is the  write throughput of the snapshot store layer and the gap between this
+column and  ``Raw" column is caused by significant data reduction by dirty bit and duplication
+detection. Only non-duplicate chunks trigger a snapshot store write.
+``QFS'' column is the write request traffic to the underlying file system after compression.
+The underlying disk storage traffic will be three times or more because of replication.
+The result shows that the backup service can deliver up to 5.46GB/second without I/O restriction
+per machine with 6 concurrent backup tasks. With 50MB/second controlled I/O bandwidth, each machine can deliver 171MB/second with 1 backup task and can complete the backup of 25 VMs per machine under 1.31 hours.
+ 
+%To begin, on each node we write snapshots for 4 VMs concurrently, and gradually 
+%increase number of VMs to 12 to saturate our system capability. 
+%We observed 
+%the per-node throughput peaked at 2700 MB/s when writing 10 VM snapshots in parallel, 
+%which is far beyond our QFS file system capability. The reason behind it is our efficient
+%deduplication architecture and compression which greatly reduce the amount of data that needs to be written to
+%the file system. The main bottleneck here is that our QFS installation only
+%manages one disk per node, which prevents it from fully utilizing the the
+%benefits of parallel disk access. We expect our architecture can
+%perform even better in production clusters, which often have ten or more disks on each node.
 
 
 % \begin{figure}
@@ -517,13 +531,13 @@ perform even better in production clusters, which often have ten or more disks o
 %     \label{fig:parallel_backup}
 % \end{figure}
 
-% \subsection{Effectiveness of Approximate Deletion}
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=3in]{figures/leakage}
-%     \caption{Accumulated storage leakage by approximate snapshot deletions}
-%     \label{fig:leakage}
-% \end{figure}
+ \subsection{Effectiveness of Approximate Deletion}
+ \begin{figure}
+     \centering
+     \includegraphics[width=3in]{figures/leakage}
+     \caption{Accumulated storage leakage by approximate snapshot deletions}
+     \label{fig:leakage}
+ \end{figure}
 
 Figure~\ref{fig:leakage} shows the average accumulated storage leakage in terms of percentage of
 storage space per VM caused  by approximate deletions.

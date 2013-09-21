@@ -236,7 +236,7 @@ While the predicted value remains flat, the  real coverage actually increases as
 increases, which indicates that $\alpha$ increases with the data size. 
 Thus in practice, the coverage of the PDS increases as more VMs are involved.
 
-\subsection{Storage Space and Impact on Fault Tolerance}
+\subsection{Storage Space and Impact on Fault Isolation}
  
 \begin{figure}
     \centering
@@ -262,7 +262,7 @@ In the VC approach, a special replica degree $r_c$ used for PDS blocks where $r_
 The storage cost for VO with full deduplication is $c_u *r$ and for VC, it is
 $ k*r_c  + (c_u-k)*r$. Thus The storage cost ratio of $VC$ over $VO$ is 
 \[
-\sigma \frac{r_c}{r} + 1-\sigma
+\sigma \frac{r_c}{r} + 1-\sigma.
 \]
 Since $\sigma$ is small (it is 2\% in our experiments),  
 term $\sigma \frac{r_c}{r}$ is small in the above expression.  
@@ -310,22 +310,22 @@ Thus $N_1$ is much smaller than $N_o$.
 When there is a failure in file blocks with replication degree $r$
 and there is no failure for PDS data with more replicas,   a VM in
 the VC approach has a much lower chance to lose a snapshot than VO. 
-Figure~\ref{fig:fsb-links} shows the average number of VMs sharing each file block from
-our test dataset.
-%which shows how many VMs the failure of a single block can affect. 
-For VC, we only show
-the sharing degree of  PDS-oriented file blocs  because non-PDS blocks always belong to
-one VM.
-Figure~\ref{fig:fsb-links} shows the average number of VMs sharing each file block from our test data.
+%Figure~\ref{fig:fsb-links} shows the average number of VMs sharing each file block from
+%our test dataset.
+%For VC, we only show
+%the sharing degree of  PDS-oriented file blocs  because non-PDS blocks always belong to
+%one VM.
+%Figure~\ref{fig:fsb-links} shows the average number of VMs sharing each file block from our test data.
 Figure~\ref{fig:vm-links} shows the average number of file system blocks for each VM in VC and in VO. 
-%From data, 
-%we have observed that $N_1 +N_2 < N_o$ in Figure~\ref{fig:vm-links}. 
-%This is likely because the PDS FSBs tightly pack data used by many VMs, 
-%which decreases the overall number of FSBs required to backup a VM.
+From data, we have observed that $N_1 +N_2 < N_o$ in practice. 
+This is likely because the PDS FSBs tightly pack data used by many VMs, 
+which decreases the overall number of FSBs required to backup a VM.
 Noted that  if  the backup for multiple VMs were conducted concurrently, there would be more
 VMs shared  by each file block on average in VO. 
+
 %Therefore, even when there is a loss of a PDS block, the VC approach tolerates the fault better.
 
+\comments{
 \begin{figure}[htbp]
   \centering
 	\begin{tikzpicture}
@@ -350,6 +350,8 @@ VMs shared  by each file block on average in VO.
   \caption{Measured average number of VMs sharing a 64MB FSB in VO and in VC.}
   \label{fig:fsb-links}
 \end{figure}
+
+}
 
 \begin{figure}[htbp]
   \centering
