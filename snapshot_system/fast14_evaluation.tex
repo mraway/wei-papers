@@ -411,11 +411,11 @@ We have further studied the memory and disk bandwidth usage
 when running concurrent VM snapshot backup on each machine with $\delta=2\%$. 
 Table ~\ref{tab:resource_usage} gives the resource usage  when
 running 1 or multiple  VM backup tasks at the same time on each physical machine. 
-CPU column is the percentage of a core usage. 
-The memory usage includes 100MB of PDS index and other space cost for executing deduplication tasks such as 
+``CPU'' column is the percentage of a core usage. 
+``Mem'' column includes 100MB memory usage for PDS index and other space cost for executing deduplication tasks such as 
 receipt metadata and cache. 
-Disk read is controlled as 50MB/s bandwidth usage so that other cloud services are not impacted a lot.
-Disk write is the write usage of QFS and notice that each QFS write leads writes in multiple machines due to
+``Read'' column is controlled as 50MB/s bandwidth usage so that other cloud services are not impacted a lot.
+``Write'' column is the I/O write usage of QFS and notice that each QFS write leads writes in multiple machines due to
 data replication.     
 % [ NOT REASONABLE: Notice that memory and CPU used by PDS index and QFS are not included since they belong to 
 % the cloud infrastructure services and are shared among many applications.]
