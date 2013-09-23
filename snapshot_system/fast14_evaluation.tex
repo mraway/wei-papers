@@ -68,8 +68,8 @@ count the number of dependencies from a file system block to VM.
 Our results show that even the worst case for VC has a higher availability than VO.
 %Our VM-centric approach shows significant improvements
 %in VM availability.
-For example, with 5/100 machines failed, VO with 93.3\% availability would lose data in 169 VMs 
-while VC with 99.9\% loses data for 2 VMs.
+For example, with 5/100 machines failed, VO with 93.256\% availability would lose data in 169 VMs 
+while VC with 97.763\% loses data for 56 VMs.
 The key reason is that for most data in VC, only a single
 VM can be affected by the loss of a single FSB.
 % because our VM-centric approach
@@ -127,8 +127,8 @@ the same for $r_c=6$ and $r_c=9$.
                     \addlegendentry{VO}
                     \addplot table[x=NodesFailed,y=VC3]{figures/node_failures_100.txt};
                     \addlegendentry{VC}
-                    \addplot table[x=NodesFailed,y=VCWC1]{figures/node_failures_100.txt};
-                    \addlegendentry{VC (worst-case)}
+                    %\addplot table[x=NodesFailed,y=VCOpt1]{figures/node_failures_100.txt};
+                    %\addlegendentry{VC (CDS ordering)}
                     \end{axis}
             \end{tikzpicture}
       %\caption{100 machine cluster.}
@@ -205,12 +205,12 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
                                     %\cline{2-7}
                                     & \multicolumn{3}{c|}{$p=100$} & \multicolumn{3}{c|}{$p=1000$} \\
                                     %\cline{2-7}
-                                    & VO & VC & VC(WC) & VO & VC & VC(WC) \\
+                                    & VO & VC & VC(Opt) & VO & VC & VC(Opt) \\
         \hline
-        3 & 99.304 & 99.891 & 99.891 & 99.999 & 99.999 & 99.999\\
-        5 & 93.256 & 98.919 & 98.919 & 99.993 & 99.999 & 99.999\\
-        10 & 43.251 & 87.707 & 87.638 & 99.919 & 99.987 & 99.987\\
-        20 & 0.034 & 24.953 & 21.571 & 99.228 & 99.879 & 99.879\\
+        3 & 99.304 & 99.774 & 99.774 & 99.999 & 99.999 & 99.999 \\
+        5 & 93.256 & 97.763  & 97.763 & 99.993 & 99.998 & 99.998 \\
+        10 & 43.252 & 76.094 & 76.214 & 99.919 & 99.974 & 99.974 \\
+        20 & 0.034 & 5.614 & 7.507 & 99.228 & 99.749 & 99.749 \\
         \hline
     \end{tabular}
     \caption{Availability of VM snapshots for VO and VC.}
