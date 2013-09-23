@@ -42,6 +42,8 @@ To control the time cost of search, we set a limit on the the number of  similar
 %with those in similar segments.  
 For example, a 2MB segment contains about 500 fingerprints and by limiting at most 10 similar
 segments to search, the amount of memory for maintaining those fingerprints in similar segments is small.
+As part of our local duplicate search we also compare the current segment
+against the parent segment at the same offset.
 
 \item \textbf{Cross-VM deduplication with popular chunks and replication support.}
 This step accomplishes the standard global fingerprint comparison as conducted
@@ -89,7 +91,7 @@ for  detecting duplicates from popular chunks.
 For the data sets we have tested, the spatial locality 
 among popular
 data chunks is limited and  on average the number of consecutive data chunks is 7 among popular chunks.
-This is not sufficient to enable prefetching which is required  for index sampling.
+This is not sufficient to enable effective prefetching which is required  for index sampling.
 
 \begin{table}[htbp]
 \centering
@@ -141,11 +143,11 @@ A(r) & the availability of a file system block with replication degree $r$\\
 Choosing the value  $k$ for the most popular chunks affects the deduplication efficiency.
 We analyze this impact based on the characteristics  of the VM snapshot traces
 studied from  application datasets.
-Our previous study shows that the popularity of data chunks after inner VM deduplication follows 
+A previous study shows that the popularity of data chunks after inner VM deduplication follows 
 a Zipf-like distribution\cite{Breslau1999a} and its
 exponent $\alpha$ is ranged between 0.65  and  0.7~\cite{WeiZhangIEEE}. 
 Figure~\ref{fig:Datazipf} illustrates the Zipf-like distribution of chunk popularity.
-We will use a number of parameters in our analysis below and they are defined in
+The parameters we will use in our analysis below are defined in
 Table~\ref{tab:symbol}. 
 
 %Table~\ref{tab:symbol} defines paramters $c$, $c_u$, $f_i$, and $\delta$ used below.
@@ -231,7 +233,7 @@ chunks detected as duplicates in global cross-VM deduplication due to PDS.
 We call this PDS coverage.
 Figure~\ref{fig:cds-coverage} shows predicted PDS coverage using $\sigma^{1-\alpha}$ when $\alpha$ is fixed at
 0.65 and measured PDS coverage in our test dataset.
-$\sigma=2\%$ represents memory usage of approximately 100MB memory per machine for top $k$ PDS.
+$\sigma=2\%$ represents memory usage of approximately 100MB memory per machine for the PDS.
 While the predicted value remains flat, the  real coverage actually increases as the data size
 increases, which indicates that $\alpha$ increases with the data size. 
 Thus in practice, the coverage of the PDS increases as more VMs are involved.
@@ -281,7 +283,7 @@ estimating the number of file system blocks per VM in each approach.
 As illustrated in Figure~\ref{fig:share},
 we build a bipartite graph representing the association from unique file system blocks
 to their corresponding VMs in each approach. An association edge is  drawn  from a file block  to a VM 
-if this block is used by this VM. 
+if this block is used by the VM. 
 
 For VC, each VM has an average number of $N_1$ non-PDS file system blocks
 and  has  an average of  $N_2$ PDS file system blocks. 
@@ -320,8 +322,8 @@ Figure~\ref{fig:vm-links} shows the average number of file system blocks for eac
 From data, we have observed that $N_1 +N_2 < N_o$ in practice. 
 This is likely because the PDS FSBs tightly pack data used by many VMs, 
 which decreases the overall number of FSBs required to backup a VM.
-Noted that  if  the backup for multiple VMs were conducted concurrently, there would be more
-VMs shared  by each file block on average in VO. 
+Note that  if  the backup for multiple VMs were conducted concurrently, there could be many more
+VMs sharing each file block on average in VO. 
 
 %Therefore, even when there is a loss of a PDS block, the VC approach tolerates the fault better.
 
@@ -466,12 +468,12 @@ and failure settings.THIS PLOT WILL BE REPLACED BY TABLE}
         \hline
         \multirow{2}{*}{Failures}   & \multicolumn{3}{c|}{FSB Availability} \\
                                     %\cline{2-4}
-                                    & $R_c=3$ & $R_c=6$ & $R_c=9$ \\
+                                    & $R=3$ & $R=6$ & $R=9$ \\
         \hline
-        3 & 99.999 & 100 & 100\\
-        5 & 99.994 & 100 & 100\\
-        10 & 99.925 & 99.999 & 99.999\\
-        20 & 99.295 & 99.997 & 99.999 \\
+        3 & 99.9994 & 100 & 100\\
+        5 & 99.9939 & 100 & 100\\
+        10 & 99.9258 & 99.9999 & 99.9999 \\
+        20 & 99.2950 & 99.9967 & 99.9999 \\
         \hline
     \end{tabular}
     \caption{Availability of individual 64MB Filesystem blocks (FSBs) as storage

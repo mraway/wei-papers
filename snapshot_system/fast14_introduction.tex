@@ -17,14 +17,14 @@ This paper seeks for a low-cost architecture option  that collocates
 a backup service with other cloud services and  uses a minimum amount of resources. 
 We also consider the fact that after
 deduplication, most data chunks are shared by several to many virtual machines.
-Failure of few shared data chunks can have a 
+Failure of a few shared data chunks can have a 
 broad effect and many
 snapshots of virtual machines could be affected.
 The previous work in deduplication focuses on the efficiency and approximation of
 fingerprint comparison, and has not addressed fault tolerance issues  together with deduplication.
 Thus we also seek deduplication options that yield better fault isolation.
 Another issue considered is that
-that deletion of old snapshots competes for computing resource as well. 
+that deletion of old snapshots also competes for computing resources. 
 Sharing of data chunks among by multiple VMs needs to be detected during
 snapshot   deletion and such dependencies complicate deletion operations. 
 

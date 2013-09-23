@@ -52,15 +52,15 @@ Thus from the fault tolerance point of view,  duplicate sharing among multiple V
 discouraged. 
 Another disadvantage of sharing is that it complicates snapshot deletion, 
 which  occurs frequently when snapshots expire regularly. 
-The mark-sweep approach~\cite{Guo2011} is effective for deletion, and its main cost
+The mark-and-sweep approach~\cite{Guo2011} is effective for deletion, but has a high cost, and its main cost
 is to count if a data chunk is still shared by other snapshots.
 Localizing deduplication can  minimize data sharing and simplify deletion while sacrificing 
-deduplication efficiency, and  can faciltate parallel execition of snaptshot operations.
+deduplication efficiency, and  can faciltate parallel execution of snaptshot operations.
 \item{\em  Management of file system blocks.}
 The file block size in a distributed file system such as  Hadoop and GFS is uniform and large (e.g.  64MB),
- a data chunk in a typical deduplication system is of a nonuniform size with 4KB or 8KB on average.
-Packaging data chunks to a file system block can create more data dependence among VMs
-since a file block can be shared with even more VMs.
+while the data chunk in a typical deduplication system is of a nonuniform size with 4KB or 8KB on average.
+Packaging data chunks to a file system block can create more data dependencies among VMs
+since a file block can be shared by even more VMs.
 Thus we need to consider a minimum association of a fie system block to VMs in the packaging process.
 \end{itemize}
 
@@ -69,11 +69,11 @@ Because of collocation of this snapshot service with other existing cloud servic
 cloud providers will want the backup service to only consume small resources
 with a minimal impact to the existing cloud services.
 The key resource for signature comparison  is memory for storing the fingerprints. 
-We will consider the approximation techniques with less memory consumption along 
-with the fault isolation consideration discussed below. 
+We will consider the approximation techniques with reduced memory consumption along 
+with the fault isolation considerations discussed below. 
 
 We call the traditional deduplication approach as   VM-oblivious (VO)
-because they compare fingerprints of snapshots without consideration of VM.
+because they compare fingerprints of snapshots without consideration of VMs.
 With the above  considerations in mind, we study a 
 VM-centric approach (called VC)
 for a collocated backup service with resource usage friendly

@@ -18,7 +18,7 @@ node  for supporting backup and deduplication:
 and 4)  a PDS client to support PDS metadata access. 
 
 We use the virtual device driver in Xen that employs a bitmap to track the changes 
-that have been made to virtual disk.
+that have been made to the virtual disk.
 Every bit in the bitmap represents a fix-sized (2MB) region called a \textit{segment}, indicating whether the segment
 has been modified since last backup. 
 Segments are further divided into variable-sized chunks (average 4KB) 
@@ -60,13 +60,13 @@ As shown in Figure~\ref{fig:as_arch}, we explain the data structure of snapshot 
 \end{figure}
 
 \begin{itemize}
-\item Data of each VM snapshot store excluding PDS is divided into a set of containers and 
+\item Data of each VM snapshot store, excluding the PDS store, are divided into a set of containers and 
 each container is approximately 1GB. 
 The reason for dividing the snapshot into containers is to simplify the compaction process
 conducted periodically. As discussed later, data chunks are deleted from old snapshots
 and chunks without any reference from other snapshots can be removed by this compaction process.
 By limiting the size of a container, we can effectively control the length of each round of compaction.
-The compaction  routine can work on one container at a time and move the used data chunks to another container. 
+The compaction  routine can work on one container at a time and move the in-use data chunks to another container. 
 
 Each container is further divided into a set of chunk data groups. Each chunk group is composed of
 a set of data chunks and is the basic unit in data access and retrieval. 
