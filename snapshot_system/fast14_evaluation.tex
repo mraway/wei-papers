@@ -84,11 +84,11 @@ by increasing replication for those blocks we minimize the affect on VM availabi
 %
 %One of the advantages of VC is that there is a division between
 %popular and non-popular data to facilitate improved reliability. 
-Figure~\ref{fig:pds-replication}) shows
-the impact of  to increasing PDS data replication. 
-While the impact on replication storage cost is small, 
-the replication degree 6  has a significant improvement over 4, but  the availability is about
-the same for $r_c=6$ and $r_c=9$.
+Figure~\ref{fig:pds-replication} shows
+the impact of increasing PDS data replication. 
+While the impact on storage cost is small, 
+a replication degree of 6  has a significant improvement over 4, but the availability is about
+the same for $r_c=6$ and $r_c=9$ (beyond $r_c=6$ improvements are minimal).
  
 %This is because, as described before, the availability of the VM approaches the
 %availiability of the Non-PDS data as the failure rate of PDS data gets very small.
@@ -259,11 +259,18 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
                 },
                 reverse legend,
 		]
+                \addplot table[x=NodesFailed,y=VO]{figures/node_failures_100.txt};
                 \addplot table[x=NodesFailed,y=VC1]{figures/node_failures_100.txt};
                 \addplot table[x=NodesFailed,y=VC2]{figures/node_failures_100.txt};
                 \addplot table[x=NodesFailed,y=VC3]{figures/node_failures_100.txt};
                 \addplot table[x=NodesFailed,y=VC4]{figures/node_failures_100.txt};
-                \legend{$r_c=4$,$r_c=5$,$r_c=6$, $r_c=9$}
+                \legend{
+                    VO,
+                    $r_c=4$,
+                    $r_c=5$,
+                    $r_c=6$,
+                    $r_c=9$
+                }
 		\end{axis}
 	\end{tikzpicture}
   \caption{Availability of VM snapshots in VC with different PDS replication degrees}
@@ -524,10 +531,10 @@ when I/O is throttled under 50MB/second and when there is no restriction.
 %machine when all machine nodes execute one or multiple MV backup tasks.
 ``Raw'' column is the throughput  of the backup service  per machine.
 ``Snapshot store" is the  write throughput of the snapshot store layer and the gap between this
-column and  ``Raw" column is caused by significant data reduction by dirty bit and duplication
+column and  ``Raw" column is caused by significant data reduction by dirty bit and duplicate
 detection. Only non-duplicate chunks trigger a snapshot store write.
 ``QFS'' column is the write request traffic to the underlying file system after compression.
-The underlying disk storage traffic will be three times or more because of replication.
+The underlying disk storage traffic will be three times greater because of replication.
 The result shows that the backup service can deliver up to 5.46GB/second without I/O restriction
 per machine with 6 concurrent backup tasks. With 50MB/second controlled I/O bandwidth, each machine can deliver 171MB/second with 1 backup task and can complete the backup of 25 VMs per machine under 1.31 hours.
  
