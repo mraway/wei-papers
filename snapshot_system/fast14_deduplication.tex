@@ -46,9 +46,9 @@ As part of our local duplicate search we also compare the current segment
 against the parent segment at the same offset.
 
 \item \textbf{Cross-VM deduplication with popular chunks and replication support.}
-This step accomplishes the standard global fingerprint comparison as conducted
-in the previous work~\cite{WeiZhangIEEE}.
-One key observation is that the inner-VM deduplication has removed many of the duplicates.
+This step accomplishes the standard global fingerprint comparison using standard fingerprint 
+comparison (e.g. ~\cite{bottleneck08}).
+Our key observation is that the inner-VM deduplication has removed many of the duplicates.
 There are fewer deduplication opportunities across VMs while the memory and network
 consumption for global comparison is more expensive.
 Thus our approximation is that the global fingerprint comparison only searches for the top $k$
@@ -58,6 +58,8 @@ that are duplicates of this chunk after the inner VM deduplication.
 This number can be computed periodically (e.g., on a weekly basis).
 Once the popularity of all data chunks is collected, the system only maintains the top $k$
 most popular chunk signatures in a distributed shared memory.  
+Our previous work~\cite{WeiZhangIEEE} studies a preliminary solution using data popularity and this
+paper improves this with a more comprehensive scheme with  similarity-guided search and fault isolation.
 
 Since $k$ is relatively small and these top $k$ chunks are shared among multiple VMs, 
 we can afford to provide extra replicas for these popular chunks to enhance the fault resilience.
@@ -184,7 +186,7 @@ is the percentage of duplicates that can be detected:
 %\end{split}
 \end{equation}
 
-We store the popular index using a distributed shared memory hashtable such as MemCacheD
+We store the popular index using a distributed shared memory hashtable such as Memcached
 and allocate a fixed percentage of memory space   per physical machine for top $k$ popular items.
 As the number of physical machines ($p$) increases,
 the entire cloud cluster can host more VMs; however,  ratio $\sigma$ which is $k/c_u$ remains
@@ -238,7 +240,7 @@ While the predicted value remains flat, the  real coverage actually increases as
 increases, which indicates that $\alpha$ increases with the data size. 
 Thus in practice, the coverage of the PDS increases as more VMs are involved.
 
-\subsection{Storage Space and Impact on Fault Isolation}
+\subsection{ Impact on Storage Space and Fault Isolation}
  
 \begin{figure}
     \centering
