@@ -380,14 +380,22 @@ segment is moved to another location on disk, for example when a file is rewritt
 rather than modified in place, the deduplication opportunity is missed. We have found that in
 approximately 1/3 of the VMs in our dataset this movement happens frequently,
 so the similarity search becomes important for those VMs.
+% In general, our experiments show that
+% dirty-bit detection at the segment level can reduce the data size to about 24.14\% of original data, 
+% which leads about 75.86\% reduction.
+% Similarity-guided local search can further reduce the data size
+% to about 12.05\% of original size, namely it delivers additional 12.09\% reduction.
+% The PDS-based cross-VM detection with $\sigma=2\% $
+% can reduce the size further to 8.6\% of original size, namely it 
+% delivers additional 3.45\% reduction.
 In general, our experiments show that
 dirty-bit detection at the segment level can reduce the data size to about 24.14\% of original data, 
-which leads about 75.86\% reduction.
+which leads to about 75.86\% reduction.
 Similarity-guided local search can further reduce the data size
-to about 12.05\% of original size, namely it delivers additional 12.09\% reduction.
-The PDS-based cross-VM detection with $\sigma=2\% $
-can reduce the size further to 8.6\% of original size, namely it 
-delivers additional 3.45\% reduction.
+to about 12.05\% of original, namely it delivers 50.08\% reduction to the dirty segments.
+The popularity-guided global deduplication with $\sigma=2\% $
+can reduce the data further to 8.6\% of its original size, 
+it provides additional 28.63\% reduction to the remaining data.
 
 %Figure~\ref{fig:exbin-efficiency-graph2} also shows the benefits of our minhash
 %similar segment search in the parent snapshot. 
