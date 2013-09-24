@@ -371,10 +371,13 @@ VMs sharing each file block on average in VO.
 		legend pos=south west
 		]
                 \addplot[blue,mark=none] table[x=VMs,y=N_O] {figures/vm_links_all.txt};
-                \addplot[red,dotted,mark=none] table[x=VMs,y expr=\thisrow{N_1}+\thisrow{N_2}] {figures/vm_links_all.txt};
+                %\addplot[red,dotted,mark=none] table[x=VMs,y expr=\thisrow{N_1}+\thisrow{N_2}] {figures/vm_links_all.txt};
                 \addplot[red,dashdotted] table[x=VMs,y=N_1] {figures/vm_links_all.txt};
                 \addplot[red,densely dashed,mark=none] table[x=VMs,y=N_2] {figures/vm_links_all.txt};
-                \legend{$N_o$, $N_1+N_2$, $N_1$, $N_2$};
+                \legend{$N_o$,
+                    %$N_1+N_2$,
+                    $N_1$,
+                    $N_2$};
 		\end{axis}
 	\end{tikzpicture}
   \caption{Measured average number of 64MB FSBs used by a single VM. For VC both the number of PDS and Non-PDS FSBs used are shown.}
@@ -464,11 +467,12 @@ and failure settings.THIS PLOT WILL BE REPLACED BY TABLE}
 \begin{table}
     \footnotesize
     \tabcolsep=0.11cm
-    \begin{tabular}{|l|l|l|l|}
+    \comments{%table data is obsolete, now uses pgfplotstable
+        \begin{tabular}{|l|l|l|l|}
         \hline
-        \multirow{2}{*}{Failures}   & \multicolumn{3}{c|}{FSB Availability} \\
+        \multirow{2}{*}{Failuresi ($d$)}   & \multicolumn{3}{c|}{$A(r_c)$} \\
                                     %\cline{2-4}
-                                    & $R=3$ & $R=6$ & $R=9$ \\
+                                    & $r_c=3$ & $r_c=6$ & $r_c=9$ \\
         \hline
         3 & 99.9994 & 100 & 100\\
         5 & 99.9939 & 100 & 100\\
@@ -476,7 +480,30 @@ and failure settings.THIS PLOT WILL BE REPLACED BY TABLE}
         20 & 99.2950 & 99.9967 & 99.9999 \\
         \hline
     \end{tabular}
-    \caption{Availability of individual 64MB Filesystem blocks (FSBs) as storage
-    nodes fail in a 100 node cluster.}
+    }
+    \pgfplotstabletypeset[
+        columns={NodesFailed,Availability3,Availability6,Availability9},
+        columns/NodesFailed/.style={
+            column name={\multirow{2}{*}{Failures ($d$)}}
+        },
+        columns/Availability3/.style={
+            column name={\multicolumn{3}{c|}{$A(r_c)$}\\&$r_c=3$},
+            fixed, precision=9
+        },
+        columns/Availability6/.style={
+            column name={$r_c=6$},
+            fixed, precision=9},
+        columns/Availability9/.style={
+            column name={$r_c=9$},
+            fixed, precision=9},
+        every head row/.style={
+            before row={\hline},
+            after row={\hline},
+        },
+        every last row/.style={after row=\hline},
+        column type/.add={}{|},
+        every first column/.style={column type/.add={|}{}},
+    ]{figures/fsb_availability.txt}
+    \caption{$A(r_c)$ as storage nodes fail in a 100 node cluster.}
     \label{tab:fsb-availability}
 \end{table}

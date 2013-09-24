@@ -199,7 +199,8 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
 \begin{table}
     \footnotesize
     \tabcolsep=0.11cm
-    \begin{tabular}{|l|l|l|l|l|l|l|}
+    \comments{%table here is obsolete, now uses pgfpltostable to generate latex
+        \begin{tabular}{|l|l|l|l|l|l|l|}
         \hline
         \multirow{3}{*}{Failures}   & \multicolumn{6}{c|}{Snapshot Availability} \\
                                     %\cline{2-7}
@@ -213,6 +214,41 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
         20 & 0.0340 & 5.6139 & 6.4942 & 99.2285 & 99.7490 & 99.7491 \\
         \hline
     \end{tabular}
+    }
+    \pgfplotstabletypeset[
+        columns={NodesFailed,VO100,VC100,VO1000,VC1000},
+        columns/NodesFailed/.style={
+            column name={\multirow{3}{*}{Failures ($d$)}}
+        },
+        columns/VO100/.style={
+            column name={
+                \multicolumn{4}{c|}{VM Availability(\%)}\\&
+                \multicolumn{2}{c|}{$p=100$}&\multicolumn{2}{c|}{$p=1000$}\\&
+            VO},
+            fixed, precision=6
+        },
+        columns/VC100/.style={
+            column name={VC},
+            fixed, precision=6},
+        columns/VO1000/.style={
+            column name={VO},
+            fixed, precision=6},
+        columns/VC1000/.style={
+            column name={VC},
+            fixed, precision=6},
+        every head row/.style={
+            before row={\hline},
+            after row={\hline},
+        },
+        every last row/.style={after row=\hline},
+        column type/.add={}{|},
+        every first column/.style={column type/.add={|}{}},
+        %skip rows between index={0}{3},
+        %skip rows between index={4}{5},
+        %skip rows between index={6}{10},
+        %skip rows between index={11}{20},
+        %skip rows between index={21}{41}
+    ]{figures/availability_table.txt}
     \caption{Availability of VM snapshots for VO and VC.}
     \label{tab:vm-availability}
 \end{table}
