@@ -344,15 +344,16 @@ which are detected and deduplicated, so only global perfect deduplication can ha
 %we allocate the space of distributed shared memory  to accommodate 2\%
 %of data chunks shared among VMs, as defined in 
 With $\sigma=2\%$, memory usage for PDS index lookup per machine is about 100MB per machine
-and  the deduplication efficiency can reach over 96.??\%.
-When $\sigma=4\%$, the deduplication efficiency can reach 97.??\% while space consumption increases to 200MB per machine. 
+and  the deduplication efficiency can reach 96.489\%.
+When $\sigma=4\%$, the deduplication efficiency can reach 97.027\% while space consumption increases to 200MB per machine. 
 The loss of efficiency in VC is caused by the restriction of the physical memory available
 in the cluster to support fast in-memory PDS index lookup. 
 %In the extreme case if we put all the fingerprint into PDS 
 %index ($\sigma=100\%$) then VC will have 100\% efficiency.
-SRB can deliver up to 97.6??\% deduplication efficiency which is slightly better than VC.
-Thus this represents a tradeoff that VC provides better fault tolerance and fast approximate deletion
-with a competitive deduplication efficiency.
+SRB can deliver up to 97.935\% deduplication efficiency which is slightly better than VC.
+Thus this represents a tradeoff: VC provides better fault tolerance and fast
+approximate deletion with a competitive (but slightly lower) deduplication
+efficiency.
 %its loss of efficiency is caused by the routing of data chunks which restricts the search scope
 %of duplicate detection.
 %SRB provides slightly better deduplication efficiency than our VC approach, which we accept
