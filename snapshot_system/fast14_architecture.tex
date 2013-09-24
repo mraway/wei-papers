@@ -148,6 +148,8 @@ those requests are simply recorded into the  container's deletion log initially 
 deletion strategy is exercised.
 Once local chunk IDs appear in
 the deletion log, they will not be referenced by any future snapshot and can be safely deleted when needed. 
+This is ensured because we only dedup against the direct parent of a snapshot, so the deleted snapshot's blocks
+will only be used if they also exist in other snapshots.
 Periodically, the snapshot  store picks those containers with an excessive
 number of deletion requests to  compact and  reclaim the corresponding disk space. 
 During compaction, the snapshot store creates a new container (with the same container ID) to replace the 
@@ -227,7 +229,7 @@ the space and time cost is relatively small compared to the traditional mark-swe
 chunks from all VMs.
 For example,
 consider each reference consumes 8 bytes plus  1 mark bit, a VM that has 40GB backup data with about
-10 million chunks will need less than 90MB of memory to complete a VM-specific mark-sweep process.
+10 million chunks will need less than 85MB of memory to complete a VM-specific mark-sweep process.
 \end{itemize}
 
 %{\bf Discussion}

@@ -440,7 +440,7 @@ We have further studied the memory and disk bandwidth usage
 when running concurrent VM snapshot backup on each machine with $\delta=2\%$. 
 Table ~\ref{tab:resource_usage} gives the resource usage  when
 running 1 or multiple  VM backup tasks at the same time on each physical machine. 
-``CPU'' column is the percentage of a core usage. 
+``CPU'' column is the percentage of a single core used. 
 ``Mem'' column includes 100MB memory usage for PDS index and other space cost for executing deduplication tasks such as 
 receipt metadata and cache. 
 ``Read'' column is controlled as 50MB/s bandwidth usage so that other cloud services are not impacted a lot.
@@ -467,13 +467,14 @@ It has a breakdown of time for reading data, updating the metadata, network late
 a remote machine, and index access for fingerprint comparison.
 The change of $\sigma$ does not significantly affect the overall backup speed as
 PDS lookup takes only a small amount of time.
-SRB has a higher index access and fingerprint comparison because once a chunk is routed to a machine,
-it relies on this local machine to access its index (often on the disk, supported by a Bloom filter) 
+SRB has higher index access and fingerprint comparison costs because all chunk signatures for whom the current
+machine does not control the index must be sent over the network, and then rely
+on the index holding machine to access its index (often on the disk, supported by a Bloom filter) 
 and perform comparison.
 VC is faster for index access because it conducts in-memory local search first and then
-accesses  the PDS on distributed shared memory.  
+accesses  the PDS on distributed shared memory, so most chunks can be dealt with locally.  
 SRB spends  slighter more time in  reading data and updates because it also updates the on-disk
-local meta data index.
+local meta data index in addition to partition indices.
 Overall,  VC is faster than SRB, though data reading dominates the processing time for both algorithms.
 %Figure~\ref{fig:vc_srb_combined} also reports the average backup time for a VM in VC when
 %varying the PDS size.  It lists the time distribution for data reading,
