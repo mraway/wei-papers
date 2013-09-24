@@ -351,16 +351,23 @@ which are detected and deduplicated, so only global perfect deduplication can ha
 %we allocate the space of distributed shared memory  to accommodate 2\%
 %of data chunks shared among VMs, as defined in 
 With $\sigma=2\%$, memory usage for PDS index lookup per machine is about 100MB per machine
-and  the deduplication efficiency can reach 96.489\%.
-When $\sigma=4\%$, the deduplication efficiency can reach 97.027\% while space consumption increases to 200MB per machine. 
+and  the deduplication efficiency can reach over 96.33\%.
+When $\sigma=4\%$, the deduplication efficiency can reach 96.9\% while space consumption increases to 200MB per machine. 
+%and  the deduplication efficiency can reach 96.489\%.
+%When $\sigma=4\%$, the deduplication efficiency can reach 97.027\% while space consumption increases to 200MB per machine. 
 The loss of efficiency in VC is caused by the restriction of the physical memory available
 in the cluster to support fast in-memory PDS index lookup. 
 %In the extreme case if we put all the fingerprint into PDS 
 %index ($\sigma=100\%$) then VC will have 100\% efficiency.
-SRB can deliver up to 97.935\% deduplication efficiency which is slightly better than VC.
-Thus this represents a tradeoff: VC provides better fault tolerance and fast
-approximate deletion with a competitive (but slightly lower) deduplication
-efficiency.
+SRB can deliver up to 97.79\% deduplication efficiency which is slightly better than VC.
+Thus this represents a tradeoff that VC provides better fault tolerance and fast approximate deletion
+with a competitive deduplication efficiency.
+
+% SRB can deliver up to 97.935\% deduplication efficiency which is slightly better than VC.
+% Thus this represents a tradeoff: VC provides better fault tolerance and fast
+% approximate deletion with a competitive (but slightly lower) deduplication
+% efficiency.
+% >>>>>>> 4dcd68612b052c0f890ed30361a9ed03771b5df1
 %its loss of efficiency is caused by the routing of data chunks which restricts the search scope
 %of duplicate detection.
 %SRB provides slightly better deduplication efficiency than our VC approach, which we accept
@@ -373,14 +380,22 @@ segment is moved to another location on disk, for example when a file is rewritt
 rather than modified in place, the deduplication opportunity is missed. We have found that in
 approximately 1/3 of the VMs in our dataset this movement happens frequently,
 so the similarity search becomes important for those VMs.
+% In general, our experiments show that
+% dirty-bit detection at the segment level can reduce the data size to about 24.14\% of original data, 
+% which leads about 75.86\% reduction.
+% Similarity-guided local search can further reduce the data size
+% to about 12.05\% of original size, namely it delivers additional 12.09\% reduction.
+% The PDS-based cross-VM detection with $\sigma=2\% $
+% can reduce the size further to 8.6\% of original size, namely it 
+% delivers additional 3.45\% reduction.
 In general, our experiments show that
-dirty-bit detection at the segment level can reduce the data size to about 24\% of original data, 
-which leads  about 76\% reduction.
+dirty-bit detection at the segment level can reduce the data size to about 24.14\% of original data, 
+which leads to about 75.86\% reduction.
 Similarity-guided local search can further reduce the data size
-to about 12\% of original size, namely it delivers additional 12\% reduction.
-The PDS-based cross-VM detection with $\sigma=2\% $
-can reduce the  size further to 5.6\% of original size, namely it 
-delivers additional 6.4\% reduction.
+to about 12.05\% of original, namely it delivers 50.08\% reduction to the dirty segments.
+The popularity-guided global deduplication with $\sigma=2\% $
+can reduce the data further to 8.6\% of its original size, 
+it provides additional 28.63\% reduction to the remaining data.
 
 %Figure~\ref{fig:exbin-efficiency-graph2} also shows the benefits of our minhash
 %similar segment search in the parent snapshot. 
