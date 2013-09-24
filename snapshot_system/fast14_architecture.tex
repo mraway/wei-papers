@@ -99,8 +99,10 @@ its header contains the exact offset of the corresponding chunk ID and the conte
 
 \item The PDS chunks are  stored in one PDS file. 
 Each reference to a PDS data chunk in the PDS index is the offset within the PDS file.
-There is an option to use the data structure similar to the non-PDS store. We opt for this simple format because
-PDS chunks have less spatial locality in data access and it is not so effective to group a large number of chunks
+There is an option to use a data structure similar to the non-PDS store. We opt
+for the simpler format because
+PDS chunks have less spatial locality in data access and it is not so effective
+to group a large number of chunks
 as a compression and data fetch unit. 
 
 PDS data is re-calculated periodically, but 
@@ -108,7 +110,7 @@ the total data size is small.  When
 a new PDS data  set is computed, in-memory PDS index is replaced, but 
 the PDS file on the disk appends the  new PDS data identified and the growth of this file is very slow. 
 The old data is not removed because they can still be referenced by the existing snapshots. 
-A periodic cleanup is conducted  to remove unused PDS chunks (e.g. in every few months). 
+A periodic cleanup is conducted  to remove unused PDS chunks (e.g. every few months). 
 \end{itemize}
 
 
@@ -128,7 +130,7 @@ container index file.
 
 \item{\em Get()}.
 The fetch operation for the PDS data chunk is straightforward since each reference contains 
-the file offset and the size of a PDS chunk is available from a segment receipt.
+the file offset and the size of a PDS chunk is available from a segment recipe.
 We also maintain a small data cache for the PDS data service to speedup common data fetching.
 
 To read a non-PDS chunk using its reference with container ID and local chunk ID,  the snapshot store client first loads the
@@ -174,11 +176,11 @@ In a busy VM cluster, snapshot deletions can occur frequently.
 Deduplication complicates the deletion process because space saving relies on the sharing of data
 and it requires the global reference of deleted chunks to be identified before  they can be safely removed.
 While we can use the mark-and-sweep technique~\cite{Guo2011}, 
-it still takes significant resources to conduct this process every time there is a snapshot deletion.
+it takes significant resources to conduct this process every time there is a snapshot deletion.
 In the case of Alibaba, snapshot backup is conducted automatically and there are 
 about 10 snapshot stored for every VM customer. When there is
 a new snapshot created every day,  there will be  a snapshot expired everyday to maintain
-a balanced storage use. 
+balanced storage use. 
 
 We seek a fast solution with low resource usage to delete snapshots and
 the VM-centric design simplifies the deletion process. 
@@ -203,8 +205,8 @@ we need to identify if  chunks to be deleted from that snapshot
 are still used by other snapshots. 
 This is done approximately and quickly by comparing the 
 reference of deleted chunks  with
-the merged Bloom-filter reference summary in other live snapshots.
-The merging of live snapshot Bloom-filter bits uses the logical OR operator 
+the merged Bloom-filter reference summary of other live snapshots.
+The merging of live snapshot Bloom-filter bits uses the bitwise OR operator 
 and the merged vector still takes $z$ bits.
 Since the number of live snapshots $h$ is limited for
 each VM, 
@@ -214,12 +216,12 @@ If a chunk's reference is not found in the merged summary vector, we are sure th
 this chunk is not used by any live snapshots, thus can be deleted safely.
 However, among all the chunks to be deleted, 
 there is a small percentage of unused chunks  which
-are misjudged as  being in use, resulting in a storage leakage.
+are misjudged as  being in use, resulting in storage leakage.
 
 \item {\bf Periodic repair of leakage}.
 %[exlpain why second Bloom filter, why scan append store]
 Leakage repair is conducted periodically to fix the above approximation error.
-This procedure compares the live chunks for each VM with what are truly used in the VM snapshot recipe.
+This procedure compares the live chunks for each VM with what are truly used in the VM snapshot recipes.
 That requires a scanning of all chunks in a VM. Since it is a VM-specific procedure 
 the space and time cost is relatively small compared to the traditional mark-sweep procedure~\cite{Guo2011} which scans snapshot 
 chunks from all VMs.
