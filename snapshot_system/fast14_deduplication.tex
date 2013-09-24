@@ -3,19 +3,20 @@
 
 \subsection{Key VC  Strategies}
 \label{sect:vc-strategies}
-\begin{itemize}
-\item \textbf{VM-specific local duplicate search within similar segments.}
-We start with the standard dirty bit approach in a coarse grain segment level.
+%\begin{itemize}
+%\item 
+\textbf{VM-specific local duplicate search within similar segments.}
+We start with the changed block tracking approach in a coarse grain segment level.
 In our implementation with Xen on an Alibaba platform, the segment size is 2MB
-and  the device driver is extended to support  changed block tracking. 
+and the device driver is extended to support tracking changed segments using a dirty bitmap. 
 Since every write for a segment will touch a dirty bit, the device driver maintains dirty bits in memory
-and cannot afford a small segment  size.
+and cannot afford a small segment size.
 It should be noted that dirtybit tracking is supported or can be easily implemented in 
 major virtualization solution vendors. For example,
 the VMWare hypervisor has an API to let external backup applications know 
 the changed areas since last backup. 
 The Microsoft SDK provides an API that allows external applications to monitor 
-the VM's I/O traffic and implement  the changed block tracking feature.
+the VM's I/O traffic and implement such changed block tracking feature.
 
 \begin{figure}[htbp]
   \centering
@@ -36,49 +37,50 @@ content similarity is  an approximation~\cite{AdnriBroader}.  When processing a 
 its  similar segments can be found easily from the
 parent snapshot recipe.  Then recipes of the similar segments are loaded to memory,
 which contain chunk fingerpints to be compared.
-To control the time cost of search, we set a limit on the the number of  similar segments to be  fetched. 
+To control the time cost of search, we set a limit on the the number of  similar segments recipes to be fetched. 
 % Then,
 %given a set of data chunks within a dirty segment,  we compare  these chunk fingerprints
 %with those in similar segments.  
-For example, a 2MB segment contains about 500 fingerprints and by limiting at most 10 similar
-segments to search, the amount of memory for maintaining those fingerprints in similar segments is small.
+For a 2MB segment, its segment recipe is roughly 19KB which contains about 500 chunk fingerprints and other chunk metadata,
+by limiting at most 10 similar segments to search, the amount of memory for maintaining those similar segment recipes is small.
 As part of our local duplicate search we also compare the current segment
 against the parent segment at the same offset.
 
-\item \textbf{Cross-VM deduplication with popular chunks and replication support.}
-This step accomplishes the standard global fingerprint comparison using standard fingerprint 
-comparison (e.g. ~\cite{bottleneck08}).
-Our key observation is that the inner-VM deduplication has removed many of the duplicates.
+%\item 
+\textbf{Global deduplication with popular chunks and replication support.}
+This step accomplishes the canonical global fingerprint lookup using a popular fingerprint index.
+Our key observation is that the local deduplication has removed most of the duplicates.
 There are fewer deduplication opportunities across VMs while the memory and network
 consumption for global comparison is more expensive.
 Thus our approximation is that the global fingerprint comparison only searches for the top $k$
-most popular items. This dataset is called the PDS (popular data set). 
-The popularity of a chunk is the number  of data chunks  from different VMs
-that are duplicates of this chunk after the inner VM deduplication.
+most popular items. This dataset is called the \textbf{PDS} (popular data set). 
+\textbf{The popularity of a chunk is the number  of data chunks  from different VMs
+that are duplicates of this chunk after the inner VM deduplication.}
 This number can be computed periodically (e.g., on a weekly basis).
 Once the popularity of all data chunks is collected, the system only maintains the top $k$
-most popular chunk signatures in a distributed shared memory.  
+most popular chunk fingerprints (called \textbf{PDS index}) in a distributed shared memory.  
 Our previous work~\cite{WeiZhangIEEE} studies a preliminary solution using data popularity and this
 paper improves this with a more comprehensive scheme with  similarity-guided search and fault isolation.
 
 Since $k$ is relatively small and these top $k$ chunks are shared among multiple VMs, 
-we can afford to provide extra replicas for these popular chunks to enhance the fault resilience.
+we can afford to provide extra replicas for these popular chunk data to enhance the fault resilience.
 
-\item \textbf{VM-centric file system block management.}
+%\item 
+\textbf{VM-centric file system block management.}
 When a chunk is not detected as a duplicate to any existing chunk, this chunk will be written
 to the file system. Since the backend file system typically uses a large block size such as 64MB, each VM will 
-accumulate small local chunks. We manage this accumulation process using an append-store  scheme built
-on a distributed file system discussed  in Section~\ref{sect:architecture}.
+accumulate small local chunks. We manage this accumulation process using an log-structured storage scheme built
+on a distributed file system discussed in Section~\ref{sect:architecture}.
 %Non-PDS chunks from the same VM are stored in one append store. 
 Each file system block is either dedicated to non-PDS chunks, or PDS-chunks.
 A file system block for non-PDS chunks is associated with one VM and does not contain
-any PDS chunks, to maintain our goal of fault isolation.
-PDS chunks are stored in a separate append-store instance with special replication handling. 
-The system allows all machines conduct the backup in parallel, and each machine
-conducts the backup of one VM at a time, and thus only requires a write  buffer for one VM.
-\end{itemize}
+any PDS chunks, such that our goal of fault isolation is maintained.
+In addition, storing PDS chunks separately allows special replication handling for those popular shared data. 
+%%% talk something about snapshot store advantage here? %%%
 
-
+%The system allows all machines conduct backups in parallel, and each machine
+%conducts the backup of one VM at a time, and thus only requires a write buffer for one VM.
+%\end{itemize}
 
 \begin{figure}
 \centering
@@ -88,12 +90,11 @@ conducts the backup of one VM at a time, and thus only requires a write  buffer 
 \caption{Duplicate frequency versus  chunk ranking in a log scale after inner-VM deduplication.}
 \label{fig:Datazipf}
 \end{figure}
-We have not  adopted the  sampled index~\cite{Guo2011} 
-for  detecting duplicates from popular chunks.
-For the data sets we have tested, the spatial locality 
-among popular
-data chunks is limited and  on average the number of consecutive data chunks is 7 among popular chunks.
-This is not sufficient to enable effective prefetching which is required  for index sampling.
+We decide not to take the sampled index appraoch~\cite{Guo2011} 
+for detecting duplicates from PDS.
+This is because for the data sets we have tested, we only observed very limited spatial locality 
+among popular data chunks. On average the number of consecutive PDS index hits is lower than 7,
+which is not sufficient to enable effective prefetching which is required for index sampling.
 
 \begin{table}[htbp]
 \centering
