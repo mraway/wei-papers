@@ -29,8 +29,8 @@ Sharing of data chunks among by multiple VMs needs to be detected during
 snapshot   deletion and such dependencies complicate deletion operations. 
 
 The paper studies and evaluates  an integrated approach which uses  multiple duplicate detection strategies
-based on  version  detection, inner VM duplicate search,
-and controlled cross-VM comparison. 
+based on  version  detection, similarity guided local deduplication,
+and popularity guided global deduplication. 
 This approach is VM centric by localizing duplicate detection within each VM  
 and by packaging only data chunks from the same VM into a file system block as much as possible.
 By narrowing duplicate sharing within a small percent of common data chunks and exploiting their popularity,

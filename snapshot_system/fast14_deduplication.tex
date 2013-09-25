@@ -27,7 +27,7 @@ the VM's I/O traffic and implement such changed block tracking feature.
 
 Since the best deduplication uses a nonuniform chunk size 
 in the average of 4K or 8K~\cite{Jin2009},
-we conduct additional local inner-VM deduplication on a snapshot by comparing
+we conduct additional local similary guided deduplication on a snapshot by comparing
 chunk fingerprints of a dirty segment 
 with those in  {\em similar} segments from its parent snapshot. 
 We define two segments are similar if their content signature is the same.
@@ -54,8 +54,8 @@ There are fewer deduplication opportunities across VMs while the memory and netw
 consumption for global comparison is more expensive.
 Thus our approximation is that the global fingerprint comparison only searches for the top $k$
 most popular items. This dataset is called the \textbf{PDS} (popular data set). 
-\textbf{The popularity of a chunk is the number  of data chunks  from different VMs
-that are duplicates of this chunk after the inner VM deduplication.}
+We define chunk popularity as the number of unique copies of the chunk in the data-store,
+that is the number of copies of the chunk after local deduplication.
 This number can be computed periodically (e.g., on a weekly basis).
 Once the popularity of all data chunks is collected, the system only maintains the top $k$
 most popular chunk fingerprints (called \textbf{PDS index}) in a distributed shared memory.  
@@ -87,7 +87,7 @@ In addition, storing PDS chunks separately allows special replication handling f
 %\epsfig{file=log-log.disk,width=3in}
 %source ../vm_snapshot_sim/images/log-log.disk.eps
  \includegraphics[width=3in]{figures/log-log-disk}
-\caption{Duplicate frequency versus  chunk ranking in a log scale after inner-VM deduplication.}
+\caption{Duplicate frequency versus  chunk ranking in a log scale after local deduplication.}
 \label{fig:Datazipf}
 \end{figure}
 We decide not to take the sampled index appraoch~\cite{Guo2011} 
@@ -108,7 +108,7 @@ $c_u$ &  the total amount of unique fingerprints after perfect  deduplication\\
 \hline
 $f_i$ &  the frequency for the $i$th most popular fingerprint\\
 \hline
-$\delta$ &  the percentage of duplicates detected in inner VM deduplication\\
+$\delta$ &  the percentage of duplicates detected in local deduplication\\
 \hline
 $\sigma$ & =$\frac{k}{c_u}$ which is  the percentage of unique data  belong to  PDS\\
 \hline
@@ -146,7 +146,7 @@ A(r) & the availability of a file system block with replication degree $r$\\
 Choosing the value  $k$ for the most popular chunks affects the deduplication efficiency.
 We analyze this impact based on the characteristics  of the VM snapshot traces
 studied from  application datasets.
-A previous study shows that the popularity of data chunks after inner VM deduplication follows 
+A previous study shows that the popularity of data chunks after local deduplication follows 
 a Zipf-like distribution\cite{Breslau1999a} and its
 exponent $\alpha$ is ranged between 0.65  and  0.7~\cite{WeiZhangIEEE}. 
 Figure~\ref{fig:Datazipf} illustrates the Zipf-like distribution of chunk popularity.
@@ -168,7 +168,7 @@ Given $\alpha <1$, $f_1$ can be approximated with integration:
 f_1=\frac{c(1-\alpha)(1-\delta)}{c_u^{1-\alpha}}.
 \end{equation}
 
-The  $k$ most popular fingerprints can cover the following number of chunks after inner VM 
+The  $k$ most popular fingerprints can cover the following number of chunks after local 
 deduplication:
 \[
 f_1 \sum_{i=1}^{k}\frac{1}{i^\alpha} \approx  
@@ -232,7 +232,7 @@ Thus the deduplication efficiency is stable  as $p$ increases as long as $\sigma
   \label{fig:cds-coverage}
 \end{figure}
 Ratio $\sigma^{1-\alpha}$ represents the percentage of the remaining
-chunks detected as duplicates in global cross-VM deduplication due to PDS.
+chunks detected as duplicates in global deduplication due to PDS.
 We call this PDS coverage.
 Figure~\ref{fig:cds-coverage} shows predicted PDS coverage using $\sigma^{1-\alpha}$ when $\alpha$ is fixed at
 0.65 and measured PDS coverage in our test dataset.

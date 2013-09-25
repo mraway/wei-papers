@@ -385,7 +385,7 @@ so the similarity search becomes important for those VMs.
 % which leads about 75.86\% reduction.
 % Similarity-guided local search can further reduce the data size
 % to about 12.05\% of original size, namely it delivers additional 12.09\% reduction.
-% The PDS-based cross-VM detection with $\sigma=2\% $
+% The PDS-based global duplicate detection with $\sigma=2\% $
 % can reduce the size further to 8.6\% of original size, namely it 
 % delivers additional 3.45\% reduction.
 In general, our experiments show that
@@ -493,7 +493,7 @@ local meta data index in addition to partition indices.
 Overall,  VC is faster than SRB, though data reading dominates the processing time for both algorithms.
 %Figure~\ref{fig:vc_srb_combined} also reports the average backup time for a VM in VC when
 %varying the PDS size.  It lists the time distribution for data reading,
-%similarity-guided local search, cross-VM PDS lookup, and non-duplicate data writing. 
+%similarity-guided local search, global PDS lookup, and non-duplicate data writing. 
 %While data reading dominates the backup process, PDS lookup spends about a similar amount
 %of time as local search.
 
