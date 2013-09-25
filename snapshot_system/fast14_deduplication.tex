@@ -59,8 +59,8 @@ that is the number of copies of the chunk after local deduplication.
 This number can be computed periodically (e.g., on a weekly basis).
 Once the popularity of all data chunks is collected, the system only maintains the top $k$
 most popular chunk fingerprints (called \textbf{PDS index}) in a distributed shared memory.  
-Our previous work~\cite{WeiZhangIEEE} studies a preliminary solution using data popularity and this
-paper improves this with a more comprehensive scheme with  similarity-guided search and fault isolation.
+previous work~\cite{WeiZhangIEEE} has studied a solution taking advantage of data popularity. This
+paper improves this with a more comprehensive scheme with similarity-guided search and fault isolation.
 
 Since $k$ is relatively small and these top $k$ chunks are shared among multiple VMs, 
 we can afford to provide extra replicas for these popular chunk data to enhance the fault resilience.
