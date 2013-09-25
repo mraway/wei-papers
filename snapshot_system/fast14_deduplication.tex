@@ -59,8 +59,8 @@ that is the number of copies of the chunk after local deduplication.
 This number can be computed periodically (e.g., on a weekly basis).
 Once the popularity of all data chunks is collected, the system only maintains the top $k$
 most popular chunk fingerprints (called \textbf{PDS index}) in a distributed shared memory.  
-Our previous work~\cite{WeiZhangIEEE} studies a preliminary solution using data popularity and this
-paper improves this with a more comprehensive scheme with  similarity-guided search and fault isolation.
+previous work~\cite{WeiZhangIEEE} has studied a solution taking advantage of data popularity. This
+paper improves this with a more comprehensive scheme with similarity-guided search and fault isolation.
 
 Since $k$ is relatively small and these top $k$ chunks are shared among multiple VMs, 
 we can afford to provide extra replicas for these popular chunk data to enhance the fault resilience.
@@ -288,7 +288,7 @@ We use file system blocks rather than a deduplication
 data chunk as our unit of failure because the DFS keeps
 filesystem blocks as its base unit of storage.
 To compute the full availability of all snapshots of a VM, we derive
-the probablity of losing a snapshot file block of a VM by
+the probability of losing a snapshot file block of a VM by
 estimating the number of file system blocks per VM in each approach.
 As illustrated in Figure~\ref{fig:share},
 we build a bipartite graph representing the association from unique file system blocks
@@ -379,7 +379,12 @@ VMs sharing each file block on average in VO.
                 ymin=0,
                 xmax=106,
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
-		legend pos=south west
+		%legend pos=north east,
+                legend style={
+                    at={(1,0.825)},
+                    anchor=north east
+                },
+                %legend columns=3
 		]
                 \addplot[blue,mark=none] table[x=VMs,y=N_O] {figures/vm_links_all.txt};
                 %\addplot[red,dotted,mark=none] table[x=VMs,y expr=\thisrow{N_1}+\thisrow{N_2}] {figures/vm_links_all.txt};
