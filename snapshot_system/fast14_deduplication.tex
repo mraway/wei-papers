@@ -288,7 +288,7 @@ We use file system blocks rather than a deduplication
 data chunk as our unit of failure because the DFS keeps
 filesystem blocks as its base unit of storage.
 To compute the full availability of all snapshots of a VM, we derive
-the probablity of losing a snapshot file block of a VM by
+the probability of losing a snapshot file block of a VM by
 estimating the number of file system blocks per VM in each approach.
 As illustrated in Figure~\ref{fig:share},
 we build a bipartite graph representing the association from unique file system blocks
