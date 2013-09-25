@@ -259,7 +259,7 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
                 },
                 reverse legend,
 		]
-                \addplot table[x=NodesFailed,y=VO]{figures/node_failures_100.txt};
+                \addplot+[dashed] table[x=NodesFailed,y=VO]{figures/node_failures_100.txt};
                 \addplot table[x=NodesFailed,y=VC1]{figures/node_failures_100.txt};
                 \addplot table[x=NodesFailed,y=VC2]{figures/node_failures_100.txt};
                 \addplot table[x=NodesFailed,y=VC3]{figures/node_failures_100.txt};
@@ -291,10 +291,10 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
                 {blue,solid,mark=triangle*,mark size=1.5},
                 {blue,solid,mark=diamond*,mark size=1.5},
                 %{blue,solid,mark=pentagon*,mark size=1.4},
-                {red,draw=red,densely dotted,mark=square},
+                {red,draw=red,dotted,mark=square},
                 %{red,densely dotted,mark=triangle,mark size=1.5},
                 %{red,densely dotted,mark=diamond,mark size=1.5},
-                {brown,densely dashed,mark=*},
+                {brown,dashed,mark=*},
                 %{red,densely dotted,mark=o},
                 %{red,densely dotted,mark=pentagon,mark size=1.4},
             },
