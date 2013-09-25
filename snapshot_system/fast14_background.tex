@@ -29,9 +29,9 @@ uses  an in-memory Bloom filter and a prefetching cache for data chunks  which m
 accessed.  An improvement to this work with parallelization is in ~\cite{MAD210,DEBAR}.
 The approximation techniques are studied in~\cite{extreme_binning09,Guo2011,WeiZhangIEEE}  
 to reduce memory requirements with the tradeoff of a reduced deduplication ratio.
-Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,idedup}
+Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,Srinivasan2012}
 and a parallel batch solution for cluster-based deduplication is 
-studied in ~\cite{WeiZhangHotStorage13}. 
+studied in ~\cite{wei2013}. 
 All of the above approaches have focused on optimization of deduplication
 efficiency, and none of them have considered the impact
 of deduplication on fault tolerance in the cluster-based environment that we have considered
