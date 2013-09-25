@@ -379,7 +379,12 @@ VMs sharing each file block on average in VO.
                 ymin=0,
                 xmax=106,
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
-		legend pos=south west
+		%legend pos=north east,
+                legend style={
+                    at={(1,0.825)},
+                    anchor=north east
+                },
+                %legend columns=3
 		]
                 \addplot[blue,mark=none] table[x=VMs,y=N_O] {figures/vm_links_all.txt};
                 %\addplot[red,dotted,mark=none] table[x=VMs,y expr=\thisrow{N_1}+\thisrow{N_2}] {figures/vm_links_all.txt};
