@@ -520,20 +520,35 @@ Overall,  VC is faster than SRB, though data reading dominates the processing ti
 % \end{figure}
 
 
-\begin{table*}[t]
+% \begin{table*}[t]
+%     \centering
+%     \begin{tabular}{c|ccc|ccc}
+%     Num. of concurrent      & \multicolumn{3}{c|}{Throughput without}    & \multicolumn{3}{c}{Throughput with} \\
+%     backup tasks            & \multicolumn{3}{c|}{I/O throttling (MB/s)} & \multicolumn{3}{c}{I/O throttling (MB/s)} \\ \cline{2-7}
+%     per node                & Raw                                        & Snapshot Store & QFS  & Raw                                    & Snapshot Store & QFS  \\ \hline
+%     1                       & 1369.6                                     & 148.0          & 18.0 & 171.3                                  & 18.5           & 2.26 \\
+%     2                       & 2408.5                                     & 260.2          & 31.7 & 201.3                                  & 21.8           & 2.66 \\
+%     4                       & 4101.8                                     & 443.3          & 54.1 & 217.8                                  & 23.5           & 2.87 \\
+%     6                       & 5456.5                                     & 589.7          & 72.0 & 224.1                                  & 24.2           & 2.96 \\
+%     \end{tabular}
+% \caption{Throughput of software layers under different concurrency}
+% \label{tab:throughput}
+% \end{table*}
+\begin{table}[htbp]
     \centering
-    \begin{tabular}{c|ccc|ccc}
-    Num. of concurrent      & \multicolumn{3}{c|}{Throughput without}    & \multicolumn{3}{c}{Throughput with} \\
-    backup tasks            & \multicolumn{3}{c|}{I/O throttling (MB/s)} & \multicolumn{3}{c}{I/O throttling (MB/s)} \\ \cline{2-7}
-    per node                & Raw                                        & Snapshot Store & QFS  & Raw                                    & Snapshot Store & QFS  \\ \hline
-    1                       & 1369.6                                     & 148.0          & 18.0 & 171.3                                  & 18.5           & 2.26 \\
-    2                       & 2408.5                                     & 260.2          & 31.7 & 201.3                                  & 21.8           & 2.66 \\
-    4                       & 4101.8                                     & 443.3          & 54.1 & 217.8                                  & 23.5           & 2.87 \\
-    6                       & 5456.5                                     & 589.7          & 72.0 & 224.1                                  & 24.2           & 2.96 \\
+    \begin{tabular}{c|ccc}
+    Num. of concurrent      & \multicolumn{3}{c}{Throughput without}    \\
+    backup tasks            & \multicolumn{3}{c}{I/O throttling (MB/s)} \\ \cline{2-4}
+    per node                & Raw                                        & Snapshot Store & QFS  \\ \hline
+    1                       & 1369.6                                     & 148.0          & 18.0 \\
+    2                       & 2408.5                                     & 260.2          & 31.7 \\
+    4                       & 4101.8                                     & 443.3          & 54.1 \\
+    6                       & 5456.5                                     & 589.7          & 72.0 \\
     \end{tabular}
 \caption{Throughput of software layers under different concurrency}
 \label{tab:throughput}
-\end{table*}
+\end{table}
+
 {\bf Throughput of software layers.}
 Table~\ref{tab:throughput} shows the  average throughput of software layer
 when I/O is throttled under 50MB/second and when there is no restriction.
