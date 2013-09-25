@@ -17,7 +17,7 @@ a machine, this chunk is compared with the fingerprint index within this machine
 \subsection{Settings}
 We have performed a trace-driven study using a production dataset~\cite{WeiZhangIEEE} from 
 Alibaba Aliyun's cloud platform with about 100 machines. 
-Each machine hosts upto 25 VMs and each VM keeps 10 automatically-generated snapshots in the storage system while
+Each machine hosts up to 25 VMs and each VM keeps 10 automatically-generated snapshots in the storage system while
 a user may instruct extra snapshots to be saved.
 The VMs of the sampled data set use popular operating systems such as 
 Debian, Ubuntu, Redhat, CentOS, win2008 and win2003. 
@@ -36,7 +36,7 @@ The signature for variable-sized blocks is computed using their SHA-1 hash~\cite
  Table~\ref{tab:vm-availability} shows the availability of VM snapshots when 
 there are up to 20 machine nodes failed in a 100-node cluster and  a 1000-node cluster. 
 %Two VC curves use $V_c=1250$ and $V_c=2500$ representing the average number of VMs that share a PDS file system block. 
-We assume that every VM points to every filesystem block in the PDS ($V_c=p*V$), which is to be expected when PDS
+We assume that every VM points to every file system block in the PDS ($V_c=p*V$), which is to be expected when PDS
 blocks are sorted by hash, as their order is randomized.
 %$V_c=2500$ represents  the absolute worst case for 2500 VMs. 
 %The VO curve has  $V_o=6.3$ which is the average number of VMs that share a file system block in our smaller dataset.
@@ -54,7 +54,7 @@ blocks are sorted by hash, as their order is randomized.
 %=======
 %Figure~\ref{tab:vm-availability} shows the availability of VM snapshots
 %as storage nodes fail. 
-%We assume a random distirbution of 64MB filesystem
+%We assume a random distirbution of 64MB file system
 %blocks (FSBs). where FSBs are not randomly distributed availability might
 %be improved by limiting the number of storage nodes a particualr VM depends
 %on but we take the conservative approach. We compare VO, the expected case for
@@ -76,7 +76,7 @@ VM can be affected by the loss of a single FSB. Since most FSBs contain blocks f
 %localizes deduplication.  
 
 Although the loss of a PDS block affects many VMs,
-by increasing replication for those blocks we minimize the affect on VM availability.
+by increasing replication for those blocks we minimize the effect on VM availability.
 %By having extra replicas for the PDS data, we reduce the failure rate of PDS
 %FSBs enough that the failure rate for the VM approaches the failure rate of the
 %Non-PDS blocks. This minimizes the drop in availability between the expected
@@ -363,18 +363,18 @@ in the cluster to support fast in-memory PDS index lookup.
 %index ($\sigma=100\%$) then VC will have 100\% efficiency.
 SRB can deliver up to 97.79\% deduplication efficiency which is slightly better than VC.
 Thus this represents a tradeoff that VC provides better fault tolerance and fast approximate deletion
-with a competitive deduplication efficiency.
+with competitive deduplication efficiency.
 
 % SRB can deliver up to 97.935\% deduplication efficiency which is slightly better than VC.
 % Thus this represents a tradeoff: VC provides better fault tolerance and fast
-% approximate deletion with a competitive (but slightly lower) deduplication
+% approximate deletion with competitive (but slightly lower) deduplication
 % efficiency.
 % >>>>>>> 4dcd68612b052c0f890ed30361a9ed03771b5df1
 %its loss of efficiency is caused by the routing of data chunks which restricts the search scope
 %of duplicate detection.
 %SRB provides slightly better deduplication efficiency than our VC approach, which we accept
 %because we are rewarded by architecture-wise benefits such as fault-tolerance and fast 
-%Though not our primary goal, this result does show that VC can remove a competitive amount of duplicates.
+%Though not our primary goal, this result does show that VC can remove competitive amount of duplicates.
 
 Figure~\ref{fig:exbin-efficiency-graph2} also shows the effectiveness of the local similarity-based search in VC.
 Without this (i.e. when we only check the parent segment at the same offset), when an entire
@@ -384,19 +384,19 @@ approximately 1/3 of the VMs in our dataset this movement happens frequently,
 so the similarity search becomes important for those VMs.
 % In general, our experiments show that
 % dirty-bit detection at the segment level can reduce the data size to about 24.14\% of original data, 
-% which leads about 75.86\% reduction.
+% which leads about a 75.86\% reduction.
 % Similarity-guided local search can further reduce the data size
-% to about 12.05\% of original size, namely it delivers additional 12.09\% reduction.
+% to about 12.05\% of original size, namely it delivers an additional 12.09\% reduction.
 % The PDS-based global duplicate detection with $\sigma=2\% $
 % can reduce the size further to 8.6\% of original size, namely it 
-% delivers additional 3.45\% reduction.
+% delivers an additional 3.45\% reduction.
 In general, our experiments show that
 dirty-bit detection at the segment level can reduce the data size to about 24.14\% of original data, 
-which leads to about 75.86\% reduction.
+which leads to about a 75.86\% reduction.
 Similarity-guided local search can further reduce the data size
-to about 12.05\% of original, namely it delivers 50.08\% reduction to the dirty segments.
+to about 12.05\% of original, namely it delivers a 50.08\% reduction to the dirty segments.
 The popularity-guided global deduplication with $\sigma=2\% $
-can reduce the data further to 8.6\% of its original size, 
+can reduce the data further to 8.6\% of its original size, so
 it provides additional 28.63\% reduction to the remaining data.
 
 %Figure~\ref{fig:exbin-efficiency-graph2} also shows the benefits of our minhash
@@ -426,7 +426,7 @@ it provides additional 28.63\% reduction to the remaining data.
 The total storage  for all VM snapshots in each physical machine takes about 3.065TB on average when
 the replication degree of both PDS and non-PDS data is 3. 
 Allocating  one extra  copy for PDS data only adds  7GB in total per machine.
-Thus PDS replication degree 6 only adds the total space by 0.685\% while PDS replication degree 9 adds 1.37\% 
+Thus PDS replication degree 6 only increases the total space by 0.685\% while PDS replication degree 9 adds 1.37\% 
 space overhead, which is still small.
 %The increase in storage cost is minimal because the PDS makes up a 
 %small percent of the total storage space, while increasing replication degree has a  more significant benefit for
@@ -562,7 +562,7 @@ detection. Only non-duplicate chunks trigger a snapshot store write.
 ``QFS'' column is the write request traffic to the underlying file system after compression.
 The underlying disk storage traffic will be three times greater because of replication.
 The result shows that the backup service can deliver up to 5.46GB/second without I/O restriction
-per machine with 6 concurrent backup tasks. With 50MB/second controlled I/O bandwidth, each machine can deliver 171MB/second with 1 backup task and can complete the backup of 25 VMs per machine under 1.31 hours.
+per machine with 6 concurrent backup tasks. With 50MB/second controlled I/O bandwidth, each machine can deliver 171MB/second with 1 backup task and can complete the backup of 25 VMs per machine in less than 1.31 hours.
  
 %To begin, on each node we write snapshots for 4 VMs concurrently, and gradually 
 %increase number of VMs to 12 to saturate our system capability. 
@@ -571,7 +571,7 @@ per machine with 6 concurrent backup tasks. With 50MB/second controlled I/O band
 %which is far beyond our QFS file system capability. The reason behind it is our efficient
 %deduplication architecture and compression which greatly reduce the amount of data that needs to be written to
 %the file system. The main bottleneck here is that our QFS installation only
-%manages one disk per node, which prevents it from fully utilizing the the
+%manages one disk per node, which prevents it from fully utilizing the
 %benefits of parallel disk access. We expect our architecture can
 %perform even better in production clusters, which often have ten or more disks on each node.
 

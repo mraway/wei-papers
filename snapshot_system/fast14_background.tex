@@ -37,7 +37,7 @@ efficiency, and none of them have considered the impact
 of deduplication on fault tolerance in the cluster-based environment that we have considered
 in this paper.
 
-Our key design consideration is VM dependence minimization during deduplication and file block management.
+Our key design consideration is VM dependence minimization during deduplication and file system block management.
 \begin{itemize}
 \item {\em Deduplication localization.}
 Because a data chunk is compared with signatures collected from all VMs during
@@ -55,13 +55,13 @@ which  occurs frequently when snapshots expire regularly.
 The mark-and-sweep approach~\cite{Guo2011} is effective for deletion, but has a high cost, and its main cost
 is to count if a data chunk is still shared by other snapshots.
 Localizing deduplication can  minimize data sharing and simplify deletion while sacrificing 
-deduplication efficiency, and  can faciltate parallel execution of snaptshot operations.
+deduplication efficiency, and  can facilitate parallel execution of snapshot operations.
 \item{\em  Management of file system blocks.}
-The file block size in a distributed file system such as  Hadoop and GFS is uniform and large (e.g.  64MB),
-while the data chunk in a typical deduplication system is of a nonuniform size with 4KB or 8KB on average.
-Packaging data chunks to a file system block can create more data dependencies among VMs
-since a file block can be shared by even more VMs.
-Thus we need to consider a minimum association of a fie system block to VMs in the packaging process.
+The file system block (FSB) size in a distributed file system such as  Hadoop and GFS is uniform and large (e.g.  64MB),
+while the data chunk in a typical deduplication system is of a non-uniform size with 4KB or 8KB on average.
+Packaging data chunks to a FSB can create more data dependencies among VMs
+since a file system block can be shared by even more VMs.
+Thus we need to consider a minimum association of FSBs to VMs in the packaging process.
 \end{itemize}
 
 Another consideration is the computing cost of deduplication.
@@ -83,7 +83,7 @@ In designing a VC duplication algorithm, we have considered and adopted some of
 the following previously-developed techniques.
 1)
 {\em Version-based change detection}.
-VM snapshots can be  backed up  incrementally by identifying file  blocks that have
+VM snapshots can be  backed up  incrementally by identifying file segments that have
 changed from the previous version of the snapshot~\cite{Clements2009,Vrable2009,TanIPDPS2011}.
 Such a scheme  is  VM-centric since deduplication is localized. 
 We are seeking for a tradeoff since 
@@ -91,7 +91,7 @@ global signature comparison can deliver additional compression~\cite{Guo2011,Don
 2) {\em Stateless  data Routing}.
 One approach for scalable duplicate comparison is to use a content-based hash
 partitioning algorithm called stateless data routing by Dong et al.~\cite{Dong2011} 
-that divides the deduplication work with a similarity approximation. This work 
+Stateless data routing divides the deduplication work with a similarity approximation. This work 
 is similar to Extreme Binning by Bhagwat et al.~\cite{extreme_binning09} and 
 each request is routed  to a machine which holds
 a Bloom filter  or can fetch on-disk index for additional comparison.

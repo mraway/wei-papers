@@ -35,7 +35,7 @@ The representation of each snapshot has  a two-level index data structure.
 The snapshot meta data (called snapshot recipe) contains a list of segments, each of which contains segment
 metadata of its chunks (called segment recipe).
 In snapshot and segment recipes, 
-the data structures  includes reference to the actual data location to eliminate the need for additional indirection.
+the data structures  include reference to the actual data location to eliminate the need for additional indirection.
 
 \begin{figure}[htbp]
     \centering
@@ -112,7 +112,7 @@ the PDS file on the disk appends the  new PDS data identified and the growth of 
 The old data is not removed because they can still be referenced by the existing snapshots. 
 A periodic cleanup is conducted  to remove unused PDS chunks (e.g. every few months). 
 
-We decide not to take the sampled index appraoch~\cite{Guo2011} 
+We decide not to take the sampled index approach~\cite{Guo2011} 
 for detecting duplicates from PDS.
 This is because for the data sets we have tested, we only observed very limited spatial locality 
 among popular data chunks. On average the number of consecutive PDS index hits is lower than 7,
@@ -187,7 +187,7 @@ While we can use the mark-and-sweep technique~\cite{Guo2011},
 it takes significant resources to conduct this process every time there is a snapshot deletion.
 In the case of Alibaba, snapshot backup is conducted automatically and there are 
 about 10 snapshot stored for every VM customer. When there is
-a new snapshot created every day,  there will be  a snapshot expired everyday to maintain
+a new snapshot created every day,  there will be  a snapshot expired every day to maintain
 balanced storage use. 
 
 We seek a fast solution with low resource usage to delete snapshots and
@@ -223,7 +223,7 @@ the time and memory cost of this comparison is small, linear to the number of ch
 If a chunk's reference is not found in the merged summary vector, we are sure that
 this chunk is not used by any live snapshots, thus can be deleted safely.
 However, among all the chunks to be deleted, 
-there is a small percentage of unused chunks  which
+there are a small percentage of unused chunks  which
 are misjudged as  being in use, resulting in storage leakage.
 
 \item {\bf Periodic repair of leakage}.
@@ -241,7 +241,7 @@ consider each reference consumes 8 bytes plus  1 mark bit, a VM that has 40GB ba
 %{\bf Discussion}
 We now estimate the size of storage leakage and how often leak repair needs to be conducted.
 Assume that  a VM keeps $h$ snapshots in the backup storage, creates and deletes one snapshot
-everyday. Let $u$ be the total number of chunks brought by the initial backup for a VM, $\Delta u$ be the average
+every day. Let $u$ be the total number of chunks brought by the initial backup for a VM, $\Delta u$ be the average
 number of additional unique chunks added from one snapshot to the next snapshot version. Then the total number of unique
 chunks used in a VM is about:
 \[
@@ -251,7 +251,7 @@ U = u + (h-1)\Delta u.
 Each Bloom filter vector has  $z$ bits for each snapshot and let $j$ be the number of hash functions used by the
 Bloom filter.  Notice that a chunk may appear multiple times in these summary vectors; however, this should not 
 increase the probability of being a 0 bit in all $h$ summary vectors.
-Thus the probablity that a particular bit is 0  in all $h$ summary vectors is  
+Thus the probability that a particular bit is 0  in all $h$ summary vectors is  
 $(1- \frac{1}{z}) ^{j U}$. 
 Then the misjudgment rate of being in use  is: 
 \begin{equation}
@@ -278,13 +278,13 @@ When leakage ratio $L/U$ exceeds a pre-defined threshold $\tau$, we derive the c
 
 For example in our tested dataset,  
 each VM keeps $h=10$ snapshots and each snapshot has
-about 1-5\% of new data. Thus $\frac{\Delta u}{u} \leq 0.05$. For a 40GB snapshot, $u\approx  10$ millions.
-Then $U=10.45$ millions.
+about 1-5\% of new data. Thus $\frac{\Delta u}{u} \leq 0.05$. For a 40GB snapshot, $u\approx  10$ million.
+Then $U=10.45$ million.
 We choose  $\epsilon = 0.01$ and $\tau=0.1$.  From Equation~\ref{eq:falserate}, 
 $z=10U=100.45$ million bits. From Equation~\ref{eq:leakrepair}, 
 leak repair should be triggered once for every R=290 runs of approximate deletion. 
 When one machine hosts 25 VMs and there is one snapshot deletion per day per VM, there would be 
 only one full leak repair for one physical machine scheduled for every 12 days. 
-Each repairs uses at most  90MB memory on average
+Each repair uses at most  90MB memory on average
 as discussed earlier and takes a short period of time.
 
