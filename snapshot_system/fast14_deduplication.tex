@@ -27,7 +27,7 @@ the VM's I/O traffic and implement such changed block tracking feature.
 
 Since the best deduplication uses a nonuniform chunk size 
 in the average of 4K or 8K~\cite{Jin2009},
-we conduct additional local similary guided deduplication on a snapshot by comparing
+we conduct additional local similarity guided deduplication on a snapshot by comparing
 chunk fingerprints of a dirty segment 
 with those in  {\em similar} segments from its parent snapshot. 
 We define two segments are similar if their content signature is the same.
@@ -36,7 +36,7 @@ computed during backup and is recorded in the snapshot metadata (called recipe).
 content similarity is an approximation~\cite{resemblance97}.  When processing a dirty segment,
 its  similar segments can be found easily from the
 parent snapshot recipe.  Then recipes of the similar segments are loaded to memory,
-which contain chunk fingerpints to be compared.
+which contain chunk fingerprints to be compared.
 To control the time cost of search, we set a limit on the the number of  similar segments recipes to be fetched. 
 % Then,
 %given a set of data chunks within a dirty segment,  we compare  these chunk fingerprints
@@ -59,8 +59,9 @@ that is the number of copies of the chunk after local deduplication.
 This number can be computed periodically (e.g., on a weekly basis).
 Once the popularity of all data chunks is collected, the system only maintains the top $k$
 most popular chunk fingerprints (called \textbf{PDS index}) in a distributed shared memory.  
-Our previous work~\cite{WeiZhangIEEE} studies a preliminary solution using data popularity and this
-paper improves this with a more comprehensive scheme with  similarity-guided search and fault isolation.
+Compared to a preliminary solution which  uses data popularity~\cite{WeiZhangIEEE}, 
+this paper provides  a more comprehensive scheme with  improved deduplication efficiency and fault tolerance, and
+analytic design guidance. 
 
 Since $k$ is relatively small and these top $k$ chunks are shared among multiple VMs, 
 we can afford to provide extra replicas for these popular chunk data to enhance the fault resilience.
@@ -120,13 +121,13 @@ $f_i$ &  the frequency for the $i$th most popular fingerprint\\
 \hline
 $\delta$ &  the percentage of duplicates detected in local deduplication\\
 \hline
-$\sigma$ & =$\frac{k}{c_u}$ which is  the percentage of unique data  belong to  PDS\\
+$\sigma$ & =$\frac{k}{c_u}$ which is  the percentage of unique data  belonging to  PDS\\
 \hline
 $p$ & the number of machines in the cluster\\
 % \hline
 % $V$ & the average number of VMs hosted on each machine\\
 \hline
-$E$ & the deduplication efficiency of VC approach\\
+$E_c, E_o$ & deduplication efficiency of VC and VO \\
 %\hline
 %$D$ & the amount of unique data on each machine\\
 %\hline
@@ -184,7 +185,7 @@ is the percentage of duplicates that can be detected:
 \label{eq:dedupeff}
 %\begin{split}
 %e_k &= 
-E=\frac{ c\delta + c(1-\delta) \sigma^{1-\alpha}}
+E_c=\frac{ c\delta + c(1-\delta) \sigma^{1-\alpha}}
 {c  - c_u }.\\
 %\end{split}
 \end{equation}
@@ -244,11 +245,11 @@ We call this PDS coverage.
 Figure~\ref{fig:cds-coverage} shows predicted PDS coverage using $\sigma^{1-\alpha}$ when $\alpha$ is fixed at
 0.65 and measured PDS coverage in our test dataset.
 $\sigma=2\%$ represents memory usage of approximately 100MB memory per machine for the PDS.
-While the predicted value remains flat, the  real coverage actually increases as the data size
-increases, which indicates that $\alpha$ increases with the data size. 
-Therefore in practice, the coverage of the PDS increases as more VMs are involved.
+While the predicted value remains flat, PDS  coverage actually increases as more VMs are involved.
+increases. This is because actual $\alpha$ value increases with the data size.
+%Then  PDS coverage PDS increases as more VMs are involved.
 
-\subsection{ Impact on Storage Space and Fault Isolation}
+\subsection{ Impact Fault Isolation}
  
 \begin{figure}
     \centering
@@ -270,18 +271,23 @@ Therefore in practice, the coverage of the PDS increases as more VMs are involve
 The replication degree of the backup storage 
 is $r$ for regular file blocks and $r=3$ is a typical setting in distributed
 file systems~\cite{googlefs03,hdfs10}.
-In the VC approach, a special replication degree $r_c$ is used for PDS data where $r_c>r$. 
-The storage cost for VO with full deduplication is $c_u *r$ and for VC, it is
-$ k*r_c  + (c-E(c-c_u))*r$. Thus The storage cost ratio of $VC$ over $VO$ is 
-\[
-\sigma \frac{r_c}{r} + \frac{c-e(c-c_u)}{c_u}.
-\]
 Since $\sigma$ is small (it is 2\% in our experiments),  
-term $\sigma \frac{r_c}{r}$ is small in the above expression.  
-Thus the impact on storage increase is very small even when we choose a large $r_c/r$ ratio. 
-For example, $r_c/r=2$ or 3. 
+the impact of replication on storage increase is very small even 
+when we choose a large $r_c/r$ ratio.  For example, $r_c/r=2$ or 3. 
 
-Next we  assess  the impact of losing $d$ machines 
+
+%In the VC approach, a special replication degree $r_c$ is used for PDS data where $r_c>r$. 
+%The storage cost for VO with full deduplication is $c_u *r$ and for VC, it is
+%$ k*r_c  + (c-E(c-c_u))*r$. Thus The storage cost ratio of $VC$ over $VO$ is 
+%\[
+%\sigma \frac{r_c}{r} + \frac{c-e(c-c_u)}{c_u}.
+%\]
+%Since $\sigma$ is small (it is 2\% in our experiments),  
+%term $\sigma \frac{r_c}{r}$ is small in the above expression.  
+%Thus the impact on storage increase is very small even when we choose a large $r_c/r$ ratio. 
+%For example, $r_c/r=2$ or 3. 
+
+Now we  assess  the impact of losing $d$ machines 
 to the the VC and VO approaches.  
 A large $r_c/r$ ratio can have a positive impact on full availability of VM snapshot blocks.
 We use file system blocks rather than a deduplication
@@ -302,24 +308,23 @@ Each non-PDS file system block is associated with one VM
 shared by an average of $V_c$ VMs. Let $s$ be the average number of chunks per file block, 
 $V$ be the average number of VMs hosted on each machine. Then, 
 \[
-V *p*N_1 *s  \approx c-E(c-c_u)\; \mbox{ and } \; 
+V *p*N_1 *s  \approx c-E_c(c-c_u) - c_u\sigma\; \mbox{ and } \; 
 V *p*N_2 *s  \approx c_u \sigma V_c.
 \]
 
 For VO, each VM has an average of $N_o$ file system blocks
 and let $V_o$ be the average number of VMs shared by each file system block.
 \[
-V *p*N_o *s  = c_u  V_o.
+V *p*N_o *s  = (c- E_o(c-c_u) ) V_o.
 \]
 
 Since each file block (with default size $64MB$) contains many chunks (on average 4KB),
 each file block contains the hot low-level chunks shared by many VMs, and it also contains
-rare chunks which are not shared.  From the above equations:
+rare chunks which are not shared.  Since $c>> c_u$, from the above equations:
 \[
-\frac{N_1}{N_o} \approx  \frac{c-E(c-c_u)}{c_uV_o}.
+\frac{N_1}{N_o} \approx  \frac{1-E_o}{(1-E_c) V_o}.
 \] 
-
-If we achieve very high deduplication efficiecny, then $N_1$ would be much smaller than $N_o$. 
+When $E_c\approx E_o$ as we demonstrate in Section~\ref{sect:evaldedup}, $N_1$ would be much smaller than $N_o$. 
 When there is a failure in file blocks with replication degree $r$
 and there is no failure for PDS data with more replicas,   a VM in
 the VC approach has a much lower chance to lose a snapshot than VO. 
@@ -330,11 +335,15 @@ the VC approach has a much lower chance to lose a snapshot than VO.
 %one VM.
 %Figure~\ref{fig:fsb-links} shows the average number of VMs sharing each file block from our test data.
 Figure~\ref{fig:vm-links} shows the average number of file system blocks for each VM in VC and in VO. 
-From data, we have observed that $N_1 +N_2 < N_o$ in practice. 
-This is likely because the PDS FSBs tightly pack data used by many VMs, 
-which decreases the overall number of FSBs required to backup a VM.
-Note that  if  the backup for multiple VMs were conducted concurrently, there could be many more
-VMs sharing each file block on average in VO. 
+From data, we have observed that $N_1$ is much smaller than $N_o$.  
+In the evaluation discussed in Section~\ref{ref:evaldedup}, we have considered a worst case scenario that
+every PDS file block is shared by all VMs in the VC approach, which leads a large $N_2$ value. 
+Even with that, the availability of VC snapshots is much higher than VO and we analyze  this below.
+%In fact, $N_1 +N_2 < N_o$. 
+%This is likely because the PDS FSBs tightly pack data used by many VMs, 
+%which decreases the overall number of FSBs required to backup a VM.
+%Note that  if  the backup for multiple VMs were conducted concurrently, there could be many more
+%VMs sharing each file block on average in VO. 
 
 %Therefore, even when there is a loss of a PDS block, the VC approach tolerates the fault better.
 
@@ -444,7 +453,8 @@ Table~\ref{tab:fsb-availability} lists the $A(r)$ values with
 %that the availability of an individual file system block
 with different replication degrees. This demonstrates inequality 
 % $1-\frac{ \binom{d}{r}} { \binom{p}{r} } < 1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} }$
-$A(r) < A(r_c)$.  Since $N_1$ is much smaller than $N_o$ as discussed previously, 
+$A(r) < A(r_c)$ because of  $r < r_c$.  
+Since $N_1$ is much smaller than $N_o$ as discussed previously, 
 these two conditions support that VC has a  higher availability. 
 %comparing  Formula~\ref{eq:VO} and~\ref{eq:VC}. 
 \end{itemize} 
