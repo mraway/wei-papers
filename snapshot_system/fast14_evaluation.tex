@@ -539,11 +539,11 @@ Overall,  VC is faster than SRB, though data reading dominates the processing ti
     \begin{tabular}{c|ccc}
     Num. of concurrent      & \multicolumn{3}{c}{Throughput without}    \\
     backup tasks            & \multicolumn{3}{c}{I/O throttling (MB/s)} \\ \cline{2-4}
-    per node                & Raw                                        & Snapshot Store & QFS  \\ \hline
-    1                       & 1369.6                                     & 148.0          & 18.0 \\
-    2                       & 2408.5                                     & 260.2          & 31.7 \\
-    4                       & 4101.8                                     & 443.3          & 54.1 \\
-    6                       & 5456.5                                     & 589.7          & 72.0 \\
+    per node                & Backup                                     & Snapshot Store & QFS  \\ \hline
+    1                       & 1369.6                                     & 148.0          & 35.3 \\
+    2                       & 2408.5                                     & 260.2          & 61.7 \\
+    4                       & 4101.8                                     & 443.3          & 103.1 \\
+    6                       & 5456.5                                     & 589.7          & 143.8 \\
     \end{tabular}
 \caption{Throughput of software layers under different concurrency}
 \label{tab:throughput}
@@ -553,7 +553,7 @@ Overall,  VC is faster than SRB, though data reading dominates the processing ti
 Table~\ref{tab:throughput} shows the  average throughput of software layer
 when I/O is throttled under 50MB/second and when there is no restriction.
 %machine when all machine nodes execute one or multiple MV backup tasks.
-``Raw'' column is the throughput  of the backup service  per machine.
+``Backup'' column is the throughput  of the backup service  per machine.
 ``Snapshot store" is the  write throughput of the snapshot store layer and the gap between this
 column and  ``Raw" column is caused by significant data reduction by dirty bit and duplicate
 detection. Only non-duplicate chunks trigger a snapshot store write.
