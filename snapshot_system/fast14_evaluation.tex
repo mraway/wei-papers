@@ -209,7 +209,7 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
         },
         columns/VO100/.style={
             column name={
-                \multicolumn{4}{c|}{Snapshot Availability(\%)}\\&
+                \multicolumn{4}{c|}{VM Snapshot Availability(\%)}\\&
                 \multicolumn{2}{c|}{$p=100$}&\multicolumn{2}{c|}{$p=1000$}\\&
             VO},
             fixed, precision=6
@@ -314,6 +314,7 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
             legend columns=2,
             legend style={
                 font={\tiny\sffamily},
+                nodes={right}
                 %at={(0.5,-0.2)},
                 %anchor=north
             },
@@ -331,7 +332,7 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
                 %VC MH($\sigma=1\%$),
                 VC(No PDS),
                 %VC($\sigma=4\%$),
-                VC(No MH\,$\sigma=2\%$),
+                VC($\sigma=2\%$\, No similarity guidance),
                 %VC($\sigma=1\%$),
                 SRB
             };
