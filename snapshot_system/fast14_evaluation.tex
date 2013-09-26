@@ -380,9 +380,10 @@ with competitive deduplication efficiency.
 
 Figure~\ref{fig:exbin-efficiency-graph2} also shows the curve  of VC without local similarity search.
 Adding local similarity-guided search increases deduplication efficiency from 93\% to over 96\%.
-That is one significant improvement compared to the work in ~\cite{WeiZhangIEEEClound}.
+That is one significant improvement compared to the work in ~\cite{WeiZhangIEEEClound}
+which uses the parent segment at the same offset to detect duplicates locally.
 The reason is that  
-%Without this (i.e. when we only check the parent segment at the same offset), 
+%Without this (i.e. when we only 
 when a data  segment is moved to another location on disk, for example when a file is rewritten
 rather than modified in place,  dirty-bit based detection would not be able to detect such a movement.
  We have found that in
@@ -543,16 +544,18 @@ Overall,  VC is faster than SRB, though data reading dominates the processing ti
 % \label{tab:throughput}
 % \end{table*}
 \begin{table}[htbp]
+\begin{small}
     \centering
     \begin{tabular}{c|ccc}
     Num. of concurrent      & \multicolumn{3}{c}{Throughput without}    \\
     backup tasks            & \multicolumn{3}{c}{I/O throttling (MB/s)} \\ \cline{2-4}
-    per node                & Backup                                     & Snapshot Store & QFS  \\ \hline
+    per machine                & Backup                                     & Snapshot Store & QFS  \\ \hline
     1                       & 1369.6                                     & 148.0          & 35.3 \\
     2                       & 2408.5                                     & 260.2          & 61.7 \\
     4                       & 4101.8                                     & 443.3          & 103.1 \\
     6                       & 5456.5                                     & 589.7          & 143.8 \\
     \end{tabular}
+\end{small}
 \caption{Throughput of software layers per machine under different concurrency}
 \label{tab:throughput}
 \end{table}

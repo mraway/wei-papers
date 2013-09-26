@@ -59,9 +59,9 @@ i.e., the number of copies of the chunk after local deduplication.
 This number can be computed periodically, e.g., on a weekly basis.
 Once the popularity of all data chunks is collected, the system only maintains the top $k$
 most popular chunk fingerprints (called \textbf{PDS index}) in a distributed shared memory.  
-Compared to a preliminary solution which  uses data popularity~\cite{WeiZhangIEEE}, 
-this paper provides  a more comprehensive scheme with  improved deduplication efficiency and fault tolerance, and
-analytic design guidance. 
+%Compared to a preliminary solution which  uses data popularity~\cite{WeiZhangIEEE}, 
+%this paper provides  a more comprehensive scheme with  improved deduplication efficiency and fault tolerance, and
+%analytic design guidance. 
 
 Since $k$ is relatively small and these top $k$ chunks are shared among multiple VMs, 
 we can afford to provide extra replicas for these popular chunk data to enhance the fault resilience.
@@ -271,7 +271,7 @@ This is because the actual $\alpha$ value increases with the data size.
 The replication degree of the backup storage 
 is $r$ for regular file system blocks and $r=3$ is a typical setting in distributed
 file systems~\cite{googlefs03,hdfs10}.
-Since $\sigma$ is small (it is 2\% in our experiments),  
+Since $\sigma$ is small (e.g.  2\% in our experiments),  
 the impact of replication on storage increase is very small even 
 when choosing  $r_c/r$ ratio as 2 or 3. 
 
@@ -518,7 +518,7 @@ and failure settings.THIS PLOT WILL BE REPLACED BY TABLE}
             column name={\multirow{2}{*}{Failures ($d$)}}
         },
         columns/Availability3/.style={
-            column name={\multicolumn{3}{c|}{$A(r_c)$}\\&$r_c=3$},
+            column name={\multicolumn{3}{c|}{$A(r_c) \times 100\%$}\\&$r_c=3$},
             fixed, precision=9
         },
         columns/Availability6/.style={
