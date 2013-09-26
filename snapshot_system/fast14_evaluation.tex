@@ -12,7 +12,7 @@ We will compare VC with a VO approach  using stateless routing with binning (SRB
 based on~\cite{Dong2011,extreme_binning09}.
 SRB executes a distributed deduplication by routing a data chunk to one of cluster machines~\cite{Dong2011}
 using  a min-hash function discussed in \cite{extreme_binning09}. Once a data chunk is routed to
-a machine, this chunk is compared with the fingerprint index within this machine locally. 
+a machine, the chunk is compared with the fingerprint index within this machine locally. 
 
 \subsection{Settings}
 We have performed a trace-driven study using a production dataset~\cite{WeiZhangIEEE} from 
@@ -388,7 +388,7 @@ when a data  segment is moved to another location on disk, for example when a fi
 rather than modified in place,  dirty-bit based detection would not be able to detect such a movement.
  We have found that in
 approximately 1/3 of the VMs in our dataset this movement happens frequently,
-so the similarity search becomes important for those VMs.
+so the similarity search becomes especially important for those VMs.
 % In general, our experiments show that
 % dirty-bit detection at the segment level can reduce the data size to about 24.14\% of original data, 
 % which leads about a 75.86\% reduction.
@@ -445,11 +445,11 @@ space overhead, which is still small.
     Tasks & CPU & Mem &Read &  Write  & Time  \\ 
     & & (MB)          &(MB/s) &  (MB/s) & (hrs) \\ \hline
 %    1     & 19\% & 118.1 & 50MB/s 8.37 & 1.314\\ \hline
-    1     & 19\% & 118 & 50 & 8.4 & 1.31\\ \hline
+    1     & 19\% & 118 & 50 & 16.4 & 1.31\\ \hline
 %    2     & 35\% & 131.8 & 9.0 & 1.226\\ \hline
-    2     & 35\% & 132 &50  & 9.0 & 1.23\\ \hline
+    2     & 35\% & 132 &50  & 17.6 & 1.23\\ \hline
     %4     & 63\% & 154.1 & 9.3 & 1.179\\ \hline
-    4     & 63\% & 154&50   & 9.3 & 1.18\\ \hline
+    4     & 63\% & 154&50   & 18.3 & 1.18\\ \hline
 %    6     & 77\% & 171.9 & 9.46 & 1.162\\ \hline
 %    8     & 82\% & 90.5 & 89.2 & \\ \hline
 %    10                      & 85\% & 97.2   & 90.4 \\ \hline
@@ -461,13 +461,13 @@ space overhead, which is still small.
 
 {\bf Memory and disk bandwidth usage with multi-VM processing}. 
 We have further studied the memory and disk bandwidth usage 
-when running concurrent VM snapshot backup on each machine with $\delta=2\%$. 
+when running concurrent VM snapshot backup on each machine with $\sigma=2\%$. 
 Table ~\ref{tab:resource_usage} gives the resource usage  when
 running 1 or multiple  VM backup tasks at the same time on each physical machine. 
 ``CPU'' column is the percentage of a single core used. 
 ``Mem'' column includes 100MB memory usage for PDS index and other space cost for executing deduplication tasks such as 
 receipt metadata and cache. 
-``Read'' column is controlled as 50MB/s bandwidth usage with I/O throttling so that other cloud services are not impacted a lot.
+``Read'' column is controlled as 50MB/s bandwidth usage with I/O throttling so that other cloud services are not impacted too much.
 ``Write'' column is the I/O write usage of QFS and notice that each QFS write leads writes in multiple machines due to
 data replication.     
 % [ NOT REASONABLE: Notice that memory and CPU used by PDS index and QFS are not included since they belong to 
@@ -479,7 +479,7 @@ data replication.
 Table ~\ref{tab:resource_usage} shows that  a single backup task per node can complete the backup of the entire
 VM cluster in about 1.58 hours. Since there are about 25 VMs per machine, we could execute
 more tasks in parallel at each machine. But adding more backup concurrency does not shorten the overall time
-a lot because of the controlled  disk read time.
+significantly because of the controlled  disk read time.
 %,  we can still process raw data at near 175 MB/s. If we consider the extreme case in which each machine has 25 VMs
 %at 40GB size, our snapshot system can finish backing up all the VMs (1TB total) in 1.58 hours.
 
@@ -487,7 +487,7 @@ a lot because of the controlled  disk read time.
 Figure~\ref{fig:vc_srb_combined} shows
 the  average  processing  time of  a VM segment under VC and SRB. 
 VC uses $\sigma=2\%$ and $4\%$.
-It has a breakdown of time for reading data, updating the metadata, network latency to visit
+It has a breakdown of time for reading data and updating the metadata, network latency to visit
 a remote machine, and index access for fingerprint comparison.
 The change of $\sigma$ does not significantly affect the overall backup speed as
 PDS lookup takes only a small amount of time.
@@ -495,7 +495,7 @@ SRB has higher index access and fingerprint comparison costs because all chunk s
 machine does not control the index must be sent over the network, and then rely
 on the index holding machine to access its index (often on the disk, supported by a Bloom filter) 
 and perform comparison.
-VC is faster for index access because it conducts in-memory local search first and then
+VC is faster in this regard because it conducts in-memory local search first and then
 accesses  the PDS on distributed shared memory, so most chunks can be dealt with locally.  
 SRB spends  slighter more time in  reading data and updates because it also updates the on-disk
 local meta data index in addition to partition indices.
