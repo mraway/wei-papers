@@ -62,12 +62,12 @@ As shown in Figure~\ref{fig:as_arch}, we explain the data structure of the snaps
 
 %\begin{itemize}
 %\item
-PDS chunks are stored in one PDS file. 
+All PDS chunks are stored in one PDS file. 
 Each reference to a PDS data chunk in the PDS index is the offset within the PDS file.
 %There is an option to use a data structure similar to the non-PDS store. We opt
 %for the simpler format because
-Additional compression is not applied because PDS chunks have less spatial locality in data access. 
-For the data sets we have tested, we only observed very limited spatial locality 
+Additional compression is not applied because 
+for the data sets we have tested, we only observed very limited spatial locality 
 among popular data chunks. On average the number of consecutive PDS index hits is lower than 7.
 Thus it is not very effective to group a large number of chunks as a compression and data fetch unit. 
 For the same reason, we decide not to take the sampled index approach~\cite{Guo2011} 
@@ -173,7 +173,7 @@ During compaction, the snapshot store creates a new container (with the same con
 existing one. This is done by sequentially scanning the old container, copying all the chunks that are not 
 found in the deletion log to the new container, and creating new chunk groups and indices. 
 Every local chunk ID however is directly copied rather than re-generated. This
-process leaves holes in the CID values, but preserves the order and IDs of chunks.
+process leaves holes in the chunk ID values, but preserves the order and IDs of chunks.
 As a result, all data references stored 
 in recipes are permanent and stable, and the data reading process
 is as efficient as before. Maintaining the stability of chunk IDs also ensures that recipes do not
