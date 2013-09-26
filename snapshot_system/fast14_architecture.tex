@@ -19,7 +19,7 @@ and 4)  a PDS client to support PDS metadata access.
 
 We use the virtual device driver in Xen that employs a bitmap to track the changes 
 that have been made to the virtual disk.
-Every bit in the bitmap represents a fix-sized (2MB) region called a \textit{segment}, indicating whether the segment
+Every bit in the bitmap represents a fixed-sized (2MB) region called a \textit{segment}, indicating whether the segment
 has been modified since last backup. 
 Segments are further divided into variable-sized chunks (average 4KB) 
 using a content-based chunking algorithm~\cite{frame05}, 
@@ -27,7 +27,7 @@ which brings the opportunity of fine-grained deduplication.
 When the VM issues a disk write, the dirty bit for the corresponding segment is set
 and this indicates such a segments needs to be checked during snapshot backup. 
 After the snapshot backup is finished, the driver resets the dirty bit map to a clean state.
-For data modification during backup, a copy-on-write protection is set so that backup can continue to
+For data modification during backup, copy-on-write protection is set so that backup can continue to
 copy  a specific version while new changes are still recorded.
 %copies a frozen version while the modification can still carry on.
 
@@ -51,7 +51,7 @@ Following the VM-centric idea for the purpose of fault isolation,
 each VM has its own snapshot store, containing new data chunks which are considered
 to be non-duplicates.
 There is also a special store containing all PDS chunks shared among different VMs.
-As shown in Figure~\ref{fig:as_arch}, we explain the data structure of snapshot stores as follows.
+As shown in Figure~\ref{fig:as_arch}, we explain the data structure of the snapshot stores as follows.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=2.75in]{images/sstore_arch}
@@ -72,9 +72,9 @@ The compaction  routine can work on one container at a time and move the in-use 
 Each container is further divided into a set of chunk data groups. Each chunk group is composed of
 a set of data chunks and is the basic unit in data access and retrieval. 
 In writing a chunk during backup, the system accumulates data chunks and stores the entire
-group as a unit after a compression.
+group as a unit after compression.
 When accessing a particular chunk, its chunk group is retrieved from the storage
-and uncompressed. Given the high spatial locality and usefulness of prefetching  in 
+and decompressed. Given the high spatial locality and usefulness of prefetching  in 
 snapshot chunk accessing~\cite{Guo2011,foundation08},
 retrieval of  a data chunk  group naturally works well with prefetching. 
 A  typical chunk group contains 100 to 1000 chunks, with an average size of 
@@ -157,7 +157,7 @@ anticipate future sequential reads.
 %\item
 \noindent\textbf{Delete()}.
 Chunk deletion occurs when a snapshot expires or gets deleted explicitly by a user
-and we will discuss the snapshot deletion in detail in the following subsection.
+(we will discuss the snapshot deletion in detail in the following subsection).
 When deletion requests are issued for a specific container,
 those requests are simply recorded into the  container's deletion log initially and thus  a lazy
 deletion strategy is exercised.
@@ -191,7 +191,7 @@ depend directly on physical storage locations, which simplifies data migration.
 
 In a busy VM cluster, snapshot deletions can occur frequently.
 Deduplication complicates the deletion process because space saving relies on the sharing of data
-and it requires the global reference of deleted chunks to be identified before  they can be safely removed.
+and it requires the global references to deleted chunks to be identified before  they can be safely removed.
 While we can use the mark-and-sweep technique~\cite{Guo2011}, 
 it takes significant resources to conduct this process every time there is a snapshot deletion.
 In the case of Alibaba, snapshot backup is conducted automatically and there are 
@@ -243,11 +243,11 @@ are misjudged as  being in use, resulting in storage leakage.
 Leakage repair is conducted periodically to fix the above approximation error.
 This procedure compares the live chunks for each VM with what are truly used in the VM snapshot recipes.
 That requires a scan of all the metadata in a single VM backup. Since it is a VM-specific procedure 
-the space and time cost is relatively small compared to the traditional mark-sweep procedure~\cite{Guo2011} which scans snapshot 
+the space and time cost is relatively small compared to the traditional mark-and-sweep procedure~\cite{Guo2011} which scans snapshot 
 chunks from all VMs.
 For example,
 consider each reference consumes 8 bytes plus  1 mark bit, a VM that has 40GB backup data with about
-10 million chunks will need less than 85MB of memory to complete a VM-specific mark-sweep process.
+10 million chunks will need less than 85MB of memory to complete a VM-specific mark-and-sweep process.
 \end{itemize}
 
 %{\bf Discussion}
@@ -297,5 +297,6 @@ leak repair should be triggered once for every R=590 runs of approximate deletio
 When one machine hosts 25 VMs and there is one snapshot deletion per day per VM, there would be 
 only one full leak repair for one physical machine scheduled for every 23.6 days. 
 Each repair uses at most  90MB memory on average
-as discussed earlier and takes a short period of time.
+%as discussed earlier
+and takes a short period of time.
 
