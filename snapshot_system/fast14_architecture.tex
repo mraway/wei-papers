@@ -40,7 +40,7 @@ the data structures  include references to the actual data location to eliminate
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=2.75in]{images/socc_arch_cluster}
-    \caption{System architecture and data flow during snapshot write}
+    \caption{System architecture and data flow during snapshot backup}
     \label{fig:arch_vm}
 \end{figure}
 
@@ -297,7 +297,7 @@ each summary vector requires $z=10U=122.5$ million bits or 15MB. From Equation~\
 leak repair should be triggered once for every R=245 runs of approximate deletion. 
 When one machine hosts 25 VMs and there is one snapshot deletion per day per VM, there would be 
 only one full leak repair for one physical machine scheduled for every 9.8 days. 
-If $\tau = 0.1$ then leakage repair only occurs every 19.6 days.
+If $\tau = 0.1$ then leakage repair occurs every 19.6 days.
 Each repair uses at most 90MB memory on average
 %as discussed earlier
 and takes a short period of time.
