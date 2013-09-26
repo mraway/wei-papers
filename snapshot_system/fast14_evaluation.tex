@@ -450,7 +450,7 @@ space overhead, which is still small.
     2     & 35\% & 132 &50  & 17.6 & 1.23\\ \hline
     %4     & 63\% & 154.1 & 9.3 & 1.179\\ \hline
     4     & 63\% & 154&50   & 18.3 & 1.18\\ \hline
-%    6     & 77\% & 171.9 & 9.46 & 1.162\\ \hline
+    6     & 77\% & 171.9 & 9.46 & 1.162\\ \hline
 %    8     & 82\% & 90.5 & 89.2 & \\ \hline
 %    10                      & 85\% & 97.2   & 90.4 \\ \hline
 %    12                      & 91\% & 95.6    & 91.5 \\ \hline
@@ -604,21 +604,23 @@ per machine with 6 concurrent backup tasks. With 50MB/second controlled I/O band
 % \end{figure}
 
  \subsection{Effectiveness of Approximate Deletion}
+
  \begin{figure}
      \centering
      \includegraphics[width=3in]{figures/leakage}
-     \caption{Accumulated storage leakage by approximate snapshot deletions}
+     \caption{Accumulated storage leakage by approximate snapshot deletions ($\Delta u/u=0.025$)}
      \label{fig:leakage}
  \end{figure}
 
 Figure~\ref{fig:leakage} shows the average accumulated storage leakage in terms of percentage of
 storage space per VM caused  by approximate deletions.
-The dashed line is the predicted leakage using Formula~\ref{eq:leakrepair} from Section~\ref{sect:delete}
-given $\Delta u/u=0.02$,
+The top dashed line is the predicted leakage using Formula~\ref{eq:leakrepair} from Section~\ref{sect:delete}
+given $\Delta u/u=0.025$,
 while the top solid line represents the actual leakage measured during the experiment 
-with the same $\Delta u/u=0.02$ setting for summary vectors.
-After 9 snapshot deletions, the actual leakage reaches 0.0018\% and this means that
-there is only 1.8MB space leaked for every 1GB of stored data. 
-We also measure the storage leakage under $\Delta u/u=0.05$ and $0.10$ settings for summary vectors.
-As this value increases, larger summary vectors are generated thus results in a decrease on the
-false-positive ratio, therefore less amount of unused chunks are misjudged. 
+with the same $\Delta u/u=0.025$ setting for summary vectors.
+After 9 snapshot deletions, the actual leakage ratio reaches 0.0018 and this means that
+there is only 1.8MB space leaked for every 1GB of stored data, it is also obvious that
+the leakage grows linearly as we expect. 
+% We also measure the storage leakage under $\Delta u/u=0.05$ and $0.10$ settings for summary vectors.
+% As this value increases, larger summary vectors are generated thus results in a decrease on the
+% false-positive ratio, therefore less amount of unused chunks are misjudged. 
