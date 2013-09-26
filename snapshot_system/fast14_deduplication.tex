@@ -167,9 +167,11 @@ as the sum of each unique fingerprint times its frequency:
 f_1 \sum_{i=1}^{c_u}\frac{1}{i^\alpha} = c (1-\delta).
 \]
 Given $\alpha <1$, $f_1$ can be approximated with integration:
-\begin{equation}
+%\begin{equation}
+\[
 f_1=\frac{c(1-\alpha)(1-\delta)}{c_u^{1-\alpha}}.
-\end{equation}
+\]
+%\end{equation}
 
 Thus putting the $k$ most popular fingerprints into PDS index can remove the following number of chunks during global 
 deduplication:
@@ -324,8 +326,9 @@ rare chunks which are not shared.  Since $c>> c_u$, from the above equations:
 \[
 \frac{N_1}{N_o} \approx  \frac{1-E_o}{(1-E_c) V_o}.
 \] 
-When $E_c$ is close to $E_o$ as demonstrated in Section~\ref{sect:evaldedup}, $N_1$ is 
-much smaller than $N_o$. 
+When $E_c$ is close to $E_o$,
+%as demonstrated in Section~\ref{sect:evaldedup},
+$N_1$ is much smaller than $N_o$. 
 %When there is a failure in FSBs with replication degree $r$
 %and there is no failure for PDS data with more replicas,   a VM in
 %the VC approach has a much lower chance to lose a snapshot than VO. 
@@ -418,44 +421,52 @@ A(r) = 1-\binom{d}{r}/ \binom{p}{r}.
 \]
 Then the availability of one VM's snapshot data under VO approach is the probability that
  all its FSBs are unaffected during the system failure:
-\begin{equation}
-\label{eq:VO}
+%\begin{equation}
+%\label{eq:VO}
 %(1-\frac{ \binom{d}{r}} { \binom{p}{r} })^{N_o}. 
+\[
 A(r)^{N_o}. 
-\end{equation}
+\]
+%\end{equation}
 
 For VC, there are two cases for $d$ failed machines.
 \begin{itemize}
 \item
 When $r \le d<r_c$,  there is no PDS data loss and  
 the full snapshot availability of a VM in the VC approach is 
-\begin{equation}
-\label{eq:VC1}
+%\begin{equation}
+%\label{eq:VC1}
 %(1-\frac{\binom{d}{r}} { \binom{p}{r} })^{N_1}.
+\[
 A(r)^{N_1}.
-\end{equation}
+\]
+%\end{equation}
 Since $N_1$ is typically much smaller than $N_o$, 
 the VC approach has a higher availability of VM snapshots than VO.
-In the evaluation discussed in Section~\ref{sect:evaldedup}, we have considered a worst case scenario that
+%In the evaluation discussed in Section~\ref{sect:evaldedup}, 
+We have considered a worst case scenario where
 every PDS FSB is shared by all VMs in the VC approach, which leads a large $N_2$ value. 
 Even with that, the availability of VC snapshots is much higher than VO and we analyze  this below.
 
 \item
 When $r_c \leq d$, both non-PDS and PDS file system blocks in VC can have a loss.
 The full snapshot availability of  a VM in the VC approach is
-\begin{equation}
-\label{eq:VC2}
+%\begin{equation}
+%\label{eq:VC2}
 % (1-\frac{ \binom{d}{r}} { \binom{p}{r} })^{N_1} 
 % *
 % (1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} })^{N_2}.
+\[
 A(r)^{N_1} * A(r_c)^{N_2}
-\end{equation}
+\]
+%\end{equation}
 %comparing  Formula~\ref{eq:VO} and~\ref{eq:VC}. 
 \end{itemize} 
-In the evaluation discussed in Section~\ref{sect:evaldedup}, we have considered a worst case scenario that
+%In the evaluation discussed in Section~\ref{sect:evaldedup},
+We have considered a worst case scenario that
 every PDS FSB is shared by all VMs in the VC approach, which leads to a large $N_2$ value. 
 Even with that, the availability of VC snapshots is still much higher than VO and  
-there are two reasons.  1) $N_1$ is much smaller than $N_o$ as discussed previously.
+there are two reasons for.  1) $N_1$ is much smaller than $N_o$ as discussed previously.
 2)  $A(r) < A(r_c)$ because of  $r < r_c$.  
 Table~\ref{tab:fsb-availability} lists the $A(r)$ values with
 %that the availability of an individual file system block
