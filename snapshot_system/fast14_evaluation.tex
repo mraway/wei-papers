@@ -380,7 +380,7 @@ with competitive deduplication efficiency.
 
 Figure~\ref{fig:exbin-efficiency-graph2} also shows the curve  of VC without local similarity search.
 Adding local similarity-guided search increases deduplication efficiency from 93\% to over 96\%.
-That is one significant improvement compared to the work in ~\cite{WeiZhangIEEEClound}
+That is one significant improvement compared to the work in ~\cite{WeiZhangIEEE}
 which uses the parent segment at the same offset to detect duplicates locally.
 The reason is that  
 %Without this (i.e. when we only 
@@ -546,14 +546,15 @@ Overall,  VC is faster than SRB, though data reading dominates the processing ti
 \begin{table}[htbp]
 \begin{small}
     \centering
-    \begin{tabular}{c|ccc}
-    Num. of concurrent      & \multicolumn{3}{c}{Throughput without}    \\
-    backup tasks            & \multicolumn{3}{c}{I/O throttling (MB/s)} \\ \cline{2-4}
+    \begin{tabular}{|c|ccc|}
+\hline
+    Num. of concurrent      & \multicolumn{3}{c|}{Throughput without}    \\
+    backup tasks            & \multicolumn{3}{c|}{I/O throttling (MB/s)} \\ \cline{2-4}
     per machine                & Backup                                     & Snapshot Store & QFS  \\ \hline
     1                       & 1369.6                                     & 148.0          & 35.3 \\
     2                       & 2408.5                                     & 260.2          & 61.7 \\
     4                       & 4101.8                                     & 443.3          & 103.1 \\
-    6                       & 5456.5                                     & 589.7          & 143.8 \\
+    6                       & 5456.5                                     & 589.7          & 143.8 \\ \hline
     \end{tabular}
 \end{small}
 \caption{Throughput of software layers per machine under different concurrency}
@@ -612,8 +613,12 @@ per machine with 6 concurrent backup tasks. With 50MB/second controlled I/O band
 
 Figure~\ref{fig:leakage} shows the average accumulated storage leakage in terms of percentage of
 storage space per VM caused  by approximate deletions.
-The solid line is the predicted leakage using Formula~\ref{eq:leakrepair} from Section~\ref{sect:delete}
-while the dashed line is the actual leakage measured during the experiment.
-% [OTHER PARAMETERS USED]
-After 9 snapshot deletions, the actual leakage reaches 0.01\% and this means that
-there is only 1MB space leaked for every 10GB of stored data. 
+The dashed line is the predicted leakage using Formula~\ref{eq:leakrepair} from Section~\ref{sect:delete}
+given $\Delta u/u=0.02$,
+while the top solid line represents the actual leakage measured during the experiment 
+with the same $\Delta u/u=0.02$ setting for summary vectors.
+After 9 snapshot deletions, the actual leakage reaches 0.0018\% and this means that
+there is only 1.8MB space leaked for every 1GB of stored data. 
+We also measure the storage leakage under $\Delta u/u=0.05$ and $0.10$ settings for summary vectors.
+As this value increases, larger summary vectors are generated thus results in a decrease on the
+false-positive ratio, therefore less amount of unused chunks are misjudged. 

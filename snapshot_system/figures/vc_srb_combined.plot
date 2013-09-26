@@ -1,4 +1,4 @@
-set term post eps color solid enhanced font ", 20"
+set term post eps color solid enhanced font ", 24"
 set output "vc_srb_combined.eps"
 set boxwidth 0.5 absolute
 set key reverse top #Left outside
