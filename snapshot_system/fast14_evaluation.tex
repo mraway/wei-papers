@@ -73,7 +73,7 @@ failed machines increases.
 For example, with 5/100 machines failed and 25 VMs per machine, VO with 93.256\% availability would lose data in 169 VMs 
 while VC with 97.763\% loses data for 56 VMs.
 The key reason is that for most data in VC, only a single
-VM can be affected by the loss of a single FSB. Since most FSBs contain blocks for a single VM, VMs can point to a smaller number of FSBs.
+VM can be affected by the loss of a single FSB. Since most FSBs contain chunks for a single VM, VMs can depend on a smaller number of FSBs.
 % because our VM-centric approach
 %localizes deduplication.  
 
