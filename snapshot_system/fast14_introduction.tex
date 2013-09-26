@@ -28,17 +28,19 @@ that garbage collection after deletion of old snapshots also competes for comput
 Sharing of data chunks among by multiple VMs needs to be detected during
 garbage collection and such dependencies complicate deletion operations. 
 
-The paper studies and evaluates  an integrated approach which uses  multiple duplicate detection strategies
-based on  changed block tracking, similarity guided local deduplication,
+The paper studies and evaluates an integrated approach which uses  multiple duplicate detection strategies
+based on changed block tracking, similarity guided local deduplication,
 and popularity guided global deduplication. 
 This approach is VM centric by localizing duplicate detection within each VM  
 and by packaging only data chunks from the same VM into a file system block as much as possible.
 By narrowing duplicate sharing within a small percent of common data chunks and exploiting their popularity,
 this scheme can afford to allocate extra replicas of these shared chunks for better
 fault resilience while sustaining competitive deduplication efficiency.
+In addition, our VM-centric design allows garbage collection to be performed in a localized
+scope and we propose an approximate deletion scheme to reduce this cost further.
 Localization also brings the benefits of greater ability to exploit parallelism so
 backup operations can run simultaneously without a central  bottleneck.
-This  VM-centric solution uses  a small amount of  memory while delivering reasonable deduplication efficiency. 
+This VM-centric solution uses a small amount of  memory while delivering reasonable deduplication efficiency. 
 
 We have developed a prototype system that runs a cluster of Linux machines with Xen and uses 
 a standard distributed file system for the backup storage. 

@@ -40,7 +40,7 @@ in this paper.
 Our key design consideration is VM dependence minimization during deduplication and file system block management.
 \begin{itemize}
 \item {\em Deduplication localization.}
-Because a data chunk is compared with signatures collected from all VMs during
+Because a data chunk is compared with fingerprints collected from all VMs during
 the deduplication process, only one copy of duplicates is stored in the storage,
 this artificially creates data dependencies among different VM users. 
 Content sharing via deduplication affects fault isolation since machine failures happen periodically 
@@ -83,7 +83,7 @@ In designing a VC duplication algorithm, we have considered and adopted some of
 the following previously-developed techniques.
 1)
 {\em Changed block Tracking}.
-VM snapshots can be  backed up  incrementally by identifying file segments that have
+VM snapshots can be  backed up  incrementally by identifying data segments that have
 changed from the previous version of the snapshot~\cite{Clements2009,Vrable2009,TanIPDPS2011}.
 Such a scheme  is  VM-centric since deduplication is localized. 
 We are seeking for a tradeoff since 
