@@ -4,7 +4,7 @@
 Our system runs on a cluster of Linux machines with Xen-based VMs and
 an open-source package for the distributed file system  called QFS~\cite{michael2013}. 
 %to %manage  the physical disk storage. 
-All data needed for the backup service including snapshot data and  metadata
+All data needed for the backup service including snapshot data and metadata
 %and snapshot data for backup purposes, 
 resides in this distributed file system. 
 One physical node hosts tens of VMs, each of which accesses its virtual machine disk image through the
@@ -116,7 +116,7 @@ Each container maintains a local  chunk counter and assigns the current number
 as a chunk ID  when  a new chunk is added to this  container. 
 Since data chunks are always appended to a snapshot store during backup, 
 local chunk IDs are monotonically increasing.
-When a snapshot chunk is to be accessed, the snapshot recipe contains a reference pointing to  a data chunk
+When a chunk is to be accessed, the segment recipe contains a reference pointing to  a data chunk
 in the PDS store or in a non-PDS VM snapshot  store. 
 Using  a container ID, the corresponding container index file of this VM is accessed and 
 the chunk group is identified using a simple chunk ID range search. Once the chunk group is loaded to memory, 
