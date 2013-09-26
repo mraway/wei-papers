@@ -24,12 +24,12 @@ The previous work in deduplication focuses on the efficiency and approximation o
 fingerprint comparison, and has not addressed fault tolerance issues  together with deduplication.
 Thus we also seek deduplication options that yield better fault isolation.
 Another issue considered is that
-that deletion of old snapshots also competes for computing resources. 
+that garbage collection after deletion of old snapshots also competes for computing resources. 
 Sharing of data chunks among by multiple VMs needs to be detected during
-snapshot   deletion and such dependencies complicate deletion operations. 
+garbage collection and such dependencies complicate deletion operations. 
 
 The paper studies and evaluates  an integrated approach which uses  multiple duplicate detection strategies
-based on  version  detection, similarity guided local deduplication,
+based on  changed block tracking, similarity guided local deduplication,
 and popularity guided global deduplication. 
 This approach is VM centric by localizing duplicate detection within each VM  
 and by packaging only data chunks from the same VM into a file system block as much as possible.

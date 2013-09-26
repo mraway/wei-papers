@@ -7,8 +7,8 @@ reduces network traffic;
 however, performing global deduplication and letting a data block be shared
 by many virtual machines is resource expensive and less fault-resilient. 
 This paper proposes a VM-centric collocated backup service that  
-localizes deduplication as much as possible within each virtual machine using similarity-guided
-search and associates  underlying file blocks with one VM for most cases.
+localizes deduplication as much as possible within each virtual machine. Our approach uses similarity-guided
+search and associate  underlying file blocks with one VM for most cases.
 It restricts global deduplication to popular chunks with extra replication support.
 Our analysis shows that  this VM centric scheme 
 can  strike a balance for better fault isolation with competitive  deduplication efficiency

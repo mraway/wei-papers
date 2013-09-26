@@ -82,13 +82,13 @@ to the existing applications.
 In designing a VC duplication algorithm, we have considered and adopted some of
 the following previously-developed techniques.
 1)
-{\em Version-based change detection}.
+{\em Changed block Tracking}.
 VM snapshots can be  backed up  incrementally by identifying file segments that have
 changed from the previous version of the snapshot~\cite{Clements2009,Vrable2009,TanIPDPS2011}.
 Such a scheme  is  VM-centric since deduplication is localized. 
 We are seeking for a tradeoff since 
 global signature comparison can deliver additional compression~\cite{Guo2011,Dong2011,extreme_binning09}.
-2) {\em Stateless  data Routing}.
+2) {\em Stateless  Data Routing}.
 One approach for scalable duplicate comparison is to use a content-based hash
 partitioning algorithm called stateless data routing by Dong et al.~\cite{Dong2011} 
 Stateless data routing divides the deduplication work with a similarity approximation. This work 
