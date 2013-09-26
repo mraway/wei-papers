@@ -10,7 +10,7 @@ resides in this distributed file system.
 One physical node hosts tens of VMs, each of which accesses its virtual machine disk image through the
 virtual block device driver (called TapDisk\cite{Warfield2005} in Xen).
 
-\subsection{ Components of a cluster node } 
+\subsection{ Components of a Cluster Node } 
 As depicted in Figure~\ref{fig:arch_vm}, 
 there are four key service components running on each cluster
 node  for supporting backup and deduplication: 
@@ -45,7 +45,7 @@ the data structures  include references to the actual data location to eliminate
     \label{fig:arch_vm}
 \end{figure}
 
-\subsection{A VM-centric snapshot store for backup data}
+\subsection{A VM-centric Snapshot Store for Backup Data}
 \label{sect:store}
 We build the snapshot storage on the top of a distributed file system.
 Following the VM-centric idea for the purpose of fault isolation,
