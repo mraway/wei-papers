@@ -289,13 +289,13 @@ When leakage ratio $L/U$ exceeds a pre-defined threshold $\tau$, we derive the c
 
 For example in our tested dataset,  
 each VM keeps $h=10$ snapshots and each snapshot adds
-about 0.1-4\% of new data. Thus we take ${\Delta u}/{u} \approx 0.02$. For a 40GB snapshot, $u\approx  10$ million.
-Then $U=11.8$ million.
+about 0.1-5\% of new data. Thus we take ${\Delta u}/{u} \approx 0.025$. For a 40GB snapshot, $u\approx  10$ million.
+Then $U=12.25$ million.
 We choose  $\epsilon = 0.01$ and $\tau=0.1$.  From Equation~\ref{eq:falserate}, 
-each summary vector requires $z=10U=118$ million bits. From Equation~\ref{eq:leakrepair}, 
-leak repair should be triggered once for every R=590 runs of approximate deletion. 
+each summary vector requires $z=10U=122.5$ million bits or 15MB. From Equation~\ref{eq:leakrepair}, 
+leak repair should be triggered once for every R=490 runs of approximate deletion. 
 When one machine hosts 25 VMs and there is one snapshot deletion per day per VM, there would be 
-only one full leak repair for one physical machine scheduled for every 23.6 days. 
+only one full leak repair for one physical machine scheduled for every 19.6 days. 
 Each repair uses at most  90MB memory on average
 %as discussed earlier
 and takes a short period of time.
