@@ -36,8 +36,9 @@ The signature for variable-sized blocks is computed using their SHA-1 hash~\cite
  Table~\ref{tab:vm-availability} shows the availability of VM snapshots when 
 there are up to 20 machine nodes failed in a 100-node cluster and  a 1000-node cluster. 
 %Two VC curves use $V_c=1250$ and $V_c=2500$ representing the average number of VMs that share a PDS file system block. 
-We assume that every VM points to every file system block in the PDS ($V_c=p*V$), which is to be expected when PDS
-blocks are sorted by hash, as their order is randomized.
+We have assumed a worst-case scenario that  a PDS block is shared by every VM. 
+%($V_c=p*V$), which is to be expected when PDS
+%blocks are sorted by hash, as their order is randomized.
 %$V_c=2500$ represents  the absolute worst case for 2500 VMs. 
 %The VO curve has  $V_o=6.3$ which is the average number of VMs that share a file system block in our smaller dataset.
 %To get this number, we perform perfect deduplication over 105 VMs, append unique chunks to a DFS file and
@@ -60,12 +61,13 @@ blocks are sorted by hash, as their order is randomized.
 %on but we take the conservative approach. We compare VO, the expected case for
 %VC ($V_c=p*V/2$), and the worst case for VC ($V_c=p*V/2$). We set $V_o=6.3$
 %based on measured values in our dataset.
-To obtain VO sharing of file blocks, we perform perfect deduplication over 105 VMs, 
-append unique chunks to a DFS file and
-count the number of dependencies from a file system block to VM.
+%To obtain VO sharing of file blocks, we perform perfect deduplication over 105 VMs, 
+%append unique chunks to a DFS file and
+%count the number of dependencies from a file system block to VM.
 %In the case of having 2500 or even 25000 VMs, this number can only increase, thus this number represents the best
 %case for VO approach. 
-Our results show that even the worst case for VC (where $v_c=p*V$) has a higher availability than VO.
+Our results show that even the worst case,  VC  still has a significantly  higher availability than VO as the number of
+failed machines increases.
 %Our VM-centric approach shows significant improvements
 %in VM availability.
 For example, with 5/100 machines failed and 25 VMs per machine, VO with 93.256\% availability would lose data in 169 VMs 
@@ -376,10 +378,15 @@ with competitive deduplication efficiency.
 %because we are rewarded by architecture-wise benefits such as fault-tolerance and fast 
 %Though not our primary goal, this result does show that VC can remove competitive amount of duplicates.
 
-Figure~\ref{fig:exbin-efficiency-graph2} also shows the effectiveness of the local similarity-based search in VC.
-Without this (i.e. when we only check the parent segment at the same offset), when an entire
-segment is moved to another location on disk, for example when a file is rewritten
-rather than modified in place, the deduplication opportunity is missed. We have found that in
+Figure~\ref{fig:exbin-efficiency-graph2} also shows the curve  of VC without local similarity search.
+Adding local similarity-guided search increases deduplication efficiency from 93\% to over 96\%.
+That is one significant improvement compared to the work in ~\cite{WeiZhangIEEEClound}
+which uses the parent segment at the same offset to detect duplicates locally.
+The reason is that  
+%Without this (i.e. when we only 
+when a data  segment is moved to another location on disk, for example when a file is rewritten
+rather than modified in place,  dirty-bit based detection would not be able to detect such a movement.
+ We have found that in
 approximately 1/3 of the VMs in our dataset this movement happens frequently,
 so the similarity search becomes important for those VMs.
 % In general, our experiments show that
@@ -460,7 +467,7 @@ running 1 or multiple  VM backup tasks at the same time on each physical machine
 ``CPU'' column is the percentage of a single core used. 
 ``Mem'' column includes 100MB memory usage for PDS index and other space cost for executing deduplication tasks such as 
 receipt metadata and cache. 
-``Read'' column is controlled as 50MB/s bandwidth usage so that other cloud services are not impacted a lot.
+``Read'' column is controlled as 50MB/s bandwidth usage with I/O throttling so that other cloud services are not impacted a lot.
 ``Write'' column is the I/O write usage of QFS and notice that each QFS write leads writes in multiple machines due to
 data replication.     
 % [ NOT REASONABLE: Notice that memory and CPU used by PDS index and QFS are not included since they belong to 
@@ -537,27 +544,29 @@ Overall,  VC is faster than SRB, though data reading dominates the processing ti
 % \label{tab:throughput}
 % \end{table*}
 \begin{table}[htbp]
+\begin{small}
     \centering
     \begin{tabular}{c|ccc}
     Num. of concurrent      & \multicolumn{3}{c}{Throughput without}    \\
     backup tasks            & \multicolumn{3}{c}{I/O throttling (MB/s)} \\ \cline{2-4}
-    per node                & Backup                                     & Snapshot Store & QFS  \\ \hline
+    per machine                & Backup                                     & Snapshot Store & QFS  \\ \hline
     1                       & 1369.6                                     & 148.0          & 35.3 \\
     2                       & 2408.5                                     & 260.2          & 61.7 \\
     4                       & 4101.8                                     & 443.3          & 103.1 \\
     6                       & 5456.5                                     & 589.7          & 143.8 \\
     \end{tabular}
-\caption{Throughput of software layers under different concurrency}
+\end{small}
+\caption{Throughput of software layers per machine under different concurrency}
 \label{tab:throughput}
 \end{table}
 
 {\bf Throughput of software layers.}
 Table~\ref{tab:throughput} shows the  average throughput of software layer
-when I/O is throttled under 50MB/second and when there is no restriction.
+when when I/O throttling is not applied to control the usage.
 %machine when all machine nodes execute one or multiple MV backup tasks.
 ``Backup'' column is the throughput  of the backup service  per machine.
-``Snapshot store" is the  write throughput of the snapshot store layer and the gap between this
-column and  ``Raw" column is caused by significant data reduction by dirty bit and duplicate
+``Snapshot store" is the  write throughput of the snapshot store layer. The gap between this
+column and  ``Backup" column is caused by significant data reduction by dirty bit and duplicate
 detection. Only non-duplicate chunks trigger a snapshot store write.
 ``QFS'' column is the write request traffic to the underlying file system after compression.
 The underlying disk storage traffic will be three times greater because of replication.
