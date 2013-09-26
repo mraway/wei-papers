@@ -4,7 +4,7 @@
 Our system runs on a cluster of Linux machines with Xen-based VMs and
 an open-source package for the distributed file system  called QFS~\cite{michael2013}. 
 %to %manage  the physical disk storage. 
-All data needed for the backup service including snapshot and  metadata data
+All data needed for the backup service including snapshot data and  metadata
 %and snapshot data for backup purposes, 
 resides in this distributed file system. 
 One physical node hosts tens of VMs, each of which accesses its virtual machine disk image through the
@@ -14,12 +14,12 @@ virtual block device driver (called TapDisk\cite{Warfield2005} in Xen).
 As depicted in Figure~\ref{fig:arch_vm}, 
 there are four key service components running on each cluster
 node  for supporting backup and deduplication: 
-1) a virtual block device driver, 2) a snapshot deduplication component,
-3) an append store client to store  and access snapshot data,
+1) a virtual block device driver, 2) a snapshot deduplication agent,
+3) a snapshot store client to store  and access snapshot data,
 and 4)  a PDS client to support PDS metadata access. 
 
 We use the virtual device driver in Xen that employs a bitmap to track the changes 
-that have been made to the virtual disk.
+that have been made to the virtual disk (CBT).
 Every bit in the bitmap represents a fixed-sized (2MB) region called a \textit{segment}, indicating whether the segment
 has been modified since last backup. 
 Segments are further divided into variable-sized chunks (average 4KB) 
@@ -69,14 +69,14 @@ Each reference to a PDS data chunk in the PDS index is the offset within the PDS
 Additional compression is not applied because PDS chunks have less spatial locality in data access. 
 For the data sets we have tested, we only observed very limited spatial locality 
 among popular data chunks. On average the number of consecutive PDS index hits is lower than 7.
-Thus it is not so effective to group a large number of chunks as a compression and data fetch unit. 
+Thus it is not very effective to group a large number of chunks as a compression and data fetch unit. 
 For the same reason, we decide not to take the sampled index approach~\cite{Guo2011} 
 for detecting duplicates from PDS as limited spatial locality is not sufficient to enable
 effective prefetching for sampled indexing.
 
 PDS data is re-calculated periodically, but 
 the total data size is small.  When
-a new PDS data  set is computed, in-memory PDS index is replaced, but 
+a new PDS data  set is computed, the in-memory PDS index is replaced, but 
 the PDS file on the disk appends the  new PDS data identified and the growth of this file is very slow. 
 The old data is not removed because they can still be referenced by the existing snapshots. 
 A periodic cleanup is conducted  to remove unused PDS chunks (e.g. every few months). 
@@ -103,7 +103,7 @@ A  typical chunk group contains 1000 chunks in our experiment.
 % with an average size of 200-600 chunks.
 
 %\item
-Each data container is represented by three files in the DFS:
+Each non-PDS data container is represented by three files in the DFS:
 1) the container data file holds the actual content, 
 2) the container index file is responsible for translating a data reference
 into its location within a container, and 

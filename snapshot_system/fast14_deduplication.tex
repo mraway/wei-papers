@@ -442,11 +442,12 @@ A(r)^{N_1}.
 \]
 %\end{equation}
 Since $N_1$ is typically much smaller than $N_o$, 
-the VC approach has a higher availability of VM snapshots than VO.
+the VC approach has a higher availability of VM snapshots than VO in this case.
 %In the evaluation discussed in Section~\ref{sect:evaldedup}, 
-We have considered a worst case scenario where
-every PDS FSB is shared by all VMs in the VC approach, which leads a large $N_2$ value. 
-Even with that, the availability of VC snapshots is much higher than VO and we analyze  this below.
+%We have considered a worst case scenario where
+%every PDS FSB is shared by all VMs in the VC approach, which leads a large $N_2$ value. 
+%Even with $N_2$ being much higher than $N_o$ (as discussed below),
+%the availability of VC snapshots is much higher than VO.
 
 \item
 When $r_c \leq d$, both non-PDS and PDS file system blocks in VC can have a loss.
@@ -466,8 +467,8 @@ A(r)^{N_1} * A(r_c)^{N_2}
 We have considered a worst case scenario that
 every PDS FSB is shared by all VMs in the VC approach, which leads to a large $N_2$ value. 
 Even with that, the availability of VC snapshots is still much higher than VO and  
-there are two reasons for.  1) $N_1$ is much smaller than $N_o$ as discussed previously.
-2)  $A(r) < A(r_c)$ because of  $r < r_c$.  
+there are two reasons for this:  1) $N_1$ is much smaller than $N_o$ as discussed previously.
+2)  $A(r) < A(r_c)$ because $r < r_c$.  
 Table~\ref{tab:fsb-availability} lists the $A(r)$ values with
 %that the availability of an individual file system block
 different replication degrees, to demonstrate the gap between  $A(r)$ and  $A(r_c)$.
