@@ -78,7 +78,7 @@ VM can be affected by the loss of a single FSB. Since most FSBs contain blocks f
 %localizes deduplication.  
 
 Although the loss of a PDS block affects many VMs,
-by increasing replication for those blocks we minimize the effect on snapshot availability.
+by increasing replication for those blocks we minimize the effect on VM snapshot availability.
 %By having extra replicas for the PDS data, we reduce the failure rate of PDS
 %FSBs enough that the failure rate for the VM approaches the failure rate of the
 %Non-PDS blocks. This minimizes the drop in availability between the expected
@@ -493,23 +493,27 @@ Figure~\ref{fig:vc_srb_combined} shows
 the  average  processing  time of  a VM segment under VC and SRB. 
 VC uses $\sigma=2\%$ and $4\%$.
 It has a breakdown of processing time.
-``Data read/write'' includes disk reading and writing, and 
+``Snapshot read/write'' includes snapshot reading and writing from disk, and 
 updating of the metadata.
-`` Network cost" includes the cost of transferring snapshot and meta data from one machine to another during backup.
-``Index access/lookup'' includes the time for 
-latency to visit
-a remote machine, and index access for fingerprint comparison.
-The change of $\sigma$ does not significantly affect the overall backup speed as
+`` Network transfer" includes the cost of transferring raw and meta data from one machine to another during 
+snapshot read and write.
+``Index access/comparison'' includes the disk, network and CPU time during fingerprint comparison.
+This includes PDS data lookup for VC and index lookup from disk in VO after Bloom filter lookup.
+For VC, the change of $\sigma$ does not significantly affect the overall backup speed as
 PDS lookup takes only a small amount of time.
-SRB has higher index access and fingerprint comparison costs because all chunk signatures for whom the current
-machine does not control the index must be sent over the network, and then rely
-on the index holding machine to access its index (often on the disk, supported by a Bloom filter) 
-and perform comparison.
-VC is faster in this regard because it conducts in-memory local search first and then
-accesses  the PDS on distributed shared memory, so most chunks can be dealt with locally.  
-SRB spends  slighter more time in  reading data and updates because it also updates the on-disk
-local meta data index in addition to partition indices.
-Overall,  VC is faster than SRB, though data reading dominates the processing time for both algorithms.
+While the amount raw data transferred in network is about the same for VC and SRB, 
+SRB spends slightly more time for snapshot read/write because each snapshot  backup, more smaller bins are involved
+ in  SRB while VC only involves fewer containers with a bigger size. Thus I/O aggregation is more effective in VC.
+SRB has a higher cost for index access and fingerprint comparison because most of  chunk fingerprints are routed
+to remote machines for comparison while   VC handles most of chunk fingerprints locally. 
+
+%on the index holding machine to access its index (often on the disk, supported by a Bloom filter) 
+%and perform comparison.
+%VC is faster in this regard because it conducts in-memory local search first and then
+%accesses  the PDS on distributed shared memory, so most chunks can be dealt with locally.  
+%SRB spends  slighter more time in  reading data and updates because it also updates the on-disk
+%local meta data index in addition to partition indices.
+%As a result Overall,  VC is faster than SRB, though data reading dominates the processing time for both algorithms.
 %Figure~\ref{fig:vc_srb_combined} also reports the average backup time for a VM in VC when
 %varying the PDS size.  It lists the time distribution for data reading,
 %similarity-guided local search, global PDS lookup, and non-duplicate data writing. 
@@ -558,9 +562,10 @@ Overall,  VC is faster than SRB, though data reading dominates the processing ti
     \centering
     \begin{tabular}{|c|ccc|}
 \hline
-    Num. of concurrent      & \multicolumn{3}{c|}{Throughput without}    \\
+    Concurrent      & \multicolumn{3}{c|}{Throughput without}    \\
     backup tasks            & \multicolumn{3}{c|}{I/O throttling (MB/s)} \\ \cline{2-4}
     per machine                & Backup                                     & Snapshot Store & QFS  \\ \hline
+    		&                                      & (write) & (write)  \\ \hline
     1                       & 1369.6                                     & 148.0          & 35.3 \\
     2                       & 2408.5                                     & 260.2          & 61.7 \\
     4                       & 4101.8                                     & 443.3          & 103.1 \\
@@ -580,9 +585,12 @@ when when I/O throttling is not applied to control the usage.
 column and  ``Backup" column is caused by significant data reduction by dirty bit and duplicate
 detection. Only non-duplicate chunks trigger a snapshot store write.
 ``QFS'' column is the write request traffic to the underlying file system after compression.
-The underlying disk storage traffic will be three times greater because of replication.
+For example, with 148MB/second write traffic to the snapshot store, QFS write traffic is about 35.3MB/second
+after compression.  The underlying disk storage traffic will be three times greater with replication.
 The result shows that the backup service can deliver up to 5.46GB/second without I/O restriction
-per machine with 6 concurrent backup tasks. With 50MB/second controlled I/O bandwidth, each machine can deliver 171MB/second with 1 backup task and can complete the backup of 25 VMs per machine in less than 1.31 hours.
+per machine with 6 concurrent backup tasks. With a higher disk storage bandwidth available, the above backup
+ throughput would be higher. 
+%With 50MB/second controlled I/O bandwidth, each machine can deliver 171MB/second with 1 backup task and can complete the backup of 25 VMs per machine in less than 1.31 hours.
  
 %To begin, on each node we write snapshots for 4 VMs concurrently, and gradually 
 %increase number of VMs to 12 to saturate our system capability. 
@@ -626,11 +634,11 @@ Figure~\ref{fig:leakage} shows the average accumulated storage leakage in terms 
 storage space per VM caused  by approximate deletions.
 The top dashed line is the predicted leakage using Formula~\ref{eq:leakrepair} from Section~\ref{sect:delete}
 given $\Delta u/u=0.025$,
-while the top solid line represents the actual leakage measured during the experiment 
-with the same $\Delta u/u=0.025$ setting for summary vectors.
-After 9 snapshot deletions, the actual leakage ratio reaches 0.0018 and this means that
-there is only 1.8MB space leaked for every 1GB of stored data, it is also obvious that
-the leakage grows linearly as we expect. 
+while the solid line represents the actual leakage measured during the experiment. 
+The Bloom filter setting is based on $\Delta u/u=0.025$.
+After 9 snapshot deletions, the actual leakage ratio reaches 0.0015 and this means that
+there is only 1.8MB space leaked for every 1GB of stored data.
+The actual leakage can reach to 4.1\% after  245 deletions.
 % We also measure the storage leakage under $\Delta u/u=0.05$ and $0.10$ settings for summary vectors.
 % As this value increases, larger summary vectors are generated thus results in a decrease on the
 % false-positive ratio, therefore less amount of unused chunks are misjudged. 
