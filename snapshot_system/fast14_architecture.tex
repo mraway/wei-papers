@@ -196,14 +196,18 @@ depend directly on physical storage locations, which simplifies data migration.
 
 In a busy VM cluster, snapshot deletions can occur frequently.
 Deduplication complicates the deletion process because space saving relies on the sharing of data
-and it requires the global references to deleted chunks to be identified before  they can be safely removed.
-While we can use the mark-and-sweep technique~\cite{Guo2011}, 
+and it requires the global references to deleted chunks to be identified before they can be safely removed.
+The complexity of our distributed environment obviates reference counting as an option,
+and while we can use the mark-and-sweep, 
 it takes significant resources to conduct this process every time there is a snapshot deletion.
+%
 %In the case of Alibaba, snapshot backup is conducted automatically and there are 
 %about 10 snapshot stored for every VM customer.
-Snapshot deletion can occur frequently, for example when there is
-a new snapshot created every day,  there will usually be a snapshot expired every day to maintain
-balanced storage use. 
+% Snapshot deletion can occur frequently, for example when there is
+% a new snapshot created every day,  there will usually be a snapshot expired every day to maintain
+% balanced storage use. 
+In addition, cloud users expect the reduced storage usage to be reflected
+instantly, which makes it difficult to adopt some resource efficient techniques such like perfect hashing\cite{Fabiano2013}.
 
 We seek a fast solution with low resource usage to delete snapshots and
 our VM-centric design simplifies the deletion process. 
@@ -229,7 +233,7 @@ This can be done during the periodic leakage repair stage described below.
 
 \item {\bf Approximate deletion with fast summary comparison.}
 When there is a snapshot deletion,  
-we need to identify if  chunks to be deleted from that snapshot
+we need to identify if chunks to be deleted from that snapshot
 are still referenced by other snapshots. 
 This is done approximately and quickly by comparing the 
 reference of deleted chunks  with
@@ -250,11 +254,13 @@ are misjudged as  being in use, resulting in storage leakage.
 %[exlpain why second Bloom filter, why scan append store]
 Leakage repair is conducted periodically to fix the above approximation error.
 This procedure compares the live chunks for each VM with what are truly used in the VM snapshot recipes.
-This requires a scan of the entire snapshot store. Since it is a VM-specific procedure 
-the space and time cost is relatively small compared to the traditional mark-and-sweep procedure~\cite{Guo2011} which scans snapshot 
-chunks from all VMs.
-For example,
-consider each reference consumes 8 bytes plus  1 mark bit. A VM that has 40GB backup data with about
+Our VM-centric mark-and-sweep procedure is similar to Guo\cite{Guo2011} 
+in a way that the data dependency is clearly known.
+This generally requires a scan of almost the entire snapshot store which is much more expensive than approximate deletion,
+although certain optimized algorithms may apply\cite{Przemyslaw2013}. But since it is a VM-specific procedure, 
+the space and time cost is relatively small compared to the tranditional mark-and-sweep
+which scans snapshot chunks from all VMs.
+For example, consider each reference consumes 8 bytes plus  1 mark bit. A VM that has 40GB backup data with about
 10 million chunks will need less than 85MB of memory to complete a VM-specific mark-and-sweep process
 in less than half an hour, assuming 50MB/s disk bandwidth is allocated.
 \end{itemize}
