@@ -74,11 +74,11 @@ For the same reason, we decide not to take the sampled index approach~\cite{Guo2
 for detecting duplicates from PDS as limited spatial locality is not sufficient to enable
 effective prefetching for sampled indexing.
 
-PDS data is re-calculated periodically, but 
+PDS data are re-calculated periodically, but 
 the total data size is small.  When
 a new PDS data  set is computed, the in-memory PDS index is replaced, but 
 the PDS file on the disk appends the  new PDS data identified and the growth of this file is very slow. 
-The old data is not removed because they can still be referenced by the existing snapshots. 
+The old data are not removed because they can still be referenced by the existing snapshots. 
 A periodic cleanup is conducted  to remove unused PDS chunks (e.g. every few months). 
 
 %\end{itemize}
