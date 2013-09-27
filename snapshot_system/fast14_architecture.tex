@@ -20,7 +20,7 @@ and 4)  a PDS client to support PDS metadata access.
 
 We use the virtual device driver in Xen that employs a bitmap to track the changes 
 that have been made to the virtual disk (CBT).
-Every bit in the bitmap represents a fixed-sized (2MB) region called a \textit{segment}, indicating whether the segment
+Every bit in the bitmap represents a fixed-sized (2MB) segment, indicating whether the segment
 has been modified since last backup. 
 Segments are further divided into variable-sized chunks (average 4KB) 
 using a content-based chunking algorithm~\cite{frame05}, 
@@ -51,7 +51,6 @@ We build the snapshot storage on the top of a distributed file system.
 Following the VM-centric idea for the purpose of fault isolation,
 each VM has its own snapshot store, containing new data chunks which are considered
 to be non-duplicates.
-There is also a special store containing all PDS chunks shared among different VMs.
 As shown in Figure~\ref{fig:as_arch}, we explain the data structure of the snapshot stores as follows.
 \begin{figure}[htbp]
   \centering
@@ -62,12 +61,14 @@ As shown in Figure~\ref{fig:as_arch}, we explain the data structure of the snaps
 
 %\begin{itemize}
 %\item
-All PDS chunks are stored in one PDS file. 
+There is also an independent store containing all PDS chunks shared among different VMs as
+a single file.
+%All PDS chunks are stored in one PDS file. 
 Each reference to a PDS data chunk in the PDS index is the offset within the PDS file.
 %There is an option to use a data structure similar to the non-PDS store. We opt
 %for the simpler format because
 Additional compression is not applied because 
-for the data sets we have tested, we only observed very limited spatial locality 
+for the data sets we have tested, we only observed limited spatial locality 
 among popular data chunks. On average the number of consecutive PDS index hits is lower than 7.
 Thus it is not very effective to group a large number of chunks as a compression and data fetch unit. 
 For the same reason, we decide not to take the sampled index approach~\cite{Guo2011} 
@@ -94,7 +95,7 @@ The compaction  routine can work on one container at a time and move the in-use 
 Each non-PDS data container is further divided into a set of chunk data groups. Each chunk group is composed of
 a set of data chunks and is the basic unit in data access and retrieval. 
 In writing a chunk during backup, the system accumulates data chunks and stores the entire
-group as a unit after compression. This  compression can reduce data by several times  in our tested applications.
+group as a unit after compression. This  compression can reduce data by several times  in our tested data.
 When accessing a particular chunk, its chunk group is retrieved from the storage
 and decompressed. Given the high spatial locality and usefulness of prefetching  in 
 snapshot chunk accessing~\cite{Guo2011,foundation08},
@@ -125,12 +126,13 @@ its header contains the exact offset of the corresponding chunk ID and the conte
 %\item
 
 
-The snapshot  store supports three API calls:
+Three API calls are supported for data backup:
 %\begin{itemize}
 
 %\item
 \noindent\textbf{Append()}. 
 For PDS data, the chunk is appended to the end of the PDS file and the offset is returned as the  reference.
+Note that PDS append may only be used during PDS recalculation.
 For non-PDS data, this call places a chunk into 
 the snapshot store and returns a reference to be stored in 
 the recipe metadata of a snapshot. 
@@ -197,9 +199,10 @@ Deduplication complicates the deletion process because space saving relies on th
 and it requires the global references to deleted chunks to be identified before  they can be safely removed.
 While we can use the mark-and-sweep technique~\cite{Guo2011}, 
 it takes significant resources to conduct this process every time there is a snapshot deletion.
-In the case of Alibaba, snapshot backup is conducted automatically and there are 
-about 10 snapshot stored for every VM customer. When there is
-a new snapshot created every day,  there will be a snapshot expired every day to maintain
+%In the case of Alibaba, snapshot backup is conducted automatically and there are 
+%about 10 snapshot stored for every VM customer.
+Snapshot deletion can occur frequently, for example when there is
+a new snapshot created every day,  there will usually be a snapshot expired every day to maintain
 balanced storage use. 
 
 We seek a fast solution with low resource usage to delete snapshots and
@@ -217,9 +220,9 @@ The algorithm contains three aspects.
 \item {\bf Computation for snapshot reference summary.}
 Every time there is a new snapshot created,
 we compute a Bloom-filter with $z$ bits as the reference summary vector for all non-PDS chunks used 
-in this snapshot,
-the items we put into summary vector are all the references that are used in its snapshot and segment recipes.
-Foe each VM we preset the vector size according to  estimation of VM image size,
+in this snapshot.
+The items we put into the summary vector are all the references appearing in the metadata of the snapshot.
+For each VM we preset the vector size according to  estimation of VM image size,
 given $h$ snapshots stored for a VM, there are $h$ summary vectors maintained.
 
 \item {\bf Approximate deletion with fast summary comparison.}
@@ -245,12 +248,13 @@ are misjudged as  being in use, resulting in storage leakage.
 %[exlpain why second Bloom filter, why scan append store]
 Leakage repair is conducted periodically to fix the above approximation error.
 This procedure compares the live chunks for each VM with what are truly used in the VM snapshot recipes.
-That requires a scan of all the metadata in a single VM backup. Since it is a VM-specific procedure 
+This requires a scan of the entire snapshot store. Since it is a VM-specific procedure 
 the space and time cost is relatively small compared to the traditional mark-and-sweep procedure~\cite{Guo2011} which scans snapshot 
 chunks from all VMs.
 For example,
-consider each reference consumes 8 bytes plus  1 mark bit, a VM that has 40GB backup data with about
-10 million chunks will need less than 85MB of memory to complete a VM-specific mark-and-sweep process.
+consider each reference consumes 8 bytes plus  1 mark bit. A VM that has 40GB backup data with about
+10 million chunks will need less than 85MB of memory to complete a VM-specific mark-and-sweep process
+in less than half an hour, assuming 50MB/s disk bandwidth is allocated.
 \end{itemize}
 
 %{\bf Discussion}
@@ -282,7 +286,7 @@ repairs. We estimate  the total leakage $L$ after $R$ runs as:
 L = R \epsilon \Delta u.
 \]
 
-When leakage ratio $L/U$ exceeds a pre-defined threshold $\tau$, we derive the condition to execute a leak repair as:
+When leakage ratio $L/U$ exceeds a pre-defined threshold $\tau$ we trigger a leak repair. Namely,
 
 \begin{equation}
 \label{eq:leakrepair}
@@ -291,7 +295,7 @@ When leakage ratio $L/U$ exceeds a pre-defined threshold $\tau$, we derive the c
 \end{equation}
 
 For example in our tested dataset,  
-each VM keeps $h=10$ snapshots and each snapshot adds
+$h=10$ and each snapshot adds
 about 0.1-5\% of new data. Thus we take ${\Delta u}/{u} \approx 0.025$. For a 40GB snapshot, $u\approx  10$ million.
 Then $U=12.25$ million.
 We choose  $\epsilon = 0.01$ and $\tau=0.05$.  From Equation~\ref{eq:falserate}, 
@@ -300,6 +304,4 @@ leak repair should be triggered once for every R=245 runs of approximate deletio
 When one machine hosts 25 VMs and there is one snapshot deletion per day per VM, there would be 
 only one full leak repair for one physical machine scheduled for every 9.8 days. 
 If $\tau = 0.1$ then leakage repair would occur every 19.6 days.
-Each repair uses less than 90MB memory on average
-and takes a short period of time.
 

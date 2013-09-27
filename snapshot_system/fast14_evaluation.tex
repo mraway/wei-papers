@@ -365,7 +365,7 @@ The loss of efficiency in VC is caused by the restriction of the physical memory
 in the cluster for fast in-memory PDS index lookup. 
 %In the extreme case if we put all the fingerprint into PDS 
 %index ($\sigma=100\%$) then VC will have 100\% efficiency.
-SRB can deliver up to 97.79\% deduplication efficiency which is slightly better than VC.
+SRB can deliver up to 97.79\% deduplication efficiency, which is slightly better than VC.
 Thus this represents a tradeoff that VC provides better fault tolerance and fast approximate deletion
 with competitive deduplication efficiency.
 
@@ -384,7 +384,8 @@ Figure~\ref{fig:exbin-efficiency-graph2} also shows the curve  of VC without loc
 There is a big efficiency drop in this curve when the number of VMs is about 30.
 The reason is that  
 %Without this (i.e. when we only 
-when a data  segment is moved to another location on disk, for example when a file is rewritten
+there are VMs in which
+data  segments are moved to another location on disk, for example when a file is rewritten
 rather than modified in place,  
 a dirty-bit or offset based detection would not be able to detect such a movement and 
 similarity search becomes especially important.  We have found that in
@@ -472,9 +473,9 @@ running 1 or multiple  VM backup tasks at the same time on each physical machine
 ``Mem'' column includes 100MB memory usage for PDS index and other space cost for executing deduplication tasks such as 
 receipt metadata and cache. 
 ``Read'' column is controlled as 50MB/s bandwidth usage with I/O throttling so that other cloud services are not impacted too much.
-The peak read performance is about 300MB and we only use 16.7\% with this collocation consideration.
-``Write'' column is the I/O write usage of QFS and notice that each QFS write leads writes in multiple machines due to
-data replication.     50MB dirty segment read speed triggers about 16.4MB/second disk write for non duplicates with one backup task.
+The peak raw storage read performance is about 300MB/s and we only use 16.7\% with this collocation consideration.
+``Write'' column is the I/O write usage of QFS and notice that each QFS write triggers disk writes in multiple machines due to
+data replication.     50MB/s dirty segment read speed triggers about 16.4MB/s disk write for non duplicates with one backup task.
 % [ NOT REASONABLE: Notice that memory and CPU used by PDS index and QFS are not included since they belong to 
 % the cloud infrastructure services and are shared among many applications.]
 %We see our hybrid deduplication scheme only occupies a small amount of system resources. 
@@ -497,13 +498,13 @@ It has a breakdown of processing time.
 updating of the metadata.
 `` Network transfer" includes the cost of transferring raw and meta data from one machine to another during 
 snapshot read and write.
-``Index access/comparison'' includes the disk, network and CPU time during fingerprint comparison.
+``Index access/comparison'' is the disk, network and CPU time during fingerprint comparison.
 This includes PDS data lookup for VC and index lookup from disk in VO after Bloom filter lookup.
 For VC, the change of $\sigma$ does not significantly affect the overall backup speed as
-PDS lookup takes only a small amount of time.
-While the amount of raw data transferred in network is about the same for VC and SRB, 
-SRB spends slightly more time for snapshot read/write because each snapshot  backup, more smaller bins are involved
- in  SRB while VC only involves fewer containers with a bigger size. Thus I/O aggregation is more effective in VC.
+PDS lookup takes only a small amount of time. The network transfer time for VC and SRB is about the same, because the 
+amount of raw data they transfer is comparable.
+SRB spends slightly more time for snapshot read/write because during each snapshot  backup, SRB involves many small bins,
+ while VC only involves few containers with a bigger size. Thus I/O aggregation is more effective in VC.
 SRB has a higher cost for index access and fingerprint comparison because most of  chunk fingerprints are routed
 to remote machines for comparison while   VC handles most of chunk fingerprints locally. 
 
