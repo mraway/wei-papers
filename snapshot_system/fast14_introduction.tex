@@ -28,11 +28,11 @@ that garbage collection after deletion of old snapshots also competes for comput
 Sharing of data chunks among by multiple VMs needs to be detected during
 garbage collection and such dependencies complicate deletion operations. 
 
-The paper studies and evaluates an integrated approach which uses  multiple duplicate detection strategies
+The key contribution is the development and analysis of a VM-centric approach which integrates  multiple duplicate detection strategies
 based on changed block tracking, similarity guided local deduplication,
 and popularity guided global deduplication. 
-This approach is VM centric by localizing duplicate detection within each VM  
-and by packaging only data chunks from the same VM into a file system block as much as possible.
+This approach localizes duplicate detection within each VM  
+and packages only data chunks from the same VM into a file system block as much as possible.
 By narrowing duplicate sharing within a small percent of common data chunks and exploiting their popularity,
 this scheme can afford to allocate extra replicas of these shared chunks for better
 fault resilience while sustaining competitive deduplication efficiency.
