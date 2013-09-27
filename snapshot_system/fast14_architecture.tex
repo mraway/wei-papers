@@ -61,7 +61,7 @@ As shown in Figure~\ref{fig:as_arch}, we explain the data structure of the snaps
 
 %\begin{itemize}
 %\item
-There is also an independent store containing all PDS chunks shared among different VMs as
+There is an independent store containing all PDS chunks shared among different VMs as
 a single file.
 %All PDS chunks are stored in one PDS file. 
 Each reference to a PDS data chunk in the PDS index is the offset within the PDS file.
@@ -169,7 +169,7 @@ Once local chunk IDs appear in
 the deletion log, they will not be referenced by any future snapshot and can be safely deleted when needed. 
 This is ensured because we only dedup against the direct parent of a snapshot, so the deleted snapshot's blocks
 will only be used if they also exist in other snapshots.
-Periodically, the snapshot  store picks those containers with an excessive
+Periodically, the snapshot  store identifies those containers with an excessive
 number of deletion requests to  compact and  reclaim the corresponding disk space. 
 During compaction, the snapshot store creates a new container (with the same container ID) to replace the 
 existing one. This is done by sequentially scanning the old container, copying all the chunks that are not 
@@ -224,6 +224,8 @@ in this snapshot.
 The items we put into the summary vector are all the references appearing in the metadata of the snapshot.
 For each VM we preset the vector size according to  estimation of VM image size,
 given $h$ snapshots stored for a VM, there are $h$ summary vectors maintained.
+We adjust the summary vector size and recompute the vectors if the VM size changes substantially over time.
+This can be done during the periodic leakage repair stage described below.
 
 \item {\bf Approximate deletion with fast summary comparison.}
 When there is a snapshot deletion,  
@@ -231,15 +233,15 @@ we need to identify if  chunks to be deleted from that snapshot
 are still referenced by other snapshots. 
 This is done approximately and quickly by comparing the 
 reference of deleted chunks  with
-the merged Bloom-filter reference summary of other live snapshots.
-The merging of live snapshot Bloom-filter bits uses the bitwise OR operator 
+the merged reference summary vectors of other live snapshots.
+The merging of live snapshot Bloom-filter vectors uses the bitwise OR operator 
 and the merged vector still takes $z$ bits.
 Since the number of live snapshots $h$ is limited for
 each VM, 
 the time and memory cost of this comparison is small, linear to the number of chunks to be deleted.
 
 If a chunk's reference is not found in the merged summary vector, we are sure that
-this chunk is not used by any live snapshots, thus can be deleted safely.
+this chunk is not used by any live snapshots, thus it can be deleted safely.
 However, among all the chunks to be deleted, 
 there are a small percentage of unused chunks  which
 are misjudged as  being in use, resulting in storage leakage.
@@ -286,7 +288,7 @@ repairs. We estimate  the total leakage $L$ after $R$ runs as:
 L = R \epsilon \Delta u.
 \]
 
-When leakage ratio $L/U$ exceeds a pre-defined threshold $\tau$ we trigger a leak repair. Namely,
+When leakage ratio $L/U$ exceeds a pre-defined threshold $\tau$, we trigger a leak repair. Namely,
 
 \begin{equation}
 \label{eq:leakrepair}

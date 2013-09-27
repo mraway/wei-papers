@@ -504,7 +504,7 @@ For VC, the change of $\sigma$ does not significantly affect the overall backup 
 PDS lookup takes only a small amount of time. The network transfer time for VC and SRB is about the same, because the 
 amount of raw data they transfer is comparable.
 SRB spends slightly more time for snapshot read/write because during each snapshot  backup, SRB involves many small bins,
- while VC only involves few containers with a bigger size. Thus I/O aggregation is more effective in VC.
+ while VC only involves few containers with a bigger size. Thus, there are more opportunities for I/O aggregation in VC.
 SRB has a higher cost for index access and fingerprint comparison because most of  chunk fingerprints are routed
 to remote machines for comparison while   VC handles most of chunk fingerprints locally. 
 
