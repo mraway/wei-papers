@@ -52,8 +52,8 @@ Thus from the fault tolerance point of view,  duplicate sharing among multiple V
 discouraged. 
 Another disadvantage of sharing is that it complicates snapshot deletion, 
 which  occurs frequently when snapshots expire regularly. 
-The mark-and-sweep approach~\cite{Guo2011} is effective for deletion, but has a high cost, and its main cost
-is to count if a data chunk is still shared by other snapshots.
+The mark-and-sweep approach~\cite{Guo2011,Fabiano2013}  is effective for deletion, but still carries a significant cost
+to count if a data chunk is still shared by other snapshots. 
 Localizing deduplication can  minimize data sharing and simplify deletion while sacrificing 
 deduplication efficiency, and  can facilitate parallel execution of snapshot operations.
 \item{\em  Management of file system blocks.}
