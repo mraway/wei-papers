@@ -501,7 +501,7 @@ snapshot read and write.
 This includes PDS data lookup for VC and index lookup from disk in VO after Bloom filter lookup.
 For VC, the change of $\sigma$ does not significantly affect the overall backup speed as
 PDS lookup takes only a small amount of time.
-While the amount raw data transferred in network is about the same for VC and SRB, 
+While the amount of raw data transferred in network is about the same for VC and SRB, 
 SRB spends slightly more time for snapshot read/write because each snapshot  backup, more smaller bins are involved
  in  SRB while VC only involves fewer containers with a bigger size. Thus I/O aggregation is more effective in VC.
 SRB has a higher cost for index access and fingerprint comparison because most of  chunk fingerprints are routed
@@ -637,7 +637,7 @@ given $\Delta u/u=0.025$,
 while the solid line represents the actual leakage measured during the experiment. 
 The Bloom filter setting is based on $\Delta u/u=0.025$.
 After 9 snapshot deletions, the actual leakage ratio reaches 0.0015 and this means that
-there is only 1.8MB space leaked for every 1GB of stored data.
+there is only 1.5MB space leaked for every 1GB of stored data.
 The actual leakage can reach  4.1\% after  245 deletions.
 % We also measure the storage leakage under $\Delta u/u=0.05$ and $0.10$ settings for summary vectors.
 % As this value increases, larger summary vectors are generated thus results in a decrease on the

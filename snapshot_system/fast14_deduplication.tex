@@ -109,7 +109,8 @@ Table~\ref{tab:symbol}.
 
 \begin{table}[htbp]
 \centering
-\begin{tabular}{|p{1.25cm}|p{5.5cm}|}
+\tabcolsep=0.11cm
+\begin{tabular}{|p{1.0cm}|p{5.75cm}|}
 \hline
 $k$ &  the number of top most popular chunks selected for deduplication\\ 
 \hline
@@ -124,16 +125,16 @@ $\delta$ &  the percentage of duplicates detected in local deduplication\\
 $\sigma$ & =$\frac{k}{c_u}$ which is  the percentage of unique data  belonging to  PDS\\
 \hline
 $p$ & the number of machines in the cluster\\
-% \hline
-% $V$ & the average number of VMs hosted on each machine\\
+\hline
+$V$ & the average number of VMs hosted on each machine\\
 \hline
 $E_c, E_o$ & deduplication efficiency of VC and VO \\
 %\hline
 %$D$ & the amount of unique data on each machine\\
 %\hline
-%$C$ & the average data chunk size. Our setting is  4K.\\
-%\hline
-%$s$ & the average size of file system blocks in the distributed file system. The default is  64MB.\\
+%$s$ & the average data chunk size. Our setting is  4K.\\
+\hline
+$s$ & the average number of chunks per FSB\\
 %\hline
 %$m$ & memory size on each node used by VC\\ 
 %\hline
@@ -307,8 +308,10 @@ For VC, each VM has an average number $N_1$ of non-PDS FSBs
 and  has  an average of  $N_2$ PDS FSBs. 
 Each non-PDS FSB is associated with one VM
  and  we denote that PDS FSBs are
-shared by an average of $V_c$ VMs. Let $s$ be the average number of chunks per file system block, 
-$V$ be the average number of VMs hosted on each machine. Then, 
+shared by an average of $V_c$ VMs. 
+%Let $s$ be the average number of chunks per file system block, 
+%$V$ be the average number of VMs hosted on each machine. 
+Then, 
 \[
 V pN_1 s  \approx c-E_c(c-c_u) - c_u\sigma\; \mbox{ and } \; 
 V pN_2 s  \approx c_u \sigma V_c.
