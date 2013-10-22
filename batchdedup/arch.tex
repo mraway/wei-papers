@@ -110,15 +110,15 @@ this cluster  or use another  external storage system.
 
 \begin{figure}
 \centering
-\includegraphics[width=0.5\textwidth]{snapshotdata.pdf}
-\caption{ Metadata structure of a VM snapshot.}
+\includegraphics[width=0.5\textwidth]{images/batch_arch.pdf}
+\caption{Overall architecture of parallel VM snapshot deduplication}
 \label{fig:snapshot}
 \end{figure}
 %\subsection{Snapshot Representation}
 
 The representation of each snapshot in the backup storage
 has a two-level index structure in the form of a hierarchical
-directed acyclic graph as shown in Figure~\ref{fig:snapshot}.
+directed acyclic graph.% as shown in Figure~\ref{fig:snapshot}.
 A VM image is divided into a set of segments and each  segment contains 
 content blocks of variable-size, partitioned using
 the standard chunking technique with 4KB as the average block size. 
