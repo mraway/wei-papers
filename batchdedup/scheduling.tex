@@ -35,26 +35,45 @@ To evaulate our CoW cost, we assume the incoming writes point to random disk loc
 which would incur a CoW operation over a segment if the write location fall into a dirty segment
 for the first time (consequential writes to that segment will be re-directed 
 to the new copy so there's no extra cost). Therefore the number of dirty segments needs to be copied represents
-the CoW cost of a VM, which follows a poisson distribution (similar results are meaured from \cite{EMCIncrementalDataChanges}).
+the CoW cost of a VM.
 
-Our basic CoW cost model is:
-\[
-    CoW=n(1-e^{-m/n})
-\]
-    where
-\[
-    m=tw(1-d_1)c
-\]
 
-In the above model, $n$ is the number of dirty segments, $t$ is the time under
-CoW protection, $w$ is the
-write rate during CoW, $d_1$ is the \% of clean data (which doesn't go under
-CoW), and $c$ is a constant determining how likely writes are to touch dirty
-segments which haven't yet been copied vs. dirty segments which have already
-been copied during the current backup. With this CoW cost model and the earlier
-performance model, we can estimate the CoW cost of a given backup schedule.
-Note that CoW ends in Stage 2b, so only the time up to the end of 2b counts
-towards CoW. \todo{we still need to pick a value for $c$}
+Let $t$ be the time that a VM is under Cow protection, $w$ be the write rate
+during that period, $n$ be the total number of segments and $d_1$ 
+be the percentage of clean segments that don't need to
+be protected, then the total number of dirty segments is
+\[
+n_d=n(1-d_1)
+\]
+and the total number of writes fall into dirty segments is
+\[
+w_d=tw(1-d_1)
+\]
+Then the total number of dirty segments that need to be copied is:
+\[
+Cost = n_d(1-e^{-w_d/n_d}) = n(1-d_1)(1-e^{-tw/n})
+\]
+From the above formula it is clear that decreasing CoW time $t$ will
+reduce the CoW protection cost, 
+the model we derive is similar to the results meaured by \cite{EMCIncrementalDataChanges}.
+% Our basic CoW cost model is:
+% \[
+%     CoW=n(1-e^{-m/n})
+% \]
+%     where
+% \[
+%     m=tw(1-d_1)c
+% \]
+
+% In the above model, $n$ is the number of dirty segments, $t$ is the time under
+% CoW protection, $w$ is the
+% write rate during CoW, $d_1$ is the \% of clean data (which doesn't go under
+% CoW), and $c$ is a constant determining how likely writes are to touch dirty
+% segments which haven't yet been copied vs. dirty segments which have already
+% been copied during the current backup. With this CoW cost model and the earlier
+% performance model, we can estimate the CoW cost of a given backup schedule.
+% Note that CoW ends in Stage 2b, so only the time up to the end of 2b counts
+% towards CoW. \todo{we still need to pick a value for $c$}
 
 In addition to backup time for individual VMs, another cost consideration is
 total backup time for the system. It is generally preferred to run backups
