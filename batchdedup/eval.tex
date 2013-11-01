@@ -73,37 +73,89 @@ The final content copied to the backup storage is reduced by 94.4\% in total.
   \centering
 	\begin{tikzpicture}
 		\begin{axis}[
-		%title={Read Buffer Size},
-		xlabel={Read Buffer Size (MB)},
-		ylabel={Backup Time},
+		%title={Network Buffer Size},
+		xlabel={Rounds},
+		ylabel={Throughput (GB/s)},
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
 		%legend pos=north west
 		]
-                \addplot table[x=rbufmem,y=totaltime] {figures/rbufmem.txt};
+                \addplot table[x=rounds,y=throughput] {figures/sim_full.txt};
                 %\legend{Total Backup Time};
 		\end{axis}
 	\end{tikzpicture}
-  \caption{Backup time for verying amounts of memory allocated to disk read buffering. Other Settings: 10 Machines, 5x40GB VMs per machine, network buffers 2.5MB, write buffer 6.25MB}
+  \caption{simulated results for average throughput for individual VMs in 100 node cluster.}
   \label{fig:mpibuf-mem}
 \end{figure}
-
 \begin{figure}[ht]
   \centering
 	\begin{tikzpicture}
 		\begin{axis}[
-		%title={Write Buffer Size},
-		xlabel={Total Write Buffer Memory (MB)},
-		ylabel={Backup Time},
+		%title={Network Buffer Size},
+		xlabel={Rounds},
+		ylabel={Average Backup Time (min)},
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
 		%legend pos=north west
 		]
-                \addplot table[x=wbufmem,y=totaltime] {figures/wbufmem.txt};
+                \addplot table[x=rounds,y expr=(\thisrow{avgbackuptime})/60] {figures/sim_full.txt};
                 %\legend{Total Backup Time};
 		\end{axis}
 	\end{tikzpicture}
-  \caption{Backup time for verying amounts of memory allocated to network communication. Other Settings: 10 Machines, 5x40GB VMs per machine, network buffer memory 2.5MB, Read Buffer 128KB}
+  \caption{simulated results for average vm backup time for individual VMs in 100 node cluster.}
   \label{fig:mpibuf-mem}
 \end{figure}
+\begin{figure}[ht]
+  \centering
+	\begin{tikzpicture}
+		\begin{axis}[
+		%title={Network Buffer Size},
+		xlabel={Rounds},
+		ylabel={Average Turnaround Time (min)},
+		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
+		%legend pos=north west
+		]
+                \addplot table[x=rounds,y expr=(\thisrow{turnaround})/60] {figures/sim_full.txt};
+                %\legend{Total Backup Time};
+		\end{axis}
+	\end{tikzpicture}
+  \caption{simulated results for average vm turnaround time for individual VMs in 100 node cluster.}
+  \label{fig:mpibuf-mem}
+\end{figure}
+
+%\begin{figure}[ht]
+%  \centering
+%	\begin{tikzpicture}
+%		\begin{axis}[
+%		%title={Read Buffer Size},
+%		xlabel={Read Buffer Size (MB)},
+%		ylabel={Backup Time},
+%		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
+%		%legend pos=north west
+%		]
+%                \addplot table[x=rbufmem,y=totaltime] {figures/rbufmem.txt};
+%                %\legend{Total Backup Time};
+%		\end{axis}
+%	\end{tikzpicture}
+%  \caption{Backup time for verying amounts of memory allocated to disk read buffering. Other Settings: 10 Machines, 5x40GB VMs per machine, network buffers 2.5MB, write buffer 6.25MB}
+%  \label{fig:mpibuf-mem}
+%\end{figure}
+%
+%\begin{figure}[ht]
+%  \centering
+%	\begin{tikzpicture}
+%		\begin{axis}[
+%		%title={Write Buffer Size},
+%		xlabel={Total Write Buffer Memory (MB)},
+%		ylabel={Backup Time},
+%		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
+%		%legend pos=north west
+%		]
+%                \addplot table[x=wbufmem,y=totaltime] {figures/wbufmem.txt};
+%                %\legend{Total Backup Time};
+%		\end{axis}
+%	\end{tikzpicture}
+%  \caption{Backup time for verying amounts of memory allocated to network communication. Other Settings: 10 Machines, 5x40GB VMs per machine, network buffer memory 2.5MB, Read Buffer 128KB}
+%  \label{fig:mpibuf-mem}
+%\end{figure}
 
 Figure~\ref{fig:memory} shows the total parallel time in hours to backup 2500 VMs on
  a 100-node cluster a  when 
