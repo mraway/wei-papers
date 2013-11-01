@@ -1,26 +1,41 @@
 \section{Round Scheduling}
 \label{sect:scheduling}
-The simplest way to take advantage of the efficiency of batch processing is to
-schedule all the work to be done in one round.  This works well if all of the
-data being backed up are only copies, e.g. a separate backup system which data
-is sent to over the network. However, in our case we are backing up the
-original virtual disk, so a single round backup presents several problems.
-The first is that the average turnaround time for a VM is the time it takes to
-backup all the VMs. The second, which is related to the first, is that a single
-round backup has the highest cost to maintain a consistent view of the virtual
-disks. We use Copy on Write (CoW) for this, and the consistent view must be
-maintained between stage 1a and stage 2b, which can have sisgnificant cost if
-the system must wait for every single VM before unlocking any of the VMs.
-Other studies have
-shown that as much as 8\% or even more of total capacity must be reserved for
-CoW \cite{EMCIncrementalDataChanges}. The actual cost of CoW is a factor of the
-data size, the write rate, and duration CoW is taking place. The data size
-isn't something we can change, nor the write rate, but we can minimize the
-duration that a given VM is undergoing CoW. By minimizing the backup time for
-individual VMs we also improve CoW cost. To evaulate our
-CoW cost improvement, we assume a poisson distribution of
-writes (which closely fits the meaured results from
-\cite{EMCIncrementalDataChanges}).
+The naive way to take advantage of the efficiency of batch processing is to
+schedule all the work to be done in one round.  
+% This works well if all of the
+% data being backed up are only copies, e.g. a separate backup system which data
+% is sent to over the network. 
+However, in our case we are backing up the
+live virtual disks, thus such single round backup presents several problems
+in our synchronous approach.
+This first is that in order to preserve a consistent view of VM images, we apply
+Copy-on-Write (CoW) to protect the dirty segments against incoming disk writes during 
+the backup period of stage 1 and 2.
+Previous studies have shown that as much as 8\% or even more of total capacity must be reserved for
+CoW \cite{EMCIncrementalDataChanges}, while the actual cost of CoW is a factor of the
+data size, the write rate, and duration of CoW protection.
+The second problem is that a single round backup brings the highest cost of CoW
+because of the workload in stage 1a is imbalanced,
+causing machines with small VMs to wait while CoW protection is turned on.
+Thus we must minimize the duration that a given VM is undergoing CoW protection.
+
+% The first is that the average turnaround time for a VM is the time it takes to
+% backup all the VMs. The second, which is related to the first, is that a single
+% round backup has the highest cost to maintain a consistent view of the virtual
+% disks. We use Copy on Write (CoW) for this, and the consistent view must be
+% maintained between stage 1a and stage 2b, which can have significant cost if
+% the system must wait for every single VM before unlocking any of the VMs.
+% Other studies have shown that as much as 8\% or even more of total capacity must be reserved for
+% CoW \cite{EMCIncrementalDataChanges}. The actual cost of CoW is a factor of the
+% data size, the write rate, and duration CoW is taking place. The data size
+% isn't something we can change, nor the write rate, but we can minimize the
+% duration that a given VM is undergoing CoW. By minimizing the backup time for
+% individual VMs we also improve CoW cost. 
+To evaulate our CoW cost, we assume the incoming writes point to random disk locations, 
+which would incur a CoW operation over a segment if the write location fall into a dirty segment
+for the first time (consequential writes to that segment will be re-directed 
+to the new copy so there's no extra cost). Therefore the number of dirty segments needs to be copied represents
+the CoW cost of a VM, which follows a poisson distribution (similar results are meaured from \cite{EMCIncrementalDataChanges}).
 
 Our basic CoW cost model is:
 \[
@@ -32,7 +47,7 @@ Our basic CoW cost model is:
 \]
 
 In the above model, $n$ is the number of dirty segments, $t$ is the time under
-CoW, $w$ is the
+CoW protection, $w$ is the
 write rate during CoW, $d_1$ is the \% of clean data (which doesn't go under
 CoW), and $c$ is a constant determining how likely writes are to touch dirty
 segments which haven't yet been copied vs. dirty segments which have already
