@@ -213,5 +213,64 @@ A1 significantly improves our simulated results, also bringing our CoW costs
 much closer to the best case than the worst case, as can be seen in
 Figure~\ref{tab:schedule-costs}.  Our current implementation of the algorithm
 focuses on the deduplication and so doesn't make use of CoW, but we can see
-that our simulated times closely match measured runtimes (hopefully). \todo{I
-haven't actually implemented the schedulers into the dedup yet to test this}
+that our simulated times closely match measured runtimes (hopefully).
+
+
+\subsection{Standard Bin Packing Heuristic}
+\todo{this section might need to be moved around and/or broken up. also, notation might still need to be adjusted. }
+\begin{figure}
+\begin{lstlisting}[frame=single]
+bpl:
+for each Machine m
+  sort VMs in descending order by size
+  while there is an unscheduled VM
+    pick the first unscheduled VM a
+    pick the round b with the least
+      amount of VM data for m
+    schedule VM a to round b
+Halt
+\end{lstlisting}
+\caption{Round packing heuristic}
+\end{figure}
+
+Using the above algorithm we can show that for any round $r$, the amount of
+data scheduled to $r$ across all VMs has the upper bound of twice the optimal
+amount of data for a perfectly balanced schedule (i.e. the worst case for any
+round is bounded by twice the best case).
+
+Proof:
+first we define $load(m,r)$ to be the amount of data from VMs on Machine $m$
+to round $r$, $Machines$ to be the set of all machines, and $Rounds$ to be
+the set of all rounds.
+now define $2b_m$ to be the upper bound for data backuped up in a single round, 
+where 
+%$b_m = min(\frac{\sum \left\{ {x \mid x \in {VMS}_m} \right\}}{\left\vert\ {Rounds} \right\vert}, largest~VM~on~m)$,
+$b_m = min(\frac{\sum \left\{ {VMs~on~m} \right\}}{\left\vert {Rounds} \right\vert}, largest~VM~on~m)$,
+and $2b$ to be the global upper bound for each round, where
+$b = \sum \left\{ b_m | m \in Machines \right\}$. We would like to prove the
+actual global load is less than $2b$. we will do this by proving that for
+each machine $2b_m$ is the upper bound, which from the definition of $b$ can be
+extended to a global uppoer bound of $2b$. More formally, we would like to show:
+
+\[
+    (\forall m \in Machines, \forall r \in Rounds) load(m,r) < 2b_m
+\]
+
+Now let $x$ be a VM from Machine $m$ to be scheduled.
+For each round $r$ there are two possibilities:
+\begin{itemize}
+    \item $load(m,r) < b_m \Longrightarrow$
+        $load(m,r)+x < b_m+x$
+    \item $load(m,r) \ge b_m \Longrightarrow$
+
+        $(\exists k \in Rounds) load(m,k) < b_m$
+\end{itemize}
+
+since we never schedule to a round where $load(m,r) \ge b_m$, $load(m,r)$ must
+be less than $b_m+x$, where $x$ is the largest VM on $m$. By Definition
+$b_m > x$, so
+$load(m,r) < 2b_m$ for each machine, and therefore the global load for each
+round is less than $2b$.
+The expected case can be improved though by
+packing the largest VMs first and always scheduling to the round with the least
+data.
