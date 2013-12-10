@@ -1,0 +1,102 @@
+\chapter{Background}
+\label{chap:back}
+At a cloud cluster node, each instance of a guest operating system runs on a virtual machine, accessing virtual hard disks 
+represented as virtual disk image files in the host operating system.
+For VM snapshot backup, file-level semantics are normally not provided.
+Snapshot operations take place at the virtual device driver level, which
+means no fine-grained file system metadata can be used to determine the changed data. 
+Backup systems have been developed to use content fingerprints to identify duplicate
+content~\cite{venti02,Rhea2008}.  
+
+Many deduplication systems have been built for VM backup purposes. 
+In this chapter we will investigate several system design options at high-level.
+Section~\ref{back:coll} discusses the comparison of collocated solution vesus dedicated appliance.
+Section~\ref{back:trade} talks the tradeoffs in designing a deduplication storage system.
+Section~\ref{back:algo} introduces deduplication optimizations.
+
+\section{Architecture Options - Collocated vesus Dedicated} 
+\label{back:coll}
+Dedicated deduplication is a great way to augment existing tape based backup infrastructures due to its simple integration with existing backup applications. So if an end user is happy with their current backup application, a Dedicated approach may be very compelling as it does not necessitate a significant change of the backup infrastructure or the relearning of a new backup application.
+
+One of the strongest use cases for Dedicated deduplication is protecting large Oracle or SQL database (in excess of 2TBs) environments. Since each of these applications can natively backup their data to a Dedicated appliance, from an integration standpoint, there is low/no barrier to entry to begin protecting these environments rapidly. Some deduplication appliance manufacturers even offer direct integration with database backup tools like Oracle RMAN. This helps drive out some of the inefficiencies in the data center as both backup administrators and DBAs can share a common pool of backup resources and achieve reductions where there may be an overlap in backup processes.
+
+Another benefit to database target deduplication is a reduction in the consumption of primary storage resources. Many DBAs utilize a disk to disk to tape backup scheme to protect log files, table spaces etc. on primary storage that has no deduplication capability. Between periodic snapshots and direct dumps to disk, there tends to be an over consumption of expensive disk resources when protecting database environments. By migrating database backups to a deduplication appliance, scarce primary storage resources can be reclaimed for production applications. Whats more, the deduplication effect for database environments can range from a 5-1 to a 20-1 reduction in the physical disk or tape space required to perform normal backup operations - potentially generating a return on investment.
+
+In short, Dedicated deduplication provides an easy entry point for customers interested in leveraging the efficiencies of deduplication to reduce backup windows, enhance data protection and improve overall operational efficiencies in the data center without making major changes to their environment. 
+
+Collocated deduplication generally consists of backup application software with embedded deduplication at the client layer and some form of disk storage to serve as the repository for backup data. As the name implies, Collocated data deduplication takes place at the source or where data originates - at the server or application layer. Collocated deduplication offerings consist of placing a lightweight backup agent at the virtual or physical server and then only backing up the unique data segments that have changed since the prior backup job. The data segments are then sent over the LAN and/or WAN to a disk based storage grid for protection.
+
+The advantages of Collocated deduplication are rapid backup windows and a large reduction in the volume of LAN/WAN traffic generated during the backup window. Instead of pushing a full backup over the wire from a media server each night, unique deduplicated backup segments trickle between the application hosts and the backend deduplication storage grid. The data transfers are extremely efficient - equivalent to a meta-data handshake. Think speed of source side deduplication as an incremental (only more efficient) forever with the benefit of producing a full backup each night.
+
+In general, Collocated deduplication is a great solution for environments with a low daily data change rate. Great use cases for Collocated deduplication solutions include data on the edge  remote offices and laptops in the field (great for C level execs) and file heavy environments (NAS, VMware). In the case of remote offices, often the investment in Collocated deduplication can be justified by the cost avoidance attained by eliminating the legacy remote office backup infrastructure  backup server hardware, software, tape libraries, tape media, courier expenses, etc.
+
+In the VM snapshot backup case that we study, there is hardly any value for deploying dedicated backup
+solution because it's not affordable to VM users. Therefore we seek for low-cost collocated deduplication options
+to reduce the VM snapshot storage cost.
+Collocating a backup service on the existing
+cloud cluster avoids the extra cost to acquire a dedicated backup facility
+and reduces the network bandwidth consumption in transferring the
+raw data for backup. 
+
+\section{Tradeoff in Design Goals}
+\label{back:trade}
+Given we are designing scalable low-cost collocated deduplication solutions,
+the effectiveness of a deduplication system is determined 
+by the extent to which it can achieve three mutually competing goals: 
+deduplication efficiency, throughput, and job turnaround time. 
+Deduplication efficiency refers to
+how well the system can detect and share duplicate data
+units which is its primary compression goal. Throughput refers
+to the rate at which data can be transferred in and out of
+the system, and constitutes the main performance metric.
+Job turnaround time is the total time for a backup job from submit to finish.
+All three metrics are important. Good dedupe efficiency 
+reduces the storage cost. High throughput
+is particularly important because it can enable fast backups, 
+minimizing the length of a backup window. 
+Job turnaround time reflects how fast primary storage 
+can be released from backup related I/O activity.
+Among the three goals, it is easy to optimize any two of them,
+but not all. To get good deduplication efficiency, 
+it is necessary to perform data indexing for duplicate detection.
+The indexing metadata size grows linearly with the capacity of the system. 
+Keeping this metadata in memory,
+would yield good throughput. 
+But the amount of available RAM would set a hard limit to the scalability of the
+system. Partition indexing metadata man remove
+the scalability limit, but significantly hurt job turnaround time.
+Finally, we can optimize for both throughput and turnaround time, 
+, but then we lose deduplication as there's no cheap solution to search all metadata quickly. 
+Achieving all three goals is a non-trivial task.
+
+Another less obvious but equally important problem is
+duplicate reference management: duplicate data sharing
+introduces the need to determine who is using a particular data unit, and when it can be reclaimed. 
+The computational and space complexity of these reference management mechanisms grows 
+with the amount of supported capacity. Real world experience has shown that the
+cost of reference management for garbage collection (upon addition and deletion of data) 
+has become one of the biggest 
+bottlenecks.
+
+This dissertation studies two low-cost deduplication design options with different tradeoffs. 
+Chapter~\ref{chap:offline} gives a synchronous parallel deduplication design that
+sacrifices the job turnaround time to achieve high throughput and deduplication efficiency.
+Chapter~\ref{chap:inline} describes an multi-level selective deduplication solution
+that comprises deduplication efficiency to improve throughput and job turnaround time.
+
+\section{Deduplication Optimizations}
+\label{back:algo}
+Since it is expensive to compare a large number of chunk signatures for deduplication,
+several techniques have been proposed to speedup searching of duplicate
+fingerprints. For example, the data domain method ~\cite{bottleneck08} 
+uses  an in-memory Bloom filter and a prefetching cache for data chunks  which may be
+accessed.  An improvement to this work with parallelization is in ~\cite{MAD210,DEBAR}.
+The approximation techniques are studied in~\cite{extreme_binning09,Guo2011,WeiZhangIEEE}  
+to reduce memory requirements with the tradeoff of a reduced deduplication ratio.
+Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,Srinivasan2012}
+and a parallel batch solution for cluster-based deduplication is 
+studied in ~\cite{wei2013}. 
+All of the above approaches have focused on optimization of deduplication
+efficiency, and none of them have considered the impact
+of deduplication on fault tolerance in the cluster-based environment that we have considered
+in this dissertation.

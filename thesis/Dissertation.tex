@@ -1,14 +1,78 @@
 % Root File for a UCSB Dissertation
 %
 %
-
-\documentclass[12pt,twoside,draft]{ucthesis}
-% todo: final options: [12pt,oneside,final]
+% draft options
+%\documentclass[12pt,twoside,draft]{ucthesis}
+% final options: 
+\documentclass[12pt,oneside,final]{ucthesis}
 
 \usepackage{graphics,epsfig}
-%\usepackage{amssymb, amsmath, amsfonts, epsfig, graphicx, graphics, latexsym, makeidx, psfig, subeqn, verbatim, xspace,textcomp}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{sansmath}
+\usepackage{mathptmx}
+\usepackage{subfigure}
+\usepackage{multirow}
+\usepackage{breqn}
+\usepackage{rotating}
+%\usepackage{amssymb, amsmath, amsfonts, epsfig, graphicx, graphics, latexsym, makeidx, psfig, subeqn, verbatim, xspace,textco
+%mp}
+\pgfplotsset{
+    %You are supposed to use append style rather than just setting
+    %parameters globally so they are easier to override to special cases
+    %thickness options:thin,ultra thin,very thin,semithick,thick,very thick
+    every axis/.append style={
+        thick,
+        tick style={thick},
+        tick label style={font=\small\mathversion{sans}\sffamily},
+        label style={font=\small\sffamily},
+        font={\small\sffamily},
+        mark size=1.0
+    },
+    every legend/.append style={font={\small\mathversion{sans}\sffamily}}
+}
+\pgfplotsset{
+    every mark/.append style={solid}
+}
+\pgfplotscreateplotcyclelist{mcolor}{%
+    {blue,every mark/.append style={fill=blue},mark=*},
+    {red,every mark/.append style={fill=red},mark=square*},
+    {brown,every mark/.append style={fill=brown},mark=triangle*,mark size=1.5},
+    {black,every mark/.append style={fill=black},mark=diamond*,mark size=1.5},
+    {green!60!black,every mark/.append style={fill=green!60!black},mark=pentagon*,mark size=1.4},
+    {magenta!90!black,every mark/.append style={fill=magenta!90!black},mark=star,mark size=1.5},
+    {densely dashed,blue,every mark/.append style={fill=blue},mark=*},
+    {densely dashed,red,every mark/.append style={fill=red},mark=square*},
+    {densely dashed,brown,every mark/.append style={fill=brown},mark=triangle*,mark size=1.5},
+    {densely dashed,black,every mark/.append style={fill=black},mark=diamond*,mark size=1.5},
+    {densely dashed,green!60!black,every mark/.append style={fill=green!60!black},mark=pentagon*,mark size=1.4},
+    {densely dashed,magenta!90!black,every mark/.append style={fill=magenta!90!black},mark=star,mark size=1.5}}
 
+\pgfplotscreateplotcyclelist{mmark*}{
+    {mark=*},
+    {mark=square*},
+    {mark=triangle*,mark size=1.5},
+    {mark=diamond*,mark size=1.5},
+    {mark=pentagon*,mark size=1.4},
+    {mark=star,mark size=1.5},
+    {mark=asterisk,mark size=1.5},
+    {mark=+,mark size=1.5},
+    {mark=Mercedes star,mark size=1.5}}
 
+\pgfplotscreateplotcyclelist{mline}{
+    {solid,blue,every mark/.append style={fill=blue}},
+    {densely dashed,red,every mark/.append style={fill=red}},
+    {densely dotted,brown,every mark/.append style={fill=brown}},
+    {loosely dotted,black,every mark/.append style={fill=black}},
+    {loosely dashed,green!60!black,every mark/.append style={fill=green!60!black}},
+    {densely dashdotted,magenta!90!black,every mark/.append style={fill=magenta!90!black}},
+    {densely dashdotdotted,teal,every mark/.append style={fill=teal}},
+    {loosely dashdotted,orange,every mark/.append style={fill=orange}},
+    {loosely dashdotdotted,violet,every mark/.append style={fill=violet}}}
+
+    \pgfplotsset{cycle list name=mcolor}
+
+\newcommand{\comments}[1]{}
 %% Document Parts
 
 % run latex with only these files; it's faster without all eps figures etc.
@@ -47,27 +111,22 @@
 %\def\figsp{}
 
 
-\include{Intro}
-
-%\include{Literature}
-
-%\include{Chapter1}
-
-%\include{Chapter2}
-
-%\include{Conclusions}
+\include{Introduction}
+\include{Background}
+\include{Overview}
+\include{OfflineDedup}
+\include{InlineDedup}
+\include{DataManagement}
+\include{Conclusion}
 
 \ssp   % bibliography can be single-spaced for UC thesis format
-\bibliography{mybibfile}
+\bibliography{Dissertation}
 \bibliographystyle{abbrv}%{unsrt}%{alpha}{siam}{apalike}{ieeetr}{plain}{acm}{abbrv}
 %\bibliographystyle{IEEE-Alpha} 
 
 
-\part*{\addcontentsline{toc}{part}{Appendices}Appendices}
-\appendix
-
-\include{Appendix}
+% \part*{\addcontentsline{toc}{part}{Appendices}Appendices}
+% \appendix
+% \include{Appendix}
 
 \end{document}
-
-

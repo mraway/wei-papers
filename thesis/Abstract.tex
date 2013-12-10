@@ -5,10 +5,11 @@
 \begin{abstract}
 
 \addcontentsline{toc}{chapter}{Abstract}
+A cloud platform that hosts a large number of virtual machines (VMs) has high storage demand for frequent backup of VM snapshots. Content signature based deduplication is necessary to eliminate excessive redundant blocks.  While dedicated backup storage systems can be used to reduce data  redundancy,  such an architecture is expensive and introduces huge network  traffic in a large cluster.   This thesis research is focused on a low-cost backup and deduplication service collocated with other cloud services to reduce infrastructure and network cost.
 
-%todo: max 350 words
+The previous research for cluster-based data deduplication has concentrated on various inline solutions. The first part of the thesis work is a  highly parallel and offline solution with synchronized backup scalable for a large number of virtual machines. The key idea is to separate duplicate detection from the actual storage backup, and partition global index and detection requests among machines using fingerprint values. Then each machine conducts duplicate detection partition by partition independently with minimal memory consumption. Another optimization is to allocate and control buffer space for exchanging detection requests and duplicate summaries among machines. The memory requirement and disk usage for the proposed solution is very small while the overall throughput and backup process timing is not compromised. Our evaluation validates this and shows a satisfactory backup throughput in a large cloud setting.
 
-
+The second part of the thesis work is a VM-centric collocated backup service with inline deduplication. The key difference compared to the previous work is its novelty in fault resilience and low resource usage. We propose a multi-level selective deduplication scheme which integrates similarity-guided and popularity-guided duplicate elimination under a stringent resource requirement. This scheme uses popular common data to facilitate fingerprint comparison, localizes deduplication as much as possible within each VM, and associates underlying file blocks with one VM for most of cases. The main advantage of this scheme is that it strikes a balance between inner and inter VM  deduplication to increase parallelism and  improve reliability.  Our analysis shows that this VM-centric scheme can provide better fault tolerance while using a small amount of computing and storage resource. We have conducted a comparative evaluation of this scheme on its competitiveness in terms of deduplication efficiency and backup throughput.
 
 \abstractsignature
 

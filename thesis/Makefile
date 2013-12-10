@@ -12,23 +12,31 @@ PS2PDF_FLAGS=-dCompatibilityLevel=1.3 -dMaxSubsetPct=100 -dSubsetFonts=true -dEm
 # Dissertations should have 600dpi or more:
 # -dGrayImageResolution=600 -dColorImageResolution=600 -dMonoImageResolution=600
 
-default: Dissertation.dvi
+default:	Dissertation.pdf
 
-ps:	Dissertation.ps
+# dvi: Dissertation.dvi
 
-pdf:	Dissertation.pdf
+# ps:	Dissertation.ps
 
-Dissertation.dvi: Dissertation.tex Title.tex Dedicate.tex Acknowledgements.tex Vitae.tex Abstract.tex Intro.tex ucthesis.cls uct12.clo
-	${LATEX} Dissertation
-	${BIBTEX} -include-directory=${BIBINPUTS} Dissertation
-	${LATEX} Dissertation
-	${LATEX} Dissertation
+# pdf:	Dissertation.pdf
 
-Dissertation.ps: Dissertation.dvi
-	${DVIPS} -t letter -Ppdf -G0 Dissertation.dvi -o Dissertation.ps
 
-Dissertation.pdf: Dissertation.ps
-	ps2pdf ${PS2PDF_FLAGS} Dissertation.ps
+
+# Dissertation.dvi: Dissertation.tex Title.tex Dedicate.tex Acknowledgements.tex Vitae.tex Abstract.tex Introduction.tex Background.tex Overview.tex OfflineDedup.tex InlineDedup.tex DataManagement.tex Conclusion.tex ucthesis.cls uct12.clo
+# 	${LATEX} Dissertation
+# 	${BIBTEX} -include-directory=${BIBINPUTS} Dissertation
+# 	${LATEX} Dissertation
+# 	${LATEX} Dissertation
+
+# Dissertation.ps: Dissertation.dvi
+# 	${DVIPS} -t letter -Ppdf -G0 Dissertation.dvi -o Dissertation.ps
+
+# Dissertation.pdf: Dissertation.ps
+# 	ps2pdf ${PS2PDF_FLAGS} Dissertation.ps
+
+Dissertation.pdf: Dissertation.tex Title.tex Dedicate.tex Acknowledgements.tex Vitae.tex Abstract.tex Introduction.tex Background.tex Overview.tex OfflineDedup.tex InlineDedup.tex DataManagement.tex Conclusion.tex ucthesis.cls uct12.clo Dissertation.bib
+	pdflatex Dissertation.tex
+	pdflatex Dissertation.tex
 
 clean:	
 	rm -f *.aux
@@ -40,6 +48,12 @@ clean:
 	rm -f Dissertation.log
 	rm -f Dissertation.lof
 	rm -f Dissertation.toc
+	rm -f Thesis.bbl
+	rm -f Thesis.blg
+	rm -f Thesis.log
+	rm -f Thesis.lof
+	rm -f Thesis.toc
+	rm -f Thesis.pdf
 
 realclean: clean
 	rm -f *~
