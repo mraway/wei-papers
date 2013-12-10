@@ -103,23 +103,25 @@ The final content copied to the backup storage is reduced by 94.4\% in total.
   \caption{simulated results for average vm backup time for individual VMs in 100 node cluster.}
   \label{fig:mpibuf-mem}
 \end{figure}
-\begin{figure}[ht]
-  \centering
-	\begin{tikzpicture}
-		\begin{axis}[
-		%title={Network Buffer Size},
-		xlabel={Rounds},
-		ylabel={Average Turnaround Time (min)},
-		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
-		%legend pos=north west
-		]
-                \addplot table[x=rounds,y expr=(\thisrow{turnaround})/60] {figures/sim_full.txt};
-                %\legend{Total Backup Time};
-		\end{axis}
-	\end{tikzpicture}
-  \caption{simulated results for average vm turnaround time for individual VMs in 100 node cluster.}
-  \label{fig:mpibuf-mem}
-\end{figure}
+
+%TODO: make this figure
+%\begin{figure}[ht]
+%  \centering
+%	\begin{tikzpicture}
+%		\begin{axis}[
+%		%title={Network Buffer Size},
+%		xlabel={Rounds},
+%		ylabel={Backup Cost},
+%		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
+%		%legend pos=north west
+%		]
+%                \addplot table[x=rounds,y=DBP2Cost] {figures/cost.txt};
+%                %\legend{Total Backup Time};
+%		\end{axis}
+%	\end{tikzpicture}
+%  \caption{simulated results for backup cost based on real 120 node cluster.}
+%  \label{fig:mpibuf-mem}
+%\end{figure}
 
 \todo{The names of the algorithms are just the temporary names I've been using for coding, DBP2 is the relative of the dual bin packing algorithm, BPL is the machine by machine largest VM to shortest round algorithm}
 \begin{figure}[ht]
@@ -128,12 +130,12 @@ The final content copied to the backup storage is reduced by 94.4\% in total.
 		\begin{axis}[
 		%title={Network Buffer Size},
 		xlabel={Rounds},
-		ylabel={Total Jobspan (s)},
+		ylabel={Total Jobspan (m)},
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
                 %legend pos=north west
 		]
-                \addplot table[x=Rounds,y=DBP2jobspan] {figures/packing_comparison.txt};
-                \addplot table[x=Rounds,y=BPLjobspan] {figures/packing_comparison.txt};
+                \addplot table[x=Rounds,y expr=(\thisrow{DBP2jobspan})/60] {figures/packing_comparison.txt};
+                \addplot table[x=Rounds,y expr=(\thisrow{BPLjobspan})/60] {figures/packing_comparison.txt};
                 \legend{DBP2, BPL};
 		\end{axis}
 	\end{tikzpicture}
