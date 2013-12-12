@@ -72,13 +72,14 @@
 
 \begin{document}
 %\title{Selective Deduplication for VM Snapshots in Cloud Storage}
-\title{ Low-Cost Data Deduplication  for  Virtual Machine Backup in Cloud Storage}
+%\title{ Low-Cost Data Deduplication  for  Virtual Machine Backup in Cloud Storage}
+\title{Parallel Deduplication with Batch  Scheduling for  Collocated Virtual Machine Backup in the Cloud}
 %\title{Data Deduplication and Zipf-like Distribution in VM Cloud Storage}
 
 \author{
 Daniel Agun$^{\star}$,  
 Wei Zhang$^{\star}$, and Tao Yang$^\star$ \\
-{\normalsize$^\star$  University of California at Santa Barbara}, 
+{\normalsize$^\star$  University of California at Santa Barbara} 
 %{\normalsize$^\dagger$Alibaba Inc.}
 %Wei Zhang, Tao Yang, Gautham Narayanasamy\\
 %University of California at Santa Barbara
@@ -99,7 +100,7 @@ Wei Zhang$^{\star}$, and Tao Yang$^\star$ \\
 \input{intro} %introduce the vm cloud, backup problem, and our requirements
 \input{background} %related works, related solutions, 
 \input{arch} %, design considerations, architecture
-\input{analysis} %, design considerations, architecture
+%\input{analysis} %, design considerations, architecture
 \input{scheduling} % CoW cost considerations and round scheduling
 \input{eval} %data study, zipf, model of cds size and dedup efficiency
 %\input{results}
@@ -108,8 +109,8 @@ Wei Zhang$^{\star}$, and Tao Yang$^\star$ \\
 \input{concl}
 
 
-{\bf Acknowledgment.} We thank Michael Agun, Renu Tewari, and
-the anonymous referees for their valuable comments.
+{\bf Acknowledgment.} We thank Hong Tong for his help and support.
+%Renu Tewari, and anonymous referees in for their valuable comments.
 This work is supported in part by NSF IIS-1118106. 
 Any opinions, findings, conclusions or recommendations expressed in this material
 are those of the authors and
