@@ -7,11 +7,11 @@ Given VM sizes are highly skewed in a large cluster, some big VMs will take a lo
 small VM backup tasks synchronized in one round will have to wait.
 Thus the average backup time for small VMs is fairly large. 
 
-Figure~\ref{sizeDistribution} shows the size distribution of VMs for a dataset from Alibaba containing
-about 3000VMs. The largest VM size is to a few terabytes while  the smallest VMs only have a few gigabytes of data.
-The percentage of changes from last backup is also show in the graph and 
-it shows that the change is fairly uniform for large VMs also. Namely when scheduling all VM backup tasks
-in one round in a synchronized manner, and the average backup time per VM is fairly large.
+%Figure~\ref{sizeDistribution} shows the size distribution of VMs for a dataset from Alibaba containing
+%about 3000VMs. The largest VM size is to a few terabytes while  the smallest VMs only have a few gigabytes of data.
+%The percentage of changes from last backup is also show in the graph and 
+%it shows that the change is fairly uniform for large VMs also. Namely when scheduling all VM backup tasks
+%in one round in a synchronized manner, and the average backup time per VM is fairly large.
 
 There is another disadvantage with a single-round scheduling. 
 During backup period, new data modification requests can lead a inconsistency between data signature 
@@ -41,18 +41,21 @@ To determine how evenly distributed VM sizes are, we obtained statistical data
 for 22 Aliyun clusters. The clusters in our dataset all have a very long tail distribution,
 Though local minima exist in the histogram and the range of VM sizes varies. Other production clusters
 may have different distributions, but our findings justify our architecture for a multi-round algorithm.
-A representative histogram for one of the clusters is shown in Fig.~\ref{fig:hist-1}.
+A representative histogram for one of the clusters is shown in Fig.~\ref{fig:hist-1}. You can see that the range of sizes is very large (the smallest group of 100 VMs has an average size of ~15GB, while the largest has an average size of over 700GB). It is that fact that VM sizes vary greatly that makes the scheduling of VMs to rounds important.
 
 \begin{figure}[ht]
   \centering
   \begin{tikzpicture}
       \begin{axis}[
               ybar interval,
+              xlabel=Avg VM Size in Group (GB),
+              ylabel=Number of Groups,
+              xticklabel={\pgfmathparse{(\tick*1)}\num[round-mode=places, round-precision=0]{\pgfmathresult}}
       ]
           \addplot+[hist={bins=10}] table[y=AY41G] {figures/cluster_distributions.txt};
       \end{axis}
   \end{tikzpicture}
-  \caption{Histogram of average data sizes for a real cluster. TODO:reformat graph, I just wanted to get the data into the paper}
+  \caption{Histogram of average data sizes for a real cluster. TODO:adjust this using the new spreadsheets}
   \label{fig:hist-1}
 \end{figure}
 
