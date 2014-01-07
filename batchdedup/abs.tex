@@ -1,20 +1,41 @@
 \begin{abstract}
 %Virtualization has became the engine behind many cloud computing platforms.
-In a virtualized cloud cluster, frequent  snapshot backup of virtual disks improves
-hosting  reliability; however, it  takes significant 
-memory resource to detect and remove duplicated content blocks among snapshots.
-This paper presents a low-cost deduplication solution scalable for a large number 
-of virtual machines.  The key idea is to separate duplicate detection from 
-the actual storage backup instead of using inline deduplication, and partition
-global index and  detection requests among machines using  fingerprint values.
-Then each machine conducts duplicate detection partition by partition independently with minimal memory usage.
+%In a virtualized cloud cluster, frequent  snapshot backup improves hosting reliability 
+%and source-side deduplication has its advantage  to minimize network 
+%bandwidth by detecting  duplicates  before being transmitted  to the backup storage, but it 
+%is resource intensive and can affect other
+%source-side sources.  
+%frequent  snapshot backup improves hosting reliability
+In a virtualized cloud cluster, 
+collocation of backup storage service reduces  hosting cost and network traffic caused by
+frequent virtual machine backup.  However, 
+deduplication can be expensive and its resource usage  affects other collocated services.  
+This paper presents a  low-cost and  parallel deduplication 
+with batch scheduling to orchestrate backup activities
+of clustered servers with minimum resource usage. 
+The key idea is to separate duplicate detection from the actual storage backup, and partition global index and detection 
+requests among machines using fingerprint values. Then each machine conducts duplicate detection partition 
+by partition independently. Since some large VM backup slows down other small VM  backup,
+another optimization in our work is to minimize the average VM backup time by scheduling
+VM backup in multiple batch rounds.
+%requests and duplicate summaries among machines. 
+The memory requirement and disk usage for the proposed solution is very small while the overall 
+throughput and backup process timing is not compromised. The tradeoff is that  
+individual backup requests may be delayed while the average overall snapshot backup is optimized. 
+Our evaluation validates this and shows a satisfactory backup throughput in a large cloud cluster setting. 
+
+%This paper presents a low-cost deduplication solution scalable for a large number 
+%of virtual machines.  The key idea is to separate duplicate detection from 
+%the actual storage backup instead of using inline deduplication, and partition
+%global index and  detection requests among machines using  fingerprint values.
+%Then each machine conducts duplicate detection partition by partition independently with minimal memory usage.
 %in parallel among all machines and  each machine full duplication detection is 
-Another optimization is to allocate and control
-buffer space for exchanging  detection requests and duplicate summaries among machines.
+%Another optimization is to allocate and control
+%buffer space for exchanging  detection requests and duplicate summaries among machines.
 %The memory requirement and disk usage for the proposed solution is very small while the overall thoughput
 %and backup process timing is not compromised. 
-Our evaluation shows that  the proposed multi-stage scheme 
-uses a small amount of memory  while delivering a satisfactory backup throughput.
+%Our evaluation shows that  the proposed multi-stage scheme 
+%uses a small amount of memory  while delivering a satisfactory backup throughput.
 %in a large cloud setting.
 %which only reqiires a very small amount of memory and CPU resource.  
 %Experimental results  show the proposed scheme  can achieve high deduplication ratio while using
