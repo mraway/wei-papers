@@ -19,6 +19,8 @@ read previously and actual data on the disk.
 % This works well if all of the
 % data being backed up are only copies, e.g. a separate backup system which data
 % is sent to over the network. 
+
+
 %However, in our case we are backing up the
 %live virtual disks, thus such single round backup presents several problems
 %in our synchronous approach.
@@ -34,6 +36,26 @@ and single-round operation synchronization significantly increases COW overhead.
 %because of the workload in stage 1a is imbalanced,
 %causing machines with small VMs to wait while CoW protection is turned on.
 %Thus we must minimize the duration that a given VM is undergoing CoW protection.
+
+To determine how evenly distributed VM sizes are, we obtained statistical data
+for 22 Aliyun clusters. The clusters in our dataset all have a very long tail distribution,
+Though local minima exist in the histogram and the range of VM sizes varies. Other production clusters
+may have different distributions, but our findings justify our architecture for a multi-round algorithm.
+A representative histogram for one of the clusters is shown in Fig.~\ref{fig:hist-1}.
+
+\begin{figure}[ht]
+  \centering
+  \begin{tikzpicture}
+      \begin{axis}[
+              ybar interval,
+      ]
+          \addplot+[hist={bins=10}] table[y=AY41G] {figures/cluster_distributions.txt};
+      \end{axis}
+  \end{tikzpicture}
+  \caption{Histogram of average data sizes for a real cluster. TODO:reformat graph, I just wanted to get the data into the paper}
+  \label{fig:hist-1}
+\end{figure}
+
 
 % The first is that the average turnaround time for a VM is the time it takes to
 % backup all the VMs. The second, which is related to the first, is that a single
