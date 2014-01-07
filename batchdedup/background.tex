@@ -11,6 +11,13 @@ not provided, and snapshot operations take place at the virtual device driver
 level.  This meands no fine-grained file system metadata can be used to
 determine the changed data.
 
+Further, System admistrators may wish to adjust the balance between resource 
+usage for backup and the time spent performing backups. There may be a small
+backup window (e.g. 2 hours) to complete the backups each night, but the backup
+should also minimize impact on VMs running during that time. Other studies have
+shown, for example, that the cost of Copy on Write (CoW) during daily backups
+can be as much as 8\% of the total data size \cite{EMCIncrementalDataChanges}.
+
 Another issue is the sheer size of the backups. to maintain mutiple daily
 uncompressed snapshots of each VM would be very expensive, even though
 most of the data remains the same from day to day, and even between VMs common
