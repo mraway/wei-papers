@@ -275,6 +275,19 @@ costs:
 %\end{description}
 
 
+\subsection{Metrics}
+We have chosen two primary metrics to evaluate our approach and the efficiency
+of our scheduling (discussed in the next section). The first metric is total
+jobspan. This metric is used to determine how long of a backup window is
+required for each round of backups, and also can show throughput of the entire
+system.
+
+Our system uses a multi-round batch approach, so we need another metric to
+evaluate how the rounds affect time.  The second metric we have chosen is
+average VM backup time. This metric helps us to compare different schedules,
+and evaluate the tradeoff between batch efficiency and the time that VMs are
+spent in backup (which affects CoW). Within a round, we assign all VMs the backup time
+for that round, and then compute the mean backup time across all VMs.
 
 
 \subsection{A Comparison with Other Approaches}
