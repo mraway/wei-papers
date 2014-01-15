@@ -106,12 +106,12 @@ clusters. we discuss the size distributions in section \ref{??}.
 		\begin{axis}[
 		%title={Network Buffer Size},
 		xlabel={Rounds},
-		ylabel={Total Jobspan (m)},
+		ylabel={Total Jobspan (hrs)},
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
                 %legend pos=north west
 		]
-                \addplot table[x=Rounds,y expr=(\thisrow{DBP2jobspan})/60] {figures/packing_comparison.txt};
-                \addplot table[x=Rounds,y expr=(\thisrow{BPLjobspan})/60] {figures/packing_comparison.txt};
+                \addplot table[x=Rounds,y expr=(\thisrow{DBP2jobspan})/3600] {figures/packing_comparison.txt};
+                \addplot table[x=Rounds,y expr=(\thisrow{BPLjobspan})/3600] {figures/packing_comparison.txt};
                 \legend{DBP2, BPL};
 		\end{axis}
 	\end{tikzpicture}
