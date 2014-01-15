@@ -5,7 +5,10 @@
 \begin{abstract}
 
 \addcontentsline{toc}{chapter}{Abstract}
-A cloud platform that hosts a large number of virtual machines (VMs) has high storage demand for frequent backup of VM snapshots. Content signature based deduplication is necessary to eliminate excessive redundant blocks.  While dedicated backup storage systems can be used to reduce data  redundancy,  such an architecture is expensive and introduces huge network  traffic in a large cluster.   This thesis research is focused on a low-cost backup and deduplication service collocated with other cloud services to reduce infrastructure and network cost.
+A cloud platform that hosts a large number of virtual machines (VMs) has high storage demand for frequent backup of VM snapshots. 
+Content signature based deduplication is necessary to eliminate excessive redundant blocks. 
+While dedicated backup storage systems can be used to reduce data  redundancy,  such an architecture is expensive and introduces huge network  traffic in a large cluster. 
+This thesis research is focused on a low-cost backup and deduplication service collocated with other cloud services to reduce infrastructure and network cost.
 
 The previous research for cluster-based data deduplication has concentrated on various inline solutions. The first part of the thesis work is a  highly parallel and offline solution with synchronized backup scalable for a large number of virtual machines. The key idea is to separate duplicate detection from the actual storage backup, and partition global index and detection requests among machines using fingerprint values. Then each machine conducts duplicate detection partition by partition independently with minimal memory consumption. Another optimization is to allocate and control buffer space for exchanging detection requests and duplicate summaries among machines. The memory requirement and disk usage for the proposed solution is very small while the overall throughput and backup process timing is not compromised. Our evaluation validates this and shows a satisfactory backup throughput in a large cloud setting.
 
