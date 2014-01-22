@@ -259,17 +259,22 @@ data load of all physical machines.
 
 \subsection{Heuristic Algorithms}
 
-Since the physical machine location of each VM is preassigned,
-a scheduling algorithm is to decide the number of rounds to be used
-and the round number that each VM is processed.
-Our algorithm mapping each VM to a round number is outlined as follows.
+We assume the physical machine location of each VM is preassigned, and that the
+VM should be backed up from the machine hosting it.  This may not be a
+requirement of the system (e.g. if the virtual disks are stored on a DFS any
+machine could theoretically backup the VM), but in a converged storage
+architecture it should be the case that at least one replica of the VM disk is
+on/near the hosting machine, so we maximize data locality by taking advantage
+of this. A scheduling algorithm is developed to decide the number of rounds to
+be used and the round number that each VM is processed.  Our algorithm mapping
+each VM to a round number is outlined as follows.
 % and there are two options in selecting the tasks.
 \begin{itemize}
-\item Repeat following steps for all possible $k$ numbers and choose the schedule
+\item Repeat following steps for all possible $k$ values (numbers of rounds) and choose the schedule
 with the smallest objective function.
 \item For given round number $k$, derive  a schedule as follows.
 	\begin{itemize}
-	\item Select an unscheduled VM. The default option is to select this VM with the maximum VM size.
+	\item Select an unscheduled VM. The default option is to select the VM with the maximum VM size.
 Another option is to consider the maximum-sized VM in a physical machine which has the highest 
 unscheduled work load.
 	\item Try all $k$ rounds and find a round number  to assign the selected VM. 
@@ -281,6 +286,29 @@ There are two options to select such a round.
 	\end{itemize}
 \end{itemize}
 
+\begin{algorithm}
+\ForEach{k in (1..Num VMs)}{
+  Sort VMs in descending size order\;
+  \ForEach{VM}{
+    schedule VM to round with smallest load\;
+  }
+  Compute the cost of this schedule (using objective function)\;
+}
+Select the k which had the lowest schedule cost\;
+\caption{VM round scheduling algorithm}
+\end{algorithm}
+
+\begin{algorithm}
+\ForEach{k in (1..Num VMs)}{
+  \ForEach{x in (1..Num VMs}{
+    Choose the largest VM from the machine with the highest unscheduled workload\;
+    Schedule VM to round with smallest load\;
+  }
+  Compute the cost of this schedule (using objective function)\;
+}
+Select the k which had the lowest schedule cost\;
+\caption{Alternate VM round scheduling algorithm}
+\end{algorithm}
 
 
 \comments{
