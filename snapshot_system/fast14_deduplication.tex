@@ -17,6 +17,8 @@ the VMWare hypervisor has an API to let external backup applications know
 the changed areas since last backup. 
 The Microsoft SDK provides an API that allows external applications to monitor 
 the VM's I/O traffic and implement such changed block tracking feature.
+%The dirty bit tracking is valuable because it immediately cuts down the number of blocks
+%which must be processed, and reduces memory, network, and cpu resource requirements.
 
 \begin{figure}[htbp]
   \centering
@@ -278,6 +280,25 @@ Since $\sigma$ is small (e.g.  2\% in our experiments),
 the impact of replication on storage increase is very small even 
 when choosing  $r_c/r$ ratio as 2 or 3. 
 
+In Figure~\ref{fig:share} we build a bipartite graph representing the
+association from unique file system blocks to their corresponding VMs in the VC
+and VO approaches. We use an FSB rather than data chunk as our unit of failure
+because the DFS keeps file system blocks as its base unit of storage, and in
+the case of 64MB FSBs and 4KB chunks, there are 16K chunks per block. In VC
+we assign extra replication to the PDS blocks, while in VO the replication
+degree is fixed.
+
+We could consider a third approach (call it VO+), adopting the VO approach, and
+then relying on filesystem features to provide extra replication to popular
+blocks, without the extra complexity of separating popular and non-popular
+data. The problem with this VO+ approach is that without separating the
+popular chunks from the less-popular, the popular chunks are dispersed across
+all of the filesystem blocks in the storage system. Because the popular blocks
+are dispersed, there are very few popular FSBs. The end result is that we
+either have to add extra replication on unpopular chunks to ensure the popular
+chunks have sufficient replication, or we have to accept a reduced replication
+factor on popular chunks. This explains why we must separate the PDS and
+non-PDS data in our system to acheive the desired $r_c/r$ ratio (though both can be stored on the same DFS).
 
 %In the VC approach, a special replication degree $r_c$ is used for PDS data where $r_c>r$. 
 %The storage cost for VO with full deduplication is $c_u *r$ and for VC, it is
@@ -293,16 +314,11 @@ when choosing  $r_c/r$ ratio as 2 or 3.
 Now we  assess  the impact of losing $d$ machines 
 to the VC and VO approaches.  
 A large $r_c/r$ ratio can have a positive impact on full availability of VM snapshot blocks.
-We use an FSB rather than a deduplication
-data chunk as our unit of failure because the DFS keeps
-file system blocks as its base unit of storage.
 To compute the full availability of all snapshots of a VM, we derive
 the probability of losing a snapshot FSB of a VM by
 estimating the number of file system blocks per VM in each approach.
-As illustrated in Figure~\ref{fig:share},
-we build a bipartite graph representing the association from unique file system blocks
-to their corresponding VMs in each approach. An association edge is  drawn  from an FSB to a VM 
-if this block is used by the VM. 
+An association edge is  drawn  from an FSB to a VM 
+if this block is used by the VM.
 
 For VC, each VM has an average number $N_1$ of non-PDS FSBs
 and  has  an average of  $N_2$ PDS FSBs. 
