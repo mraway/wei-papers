@@ -38,10 +38,16 @@ and single-round operation synchronization significantly increases COW overhead.
 %Thus we must minimize the duration that a given VM is undergoing CoW protection.
 
 To determine how evenly distributed VM sizes are, we obtained statistical data
-for 22 Aliyun clusters. The clusters in our dataset all have a very long tail distribution,
-Though local minima exist in the histogram and the range of VM sizes varies. Other production clusters
-may have different distributions, but our findings justify our architecture for a multi-round algorithm.
-A representative histogram for one of the clusters is shown in Fig.~\ref{fig:hist-1}. You can see that the range of sizes is very large (the smallest group of 100 VMs has an average size of ~15GB, while the largest has an average size of over 700GB). It is that fact that VM sizes vary greatly that makes the scheduling of VMs to rounds important.
+for 22 Aliyun clusters. The clusters in our dataset all have a very long tail
+distribution, though local minima exist in the histogram and the range of VM
+sizes varies. Other production clusters may have different distributions, but
+all of the clusters we have looked at have similarly shaped distributions. Size
+distribution histograms for two of the clusters are shown in
+Fig.~\ref{fig:hist}. There is a long tail on both histrograms which has been
+cut (out to 100GB for the first, and out to 2000GB for the second). The
+important thing to get from this data is that in none of the productions
+clusters we evaluated was the VM Size distribution flat, which motivates the
+importance of round scheduling.
 
 %\begin{figure}[ht]
 %  \centering
@@ -60,19 +66,49 @@ A representative histogram for one of the clusters is shown in Fig.~\ref{fig:his
 %\end{figure}
 
 \begin{figure}[ht]
+%\centering
+\begin{subfigure}%{.5\textwidth}
   \centering
   \begin{tikzpicture}
       \begin{axis}[
               ybar interval,
-              xlabel=VM Size (GB),
-              ylabel=Probability Distribution,
-              xtick={50,100,200,300,400,500,600,700,800,900,1000},
+              width=0.55\linewidth,
+                    tick label style={font=\scriptsize},
+                    tick style=thin,
+              xmax=150,
+              xlabel={\tiny VM Size (GB)},
+              ylabel={\tiny Percent of VMs},
+              xtick={0,50,100,150,200,250,300,400,500,600},
       ]
-          \addplot+[fill=blue] table[x=MinSize,y=Prob] {figures/AY41A_PD.txt};
+          \addplot+[fill=blue] table[x=MinSize,y expr=\thisrow{Prob}*100] {figures/AY41A_PD.txt};
       \end{axis}
   \end{tikzpicture}
-  \caption{Histogram of average data sizes for a real cluster. TODO:adjust this using the new spreadsheets}
-  \label{fig:hist-1}
+  %\caption{Histogram of average data sizes for a real cluster.}
+  \label{fig:hist-AY41A}
+\end{subfigure}
+%
+%
+\begin{subfigure}%{.5\textwidth}
+  \centering
+  \begin{tikzpicture}
+      \begin{axis}[
+              ybar interval,
+              width=0.55\linewidth,
+                    tick label style={font=\scriptsize},
+                    tick style=thin,
+              xmax=150,
+              xlabel={\tiny VM Size (GB)},
+              ylabel={\tiny Percent of VMs},
+              xtick={0,50,100,150,200,250,300,400,500,600},
+      ]
+          \addplot+[fill=blue] table[x=MinSize,y expr=\thisrow{Prob}*100] {figures/AY41H_PD.txt};
+      \end{axis}
+  \end{tikzpicture}
+  %\caption{Histogram of average data sizes for a real cluster.}
+  \label{fig:hist-AY41H}
+\end{subfigure}
+\caption{Histograms of average VM sizes for several production clusters}
+\label{fig:hist}
 \end{figure}
 
 %xticklabel={\pgfmathparse{(\tick*1)}\num[round-mode=places, round-precision=0]{\pgfmathresult}}
