@@ -1,0 +1,134 @@
+
+\section{ VM-centric Approximate Snapshot Deletion with Leak Repair}
+\label{sect:delete}
+
+
+\begin{figure}[htbp]
+  \centering
+  \epsfig{file=images/deletion.pdf, width=3in}
+  \caption{Approximate deletion}
+  \label{fig:deletion_flow}
+\end{figure}
+
+In a busy VM cluster, snapshot deletions can occur frequently.
+Deduplication complicates the deletion process because space saving relies on the sharing of data
+and it requires the global references to deleted chunks to be identified before they can be safely removed.
+%The complexity of our distributed environment obviates reference counting as an option,
+%and While we can use the mark-and-sweep, 
+%While the mark-and-sweep techniques can be used and optimization can be considered~\cite{Fabiano2013},
+%it still takes significant resources to conduct reference counting every time there is a snapshot deletion.
+%
+%In the case of Alibaba, snapshot backup is conducted automatically and there are 
+%about 10 snapshot stored for every VM customer.
+% Snapshot deletion can occur frequently, for example when there is
+% a new snapshot created every day,  there will usually be a snapshot expired every day to maintain
+% balanced storage use. 
+%In addition, cloud users expect the reduced storage usage to be reflected
+%instantly, which makes it difficult to adopt some resource efficient techniques such like perfect hashing\cite{Fabiano2013}.
+
+We seek a fast solution with low resource usage to delete snapshots and
+our VM-centric design simplifies the deletion process. 
+Since PDS is small and separated, we can focus on  unreferenced non-PDS chunks within each VM. 
+%The PDS data chunks are commonly shared among all VMs and we do not consider them
+%during snapshot deletion.  The selection of PDS data chunks is updated periodically independent of snapshot deletion process.
+Another resource-saving strategy we propose is
+an {\em approximate} deletion strategy to trade deletion accuracy for
+speed and resource usage. Our method sacrifices a small percent of storage leakage
+to efficiently identify unused chunks.
+The algorithm contains three aspects.
+
+\begin{itemize}
+\item {\bf Computation for snapshot reference summary.}
+Every time there is a new snapshot created,
+we compute a Bloom-filter with $z$ bits as the reference summary vector for all non-PDS chunks used 
+in this snapshot.
+The items we put into the summary vector are all the references appearing in the metadata of the snapshot.
+For each VM we preset the vector size according to  estimation of VM image size,
+given $h$ snapshots stored for a VM, there are $h$ summary vectors maintained.
+We adjust the summary vector size and recompute the vectors if the VM size changes substantially over time.
+This can be done during the periodic leakage repair stage described below.
+
+\item {\bf Approximate deletion with fast summary comparison.}
+When there is a snapshot deletion,  
+we need to identify if chunks to be deleted from that snapshot
+are still referenced by other snapshots. 
+This is done approximately and quickly by comparing the 
+reference of deleted chunks  with
+the merged reference summary vectors of other live snapshots.
+The merging of live snapshot Bloom-filter vectors uses the bitwise OR operator 
+and the merged vector still takes $z$ bits.
+Since the number of live snapshots $h$ is limited for
+each VM, 
+the time and memory cost of this comparison is small, linear to the number of chunks to be deleted.
+
+If a chunk's reference is not found in the merged summary vector, we are sure that
+this chunk is not used by any live snapshots, thus it can be deleted safely.
+However, among all the chunks to be deleted, 
+there are a small percentage of unused chunks  which
+are misjudged as  being in use, resulting in storage leakage.
+
+\item {\bf Periodic repair of leakage}.
+%[exlpain why second Bloom filter, why scan append store]
+Leakage repair is conducted periodically to fix the above approximation error.
+This procedure compares the live chunks for each VM with what are truly used in the VM snapshot recipes.
+A mark-and-sweep process  requires a scan of the entire snapshot store.
+%Our VM-centric mark-and-sweep procedure is similar to Guo\cite{Guo2011} 
+%in a way that the data dependency is clearly known.
+%This generally requires a scan of almost the entire snapshot store which is much more expensive than approximate deletion,
+%although certain optimized algorithms may apply\cite{Przemyslaw2013}. But 
+Since it is a VM-specific procedure, 
+the space and time cost is relatively small compared to the tranditional mark-and-sweep
+which scans snapshot chunks from all VMs.
+For example, consider each reference consumes 8 bytes plus  1 mark bit. A VM that has 40GB backup data with about
+10 million chunks will need less than 85MB of memory to complete a VM-specific mark-and-sweep process
+in less than half an hour, assuming 50MB/s disk bandwidth is allocated.
+\end{itemize}
+
+%{\bf Discussion}
+We now estimate the size of storage leakage and how often leak repair needs to be conducted.
+Assume that  a VM keeps $h$ snapshots in the backup storage, creates and deletes one snapshot
+every day. Let $u$ be the total number of chunks brought by the initial backup for a VM, $\Delta u$ be the average
+number of additional chunks added from one snapshot to the next snapshot version. Then the total number of 
+chunks stored in a VM's snapshot store is about:
+\[
+U = u + (h-1)\Delta u.
+\]
+
+Each Bloom filter vector has  $z$ bits for each snapshot and let $j$ be the number of hash functions used by the
+Bloom filter.  Notice that a chunk may appear multiple times in these summary vectors; however, this should not 
+increase the probability of being a 0 bit in all $h$ summary vectors.
+Thus the probability that a particular bit is 0  in all $h$ summary vectors is  
+$(1- \frac{1}{z}) ^{j U}$. 
+Then the misjudgment rate of being in use  is: 
+\begin{equation}
+\label{eq:falserate}
+\epsilon = (1-(1-\frac{1}{z})^{jU})^j.
+\end{equation}
+
+For each snapshot deletion, the number of chunks to be deleted is nearly identical to the number of
+newly added chunks $\Delta u$. 
+Let $R$ be the total number of runs of approximate deletion between two consecutive 
+repairs. We estimate  the total leakage $L$ after $R$ runs as:
+\[
+L = R \epsilon \Delta u.
+\]
+
+When leakage ratio $L/U$ exceeds a pre-defined threshold $\tau$, we trigger a leak repair. Namely,
+
+\begin{equation}
+\label{eq:leakrepair}
+\frac{L}{U} = \frac{R \Delta u \epsilon}{u+(h-1)\Delta u } > \tau 
+\Longrightarrow R > \frac{\tau}{\epsilon}\times\frac{u + (h-1)\Delta u}{\Delta u}.
+\end{equation}
+
+For example in our tested dataset,  
+$h=10$ and each snapshot adds
+about 0.1-5\% of new data. Thus we take ${\Delta u}/{u} \approx 0.025$. For a 40GB snapshot, $u\approx  10$ million.
+Then $U=12.25$ million.
+We choose  $\epsilon = 0.01$ and $\tau=0.05$.  From Equation~\ref{eq:falserate}, 
+each summary vector requires $z=10U=122.5$ million bits or 15MB. From Equation~\ref{eq:leakrepair}, 
+leak repair should be triggered once for every R=245 runs of approximate deletion. 
+When one machine hosts 25 VMs and there is one snapshot deletion per day per VM, there would be 
+only one full leak repair for one physical machine scheduled for every 9.8 days. 
+If $\tau = 0.1$ then leakage repair would occur every 19.6 days.
+

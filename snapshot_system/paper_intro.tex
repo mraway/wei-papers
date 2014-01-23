@@ -1,0 +1,79 @@
+\section{Introduction}
+
+One of popular architectures for building cloud services
+is a converged architecture that leverages commodity servers with software clustered storage and network, without 
+requiring network storage (e.g. SAN or NAS)~\cite{NutanixPaper}. 
+Leading cloud platform companies such as Google, Amazon, Alibaba,
+Microsoft Azure  have built a converged compute and storage infrastructure and used
+a distributed file system such as Google file system~\cite{googlefs03,hdfs10}
+to glue a large number of commodity servers with local storage into a single cluster.
+In such an environment,
+%That  allows the use of scalable compute and storage, without incurring the costs and
+%performance limitations associated with network storage.
+each physical machine runs a number  of virtual machines as  instances of a guest operating system 
+and their  virtual hard disks are represented as virtual disk image files in the host operating system.
+Frequent  snapshot backup of virtual disk images  can increase  the service reliability
+and deduplication of redundant content blocks~\cite{venti02,bottleneck08}
+ is necessary to substantially reduce the storage demand.
+%For example, the Aliyun cloud, which is  the largest cloud service provider by Alibaba in China, 
+%automatically conducts  the backup of virtual disk images to all active users every day.
+%The cost of supporting a large number of concurrent backup streams is high
+%because of the huge storage demand and the use of deduplication
+ 
+%Using a separate  backup service with full deduplication support~\cite{venti02,bottleneck08}
+%can effectively identify and remove content duplicates among snapshots, 
+%but such a solution can be expensive. There is also a large amount of 
+%network traffic to transfer  data from the host machines to the backup facility
+%before duplicates are removed.
+
+A common technique for VM snapshot deduplication is    version-based detection that identifies file  blocks that have
+changed from the previous version of the snapshot~\cite{Clements2009,Vrable2009,TanIPDPS2011}.
+Another popular technique is to conduct global fingerprint  comparison to identify duplicates that exist
+among all files~\cite{Guo2011,Dong2011,extreme_binning09}.
+Because of highly repetitive content in snapshot backup,
+most data chunks are shared by many virtual machines.  Failure of a few shared data chunks can have a 
+broad effect and many snapshots of virtual machines could be affected.
+The previous work in deduplication focuses on the efficiency and approximation of
+fingerprint comparison, and has not addressed fault tolerance issues  together with deduplication.
+Thus we also seek deduplication options that yield better fault isolation.
+
+
+The key contribution of this work is to evaluate the fault tolerance  impact of popular data blocks shared by many
+virtual machines, and   propose a VM-centric approach that localizes deduplication as much as possible 
+and restrict global deduplication only to a limited set of most popular blocks.
+Local deduplication also uses similarity-guided elimination to improve the deduplication coverage.
+Since the file system block size is normally bigger than the average data chunk size used for deduplication,
+we also package data chunks from the same VM into a file system block as much as possible to improve fault isolation.
+Because data sharing is restricted, 
+this VM-centric approach can also simplify the snapshot deletion process and reduce the overall resource usage, which
+is suitable when the backup service with deduplication is collocated with other services running on a shared compute and storage
+cluster.
+We have evaluated this VM-centric approach using  a prototype system that runs a cluster of Linux machines with Xen and 
+a standard distributed file system for the backup storage. 
+%This approach localizes duplicate detection within each VM  
+%By narrowing duplicate sharing within a small percent of common data chunks and exploiting their popularity,
+%this scheme can afford to allocate extra replicas of these shared chunks for better
+%fault resilience while sustaining competitive deduplication efficiency.
+
+
+%In addition, our VM-centric design allows garbage collection to be performed in a localized
+%scope and we propose an approximate deletion scheme to reduce this cost further.
+%Localization also brings the benefits of greater ability to exploit parallelism so
+%backup operations can run simultaneously without a central  bottleneck.
+%This VM-centric solution uses a small amount of  memory while delivering reasonable deduplication efficiency. 
+
+%Another issue considered is that
+%that garbage collection after deletion of old snapshots also competes for computing resources. 
+%Sharing of data chunks among by multiple VMs needs to be detected during
+%garbage collection and such dependencies complicate deletion operations. 
+
+%************** Paper sections summary
+%THIS NEEDS MODIFICATION
+The rest of this paper is organized as follows.
+Section~\ref{sect:background} reviews the background and discusses the  design options for snapshot backup 
+with a VM-centric approach. 
+Section~\ref{sect:deduplication}  analyzes the tradeoff and benefits of the VM-centric approach. 
+Section~\ref{sect:architecture}  describes a system implementation that evaluates the proposed techniques.
+%   the benefit of our approach for fault isolation. 
+Section~\ref{sect:evaluation} is our experimental evaluation that compares with other approaches.
+Section~\ref{sect:conclusion}  concludes this paper.

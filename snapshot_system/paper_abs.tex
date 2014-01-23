@@ -1,0 +1,32 @@
+\begin{abstract}
+Data deduplication has been widely used for cloud data backup
+because of excessive redundant content blocks. Common techniques use dirty bits to detect
+the version  change and  perform global fingerprint comparison to remove duplicates
+across virtual machines. However, letting a duplicate data block be shared
+by many virtual machines creates data dependence and is less fault-resilient. 
+%This paper studies the impact of deduplication on 
+%fault resilidence  of virtual machine snapshots, created by data dependence  among duplicates
+%and proposes a VM-centric approach that strikes a balance between deduplication efficiency
+%and fault isolation 
+This paper proposes a VM-centric backup service on a converged  storage cluster architecture
+and  strikes a balance for better fault isolation with competitive  deduplication efficiency.
+It localizes deduplication as much as possible within each 
+virtual machine, guided by similarity
+search and associates  underlying file blocks with one VM for most cases.
+It restricts global deduplication to popular chunks with extra replication support.
+This VM-centric scheme also has  an advantage of   using less  computing resources for fingerprint comparison and simplifies snapshot deletion, suitable for a collocated backup service 
+on a non-dedicated cluster architecture.
+This  paper  describes an evaluation of this scheme to assess  its deduplication 
+efficiency and fault resilience.
+
+% Collocating a cluster-based duplicate service with other cloud services
+%   necessary to eliminate
+%redundant blocks and reduce cost. Collocating a cluster-based duplicate service with other cloud services
+
+%A cloud environment that hosts a large number of virtual machines (VMs) has
+%a high storage demand for frequent backup of system image snapshots. 
+%Deduplication of data blocks is necessary to eliminate
+%redundant blocks and reduce cost. Collocating a cluster-based duplicate service with other cloud services
+%reduces network traffic;
+%however, 
+\end{abstract}
