@@ -1,45 +1,224 @@
 \chapter{Background}
 \label{chap:back}
-At a cloud cluster node, each instance of a guest operating system runs on a virtual machine, accessing virtual hard disks 
+% what is the problem
+Storage is the biggest challenge in virtualized cloud today.
+At a cloud cluster node, each instance of a guest operating 
+system runs on a virtual machine, accessing virtual hard disks 
 represented as virtual disk image files in the host operating system.
-For VM snapshot backup, file-level semantics are normally not provided.
+Backing up virtual machines is typically done through taking snapshots,
+which is a copy of the virtual machine's disk file at a given point in time.
+Performing such VM snapshot backup tasks for the entire cluster is a difficult task
+for several reasons: 
+\begin{itemize}
+\item \textbf{Huge storage demand.} Each VM contains from tens of GBs to multiple TBs of data,
+the snapshots size of an entire cloud often exceeds one PB, and they need to be backed up from daily to weekly.
+\item \textbf{Big network bandwidth cost.} Sending such amount of backup data requires
+a lot of network bandwidth and may impede normal application activity.
+\end{itemize}
+
+As a result, data deduplication is mandatory in order to reduce the storage and bandwidth
+costs of backup in cloud. But adding deduplication at cloud scale brings new
+challenges against previous developed techniques:
+\begin{itemize}
+\item \textbf{Limited resources.} Without dedicated hardware support in backup appliances, 
+VM backup and data deduplication in cloud must not race for CPU and memory resources with
+existing VM activities. Compare to dedicated backup appliances which are typically equipped with
+tens of GBs of memory and  multiple processors, backup service in the cloud are only allowed to use
+no more than a few hundred MBs of memory, and its CPU usage must always stay low.
+\item \textbf{Garbage collection for shared data.} Data management for deduplicated storage
+is complicated due to the need of tracking use of every shared data block. In order to reclaim
+disk space, the reference counts of
+shared data blocks will need to be updated whenever a snapshot is added or deleted.
+Managing reference counting for data blocks at KB level in a PB level storage is extreme difficult.
+\item \textbf{Little semantic information.} For VM snapshot backup, file-level semantics are normally not provided.
 Snapshot operations take place at the virtual device driver level, which
 means no fine-grained file system metadata can be used to determine the changed data. 
-Backup systems have been developed to use content fingerprints to identify duplicate
-content~\cite{venti02,Rhea2008}.  
+\end{itemize}
 
-Many deduplication systems have been built for VM backup purposes. 
-In this chapter we will investigate several system design options at high-level.
-Section~\ref{back:coll} discusses the comparison of collocated solution vesus dedicated appliance.
-Section~\ref{back:trade} talks the tradeoffs in designing a deduplication storage system.
-Section~\ref{back:algo} introduces deduplication optimizations.
+% summary
+In sum, deduplication systems designed for legacy network storage that are attached to
+physical servers are too expensive and complex for virtual machines. 
+Both cloud users and providers are seeking low-cost solutions to effectively backup
+their data, otherwise they will be forced to backup less amount of data or less frequently,
+which in return will compromise the data safty and recovery time. For example, Electronic Arts, which deploys
+its data analytics platform in Amazon's AWS using several hundreds of VMs, 
+avoids using Amazon's built-in snapshot storage and chooses to backup hand-picked data manuallyv for cost reasons.
 
-\section{Architecture Options - Collocated vesus Dedicated} 
-\label{back:coll}
-Dedicated deduplication is a great way to augment existing tape based backup infrastructures due to its simple integration with existing backup applications. So if an end user is happy with their current backup application, a Dedicated approach may be very compelling as it does not necessitate a significant change of the backup infrastructure or the relearning of a new backup application.
+To that end, this dissertation proposes low-cost deduplication storage architecture that is
+collocated with other cloud services. We have learned a lot from 
+% The network storage architecture designed fifteen years ago for physical
+% servers 
+% Backup systems have been developed to use content fingerprints to identify duplicate
+% content~\cite{venti02,Rhea2008}.  
+% Without an enterprise-class
+% alternative, organizations are forced to use traditional solutions, which cannot
+% keep up with virtual machines that are dynamic, grow rapidly in number and
+% continue to demand new levels of performance and capacity.
+various deduplication systems built in the past for different backup scenarios. 
+In this chapter we will review the literature and discuss several system design options at high-level.
+Section~\ref{back:dedup} introduces the origin and applications of data deduplication.
+Section~\ref{back:optm} talks the optimization and tradeoffs in designing a deduplication storage system.
+Section~\ref{back:arch} discusses design options of backup storage architecture.
 
-One of the strongest use cases for Dedicated deduplication is protecting large Oracle or SQL database (in excess of 2TBs) environments. Since each of these applications can natively backup their data to a Dedicated appliance, from an integration standpoint, there is low/no barrier to entry to begin protecting these environments rapidly. Some deduplication appliance manufacturers even offer direct integration with database backup tools like Oracle RMAN. This helps drive out some of the inefficiencies in the data center as both backup administrators and DBAs can share a common pool of backup resources and achieve reductions where there may be an overlap in backup processes.
+\section{Deduplication}
+\label{back:dedup}
+Backup storage for VM snapshots in the cloud contains PBs of data from many VMs,
+the data redundancy in such a data set is very high\cite{Jayaram2011, agrawal07}.
+If we treat each snapshot as a single data object, the similarities between snapshots
+can not be utilized. Therefore we need better method to break files into data blocks.
+In the recent decad, data deduplication techniques are emerged to solve this data
+redundancy problem in backup systems.
+Most of data de-duplication methods can be categorized by their granularities:
 
-Another benefit to database target deduplication is a reduction in the consumption of primary storage resources. Many DBAs utilize a disk to disk to tape backup scheme to protect log files, table spaces etc. on primary storage that has no deduplication capability. Between periodic snapshots and direct dumps to disk, there tends to be an over consumption of expensive disk resources when protecting database environments. By migrating database backups to a deduplication appliance, scarce primary storage resources can be reclaimed for production applications. Whats more, the deduplication effect for database environments can range from a 5-1 to a 20-1 reduction in the physical disk or tape space required to perform normal backup operations - potentially generating a return on investment.
+\begin{itemize}
+\item \textbf{By file:} Old storage systems detect the duplicated files by compare their hash value
+or byte-by-byte. If two files are the same, then only one copy of data is saved, duplicated
+copies will be saved as metadata plus a pointer to the data. Thus this method can not detect any redundant data
+between different files.
 
-In short, Dedicated deduplication provides an easy entry point for customers interested in leveraging the efficiencies of deduplication to reduce backup windows, enhance data protection and improve overall operational efficiencies in the data center without making major changes to their environment. 
+\item \textbf{By fixed size block:} Many popular file systems or tools can catch data redundancy at block level.
+It breaks files into many small fixed size blocks, and such block is the basic unit 
+for comparison. Typical applications based on this method are Windows shadow copy, ZFS\cite{zfs} snapshot, and Rsync\cite{rsync}. 
+While this method does better than simple file comparison, it can only be used in pair-wise comparison
+between different versions of
+the same logical data object, and any insertion/deletion will completely destroy the block similarity after the position
+where modifications are taken place.
 
-Collocated deduplication generally consists of backup application software with embedded deduplication at the client layer and some form of disk storage to serve as the repository for backup data. As the name implies, Collocated data deduplication takes place at the source or where data originates - at the server or application layer. Collocated deduplication offerings consist of placing a lightweight backup agent at the virtual or physical server and then only backing up the unique data segments that have changed since the prior backup job. The data segments are then sent over the LAN and/or WAN to a disk based storage grid for protection.
+\item \textbf{By variable size block:} This method breaks data into variable size blocks, and the block boundary
+is only decided by local data content, so it is also called content-based chunking. 
+Because of the chunk boundaries are only decided by local data content,
+this method is modification-resistant. It resolves the
+limitations in the previous two methods, and provides
+best de-duplication efficiency. 
+\end{itemize} 
 
-The advantages of Collocated deduplication are rapid backup windows and a large reduction in the volume of LAN/WAN traffic generated during the backup window. Instead of pushing a full backup over the wire from a media server each night, unique deduplicated backup segments trickle between the application hosts and the backend deduplication storage grid. The data transfers are extremely efficient - equivalent to a meta-data handshake. Think speed of source side deduplication as an incremental (only more efficient) forever with the benefit of producing a full backup each night.
+Content-based chunking is first proposed by Manber\cite{similar94}.
+He uses Rabin's fingerprints\cite{rabin81, identify00} to sample
+data in order to find similar files. This technique computes
+fingerprints of all possible substrings of a certain
+length in a file and chooses a subset of these fingerprints
+based on their values,  e.g., if $(fingerprint(s)\ mod\ a) = b$, where
+$s$ is a substring,
+$a$ and $b$ are pre-defined values, then the position of substring $s$
+is considered as a breakpoint. 
+These breakpoints provide 
+modification-resistant boundaries that seperate the file
+into many small chunks. A sequence of hash values of such chunks
+is a compact representation of a file, that is then used to compare
+against other fingerprinted files.
 
-In general, Collocated deduplication is a great solution for environments with a low daily data change rate. Great use cases for Collocated deduplication solutions include data on the edge  remote offices and laptops in the field (great for C level execs) and file heavy environments (NAS, VMware). In the case of remote offices, often the investment in Collocated deduplication can be justified by the cost avoidance attained by eliminating the legacy remote office backup infrastructure  backup server hardware, software, tape libraries, tape media, courier expenses, etc.
+There are pathological cases in finding breakpoints, for example,
+a long extent of zeros may never contain a breakpoint. Thus, LBFS\cite{lbfs01}
+introduces min and max thresholds to the chunk size: when scanning the file
+sequentially for breakpoints, if the distance between current substring 
+and previous breakpoint is less than the minimum threshold, then it is skipped;
+if the distance reaches the maximum threshold, then a breakpoint
+is enforced. This method also reduces the computation because less substrings
+are checked. In order to increase the chance of finding a breakpoint between
+two thresholds, Kave\cite{frame05}
+proposes the two divisors idea, in addition to have a standard breaking condition,
+a weaker breaking condition is used to find backup breakpoints.
 
-In the VM snapshot backup case that we study, there is hardly any value for deploying dedicated backup
-solution because it's not affordable to VM users. Therefore we seek for low-cost collocated deduplication options
-to reduce the VM snapshot storage cost.
-Collocating a backup service on the existing
-cloud cluster avoids the extra cost to acquire a dedicated backup facility
-and reduces the network bandwidth consumption in transferring the
-raw data for backup. 
+Policroniades\cite{poli04} gives out
+experimental results and present a comparative analysis
+to three de-duplication methods: First, the content based chunking
+is always the best strategy to discover redundancy in any data sets.
+Second, the fixed size block method can sometimes provides
+close results compare to content based chunking, and it has smalleris less
+computation intensive. Finally, if only for local file system,
+file compression is still the
+best strategy to save disk space, combining the content based chunking
+with compression does not justify the computation it costs.
 
-\section{Tradeoff in Design Goals}
-\label{back:trade}
+Data de-duplication is extensively used in saving bandwidth for data synchronization.
+The popular rsync\cite{rsync} protocol exploits the similarity of two directory trees
+using fixed size blocks de-duplication. 
+LBFS uses content-based chunking to improve the NFS protocol, 
+it avoids transmitting redundant chunks which already exist at the other side.
+But data du-duplication has its cost. Content-based chunking algorithm needs to
+scan the whole file looking for breakpoints, which is very slow (about 20MB/s using a single 2GHz core). 
+StoreGPU\cite{storegpu08}
+exploits the possibility of using GPU to chunk the file,
+their results are exciting. Another option is to use parallel
+chunking algorithm to improve the chunking speed,
+so that future's many-core chips will be helpful. 
+Meanwhile, stripping files is not a quite big issue in cloud storage scenario,
+because it is expected to be done at the client side before files are
+sent to the cloud.
+
+Since content-based chunking strips files into data blocks 
+and identify them by content hash,
+it is very natrual to build CAS system base on it.
+Jumbo Store and others\cite{jumbo07,efficient_dedup05,you06} encodes directory tree snapshots
+into a graph whose nodes are data blocks and edges
+are hash value pointers.
+Directory metadata, file metadata and data chunk are all
+represented in the form of variable-size data blocks that indetified by content hash.
+A object which encapsulate metadata also has a list of hash indentifiers 
+that point to other blocks it contains.
+Such a de-duplication storage system has some great advantages 
+in terms of space efficiency, file transmission efficiency (through a LBFS-like protocol), 
+and data integrity checking (by verifying the hash).
+
+Cumulus\cite{cumulus09} is a client side backup tool to store 
+file system snapshots in exist cloud storage such as S3.
+To create a snapshot, Cumulus uses content-based chunking to break files into data blocks,
+then compare (by hash) them to the list of stored blocks (in local logs).
+New blocks will be packed and compressed into a segment file, and sent to server.
+The advantage of Cumulus is portability, because it makes 
+the de-duplication backup totoally opaque to the server.
+However, without the de-duplication support from protocol and server side, 
+it's hard to have efficent storage management, and from server's perspective,
+snapshots from many users still contain much redundant data.
+
+\section{Optimizations and Tradeoffs}
+\label{back:optm}
+Many previous studies on data deduplication focus on the disk bottleneck problem,
+which refers to the key performance challenge in finding duplicate blocks. 
+Let's consider a single machine in cluster which hosts many VMs and has 10 TB of virtual disks in total,
+if it needs to be backed up daily, then the performance target would be 115 MB/sec on each machine.
+Given a block size of 4 KB, a deduplication system must process approximately 28,900 blocks per second.
+An in-memory index of all block fingerprints could easily achieve this performance, but the size of the index would limit system size and increase system cost. 
+If we use 20 bytes as block fingerprint size, then supporting 10 TB worth of unique blocks, would require 50 GB just to store the fingerprints.
+An alternative approach is to maintain an on-disk index of block fingerprints and use a cache to accelerate block index accesses. Unfortunately, a traditional cache would not be effective for this workload. Since fingerprint values are random, there is no spatial locality in the block index accesses. 
+With low cache hit ratios, most index lookups require disk operations. If each index lookup requires a disk access which may take 10 msec and 8 disks are used for index lookups in parallel, the write throughput will be about 6.4MB/sec, which is far from the throughput goal of deduplicating at 115 MB/sec for our cloud backup scenario, and don't forget that this goal
+is conservative since VM users generally want the backup task to finish in tens of minutes without affecting their normal
+application activities.
+
+Massive efforts have been put into the optimization of searching duplicate
+fingerprints in large index. They can be summarized into three categories:
+
+\begin{itemize}
+\item \textbf{Reduce disk index access.} The data domain method ~\cite{bottleneck08} 
+uses an in-memory Bloom filter and a locality-based prefetching cache to intercept fingerprint lookup which may
+access the on-disk index. Bloom filter\cite{Bonomi2006} helps to tell if a fingerprint is new, and prefetching cache
+helps to quickly find consequential duplicates. Improvements to this work with parallelization can be found
+ in ~\cite{MAD210,DEBAR,nath08}.
+\item \textbf{Index sampling.} A sampled index can be 
+put into memory\cite{sparseindex09} or NAND flash\cite{Guo2011} to accelerate fingerprint lookup. 
+This sampled index is 100 times or more smaller than the full index so that 
+they can be accessed quickly and easily.
+Once there's a hit in the sampled index, system loads the fingerprints that are next to the hitted one on disk,
+so that it can efficiently catches duplicates based on spatial locality.
+\item \textbf{Similarity based sharding.} Several similarity based techniques\cite{shingling97} such like 
+Extremely Binning\cite{extreme_binning09, Dong2011, Srinivasan2012, chord01} group big files by similarity metrics
+such that similar files are likely to fall into the same group. Then block level deduplication is performed
+within the group. While all the group indices are still on the disk, it can deduplicate an entire file
+by only load one group index into memory. This approach can easily scale-out, but it misses small amount of duplicates 
+because the similarity algorithm does not guarantee always mapping a file to the most similar group.
+\end{itemize}
+
+Most of approaches discussed above focus on optimization of inline deduplication
+performance by sacraficing a small percent of deduplication efficiency.
+In our cloud backup scenario, we must always satisfy the low resource usage constraints while 
+providing sustainable good throughput. As a result, we consider to sacrifice other performance metrics 
+to achieve our design goals, which we descibe as below:
+% In addition, none of them have considered the impact
+% of deduplication on fault tolerance in the cluster-based environment that we have considered
+% in this dissertation.
+
+% \section{Tradeoff in Design Goals}
+% \label{back:trade}
 Given we are designing scalable low-cost collocated deduplication solutions,
 the effectiveness of a deduplication system is determined 
 by the extent to which it can achieve three mutually competing goals: 
@@ -84,19 +263,80 @@ sacrifices the job turnaround time to achieve high throughput and deduplication 
 Chapter~\ref{chap:inline} describes an multi-level selective deduplication solution
 that comprises deduplication efficiency to improve throughput and job turnaround time.
 
-\section{Deduplication Optimizations}
-\label{back:algo}
-Since it is expensive to compare a large number of chunk signatures for deduplication,
-several techniques have been proposed to speedup searching of duplicate
-fingerprints. For example, the data domain method ~\cite{bottleneck08} 
-uses  an in-memory Bloom filter and a prefetching cache for data chunks  which may be
-accessed.  An improvement to this work with parallelization is in ~\cite{MAD210,DEBAR}.
-The approximation techniques are studied in~\cite{extreme_binning09,Guo2011,WeiZhangIEEE}  
-to reduce memory requirements with the tradeoff of a reduced deduplication ratio.
-Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,Srinivasan2012}
-and a parallel batch solution for cluster-based deduplication is 
-studied in ~\cite{wei2013}. 
-All of the above approaches have focused on optimization of deduplication
-efficiency, and none of them have considered the impact
-of deduplication on fault tolerance in the cluster-based environment that we have considered
-in this dissertation.
+\section{Architecture Options} 
+\label{back:arch}
+The way that backup storage architecture envolves has been following the pace of
+primary storage, so we will give a glimpse on primary storage's evolution first.
+Organizations start with ﻿building ﻿their ﻿virtualization ﻿infrastructure ﻿using ﻿the﻿
+traditional ﻿servers-connected-to-storage-over-a-network ﻿architecture, ﻿which﻿
+can’t ﻿adapt ﻿to ﻿the ﻿ever-changing ﻿demands ﻿of ﻿virtualization. ﻿In ﻿addition ﻿to ﻿slow﻿
+performance,﻿ network ﻿storage ﻿has ﻿become﻿ the﻿ single﻿ biggest﻿ source ﻿of ﻿cost ﻿and﻿
+complexity ﻿in ﻿virtualized ﻿environments.﻿ The ﻿network﻿ storage-based ﻿architecture﻿
+worked﻿ well ﻿for ﻿physical﻿ servers ﻿that ﻿served﻿ relatively﻿ static ﻿workloads.﻿
+Virtualization,﻿ and﻿ now﻿ Cloud﻿ Computing,﻿ has﻿ made﻿ data﻿ centers﻿ extremely﻿
+dynamic\cite{berkeleycloud09};﻿ virtual﻿ machines﻿ are﻿ created﻿ on﻿ the﻿ fly,﻿ move﻿ from﻿ server﻿ to﻿ server﻿ and﻿﻿
+depend﻿ heavily﻿ on﻿ shared﻿ resources.﻿ These ﻿characteristics ﻿make ﻿the ﻿management﻿
+of ﻿virtual ﻿machines ﻿and ﻿their﻿ underlying ﻿physical﻿ infrastructure ﻿extremely﻿
+complex: Data ﻿volumes ﻿are﻿ growing﻿ at ﻿a ﻿rapid ﻿pace﻿ in﻿ the ﻿data ﻿center, ﻿thanks﻿ to ﻿the ﻿ease﻿
+of﻿ creating ﻿new﻿ VMs.﻿ In ﻿the﻿ enterprise,﻿ new﻿ initiatives ﻿like ﻿desktop﻿ virtualization﻿
+contribute﻿ to ﻿this﻿ trend.﻿ Service﻿ providers﻿ deal﻿ with﻿ an﻿ even﻿ larger﻿ number﻿ of﻿
+VMs﻿ as﻿ they﻿ build﻿ data﻿ centers﻿ to﻿ serve﻿ customers﻿ who﻿ can’t﻿ afford﻿ the﻿ cost﻿
+and﻿ management﻿ overhead﻿ that﻿ virtualization ﻿requires. ﻿This﻿ growing ﻿pool ﻿of﻿
+VMs﻿ is ﻿exerting ﻿tremendous ﻿cost, ﻿performance﻿ and ﻿manageability ﻿pressure﻿ on﻿
+the ﻿traditional ﻿architecture ﻿that ﻿connects﻿ compute﻿ to ﻿storage﻿ over ﻿a ﻿multi-hop﻿
+network.﻿
+
+Google﻿\cite{googlefs03} and﻿ other﻿ leading ﻿cloud-generation﻿ companies ﻿such﻿ as ﻿Amazon,﻿ Yahoo﻿
+and﻿ Microsoft﻿(Azure)﻿\cite{azure} realized ﻿that ﻿a ﻿network-storage﻿ based﻿ approach﻿ would﻿
+not ﻿work﻿ for﻿ their﻿ data ﻿centers.﻿ They﻿ built﻿ software﻿ technology﻿ (such ﻿as ﻿Google﻿
+File ﻿System)﻿ that﻿ could ﻿glue﻿ a﻿ large﻿ number﻿ of ﻿commodity﻿ servers﻿ with﻿ local﻿
+storage ﻿into ﻿a ﻿single﻿ cluster.﻿ This﻿ approach﻿ allowed﻿ Google﻿ to ﻿build ﻿a ﻿converged﻿
+compute﻿ and﻿ storage ﻿infrastructure﻿ that﻿ used﻿ commodity﻿ servers﻿ with﻿ local﻿
+storage﻿ as ﻿its ﻿building ﻿block\cite{deconstructing05}.﻿ Google﻿ File﻿ System﻿ runs﻿ across﻿ a ﻿cluster ﻿of ﻿servers﻿
+and﻿ creates ﻿a ﻿single ﻿pool﻿ of﻿ local﻿ storage﻿ that﻿ can ﻿be﻿ seamlessly﻿ accessed﻿ by﻿
+applications﻿ running﻿ on ﻿any ﻿server﻿ in﻿ the ﻿cluster.﻿ It ﻿provides﻿ high﻿ availability﻿
+to ﻿applications ﻿by ﻿masking﻿ failures ﻿of ﻿hard﻿ disks ﻿and ﻿even﻿ complete ﻿servers.﻿
+Google﻿ File﻿ System ﻿allowed ﻿Google﻿ to﻿ build﻿ data﻿ centers ﻿with﻿ massively ﻿scalable﻿
+compute﻿ and﻿ storage,﻿ without ﻿incurring ﻿the ﻿costs﻿ and﻿ performance﻿ limitations﻿
+associated ﻿with﻿ network ﻿storage.﻿
+
+In cooperate with the changes of primary storage in cloud, backup storage architecture
+has to envolve as well. A dedicated backup storage appliance sits aside the cloud does provide some good properties,
+such like it deduplicates all the backup data together so it provides good deduplication efficiency,
+ and because it uses dedicated hardware to fingerprint lookups, it leaves very small resource footprint on the client side.
+However, its weakness on high-cost and bandwidth demand make it unsuitable for large scale cloud
+backup scenario. This is especially true for public clouds whose users are very sensitive
+to the storage pricing. 
+
+To make VM snapshot backup efficient and economy for large scale cloud, 
+we must seek for a low-cost architecture that can be collocated with existing
+storage and other cloud services. To avoid excessive bandwidth usage on transmitting 
+backup data, it must process fingerprint lookups at the client side and provides
+good deduplication efficiency. In addition, the resource footprint of deduplication must stay
+very low in order to minimize the influence to normal VM activities. Finally, it must provides
+efficient mechanism to manage the complicated data sharing relationship on deduplicated data.
+
+% Dedicated deduplication is a great way to augment existing tape based backup infrastructures due to its simple integration with existing backup applications. So if an end user is happy with their current backup application, a Dedicated approach may be very compelling as it does not necessitate a significant change of the backup infrastructure or the relearning of a new backup application.
+
+% One of the strongest use cases for Dedicated deduplication is protecting large Oracle or SQL database (in excess of 2TBs) environments. Since each of these applications can natively backup their data to a Dedicated appliance, from an integration standpoint, there is low/no barrier to entry to begin protecting these environments rapidly. Some deduplication appliance manufacturers even offer direct integration with database backup tools like Oracle RMAN. This helps drive out some of the inefficiencies in the data center as both backup administrators and DBAs can share a common pool of backup resources and achieve reductions where there may be an overlap in backup processes.
+
+% Another benefit to database target deduplication is a reduction in the consumption of primary storage resources. Many DBAs utilize a disk to disk to tape backup scheme to protect log files, table spaces etc. on primary storage that has no deduplication capability. Between periodic snapshots and direct dumps to disk, there tends to be an over consumption of expensive disk resources when protecting database environments. By migrating database backups to a deduplication appliance, scarce primary storage resources can be reclaimed for production applications. Whats more, the deduplication effect for database environments can range from a 5-1 to a 20-1 reduction in the physical disk or tape space required to perform normal backup operations - potentially generating a return on investment.
+
+% In short, Dedicated deduplication provides an easy entry point for customers interested in leveraging the efficiencies of deduplication to reduce backup windows, enhance data protection and improve overall operational efficiencies in the data center without making major changes to their environment. 
+
+% Collocated deduplication generally consists of backup application software with embedded deduplication at the client layer and some form of disk storage to serve as the repository for backup data. As the name implies, Collocated data deduplication takes place at the source or where data originates - at the server or application layer. Collocated deduplication offerings consist of placing a lightweight backup agent at the virtual or physical server and then only backing up the unique data segments that have changed since the prior backup job. The data segments are then sent over the LAN and/or WAN to a disk based storage grid for protection.
+
+% The advantages of Collocated deduplication are rapid backup windows and a large reduction in the volume of LAN/WAN traffic generated during the backup window. Instead of pushing a full backup over the wire from a media server each night, unique deduplicated backup segments trickle between the application hosts and the backend deduplication storage grid. The data transfers are extremely efficient - equivalent to a meta-data handshake. Think speed of source side deduplication as an incremental (only more efficient) forever with the benefit of producing a full backup each night.
+
+% In general, Collocated deduplication is a great solution for environments with a low daily data change rate. Great use cases for Collocated deduplication solutions include data on the edge  remote offices and laptops in the field (great for C level execs) and file heavy environments (NAS, VMware). In the case of remote offices, often the investment in Collocated deduplication can be justified by the cost avoidance attained by eliminating the legacy remote office backup infrastructure  backup server hardware, software, tape libraries, tape media, courier expenses, etc.
+
+% In the VM snapshot backup case that we study, there is hardly any value for deploying dedicated backup
+% solution because it's not affordable to VM users. Therefore we seek for low-cost collocated deduplication options
+% to reduce the VM snapshot storage cost.
+% Collocating a backup service on the existing
+% cloud cluster avoids the extra cost to acquire a dedicated backup facility
+% and reduces the network bandwidth consumption in transferring the
+% raw data for backup. 
+
+
+

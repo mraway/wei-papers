@@ -7,11 +7,11 @@ Given VM sizes are highly skewed in a large cluster, some big VMs will take a lo
 small VM backup tasks synchronized in one round will have to wait.
 Thus the average backup time for small VMs is fairly large. 
 
-Figure~\ref{sizeDistribution} shows the size distribution of VMs for a dataset from Alibaba containing
-about 3000VMs. The largest VM size is to a few terabytes while  the smallest VMs only have a few gigabytes of data.
-The percentage of changes from last backup is also show in the graph and 
-it shows that the change is fairly uniform for large VMs also. Namely when scheduling all VM backup tasks
-in one round in a synchronized manner, and the average backup time per VM is fairly large.
+%Figure~\ref{sizeDistribution} shows the size distribution of VMs for a dataset from Alibaba containing
+%about 3000VMs. The largest VM size is to a few terabytes while  the smallest VMs only have a few gigabytes of data.
+%The percentage of changes from last backup is also show in the graph and 
+%it shows that the change is fairly uniform for large VMs also. Namely when scheduling all VM backup tasks
+%in one round in a synchronized manner, and the average backup time per VM is fairly large.
 
 There is another disadvantage with a single-round scheduling. 
 During backup period, new data modification requests can lead a inconsistency between data signature 
@@ -19,6 +19,8 @@ read previously and actual data on the disk.
 % This works well if all of the
 % data being backed up are only copies, e.g. a separate backup system which data
 % is sent to over the network. 
+
+
 %However, in our case we are backing up the
 %live virtual disks, thus such single round backup presents several problems
 %in our synchronous approach.
@@ -34,6 +36,82 @@ and single-round operation synchronization significantly increases COW overhead.
 %because of the workload in stage 1a is imbalanced,
 %causing machines with small VMs to wait while CoW protection is turned on.
 %Thus we must minimize the duration that a given VM is undergoing CoW protection.
+
+To determine how evenly distributed VM sizes are, we obtained statistical data
+for 22 Aliyun clusters. The clusters in our dataset all have a very long tail
+distribution, though local minima exist in the histogram and the range of VM
+sizes varies. Other production clusters may have different distributions, but
+all of the clusters we have looked at have similarly shaped distributions. Size
+distribution histograms for two of the clusters are shown in
+Fig.~\ref{fig:hist}. There is a long tail on both histrograms which has been
+cut (out to 100GB for the first, and out to 2000GB for the second). The
+important thing to get from this data is that in none of the productions
+clusters we evaluated was the VM Size distribution flat, which motivates the
+importance of round scheduling.
+
+%\begin{figure}[ht]
+%  \centering
+%  \begin{tikzpicture}
+%      \begin{axis}[
+%              ybar interval,
+%              xlabel=Avg VM Size in Group (GB),
+%              ylabel=Number of Groups,
+%              xticklabel={\pgfmathparse{(\tick*1)}\num[round-mode=places, round-precision=0]{\pgfmathresult}}
+%      ]
+%          \addplot+[hist={bins=10}] table[y=AY41G] {figures/cluster_distributions.txt};
+%      \end{axis}
+%  \end{tikzpicture}
+%  \caption{Histogram of average data sizes for a real cluster. TODO:adjust this using the new spreadsheets}
+%  \label{fig:hist-1}
+%\end{figure}
+
+\begin{figure}[ht]
+%\centering
+\begin{subfigure}%{.5\textwidth}
+  \centering
+  \begin{tikzpicture}
+      \begin{axis}[
+              ybar interval,
+              width=0.55\linewidth,
+                    tick label style={font=\scriptsize},
+                    tick style=thin,
+              xmax=150,
+              xlabel={\tiny VM Size (GB)},
+              ylabel={\tiny Percent of VMs},
+              xtick={0,50,100,150,200,250,300,400,500,600},
+      ]
+          \addplot+[fill=blue] table[x=MinSize,y expr=\thisrow{Prob}*100] {figures/AY41A_PD.txt};
+      \end{axis}
+  \end{tikzpicture}
+  %\caption{Histogram of average data sizes for a real cluster.}
+  \label{fig:hist-AY41A}
+\end{subfigure}
+%
+%
+\begin{subfigure}%{.5\textwidth}
+  \centering
+  \begin{tikzpicture}
+      \begin{axis}[
+              ybar interval,
+              width=0.55\linewidth,
+                    tick label style={font=\scriptsize},
+                    tick style=thin,
+              xmax=150,
+              xlabel={\tiny VM Size (GB)},
+              ylabel={\tiny Percent of VMs},
+              xtick={0,50,100,150,200,250,300,400,500,600},
+      ]
+          \addplot+[fill=blue] table[x=MinSize,y expr=\thisrow{Prob}*100] {figures/AY41H_PD.txt};
+      \end{axis}
+  \end{tikzpicture}
+  %\caption{Histogram of average data sizes for a real cluster.}
+  \label{fig:hist-AY41H}
+\end{subfigure}
+\caption{Histograms of average VM sizes for several production clusters}
+\label{fig:hist}
+\end{figure}
+
+%xticklabel={\pgfmathparse{(\tick*1)}\num[round-mode=places, round-precision=0]{\pgfmathresult}}
 
 % The first is that the average turnaround time for a VM is the time it takes to
 % backup all the VMs. The second, which is related to the first, is that a single
@@ -181,17 +259,22 @@ data load of all physical machines.
 
 \subsection{Heuristic Algorithms}
 
-Since the physical machine location of each VM is preassigned,
-a scheduling algorithm is to decide the number of rounds to be used
-and the round number that each VM is processed.
-Our algorithm mapping each VM to a round number is outlined as follows.
+We assume the physical machine location of each VM is preassigned, and that the
+VM should be backed up from the machine hosting it.  This may not be a
+requirement of the system (e.g. if the virtual disks are stored on a DFS any
+machine could theoretically backup the VM), but in a converged storage
+architecture it should be the case that at least one replica of the VM disk is
+on/near the hosting machine, so we maximize data locality by taking advantage
+of this. A scheduling algorithm is developed to decide the number of rounds to
+be used and the round number that each VM is processed.  Our algorithm mapping
+each VM to a round number is outlined as follows.
 % and there are two options in selecting the tasks.
 \begin{itemize}
-\item Repeat following steps for all possible $k$ numbers and choose the schedule
+\item Repeat following steps for all possible $k$ values (numbers of rounds) and choose the schedule
 with the smallest objective function.
 \item For given round number $k$, derive  a schedule as follows.
 	\begin{itemize}
-	\item Select an unscheduled VM. The default option is to select this VM with the maximum VM size.
+	\item Select an unscheduled VM. The default option is to select the VM with the maximum VM size.
 Another option is to consider the maximum-sized VM in a physical machine which has the highest 
 unscheduled work load.
 	\item Try all $k$ rounds and find a round number  to assign the selected VM. 
@@ -203,6 +286,29 @@ There are two options to select such a round.
 	\end{itemize}
 \end{itemize}
 
+\begin{algorithm}
+\ForEach{k in (1..Num VMs)}{
+  Sort VMs in descending size order\;
+  \ForEach{VM}{
+    schedule VM to round with smallest load\;
+  }
+  Compute the cost of this schedule (using objective function)\;
+}
+Select the k which had the lowest schedule cost\;
+\caption{VM round scheduling algorithm}
+\end{algorithm}
+
+\begin{algorithm}
+\ForEach{k in (1..Num VMs)}{
+  \ForEach{x in (1..Num VMs}{
+    Choose the largest VM from the machine with the highest unscheduled workload\;
+    Schedule VM to round with smallest load\;
+  }
+  Compute the cost of this schedule (using objective function)\;
+}
+Select the k which had the lowest schedule cost\;
+\caption{Alternate VM round scheduling algorithm}
+\end{algorithm}
 
 
 \comments{

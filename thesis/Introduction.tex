@@ -2,7 +2,7 @@
 \label{chap:intro}
 \section{Problem Statement and Motivation}
 \label{intro:prob}
-The  ubiquity  of the cloud computing  has  resulted  in  the 
+The ubiquity of the cloud computing has resulted in the 
 widespread availability of cloud based services and applications accessible through 
 the network. Examples include online storage services, big data analysis, and various websites.
 In such a cluster-based cloud environment,
@@ -17,9 +17,9 @@ automatically conducts  the backup of virtual disk images to all active users ev
 
 The cost of supporting a large number of concurrent backup streams is high
 because of the huge storage demand. 
-If such VM snapshot data are plainly backuped without any duplicate detection, the storage waste would be 
-extreme. For example, a fresh Windows server 2008 installation costs 25 GB on the virtual  disk,
-and they are almost certianly duplicated with other Windows VM instances.
+If such VM snapshot data are plainly backed up without any duplicate reduction, storage waste would be 
+extreme high. For example, a fresh Windows server 2008 installation costs 25 GB on the virtual disk,
+and they are almost certianly duplicated with other Windows VM instances\cite{common07, pedal96}.
 Using a separate  backup service with full deduplication support~\cite{venti02,bottleneck08}
 can effectively identify and remove content duplicates among snapshots, 
 but such a solution can be expensive. There is also a large amount of 
@@ -27,8 +27,8 @@ network traffic to transfer  data from the host machines to the backup facility
 before duplicates are removed.
 
 Unlike the previous work dealing with general file-level
-backup and deduplication, our problem is focused on virtual
-disk image backup. Although we treat each virtual disk as a
+backup and deduplication inside a centralized storage appliance, our problem is focused on virtual
+disk image backup in a cluster of machines. Although we treat each virtual disk as a
 file logically, its size is very large. On the other hand, we need
 to support parallel backup of a large number of virtual disks
 in a cloud every day. One key requirement we face at busy clouds
@@ -47,8 +47,8 @@ In recognizing this importance and
 the associated challenges,  my thesis is that
 
 \textit{It  is  possible  to  build  an efficient, scalable, and fault tolerant backup storage
-supporting highly accurate deduplication and easy management of deduplicated data
-with sustainable high throughput.}
+supporting highly accurate deduplication with sustainable high throughput
+and easy management on deduplicated data.}
 
 In  other  words,  the  main  goal  of this  study  is  to  answer  the  following 
 question.  Given a large scale VM cluster running tens of thousand of VMs, 

@@ -57,50 +57,15 @@ The final content copied to the backup storage is reduced by 94.4\% in total.
 		\begin{axis}[
 		%title={Network Buffer Size},
 		xlabel={Total Network Memory Buffer (MB)},
-		ylabel={Backup Time},
+		ylabel={Backup Time (hrs)},
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
 		%legend pos=north west
 		]
-                \addplot table[x=mpibufmem,y=totaltime] {figures/mpibufmem.txt};
+                \addplot table[x=mpibufmem,y expr=(\thisrow{totaltime}/3600)] {figures/mpibufmem.txt};
                 %\legend{Total Backup Time};
 		\end{axis}
 	\end{tikzpicture}
   \caption{Backup time for verying amounts of memory allocated to network communication. Other Settings: 10 Machines, 5x40GB VMs per machine, write buffer 6.25MB, Read Buffer 128KB}
-  \label{fig:mpibuf-mem}
-\end{figure}
-
-\begin{figure}[ht]
-  \centering
-	\begin{tikzpicture}
-		\begin{axis}[
-		%title={Network Buffer Size},
-		xlabel={Rounds},
-		ylabel={Throughput (GB/s)},
-		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
-		%legend pos=north west
-		]
-                \addplot table[x=rounds,y=throughput] {figures/sim_full.txt};
-                %\legend{Total Backup Time};
-		\end{axis}
-	\end{tikzpicture}
-  \caption{simulated results for average throughput for individual VMs in 100 node cluster.}
-  \label{fig:mpibuf-mem}
-\end{figure}
-\begin{figure}[ht]
-  \centering
-	\begin{tikzpicture}
-		\begin{axis}[
-		%title={Network Buffer Size},
-		xlabel={Rounds},
-		ylabel={Average Backup Time (min)},
-		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
-		%legend pos=north west
-		]
-                \addplot table[x=rounds,y expr=(\thisrow{avgbackuptime})/60] {figures/sim_full.txt};
-                %\legend{Total Backup Time};
-		\end{axis}
-	\end{tikzpicture}
-  \caption{simulated results for average vm backup time for individual VMs in 100 node cluster.}
   \label{fig:mpibuf-mem}
 \end{figure}
 
@@ -123,6 +88,17 @@ The final content copied to the backup storage is reduced by 94.4\% in total.
 %  \label{fig:mpibuf-mem}
 %\end{figure}
 
+\subsection{Simulated Algorithm Comparison}
+
+Based on results from out trace-driven study, we also compare algorithms using
+the amount of data transferred over the network, written to disk, and read from
+disk in each stage. From this simple performance model, we can compare
+different scheduling heuristics and weights and choose the most appropriate
+algorithm for a set of requirements. Our simulation uses VM size distributions
+from production clusters to evaluate the scheduling algorithms across several
+clusters. we discuss the size distributions in section \ref{??}.
+
+
 \todo{The names of the algorithms are just the temporary names I've been using for coding, DBP2 is the relative of the dual bin packing algorithm, BPL is the machine by machine largest VM to shortest round algorithm}
 \begin{figure}[ht]
   \centering
@@ -130,12 +106,12 @@ The final content copied to the backup storage is reduced by 94.4\% in total.
 		\begin{axis}[
 		%title={Network Buffer Size},
 		xlabel={Rounds},
-		ylabel={Total Jobspan (m)},
+		ylabel={Total Jobspan (hrs)},
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
                 %legend pos=north west
 		]
-                \addplot table[x=Rounds,y expr=(\thisrow{DBP2jobspan})/60] {figures/packing_comparison.txt};
-                \addplot table[x=Rounds,y expr=(\thisrow{BPLjobspan})/60] {figures/packing_comparison.txt};
+                \addplot table[x=Rounds,y expr=(\thisrow{DBP2jobspan})/3600] {figures/packing_comparison.txt};
+                \addplot table[x=Rounds,y expr=(\thisrow{BPLjobspan})/3600] {figures/packing_comparison.txt};
                 \legend{DBP2, BPL};
 		\end{axis}
 	\end{tikzpicture}
@@ -149,12 +125,12 @@ The final content copied to the backup storage is reduced by 94.4\% in total.
 		\begin{axis}[
 		%title={Network Buffer Size},
 		xlabel={Rounds},
-		ylabel={Average Backup Time (s)},
+		ylabel={Average Backup Time (hrs)},
 		%extra y ticks={4.5,5.5,6.5} %to show extra ticks
                 %legend pos=north west
 		]
-                \addplot table[x=Rounds,y=DBP2avgbackup] {figures/packing_comparison.txt};
-                \addplot table[x=Rounds,y=BPLavgbackup] {figures/packing_comparison.txt};
+                \addplot table[x=Rounds,y expr=(\thisrow{DBP2avgbackup}/3600)] {figures/packing_comparison.txt};
+                \addplot table[x=Rounds,y expr=(\thisrow{BPLavgbackup}/3600)] {figures/packing_comparison.txt};
                 \legend{DBP2, BPL};
 		\end{axis}
 	\end{tikzpicture}

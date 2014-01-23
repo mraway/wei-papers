@@ -15,7 +15,7 @@ it is critical to perform the backup operation in the shortest amount of time
 to make the VM back to work.
 
 Our synchronous batched deduplication introduced in chapter~\ref{chap:offline} does not apply 
-to such situation which requests fast inline deduplication.
+to such situation which requires fast inline deduplication.
 Based on the requirement that we are now pursuing low-cost solution with short job turnaround time,
 we choose to design a deduplication solution which will sacrifice the deduplication efficiency to 
 satisfy the cost and time constraints.
@@ -73,7 +73,7 @@ The amount of data is so huge such that backup cost must be controlled carefully
 On the other hand, the computing resources allocated for snapshot service is very limited
 because VM performance has higher priority.  
 At Aliyun, it is required that while CPU and disk usage should be small or modest during backup time,
-the memory footprint of snapshot service should not exceed 500MB at each node.
+the memory footprint of snapshot service should not exceed 500 MB at each node.
 
 %snapshot service shall not compete cpu, memory, or I/O bandwidth with VMs. Specifically, the memory usage of snapshot service can never exceed 500MB in any node.
 \item {\em Fast backup speed.}
@@ -213,7 +213,7 @@ The snapshot recipe contains a list of segments and other meta data information.
 \item {\em Level 1 Changed segment tracking}.
 % If a segment is not changed, indicated by a dirty bit embedded in the virtual disk driver, its content blocks are not changed as well, thus its segment recipe can be simply reused. Operations at this level have almost no cost and most of unmodified data are filtered here. 
 We start with the changed block tracking approach in a coarse grain segment level.
-In our implementation with Xen on an Alibaba platform, the segment size is 2MB
+In our implementation with Xen on an Alibaba platform, the segment size is 2 MB
 and the device driver is extended to support tracking changed segments using a dirty bitmap. 
 Since every write for a segment will touch a dirty bit, the device driver maintains dirty bits in memory
 and cannot afford a small segment size.
@@ -267,7 +267,7 @@ has been modified or not to ease the segment-level deduplication.
 %a vhd   file keeps the allocated inner blocks at the same positions until deletion,
 %which means the locality of snapshot data is almost natively aligned. 
 A dirty bit array is used to indicate which segments have been modified or not. 
-Each page (segment) size in our implementation uses 2MB, which contains a large number of content blocks.
+Each page (segment) size in our implementation uses 2 MB, which contains a large number of content blocks.
 %Enforcing a boundary at every 2MB will 
 %only break 0.2\% of total data blocks which is tiny.
 % dirty bits array. This is because
@@ -286,7 +286,7 @@ Each page (segment) size in our implementation uses 2MB, which contains a large 
 Once level-2 deduplication is activated for those segments that have been modified,
 it requires memory to load  block fingerprints from the corresponding
 parent snapshot's segment.
-This scheme processes one segment at time and each segment of 2MB contains about 
+This scheme processes one segment at time and each segment of 2 MB contains about 
 500 content blocks on average given 4KB is the average block size.
 That only takes a tiny amount of space to hold their fingerprints.
 %Given  1-2 hours of window to backup snapshots and every VM has  on average about 40GB, there is enough
@@ -379,17 +379,17 @@ PDS hash index.
 The PDS collected from user-related data is generally proportional to the data size.
 As discussed in Section~\ref{inline:impl}, selecting about 1\% of data (after level 1 and level 2 deduplication)
 can cover about 38\% of data blocks. Consider we allow maximum 25 VMs per machine, each VM has
-about 30GB of user-related data, having 10 snapshots in its snapshot store and the data change ratio during
-each backup is 10\%, this translates to 15GB PDS data per machine. 
+about 30 GB of user-related data, having 10 snapshots in its snapshot store and the data change ratio during
+each backup is 10\%, this translates to 15 GB PDS data per machine. 
 Consider each PDS hash index entry cost about 40 bytes and the average block size is 4KB, this leads to
 a 1:100 ratio so the 
-memory cost by PDS hash index is about 150MB per machine.
+memory cost by PDS hash index is about 150 MB per machine.
 On the other hand, the PDS from OS-related data is only relevant to the number of OS releases.
-Our experiment on 7 major OS releases shows that about 100GB of data is never modified, and we expect
-it won't grow over 200GB in the near future. So it would cost the entire cluster 2GB of memory to
-store its hash index, or 20MB per machine on a 100 node cluster. On average each OS disk has about 10GB
+Our experiment on 7 major OS releases shows that about 100 GB of data is never modified, and we expect
+it won't grow over 200 GB in the near future. So it would cost the entire cluster 2 GB of memory to
+store its hash index, or 20 MB per machine on a 100 node cluster. On average each OS disk has about 10 GB
 of data that can be completely eliminated in this way.
-Thus in total the PDS index size per node takes less than 170MB in a large cluster bigger than 100 nodes, 
+Thus in total the PDS index size per node takes less than 170 MB in a large cluster bigger than 100 nodes, 
 covering over 47\% of blocks in OS and data disks after inner-VM deduplication.
 This memory usage is well below the limit required by our VM services.
 
@@ -454,10 +454,10 @@ with 25 VMs on each.
 %We are running our deduplication/backup  service on 100 nodes.
 %Memory usage is about 150MB space per node during backup and
 %the CPU usage is very small during the experiments. 
-Based on the data studied,  each VM has about  40GB of storage  data usage on average,
+Based on the data studied,  each VM has about  40 GB of storage  data usage on average,
 OS disk and data disk each takes about 50\% of storage space.
 The backup of VM snapshots is completed within two hours every day,
-and that translates to a backup throughput of 139GB per second, or 500TB per hour.
+and that translates to a backup throughput of 139 GB per second, or 500TB per hour.
 For each VM, the system keeps 10 automatically-backed snapshots in the storage while
 a user may instruct extra snapshots to be saved.
 
@@ -474,7 +474,7 @@ Since it's impossible to perform large scale analysis without affecting the VM p
 we sampled two data sets from real user VMs to measure the effectiveness of our deduplication scheme.
 Dataset1 is used study the detail impact of 3-level deduplication process,
 it compose of 35 VMs from 7 popular OSes: 
-Debian, Ubuntu, Redhat, CentOS, Win2003 32bit, win2003 64 bit and win2008 64 bit. For each OS, 
+Debian, Ubuntu, Redhat, CentOS, Win2003 32bit, Win2003 64 bit and Win2008 64 bit. For each OS, 
 5 VMs are chosen, and every VM come with 10 full snapshots of it OS and data disk. 
 The overall data size for this 700 full snapshots is 17.6 TB.
 
@@ -621,7 +621,7 @@ the popular dataset covering data items from rank 1 to rank $i$. Namely
 \]
 
 Thus with about 1\% of blocks on data disks, PDS can cover about 38\% of total data blocks
-appeared in all data snapshots. The corresponding PDS index uses no more than 150MB memory per machine,
+appeared in all data snapshots. The corresponding PDS index uses no more than 150 MB memory per machine,
 which can be easily co-located with other cloud services.
 
 %Figure~\ref{fig:OSdatacoverage} shows the cumulative coverage  ratio of  popular popular OS blocks. 
@@ -683,7 +683,7 @@ among OS snapshots of these users.
 \end{figure}
 
 Based on the above analysis, we have selected a small set of most popular
-OS blocks, which is about 100GB OS data and its corresponding PDS index takes about 1GB memory space in total.
+OS blocks, which is about 100 GB OS data and its corresponding PDS index takes about 1 GB memory space in total.
 They can cover sufficiently over 70\% of OS-related data.
 
 %Then we use this PDS to run the deduplication process again.
@@ -757,7 +757,7 @@ Figure \ref{fig:datacdssize} shows the relationship between PDS cache size and r
 compared to the full deduplication.  The unit of PDS size is gigabytes.
 We define \emph{space saving ratio} as the space saving of PDS method divided by 
 full deduplication space reduction. 
-With a 100GB PDS data (namely 1GB PDS index) can still  accomplish about 75\% 
+With a 100 GB PDS data (namely 1 GB PDS index) can still  accomplish about 75\% 
 of what perfect deduplication can do.
 %But this effect decreases when more data are added to PDS. 
 %The lower bound of PDS space saving ratio is 50\%, which is very easy to accomplish. 
@@ -872,7 +872,7 @@ by using an in-memory Bloom filter and prefetch groups of chunk IDs that are lik
 accessed together with high probability. It takes significant memory resource for filtering and caching.
 NG et al.~\cite{ NGmiddleware2011}  use  
 a related filtering technique for integrating deduplication in Linux  file system and the memory
-consumed is up to 2GB for a single machine. That is still too big in our context discussed below. 
+consumed is up to 2 GB for a single machine. That is still too big in our context discussed below. 
 %Lillibridge et al.~\cite{sparseindex09} break list of chunks 
 %into large segments, the chunk IDs in each incoming segment are sampled and the segment is 
 %deduplicated by comparing with the chunk IDs of only a few carefully selected backed up segments. 

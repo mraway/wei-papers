@@ -2,7 +2,7 @@
 \label{chap:data}
 \section{Introduction}
 \label{data:intro}
-In this chapter, we discuss a low-cost architecture option that collocates
+In this chapter, we discuss a low-cost storage and management architecture that collocates
 a backup service with other cloud services and uses a minimum amount of resources. 
 We also consider the fact that after
 deduplication, most data chunks are shared by several to many virtual machines.
@@ -43,7 +43,7 @@ Section~\ref{data:impl} is our experimental evaluation that compares with other 
 Section~\ref{data:related} reviews the related works.
 Section~\ref{data:concl} concludes this chapter.
 
-\section{Background and Design Considerations}
+\section{Design Considerations}
 \label{data:options}
 Our key design consideration is VM dependence minimization during deduplication 
 and file system block management.
@@ -215,7 +215,7 @@ Using  a container ID, the corresponding container index file of this VM is acce
 the chunk group is identified using a simple chunk ID range search. Once the chunk group is loaded to memory, 
 its header contains the exact offset of the corresponding chunk ID and the content is then accessed from the memory buffer.
 
-Three API calls are supported for data backup:
+Our snapshot store supports three API calls for block data operations:
 %\begin{itemize}
 
 %\item
@@ -237,7 +237,6 @@ container index file.
 The fetch operation for the PDS data chunk is straightforward since each reference contains 
 the file offset, and the size of a PDS chunk is available from a segment recipe.
 We also maintain a small data cache for the PDS data service to speedup common data fetching.
-
 To read a non-PDS chunk using its reference with container ID and local chunk ID,  the snapshot store client first loads the
 corresponding VM's container index file specified by the container ID, then searches the chunk
 groups  using their  chunk ID coverage.
@@ -270,6 +269,11 @@ in recipes are permanent and stable, and the data reading process
 is as efficient as before. Maintaining the stability of chunk IDs also ensures that recipes do not
 depend directly on physical storage locations, which simplifies data migration.
 %\end{itemize}
+
+Additional APIs such as \textbf{Scan()}, \textbf{Compact()}, \textbf{Create()} and \textit{Remove()} are provided for 
+higher level operations. Scan() is used by the map-reduce procedure to collect the most popular blocks among all snapshot stores.
+Compact() is called when the system determines a container has too much unclaimed space and needs to be reclaimed.
+Create() and Remove() initialize and delete a container respectively.
 
 \section{Analysis of VM-centric Approach}
 \label{data:analysis}
@@ -330,7 +334,7 @@ Choosing the value $k$ for the most popular chunks affects the deduplication eff
 We analyze this impact based on the characteristics  of the VM snapshot traces
 studied from  application datasets.
 A previous study shows that the popularity of data chunks after local deduplication follows 
-a Zipf-like distribution\cite{Breslau1999a} and its
+a Zipf-like distribution\cite{Breslau1999a, Baek2011} and its
 exponent $\alpha$ is ranged between 0.65  and  0.7~\cite{WeiZhangIEEE}. 
 Figure~\ref{fig:zipf-data} illustrates the Zipf-like distribution of chunk popularity.
 
@@ -1383,7 +1387,7 @@ Since it is expensive to compare a large number of chunk signatures for deduplic
 several techniques have been proposed to speedup searching of duplicate
 fingerprints. For example, the data domain method ~\cite{bottleneck08} 
 uses  an in-memory Bloom filter and a prefetching cache for data chunks  which may be
-accessed.  An improvement to this work with parallelization is in ~\cite{MAD210,DEBAR}.
+accessed.  An improvement to this work with parallelization is in ~\cite{MAD210,DEBAR,arrow08}.
 The approximation techniques are studied in~\cite{extreme_binning09,Guo2011,WeiZhangIEEE}  
 to reduce memory requirements with the tradeoff of a reduced deduplication ratio.
 Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,Srinivasan2012}
@@ -1399,7 +1403,7 @@ the following previously-developed techniques.
 1)
 {\em Changed block Tracking}.
 VM snapshots can be  backed up  incrementally by identifying data segments that have
-changed from the previous version of the snapshot~\cite{Clements2009,Vrable2009,TanIPDPS2011}.
+changed from the previous version of the snapshot~\cite{Clements2009,Vrable2009,TanIPDPS2011,cvfs03}.
 Such a scheme  is  VM-centric since deduplication is localized. 
 We are seeking for a tradeoff since 
 global signature comparison can deliver additional compression~\cite{Guo2011,Dong2011,extreme_binning09}.
