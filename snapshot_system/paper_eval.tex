@@ -203,6 +203,7 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
     \footnotesize
     \tabcolsep=0.11cm
     \pgfplotstabletypeset[
+        comment chars=!,
         columns={NodesFailed,VO100,VC100,VO1000,VC1000},
         columns/NodesFailed/.style={
             column name={\multirow{3}{*}{Failures ($d$)}}
@@ -241,8 +242,44 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
     \label{tab:vm-availability}
 \end{table}
 
+\begin{figure}[htb]
+  \centering
+	\begin{tikzpicture}
+		\begin{axis}[
+                        width=\linewidth,
+                        height=0.6\linewidth,
+		%title={PDS Replication affect on availability},
+		xlabel={Failed storage nodes},
+		ylabel={VM Snapshot Availability (\%)},
+                xmin=0,
+                xmax=10,
+		%extra y ticks={99.9}, %if important numbers are missing
+                mark options=solid,
+                legend style={
+                    cells={anchor=west}, %legend entry alignment
+                    legend pos=south west %legend position
+                },
+                reverse legend,
+		]
+                \addplot+[dashed] table[x=NodesFailed,y=VO]{figures/node_failures_100.txt};
+                \addplot table[x=NodesFailed,y=VC1]{figures/node_failures_100.txt};
+                \addplot table[x=NodesFailed,y=VC2]{figures/node_failures_100.txt};
+                \addplot table[x=NodesFailed,y=VC3]{figures/node_failures_100.txt};
+                \addplot table[x=NodesFailed,y=VC4]{figures/node_failures_100.txt};
+                \legend{
+                    VO,
+                    $r_c=4$,
+                    $r_c=5$,
+                    $r_c=6$,
+                    $r_c=9$
+                }
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Availability of VM snapshots in VC with different PDS replication degrees}
+  \label{fig:pds-replication}
+\end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[htb]
   \centering
 	\begin{tikzpicture}
 		\begin{axis}[
@@ -275,8 +312,8 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
                 }
 		\end{axis}
 	\end{tikzpicture}
-  \caption{Availability of VM snapshots in VC with different PDS replication degrees}
-  \label{fig:pds-replication}
+  \caption{Availability of VM snapshots in VC with different PDS replication degrees \todo{decide which one}}
+  \label{fig:pds-replication-old}
 \end{figure}
 
 \subsection{Deduplication Efficiency}
