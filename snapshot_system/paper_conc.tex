@@ -1,15 +1,21 @@
 \section{Conclusion}
 \label{sect:conclusion}
-In this paper we propose a collocated backup service built on
-the top of a cloud cluster to reduce network traffic and infrastructure requirements.
-The key contribution is a VM-centric deduplication scheme to 
-maximize fault isolation while delivering competitive deduplication efficiency.
-Similarity guided local search reduces cross-VM data dependency and exposes more parallelism  
-while global deduplication with a small common data set eliminates popular duplicates.
-VM-specific file block packing also enhances fault tolerance by reducing data dependencies.
-The design places a special consideration for low-resource usages as a collocated cloud service.
-Evaluation using  VM backup data shows that VC strikes a tradeoff and 
+%In this paper we propose a collocated backup service built on
+%the top of a cloud cluster to reduce network traffic and infrastructure requirements.
+The main contribution of this paper is a low-profile and VM-centric deduplication scheme to 
+maximize fault isolation while delivering competitive deduplication efficiency using
+a small amount of system resource.
+Evaluation using  this scheme strikes a tradeoff and restricted cross-VM duplicate detection
 can accomplish 96.33\% or 96.9\% of what complete global
-deduplication can do.  The availability of snapshots increases substantially with 
-a small replication overhead for popular inter-VM chunks.
+deduplication can do, and the approximate snapshot deletion effectively manages deleted chunks with a 
+low-resource usage.  The availability of snapshots increases substantially when
+adding more replication for popular cross-VM chunks and packaging chunks from the same 
+VM in one file system block.
+%Currently we are studying how the 
+
+%Similarity guided local search reduces cross-VM data dependency and exposes more parallelism  
+%while global deduplication with a small common data set eliminates popular duplicates.
+%VM-specific file block packing also enhances fault tolerance by reducing data dependencies.
+%The design places a special consideration for low-resource usages as a collocated cloud service
+%and 
 

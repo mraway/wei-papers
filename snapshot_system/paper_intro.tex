@@ -1,17 +1,19 @@
 \section{Introduction}
 
-One of popular architectures for building cloud services
-is a converged architecture that leverages commodity servers with software clustered storage and network, without 
-requiring network storage (e.g. SAN or NAS)~\cite{NutanixPaper}. 
+One of emerging architectures for building cloud services
+is a converged architecture that leverages commodity servers with software clustered storage, without 
+requiring network storage (e.g. ~\cite{NutanixPaper}). 
 Leading cloud platform companies such as Google, Amazon, Alibaba,
 Microsoft Azure  have built a converged compute and storage infrastructure and used
 a distributed file system such as Google file system~\cite{googlefs03,hdfs10}
-to glue a large number of commodity servers with local storage into a single cluster.
+to glue a large number of commodity servers.
+% with local storage into a single cluster.
 In such an environment,
 %That  allows the use of scalable compute and storage, without incurring the costs and
 %performance limitations associated with network storage.
-each physical machine runs a number  of virtual machines as  instances of a guest operating system 
-and their  virtual hard disks are represented as virtual disk image files in the host operating system.
+each physical machine runs a number  of virtual machines 
+%as  instances of a guest operating system 
+and their  virtual disks are represented as virtual disk image files in the host operating system.
 Frequent  snapshot backup of virtual disk images  can increase  the service reliability
 and deduplication of redundant content blocks~\cite{venti02,bottleneck08}
  is necessary to substantially reduce the storage demand.
@@ -26,30 +28,32 @@ and deduplication of redundant content blocks~\cite{venti02,bottleneck08}
 %network traffic to transfer  data from the host machines to the backup facility
 %before duplicates are removed.
 
-A common technique for VM snapshot deduplication is    version-based detection that identifies file  blocks that have
-changed from the previous version of the snapshot~\cite{Clements2009,Vrable2009,TanIPDPS2011}.
-Another popular technique is to conduct global fingerprint  comparison to identify duplicates that exist
-among all files~\cite{Guo2011,Dong2011,extreme_binning09}.
-Because of highly repetitive content in snapshot backup,
-most data chunks are shared by many virtual machines.  Failure of a few shared data chunks can have a 
-broad effect and many snapshots of virtual machines could be affected.
+While version-based detection  has been used to  identify file  blocks that have not 
+changed from the previous version of the snapshot~\cite{Clements2009,Vrable2009,TanIPDPS2011},
+a popular technique for deduplicatioon is to 
+conduct fingerprint  comparison and identify duplicates that exist
+among all files~\cite{Guo2011,Dong2011,extreme_binning09}. 
+Because of highly repetitive content in snapshots from different VMs,
+many data chunks are shared by virtual machines.  
+Failure of a few shared data chunks can have a 
+broad effect and snapshots of these virtual machines could be affected.
 The previous work in deduplication focuses on the efficiency and approximation of
 fingerprint comparison, and has not addressed fault tolerance issues  together with deduplication.
-Thus we also seek deduplication options that yield better fault isolation.
+Thus we seek a method that strikes a balance between fault isolation and deduplication efficiency.
 
 
-The key contribution of this work is to evaluate the fault tolerance  impact of popular data blocks shared by many
+The main contribution of this work is to evaluate the fault tolerance  impact of popular data blocks shared by many
 virtual machines, and   propose a VM-centric approach that localizes deduplication as much as possible 
-and restrict global deduplication only to a limited set of most popular blocks.
+and restricts global deduplication only to a limited set of most popular blocks.
 Local deduplication also uses similarity-guided elimination to improve the deduplication coverage.
 Since the file system block size is normally bigger than the average data chunk size used for deduplication,
-we also package data chunks from the same VM into a file system block as much as possible to improve fault isolation.
+we package data chunks from the same VM into a file system block as much as possible to improve fault isolation.
 Because data sharing is restricted, 
-this VM-centric approach can also simplify the snapshot deletion process and reduce the overall resource usage, which
+this VM-centric approach reduces the overall resource usage significantly during backup and
+simplifies the snapshot deletion process. This low-resource design
 is suitable when the backup service with deduplication is collocated with other services running on a shared compute and storage
-cluster.
-We have evaluated this VM-centric approach using  a prototype system that runs a cluster of Linux machines with Xen and 
-a standard distributed file system for the backup storage. 
+cluster.  We have evaluated this VM-centric approach using  a prototype system.
+% that runs a cluster of Linux machines with Xen and a standard distributed file system for the backup storage. 
 %This approach localizes duplicate detection within each VM  
 %By narrowing duplicate sharing within a small percent of common data chunks and exploiting their popularity,
 %this scheme can afford to allocate extra replicas of these shared chunks for better

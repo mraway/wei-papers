@@ -3,16 +3,17 @@
 
 Figure~\ref{fig:collocated} illustrates a converged cloud architecture where
 each commodity server hosts a number of virtual machines and storage of these servers
-is clustered using a distributed file system (DFS)~\cite{googlefs03,hdfs10}.
+is clustered using a distributed file system~\cite{googlefs03,hdfs10}.
 Each physical machine 
 each instance of a guest operating system runs on a virtual machine, accessing virtual hard disks 
 represented as virtual disk image files in the host operating system.
 For VM snapshot backup, file-level semantics are normally not provided.
 Snapshot operations take place at the virtual device driver level, which
 means no fine-grained file system metadata can be used to determine the changed data. 
-This architecture does not use a seperate  backup facility for a lower cost and 
-reduces the network bandwidth consumption in transferring the raw data for backup. 
-A backup sevice runs on these commodity servers and stores deduplicated data  in  the storage in this cluster or in
+%This architecture does not use a seperate  backup facility for a lower cost and 
+%reduces the network bandwidth consumption in transferring the raw data for backup. 
+A backup sevice may collocate with other cloud services on these commodity servers and 
+stores deduplicated data  in  the storage in this cluster or in
 a seperate storage cluster.
 
 
@@ -25,11 +26,11 @@ a seperate storage cluster.
 \begin{figure}[htb]
     \centering
     \includegraphics[width=3in]{images/colocated-arch}
-    \caption{Collocated VM Backup System.}
+    \caption{VM snapshot backup running on a converged cloud cluster.}
     \label{fig:collocated}
 \end{figure}
 
-Backup systems have been developed to use content fingerprints to identify duplicate
+File backup systems have been developed to use content fingerprints to identify duplicate
 content~\cite{venti02,Rhea2008}.  It is expensive to compare a large number of chunk fingerprints
 and several techniques have been proposed to speedup. For example, the data domain method ~\cite{bottleneck08} 
 uses  an in-memory Bloom filter and a prefetching cache for data chunks  which may be
@@ -64,18 +65,20 @@ to count if a data chunk is still shared by other snapshots.
 Localizing deduplication can  minimize data sharing and simplify deletion while sacrificing 
 deduplication efficiency, and  can facilitate parallel execution of snapshot operations.
 \item{\em  Management of file system blocks.}
-The file system block (FSB) size in a distributed file system such as  Hadoop and GFS is uniform and large (e.g.  64MB),
+The file system block (FSB) size in a distributed file system such as  Hadoop and Google file system
+ is uniform and large (e.g.  64MB),
 while the data chunk in a typical deduplication system is of a non-uniform size with 4KB or 8KB on average.
 Packaging data chunks to an FSB can create more data dependencies among VMs
 since a file system block can be shared by even more VMs.
 Thus we need to consider a minimum association of FSBs to VMs in the packaging process.
 
 \item {\em Low resource usage in a nondedicated cloud cluster.}
-Since the cluster we consider is shared by many cloud services,
+When a backup service collocates with other cloud services as illustrated in Figure~\ref{fig:collocated},
 low resource usage of deduplication is desired so that
 there is  a minimal impact to the other existing cloud services.
-The key resource for global comparison  is memory for storing the fingerprints. 
-We will consider the approximation techniques with reduced memory consumption. 
+The key resource for global comparison  is memory for storing the fingerprints.
+During snapshot deltion, reference counting for all unique blocks used in all VMs requires a significant resource usage
+too.  Thus we seek for the low-profile techniques with approximation and low resource consumption. 
 \end{itemize}
 
 We call the traditional deduplication approach as   VM-oblivious (VO)
@@ -83,7 +86,7 @@ because they compare fingerprints of snapshots without consideration of VMs.
 With the above  considerations in mind, we study a 
 VM-centric approach (called VC)
 for a collocated backup service with resource usage friendly
-to the existing applications.  
+to the existing applications in a converged clustr architecture.  
 
 In designing a VC duplication solution, we have considered and adopted some of
 the following previously-developed techniques.

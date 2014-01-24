@@ -1,7 +1,9 @@
 \begin{abstract}
 Data deduplication has been widely used for cloud data backup
-because of excessive redundant content blocks. Common techniques use dirty bits to detect
-the version  change and  perform global fingerprint comparison to remove duplicates
+because of excessive redundant content blocks. Common techniques 
+%use dirty bits to detect
+%the version  change and  
+perform fingerprint comparison to remove duplicates
 across virtual machines. However, letting a duplicate data block be shared
 by many virtual machines creates data dependence and is less fault-resilient. 
 %This paper studies the impact of deduplication on 
@@ -9,13 +11,14 @@ by many virtual machines creates data dependence and is less fault-resilient.
 %and proposes a VM-centric approach that strikes a balance between deduplication efficiency
 %and fault isolation 
 This paper proposes a VM-centric backup service on a converged  storage cluster architecture
-and  strikes a balance for better fault isolation with competitive  deduplication efficiency.
+and  strikes a tradeoff for better fault isolation with competitive  deduplication efficiency.
 It localizes deduplication as much as possible within each 
 virtual machine, guided by similarity
-search and associates  underlying file blocks with one VM for most cases.
-It restricts global deduplication to popular chunks with extra replication support.
-This VM-centric scheme also has  an advantage of   using less  computing resources for fingerprint comparison and simplifies snapshot deletion, suitable for a collocated backup service 
-on a non-dedicated cluster architecture.
+search, and it restricts global deduplication under popular chunks with extra replication support.
+It associates  underlying file blocks with one VM for most cases
+and proposes an approximate method for fast and simplified snapshot deletion.
+This VM-centric scheme also has  an advantage of   using less  computing resources, suitable for a collocated 
+backup service on a non-dedicated cluster architecture.
 This  paper  describes an evaluation of this scheme to assess  its deduplication 
 efficiency and fault resilience.
 

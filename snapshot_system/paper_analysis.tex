@@ -65,14 +65,17 @@ A(r) & the availability of an FSB  with replication degree $r$\\
     \label{fig:share}
 \end{figure}
 
-We analyze the impact of replication degree for PDS and non-PDS data items.
-The parameters used in our analysis below are defined in Table~\ref{tab:symbol}. 
-The replication degree of the backup storage 
-is $r$ for regular file system blocks and $r=3$ is a typical setting in distributed
-file systems~\cite{googlefs03,hdfs10}.
-Since $\sigma$ is small (e.g.  2\% in our experiments),  
-the impact of replication on storage increase is very small even 
-when choosing  $r_c/r$ ratio as 2 or 3. 
+We analyze the impact of the above VM centric design on fault isolation and compare it
+with a VM oblivious design.
+Let $r$ be the replication degree of standard file blocks in the underlying backup storage. 
+$r=3$ is a typical setting in distributed file systems~\cite{googlefs03,hdfs10}.
+Let $r_c$ be the replication degree of file blocks for PDS. 
+Additional parameters used in our analysis below are defined in Table~\ref{tab:symbol}. 
+%The replication degree of the backup storage 
+%is $r$ for regular file system blocks and 
+%Since $\sigma$ is small (e.g.  2\% in our experiments),  
+%the impact of replication on storage increase is very small even 
+%when choosing  $r_c/r$ ratio as 2 or 3. 
 
 
 %In the VC approach, a special replication degree $r_c$ is used for PDS data where $r_c>r$. 
@@ -87,27 +90,30 @@ when choosing  $r_c/r$ ratio as 2 or 3.
 %For example, $r_c/r=2$ or 3. 
 
 Now we  assess  the impact of losing $d$ machines 
-to the VC and VO approaches.  
+to the VM centric and oblivious approaches.  
 A large $r_c/r$ ratio can have a positive impact on full availability of VM snapshot blocks.
 %We use an FSB rather than a deduplication
 %data chunk as our unit of failure because the DFS keeps
 %file system blocks as its base unit of storage.
-To compute the full availability of all snapshots of a VM, we derive
-the probability of losing a snapshot FSB of a VM by
-estimating the number of file system blocks per VM in each approach.
+To compute the full availability of all snapshots of a VM, we estimate
+the number of file system blocks per VM and the probability of losing a snapshot file system 
+block of a VM in each approach as follows.
 %As illustrated in Figure~\ref{fig:share},
 %we build a bipartite graph representing the association from unique file system blocks
 %to their corresponding VMs in each approach. An association edge is  drawn  from an FSB to a VM 
 %if this block is used by the VM. 
 
 As illustrated in Figure~\ref{fig:share}, we build a bipartite graph representing the
-association from unique file system blocks to their corresponding VMs in the VC
-and VO approaches. We use an FSB rather than data chunk as our unit of failure
-because the DFS keeps file system blocks as its base unit of storage, and in
-the case of 64MB FSBs and 4KB chunks, there are 16K chunks per block. In VC
-we assign extra replication to the PDS blocks, while in VO the replication
+association from unique file system blocks to their corresponding VMs in two 
+approaches. We use a file system block rather than data chunk as our unit of failure
+because the underlying file system keeps file system blocks as its base unit of storage, and in
+the case of 64MB file system blocks  and 4KB chunks, there are 16K chunks per file block. For VM centric,
+we assign extra replication to the PDS blocks, while for VM oblivious, the replication
 degree is fixed.
 
+
+\comments{
+%Moved up in the strategy subsection
 We could consider a third approach (call it VO+), adopting the VO approach, and
 then relying on filesystem features to provide extra replication to popular
 blocks, without the extra complexity of separating popular and non-popular
@@ -118,9 +124,9 @@ are dispersed, there are very few popular FSBs. The end result is that we
 either have to add extra replication on unpopular chunks to ensure the popular
 chunks have sufficient replication, or we have to accept a reduced replication
 factor on popular chunks. This explains why we must separate the PDS and
-non-PDS data in our system to acheive the desired $r_c/r$ ratio (though both
+non-PDS data in our system to achieve the desired $r_c/r$ ratio (though both
 can be stored on the same DFS).
-
+}
 For VC, each VM has an average number $N_1$ of non-PDS FSBs
 and  has  an average of  $N_2$ PDS FSBs. 
 Each non-PDS FSB is associated with one VM
