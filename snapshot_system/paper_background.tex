@@ -57,7 +57,9 @@ loss of a small number of shared data chunks can
 cause the unavailability of snapshots for a large number of virtual machines.
 Localizing the impact of deduplication can increase fault isolation and resilience.
 Thus from the fault tolerance point of view,  duplicate sharing among multiple VMs is 
-discouraged. 
+discouraged. Additionally, by localizing duplicate search, the resource requirements
+for deduplication can be reduced, because fewer chunks must be compared.
+ 
 Another disadvantage of sharing is that it complicates snapshot deletion, 
 which  occurs frequently when snapshots expire regularly. 
 The mark-and-sweep approach~\cite{Guo2011,Fabiano2013}  is effective for deletion, but still carries a significant cost
@@ -70,7 +72,10 @@ The file system block (FSB) size in a distributed file system such as  Hadoop an
 while the data chunk in a typical deduplication system is of a non-uniform size with 4KB or 8KB on average.
 Packaging data chunks to an FSB can create more data dependencies among VMs
 since a file system block can be shared by even more VMs.
-Thus we need to consider a minimum association of FSBs to VMs in the packaging process.
+Thus we need to consider a minimum association of FSBs to VMs in the packaging
+process. By minimizing this association we can improve fault tolerance by
+reducing the number of VMs affected when storage nodes are lost.
+ 
 
 \item {\em Low resource usage in a nondedicated cloud cluster.}
 When a backup service collocates with other cloud services as illustrated in Figure~\ref{fig:collocated},

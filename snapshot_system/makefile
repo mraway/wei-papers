@@ -1,5 +1,5 @@
-MAIN	= fast14_main
-TEX	= ${MAIN}.tex fast14_abstract.tex fast14_introduction.tex fast14_background.tex fast14_deduplication.tex fast14_architecture.tex fast14_evaluation.tex fast14_conclusion.tex
+MAIN	= paper
+TEX	= ${MAIN}.tex paper_abs.tex paper_analysis.tex paper_arch.tex paper_background.tex paper_conc.tex paper_dedup.tex paper_del.tex paper_eval.tex paper_intro.tex
 FIG	= 
 BIB	= library.bib dedup1.bib
 
