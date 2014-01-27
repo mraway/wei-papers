@@ -2,19 +2,27 @@
 
 One of emerging architectures for building cloud services
 is a converged storage architecture that leverages commodity servers with software clustered storage.
-The converged architecture (server plus compute in same tier) grew out of the Google model. What Google recognized is that they could leverage their software to meld multiple direct attached low-cost disks together across servers and avoid paying high margins for traditional network attached storage systems. %This(e.g. ~\cite{NutanixPaper}). 
-Leading cloud platform companies such as Google, Amazon, Alibaba,
-Microsoft Azure  have built a converged compute and storage infrastructure and used
+This converged architecture (server plus compute in same tier) grew out of the Google model. 
+What Google recognized is that they could leverage their software to 
+meld multiple direct attached low-cost disks together across servers, 
+such approach allow Google to avoid paying high margins to traditional network attached storage vendors,
+as well as ditching their scalability limitations. 
+
+Server virtualization is one of the most benefited area of adopting converged storage architecture.
+Leading cloud platform providers such as Google AppEngine, Amazon AWS, 
+Microsoft Azure and Alibaba have built such a converged compute and storage infrastructure and used
 a distributed file system such as Google file system~\cite{googlefs03,hdfs10}
 to glue a large number of commodity servers.
+Many VDI environment in private clouds are also adopting this converged architecture 
+provided by Nutanix~\cite{NutanixPaper}, Simplivity and others. 
 % with local storage into a single cluster.
 In such an environment,
 %That  allows the use of scalable compute and storage, without incurring the costs and
 %performance limitations associated with network storage.
 each physical machine runs a number  of virtual machines 
 %as  instances of a guest operating system 
-and their  virtual disks are represented as virtual disk image files in the host operating system.
-Frequent  snapshot backup of virtual disk images  can increase  the service reliability
+and their virtual disks are represented as virtual disk image files in the host operating system.
+Frequent snapshot backup of virtual disk images  can increase  the service reliability
 and deduplication of redundant content blocks~\cite{venti02,bottleneck08}
  is necessary to substantially reduce the storage demand.
 %For example, the Aliyun cloud, which is  the largest cloud service provider by Alibaba in China, 
@@ -28,7 +36,8 @@ and deduplication of redundant content blocks~\cite{venti02,bottleneck08}
 %network traffic to transfer  data from the host machines to the backup facility
 %before duplicates are removed.
 
-While version-based detection  has been used to  identify file  blocks that have not 
+
+While version-based detection has been used to identify file blocks that have not 
 changed from the previous version of the snapshot~\cite{Clements2009,Vrable2009,TanIPDPS2011},
 a popular technique for deduplicatioon is to 
 conduct fingerprint  comparison and identify duplicates that exist
