@@ -46,7 +46,7 @@ the cloud typically offloads backup workload from production
 server hosts to dedicated backup proxy servers (e.g. EMC Data Domain) or
 backup services (e.g. Amazon S3). This approach simplifies the cluster 
 architecture and 
-avoids potential performance degredation to production applications when 
+avoids potential performance degradation to production applications when 
 backups are in progress.
 However, sending out pre-deduplication backup data wastes huge amount
 of network bandwidth that would otherwise be available to user VMs. 
@@ -58,7 +58,7 @@ or it must forego global deduplication in order to gain scalability
 
 In this paper we propose a backup service for converged cloud architectures
 that is co-located with user VMs, sharing the cloud computer, network, and
-storage resource swith them.
+storage resource with them.
 We describe methodologies to address the following challenges: 
 \begin{itemize}
 \item good global deduplication efficiency using a distributed implementation
@@ -70,7 +70,7 @@ exception, and
 storage charges immediately after snapshot deletion.
 \end{itemize}
 
-% low-cost VM-centric snapshot backup approach that is collocated within 
+% low-cost VM-centric snapshot backup approach that is co-located within 
 % the existing converged storage architecture. Our solution leverages the scalability of the underlying
 % distributed file system and provides global data deduplication in a resource friendly manner.
 
@@ -99,7 +99,7 @@ also gained in popularity.
 One consequence of aggressive deduplication is the possible loss of failure
 resilience.  Separate files share the same physical copies of blocks that are
 logically duplicated among them.  If a shared block is lost, all files that
-share that block are affected.  The problem is particularly accute for VM
+share that block are affected.  The problem is particularly acute for VM
 snapshots where the purpose of the snapshot is precisely to create redundant
 data copies so that VMs are more fault resilient.  Thus, there exists a
 tension between the additional redundancy that snapshot creation is intended
@@ -149,13 +149,13 @@ We detail the storage, performance,
 and fault isolation properties
 of our method and verify these properties empirically using a prototype
 system that we have developed to run as a co-located back-up service in
-converged IaaS cloud enviornments.
+converged IaaS cloud environments.
 
 %Because data
 %sharing is restricted, this VM-centric approach reduces the overall resource
 %usage significantly during backup and simplifies the snapshot deletion
 %process. This low-resource design is suitable when the backup service with
-%deduplication is collocated with other services running on a shared compute
+%deduplication is co-located with other services running on a shared compute
 %and storage cluster.  We have evaluated this VM-centric approach using  a
 %prototype system.
 % that runs a cluster of Linux machines with Xen and a standard distributed

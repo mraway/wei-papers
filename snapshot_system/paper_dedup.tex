@@ -3,11 +3,18 @@
 
 \subsection{VM centric  strategies}
 \label{sect:vc-strategies}
+
+We describe our overall deduplication approach as consisting of three
+complementary strategies: VM-local
+duplicate search optimization, global deduplication using popular chunks, and 
+VM-centric file system block management. 
 %\begin{itemize}
 %\item 
-\textbf{VM-specific local duplicate search within similar segments.}
+\paragraph*{VM-local duplicate search optimization} --
 We start with the changed block tracking approach in a coarse grain segment level.
-In our implementation with Xen on an Alibaba platform, the segment size is 2MB
+In our implementation 
+%with Xen on an Alibaba platform, 
+the segment size is 2MB
 and the device driver is extended to support tracking changed segments using a dirty bitmap. 
 Since every write for a segment will touch a dirty bit, the device driver maintains dirty bits in memory
 and cannot afford a small segment size.
@@ -47,7 +54,7 @@ As part of our local duplicate search we also compare the current segment
 against the parent segment at the same offset.
 
 %\item 
-\textbf{Global deduplication with popular chunks and replication support.}
+\paragraph*{Global deduplication using popular chunks} --
 This step accomplishes the canonical global fingerprint lookup using a popular fingerprint index.
 Our key observation is that the local deduplication has removed most of the duplicates.
 There are fewer deduplication opportunities across VMs while the memory and network
@@ -68,12 +75,12 @@ we can afford to provide extra replicas for these popular chunk data to enhance 
 
 Figure~\ref{fig:Datazipf} illustrates the distribution of chunk popularity based on a data trace from Alibaba with over 2500 VMs.
 The distribution is zipf like and popular chunks are dominating the large portion of data chunks.
-We denote $\sigma$ as the percentage of unique data chunks beloning to PDS and from the evaluation we find that
+We denote $\sigma$ as the percentage of unique data chunks belonging to PDS and from the evaluation we find that
 $\sigma$ with a range of 1 to 4\% can deliver a fairly competitive deduplication efficiency.
 
 
 %\item 
-\textbf{VM-centric file system block management.}
+\paragraph*{VM-centric file system block management} --
 When a chunk is not detected as a duplicate to any existing chunk, this chunk will be written
 to the file system. Since the backend file system typically uses a large block size such as 64MB, each VM will 
 accumulate small local chunks. We manage this accumulation process using a log-structured storage scheme built
@@ -95,7 +102,7 @@ all of the filesystem blocks in the storage system.  We would
 have to add extra replication to each file block as long as it contains a popular chunk.
 
 %factor on popular chunks. This explains why we must separate the PDS and
-%non-PDS data in our system to acheive the desired $r_c/r$ ratio (though both
+%non-PDS data in our system to achieve the desired $r_c/r$ ratio (though both
 %can be stored on the same DFS).
 
 %The system allows all machines conduct backups in parallel, and each machine
