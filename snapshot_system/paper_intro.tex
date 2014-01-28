@@ -5,13 +5,15 @@ clouds}) often make use of commodity data center components to achieve the
 best possible economies of scale.  In particular, large-scale e-commerce cloud
 providers such as Google and Alibaba deploy ``converged'' components that
 co-locate computing and storage in each hardware module (as opposed to having
-separate computing and storage ``tiers.'')
+separate computing and storage ``tiers.'')  The advantage of such an approach
+is that all infrastructure components are used to support paying customers --
+there are no resources specifically dedicated to cloud services.
 %One of emerging architectures for building cloud services is a converged
 %storage architecture that leverages commodity servers with software clustered
 %storage.
 %The converged architecture (server plus compute in same tier) grew out of the
 %Google model. 
-These providers use software to
+In particular, these providers use software to
 aggregate multiple direct attached low-cost disks together across
 servers as a way of avoiding the relatively high cost of network attached 
 storage~\cite{googlefs03,hdfs10}.
