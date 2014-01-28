@@ -40,6 +40,44 @@ storage demand.
 %images to all active users every day.  The cost of supporting a large number
 %of concurrent backup streams is high because of the huge storage demand and
 %the use of deduplication
+
+Without deduplication,
+the cloud typically offloads backup workload from production 
+server hosts to dedicated backup proxy servers (e.g. EMC Data Domain) or
+backup services (e.g. Amazon S3). This approach simplifies the cluster 
+architecture and 
+avoids potential performance degredation to production applications when 
+backups are in progress.
+However, sending out pre-deduplication backup data wastes huge amount
+of network bandwidth that would otherwise be available to user VMs. 
+Even when the storage system implements deduplication internally
+such dedicated backup storage is either difficult to scale out
+(which can comprise the overall scalability of the converged architecture) 
+or it must forego global deduplication in order to gain scalability 
+(which increases backup cost).
+
+In this paper we propose a backup service for converged cloud architectures
+that is co-located with user VMs, sharing the cloud computer, network, and
+storage resource swith them.
+We describe methodologies to address the following challenges: 
+\begin{itemize}
+\item good global deduplication efficiency using a distributed implementation
+that limits its resource usage, 
+\item augmented fault isolation for the sharing of deduplicated data,
+given that node failures in converged architecture are the norm rather than
+exception, and
+\item efficient garbage collection so that users stop incurring 
+storage charges immediately after snapshot deletion.
+\end{itemize}
+
+% low-cost VM-centric snapshot backup approach that is collocated within 
+% the existing converged storage architecture. Our solution leverages the scalability of the underlying
+% distributed file system and provides global data deduplication in a resource friendly manner.
+
+%For example, the Aliyun cloud, which is  the largest cloud service provider by Alibaba in China, 
+%automatically conducts  the backup of virtual disk images to all active users every day.
+%The cost of supporting a large number of concurrent backup streams is high
+%because of the huge storage demand and the use of deduplication
  
 %Using a separate  backup service with full deduplication support~\cite{venti02,bottleneck08}
 %can effectively identify and remove content duplicates among snapshots, 
@@ -75,10 +113,8 @@ to provide, and the storage efficiencies that deduplication makes possible.
 %fingerprint comparison, and has not addressed fault tolerance issues  together
 %with deduplication.  
 
-In this paper {\em we explore a method for deduplicating VM snapshots in
-converged architecture IaaS systems that strikes a balance between fault
-isolation and storage efficiency}.  The main contribution of this work is to
-evaluate the impact of sharing only ``popular'' data blocks 
+The main technical approach of our work focuses on
+sharing only ``popular'' data blocks 
 (through deduplication and limited replication)
 across 
 virtual machines while using localized deduplication within each VM
@@ -103,7 +139,7 @@ storage efficiency that cross-VM deduplication makes possible.  To recover
 some of this efficiency we allow a small number of the most popular data
 blocks to be deduplicated (and then replicated) across VMs.  
 
-This work explores the storage and
+This paper explores the storage and
 performance efficiencies that such a {\em VM-centric} 
 combination of local and global
 techniques can achieve.  We term it VM-centric because the deduplication
@@ -129,7 +165,6 @@ converged IaaS cloud enviornments.
 %their popularity, this scheme can afford to allocate extra replicas of these
 %shared chunks for better fault resilience while sustaining competitive
 %deduplication efficiency.
-
 
 %In addition, our VM-centric design allows garbage collection to be performed in a localized
 %scope and we propose an approximate deletion scheme to reduce this cost further.
