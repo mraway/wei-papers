@@ -37,7 +37,7 @@ $N_1$, $N_2$ & the average number  of non-PDS and PDS file blocks in a VM for VC
 \hline
 $N_o$ & the average number  of file blocks  in a VM for VO\\
 \hline
-A(r) & the availability of a file block with replication degree $r$\\
+A(r) & availability of a file block with $r$ replicas and $d$ failed physical machines\\
 \hline
 \end{tabular}
 \caption{Modeling  parameters}
@@ -130,14 +130,17 @@ n *N_o   =  V_o *\mbox{ No of file system blocks}
 
 Since the number of PDS file system blocks is small, 
 and the deduplication efficiency of VC is very close to that of VO,
+Section~\ref{sect:evaluation} shows that
 the number of non-PDS file blocks in VC is close to the number of file blocks in VO.
 Then
 \[
 \frac{N_o}{N_1} \approx  V_o.
 \]
-Thus $N_o >> N_1$.
-Figure~\ref{fig:vm-links} shows the average number of file system blocks for each VM in VC and in VO
-and  $N_1$ is indeed  much smaller than $N_o$ in our tested dataset.  
+%Thus $N_o >> N_1$.
+
+Figure~\ref{fig:vm-links} shows $N_1$, $N_2$, and $N_o$ values in our tested dataset when increasing the number of VMs.  
+%the average number of file system blocks for each VM in VC and in VO
+$N_1$ is much smaller than $N_o$ as the formula shows above. 
 
 %In fact, $N_1 +N_2 < N_o$. 
 %This is likely because the PDS FSBs tightly pack data used by many VMs, 
@@ -182,17 +185,18 @@ and  $N_1$ is indeed  much smaller than $N_o$ in our tested dataset.
   \label{fig:vm-links}
 \end{figure}
 
-The full snapshot availability of a VM is estimated as follows with parameters $N_1$ and
- $N_2$ for VC and $N_o$ for VO.
-Given normal data replication degree $r$, PDS data replication degree $r_c$, 
-the availability of a file system block is the probability that  
+%The full snapshot availability of a VM is estimated as follows with parameters $N_1$ and
+% $N_2$ for VC and $N_o$ for VO.
+Given $d$ failed physical machines and $r$ replicas fr each block,
+%normal data replication degree $r$, PDS data replication degree $r_c$, 
+the availability of a file block is the probability that  
 all of its replicas do not appear in any group of $d$ failed machines among the total of $p$ machines. 
-Namely, we define it as
+Namely, 
 \[
 A(r) = 1-\binom{d}{r}/ \binom{p}{r}. 
 \]
 Then the availability of one VM's snapshot data under VO approach is the probability that
- all its FSBs are unaffected during the system failure:
+ all its file blocks  are unaffected during the system failure:
 %\begin{equation}
 %\label{eq:VO}
 %(1-\frac{ \binom{d}{r}} { \binom{p}{r} })^{N_o}. 
@@ -201,11 +205,11 @@ A(r)^{N_o}.
 \]
 %\end{equation}
 
-For VC, there are two cases for $d$ failed machines.
+For VC, there are two cases: 
 \begin{itemize}
 \item
-When $r \le d<r_c$,  there is no PDS data loss and  
-the full snapshot availability of a VM in the VC approach is 
+When $r \le d<r_c$,  there is no PDS data loss and we need to look at the non-PDS data loss. 
+The full snapshot availability of a VM is: 
 %\begin{equation}
 %\label{eq:VC1}
 %(1-\frac{\binom{d}{r}} { \binom{p}{r} })^{N_1}.
@@ -232,18 +236,19 @@ The full snapshot availability of  a VM in the VC approach is
 \[
 A(r)^{N_1} * A(r_c)^{N_2}.
 \]
-%\end{equation}
-%comparing  Formula~\ref{eq:VO} and~\ref{eq:VC}. 
-\end{itemize} 
-%In the evaluation discussed in Section~\ref{sect:evaldedup},
-We have considered a worst case scenario that
-every PDS FSB is shared by all VMs in the VC approach, which leads to a large $N_2$ value. 
-Even with that, the availability of VC snapshots is still much higher than VO and  
-there are two reasons for this:  1) $N_1$ is much smaller than $N_o$ as discussed previously.
+That is still smaller than that of $V_O$ based on the observation with our data. There are two reasons for this:  
+1) $N_1$ is much smaller than $N_o$ and we are observing that $N_1+N_2<N_o$. 
 2)  $A(r) < A(r_c)$ because $r < r_c$.  
 Table~\ref{tab:fsb-availability} lists the $A(r)$ values with
 %that the availability of an individual file system block
 different replication degrees, to demonstrate the gap between  $A(r)$ and  $A(r_c)$.
+%\end{equation}
+%comparing  Formula~\ref{eq:VO} and~\ref{eq:VC}. 
+\end{itemize} 
+%In the evaluation discussed in Section~\ref{sect:evaldedup},
+%We have considered a worst case scenario that
+%every PDS FSB is shared by all VMs in the VC approach, which leads to a large $N_2$ value. 
+%Even with that, the availability of VC snapshots is still much higher than VO and  
 
 % $1-\frac{ \binom{d}{r}} { \binom{p}{r} } < 1-\frac{ \binom{d}{r_c}} { \binom{p}{r_c} }$
 
@@ -319,7 +324,7 @@ and failure settings.THIS PLOT WILL BE REPLACED BY TABLE}
         column type/.add={}{|},
         every first column/.style={column type/.add={|}{}},
     ]{figures/fsb_availability.txt}
-    \caption{$A(r_c)$ as storage nodes fail in a 100 node cluster.}
+    \caption{$A(r_c)$ values in a cluster with p=100 nodes.}
     \label{tab:fsb-availability}
 \end{table}
 
