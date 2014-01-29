@@ -11,13 +11,15 @@ VM-centric file system block management.
 %\begin{itemize}
 %\item 
 \paragraph*{VM-local duplicate search optimization} --
-We start with the changed block tracking approach in a coarse grain segment level.
-In our implementation 
-%with Xen on an Alibaba platform, 
-the segment size is 2MB
-and the device driver is extended to support tracking changed segments using a dirty bitmap. 
-Since every write for a segment will touch a dirty bit, the device driver maintains dirty bits in memory
-and cannot afford a small segment size.
+
+We use the standard version-based detection~\cite{Clements2009,Vrable2009}
+to identify changed content with dirty bits in a coarse grain segment level.
+%In our implementation 
+%the segment size is 2MB
+%and the device driver is extended to support tracking changed segments using a dirty bitmap. 
+The reason to choose a coarse grain level is that 
+since every write for a segment will touch a dirty bit, the device driver maintains dirty bits in 
+memory and cannot afford a small segment size.
 It should be noted that dirty bit tracking is supported or can be easily implemented in 
 major virtualization solution vendors. For example,
 the VMWare hypervisor has an API to let external backup applications know 
@@ -48,8 +50,10 @@ To control the time cost of search, we set a limit on the number of  similar seg
 % Then,
 %given a set of data chunks within a dirty segment,  we compare  these chunk fingerprints
 %with those in similar segments.  
-For a 2MB segment, its segment recipe is roughly 19KB which contains about 500 chunk fingerprints and other chunk metadata,
-by limiting at most 10 similar segments to search, the amount of memory for maintaining those similar segment recipes is small.
+For example, assume that  a segment is of size  2MB, 
+its segment recipe is roughly 19KB which contains about 500 chunk fingerprints and other chunk metadata,
+by limiting at most 10 similar segments to search, the amount of memory for maintaining those 
+similar segment recipes is small.
 As part of our local duplicate search we also compare the current segment
 against the parent segment at the same offset.
 
