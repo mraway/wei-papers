@@ -117,12 +117,12 @@ expense of storage efficiency.
 %minimize data sharing and simplify deletion while sacrificing 
 %deduplication efficiency, and  can facilitate parallel execution of snapshot operations.
 \paragraph*{Units of Storage versus Units of Sharing} --
-The file system block (FSB) size in a distributed file system such as  
-the Hadoop file system and the Google file system
-is uniform and large (e.g.  64MB) so as to optimize file system performance
-for bandwidth usage.
+The file system block  size in a distributed file system such as  
+the Hadoop file system and the Google file system~\cite{googlefs03}
+is large (e.g.  64MB) so as to optimize file system performance
+for big data.
 Typically, deduplication implementations use smaller block sizes (4K bytes to
-8K bytes on average).
+8K bytes on average~\cite{Jin2009}).
 In addition to the failure correlation that cross-VM data deduplication can
 introduce, disk block sharing of data chunks is another potential source of
 hidden data dependence.

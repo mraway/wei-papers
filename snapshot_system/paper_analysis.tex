@@ -15,7 +15,7 @@
 %\hline
 %$\sigma$ & = percentage of unique data  belonging to  PDS\\
 \hline
-$r$, $r_c$ & replication degree of non-PDS, and PDS file blocks\\
+$r$, $r_c$ & replication degree of non-PDS, and PDS file blocks in VC\\
 \hline
 $n$, $p$ & no. of virtual and physical machines in the cluster\\
 %\hline
@@ -112,10 +112,10 @@ we assign extra replication to the PDS blocks, while for VM oblivious, the repli
 degree is fixed.
 
 
-For VC, each VM has an average number $N_1$ of non-PDS FSBs
-and  has  an average of  $N_2$ PDS FSBs. 
-Each non-PDS FSB is associated with one VM
- and  we denote that PDS FSBs are
+For VC, each VM has an average number $N_1$ of non-PDS file system blocks
+and  has  an average of  $N_2$ PDS file system blocks. 
+Each non-PDS block is associated with one VM
+ and  we denote that PDS blocks are
 shared by an average of $V_c$ VMs. 
 Then, 
 \[
@@ -123,7 +123,7 @@ n* N_1   \approx \mbox{ No of non-PDS file system blocks}
 \]
 
 For VO, each VM has an average of $N_o$ file system blocks
-and let $V_o$ be the average number of VMs shared by each FSB.
+and let $V_o$ be the average number of VMs shared by each file block.
 \[
 n *N_o   =  V_o *\mbox{ No of file system blocks} 
 \]
@@ -159,7 +159,7 @@ $N_1$ is much smaller than $N_o$ as the formula shows above.
                 width=\linewidth,
                 height=0.6\linewidth,
 		xlabel={Number of VMs},
-		ylabel={Avg. Num. FSBs used by VM},
+		ylabel={Avg. no file system blocks  used by VM},
                 xmin=0,
                 ymin=0,
                 xmax=106,
@@ -181,7 +181,8 @@ $N_1$ is much smaller than $N_o$ as the formula shows above.
                     $N_2$};
 		\end{axis}
 	\end{tikzpicture}
-  \caption{Measured average number of 64MB FSBs used by a single VM. For VC both the number of PDS and Non-PDS FSBs used are shown.}
+  \caption{Measured average number of 64MB file system blocks used by a single VM in
+VC and VO. }
   \label{fig:vm-links}
 \end{figure}
 
