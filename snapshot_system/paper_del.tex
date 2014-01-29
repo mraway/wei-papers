@@ -12,7 +12,8 @@
 
 Snapshot deletions can occur frequently since old snapshots become less useful.
 General deduplication complicates the deletion process because sharing of duplicates
-requires a global refence counting to identify if  a chunk can be  safely removed without any reference.
+requires a global refence counting~\cite{Guo2011,Fabiano2013} 
+ to identify if  a chunk can be  safely removed without any reference.
 %The complexity of our distributed environment obviates reference counting as an option,
 %and While we can use the mark-and-sweep, 
 %While the mark-and-sweep techniques can be used and optimization can be considered~\cite{Fabiano2013},
