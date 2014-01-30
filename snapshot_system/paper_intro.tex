@@ -143,7 +143,7 @@ Since
 the file system block size is normally bigger than the average data chunk size
 used for deduplication,  packaging
 content from different VMs into the same file block  creates a ``false'' sharing that 
-affects fault isolation. Thus we avoid such VM-oblivious packaging.
+affects fault isolation. Thus we choose to avoid such VM-oblivious packaging.
 %our approach uses a deduplication data chunk size that is smaller than a
 %single file block and
 %Thus our strategy is to packages data chunks from the same VM into a file

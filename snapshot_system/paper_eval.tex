@@ -764,9 +764,14 @@ per machine with 6 concurrent backup tasks. With a higher disk storage bandwidth
 
 Figure~\ref{fig:leakage} shows the average accumulated storage leakage in terms of percentage of
 storage space per VM caused  by approximate deletions.
+We choose 35 VMs, first let all the VMs accumulate to 10 snapshots, then start to delete snapshots
+in reverse order from the latest to the second using approximate deletion.
+As we already know the actual storage needs after each snapshot creation,
+thus the storage leakage can be verified by
+comparing the size of remain data in use after deletion to what it should be.
 The top dashed line is the predicted leakage using Formula~\ref{eq:leakrepair} from Section~\ref{sect:delete}
 given $\Delta u/u=0.025$,
-while the solid line represents the actual leakage measured during the experiment. 
+while the solid line represents the actual average leakage measured during the experiment for all the VMs. 
 The Bloom filter setting is based on $\Delta u/u=0.025$.
 After 9 snapshot deletions, the actual leakage ratio reaches 0.0015 and this means that
 there is only 1.5MB space leaked for every 1GB of stored data.

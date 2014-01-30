@@ -21,11 +21,15 @@ The reason to choose a coarse grain level is that
 since every write for a segment will touch a dirty bit, the device driver maintains dirty bits in 
 memory and cannot afford a small segment size.
 It should be noted that dirty bit tracking is supported or can be easily implemented in 
-major virtualization solution vendors. For example,
+major virtualization solution vendors. 
+%% this method is so widely-used and easy to understand, everyone include Pure Storage has it, I feel no need to explain further.
+\st{
+For example,
 the VMWare hypervisor has an API to let external backup applications know 
 the changed areas since last backup. 
 The Microsoft SDK provides an API that allows external applications to monitor 
 the VM's I/O traffic and implement such changed block tracking feature.
+}
 
 \begin{figure}[htbp]
   \centering
