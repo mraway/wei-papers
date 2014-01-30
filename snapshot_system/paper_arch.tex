@@ -38,7 +38,8 @@ metadata of its chunks (called segment recipe).
 In snapshot and segment recipes, 
 the data structures  include references to the actual data location to eliminate the need for additional indirection.
 
-\begin{figure}[htbp]
+%\begin{figure}[htbp]
+\begin{figure}[t]
     \centering
     \includegraphics[width=2.75in]{images/socc_arch_cluster}
     \caption{Per node architecture and data flow during snapshot backup}
@@ -52,7 +53,8 @@ Following the VM-centric idea for the purpose of fault isolation,
 each VM has its own snapshot store, containing new data chunks which are considered
 to be non-duplicates.
 As shown in Figure~\ref{fig:as_arch}, we explain the data structure of the snapshot stores as follows.
-\begin{figure}[htbp]
+%\begin{figure}[htbp]
+\begin{figure}[t]
   \centering
   \includegraphics[width=2.75in]{images/sstore_arch}
   \caption{VM snapshot store data structures}
