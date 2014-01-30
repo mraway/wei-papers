@@ -110,7 +110,7 @@ for $r_c=6$ and $r_c=9$, and beyond $r_c=6$ improvements are minimal.
 %This is because, as described before, the availability of the VM approaches the
 %availiability of the Non-PDS data as the failure rate of PDS data gets very small.
 
-\comments{
+\comments{ %replaced by table below to recuce space requirements
 \begin{figure}[ht]
     \centering
     \begin{subfigure}%{.5\textwidth}
@@ -400,7 +400,7 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
 
 }
 
-\begin{figure}[]
+\begin{figure}[htb]
     \centering
     \begin{tikzpicture}
         \begin{axis}[
@@ -432,7 +432,8 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
             ] table [x expr=\coordindex, y=efficiency,meta=alg] {figures/efficiency_comparison_bars.txt};
         \end{axis}
     \end{tikzpicture}
-    \caption{Efficiency Comparison between different VC settings and SRB}
+    \caption{Efficiency comparison between different VC settings and
+        Stateless Routing with Binning}
     \label{fig:efficiency-comparison}
 \end{figure}
 
@@ -585,22 +586,22 @@ significantly because of the controlled  disk read time.
 
 {\bf Processing Time breakdown}.
 Table~\ref{tab:vc_srb_combined} shows
-the  average  processing  time of  a VM segment under VC and SRB. 
+the  average  processing  time of  a VM segment under VC and Stateless Routing with Binning (SRB). 
 VC uses $\sigma=2\%$ and $4\%$.
 It has a breakdown of processing time.
-``Snapshot read/write'' includes snapshot reading and writing from disk, and 
+``Read/Write'' includes snapshot reading and writing from disk, and 
 updating of the metadata.
-`` Network transfer" includes the cost of transferring raw and meta data from one machine to another during 
+``Network'' includes the cost of transferring raw and meta data from one machine to another during 
 snapshot read and write.
-``Index access/comparison'' is the disk, network and CPU time during fingerprint comparison.
-This includes PDS data lookup for VC and index lookup from disk in VO after Bloom filter lookup.
+``Index Lookup'' is the disk, network and CPU time during fingerprint comparison.
+This includes PDS data lookup for VC and index lookup from disk in SRB after Bloom filter lookup.
 For VC, the change of $\sigma$ does not significantly affect the overall backup speed as
 PDS lookup takes only a small amount of time. The network transfer time for VC and SRB is about the same, because the 
 amount of raw data they transfer is comparable.
 SRB spends slightly more time for snapshot read/write because during each snapshot  backup, SRB involves many small bins,
  while VC only involves few containers with a bigger size. Thus, there are more opportunities for I/O aggregation in VC to reduce seek time.
-SRB has a higher cost for index access and fingerprint comparison because most of  chunk fingerprints are routed
-to remote machines for comparison while   VC handles most of chunk fingerprints locally. 
+SRB also has a higher cost for index access and fingerprint comparison because most chunk fingerprints are routed
+to remote machines for comparison while   VC handles most chunk fingerprints locally. 
 
 %on the index holding machine to access its index (often on the disk, supported by a Bloom filter) 
 %and perform comparison.
