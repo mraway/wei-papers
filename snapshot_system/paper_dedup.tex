@@ -1,8 +1,8 @@
 \section{VM-centric Snapshot Deduplication}
 \label{sect:deduplication}
 
-\subsection{VM centric  strategies}
-\label{sect:vc-strategies}
+%\subsection{VM centric  strategies}
+%\label{sect:vc-strategies}
 
 We describe our overall deduplication approach as consisting of three
 complementary strategies: VM-local
@@ -10,8 +10,8 @@ duplicate search optimization, global deduplication using popular chunks, and
 VM-centric file system block management. 
 %\begin{itemize}
 %\item 
-\paragraph*{VM-local duplicate search optimization} --
 
+\textbf{VM-local duplicate search optimization} --
 We use the standard version-based detection~\cite{Clements2009,Vrable2009}
 to identify changed content with dirty bits in a coarse grain segment level.
 %In our implementation 
@@ -21,11 +21,15 @@ The reason to choose a coarse grain level is that
 since every write for a segment will touch a dirty bit, the device driver maintains dirty bits in 
 memory and cannot afford a small segment size.
 It should be noted that dirty bit tracking is supported or can be easily implemented in 
-major virtualization solution vendors. For example,
-the VMWare hypervisor has an API to let external backup applications know 
-the changed areas since last backup. 
-The Microsoft SDK provides an API that allows external applications to monitor 
-the VM's I/O traffic and implement such changed block tracking feature.
+major virtualization solution vendors. 
+%% this method is so widely-used and easy to understand, everyone include Pure Storage has it, I feel no need to explain further.
+%{
+%For example,
+%the VMWare hypervisor has an API to let external backup applications know 
+%the changed areas since last backup. 
+%The Microsoft SDK provides an API that allows external applications to monitor 
+%the VM's I/O traffic and implement such changed block tracking feature.
+%}
 
 \begin{figure}[htbp]
   \centering
@@ -58,7 +62,7 @@ As part of our local duplicate search we also compare the current segment
 against the parent segment at the same offset.
 
 %\item 
-\paragraph*{Global deduplication using popular chunks} --
+\textbf{Global deduplication using popular chunks} --
 This step accomplishes the canonical global fingerprint lookup using a popular fingerprint index.
 Our key observation is that the local deduplication has removed most of the duplicates.
 There are fewer deduplication opportunities across VMs while the memory and network
@@ -76,15 +80,19 @@ most popular chunk fingerprints (called \textbf{PDS index}) in a distributed sha
 
 Since $k$ is relatively small and these top $k$ chunks are shared among multiple VMs, 
 we can afford to provide extra replicas for these popular chunk data to enhance the fault resilience.
-
-Figure~\ref{fig:Datazipf} illustrates the distribution of chunk popularity based on a data trace from Alibaba with over 2500 VMs.
-The distribution is zipf like and popular chunks are dominating the large portion of data chunks.
+We have studied the distribution of chunk popularity~\cite{WeiZhangIEEE} 
+based on a data trace from Alibaba with over 2500 VMs.
+The distribution is zipf-like and popular chunks are dominating the large portion of data chunks.
 We denote $\sigma$ as the percentage of unique data chunks belonging to PDS and from the evaluation we find that
 $\sigma$ with a range of 1 to 4\% can deliver a fairly competitive deduplication efficiency.
 
+% Figure~\ref{fig:Datazipf} illustrates the distribution of chunk popularity based on a data trace from Alibaba with over 2500 VMs.
+% The distribution is zipf like and popular chunks are dominating the large portion of data chunks.
+% We denote $\sigma$ as the percentage of unique data chunks belonging to PDS and from the evaluation we find that
+% $\sigma$ with a range of 1 to 4\% can deliver a fairly competitive deduplication efficiency.
 
 %\item 
-\paragraph*{VM-centric file system block management} --
+\textbf{VM-centric file system block management} --
 When a chunk is not detected as a duplicate to any existing chunk, this chunk will be written
 to the file system. Since the backend file system typically uses a large block size such as 64MB, each VM will 
 accumulate small local chunks. We manage this accumulation process using a log-structured storage scheme built
@@ -95,7 +103,6 @@ A file system block for non-PDS chunks is associated with one VM and does not co
 any PDS chunks, such that our goal of fault isolation is maintained.
 In addition, storing PDS chunks separately allows special replication handling for those popular shared data. 
 %%% talk something about snapshot store advantage here? %%%
-
 
 It should not be noted that one could consider 
 to rely on filesystem features to provide more replication to popular
@@ -113,14 +120,12 @@ have to add extra replication to each file block as long as it contains a popula
 %conducts the backup of one VM at a time, and thus only requires a write buffer for one VM.
 %\end{itemize}
 
-\begin{figure}
-\centering
-%\epsfig{file=log-log.disk,width=3in}
-%source ../vm_snapshot_sim/images/log-log.disk.eps
- \includegraphics[width=3in]{figures/log-log-disk}
-\caption{Duplicate frequency versus  chunk ranking in a log scale after local deduplication.}
-\label{fig:Datazipf}
-\end{figure}
+% \begin{figure}
+% \centering
+%  \includegraphics[width=3in]{figures/log-log-disk}
+% \caption{Duplicate frequency versus  chunk ranking in a log scale after local deduplication.}
+% \label{fig:Datazipf}
+% \end{figure}
 
 
 % {\it [Need to find a place to put these numbers in: Total number of chunks 

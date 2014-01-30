@@ -13,15 +13,26 @@ at Alibaba which provides the largest public cloud service in China.
 The cost of frequent backup of VM snapshots is  high because of the huge storage demand.
 This issue has been addressed by   storage data deduplication ~\cite{venti02,bottleneck08} that
 identifies redundant content duplicates among snapshots.  
-One architectural approach is to attach  a separate backup system with deduplication
-support to the cloud cluster, and  every machine periodically transfers snapshots to
+One architectural approach is to attach  a separate backup system with deduplication support such as ones
+from  EMC~\cite{EMC} or NetApp{NetApp}
+to the cloud cluster, and  the snaphosts of every virtual machine is   periodically transferred to
 the attached backup system.  Such a dedicated backup  configuration can be expensive, 
-considering that significant networking  and computing resource  is required to transfer 
-raw data and conduct signature comparison. 
+considering that significant networking  and computing resource  is required 
+to transfer undeduplicatd data and conduct signature comparison. 
+Our work is targeted applications where data processing and archiving  can be conducted
+in an inexpensive commodity storage cluster using the  Google file system or Hadoop~\cite{googlefs03}
+and such a storage cluster is non-dedicated, shared with other services running in the entire cluster.
+Resource sharing is common especially in the cloud where many computing and storage
+services are collocated in the same physical machines.
 
 
-This paper seeks for a low-cost architecture option and considers a backup
-service that uses the existing cloud computing resource.
+With  resource sharing with other services as an assumption, we are motivated to develop a 
+low-profile backup solution with deduplication. 
+Deduplication is a major
+
+
+%This paper seeks for a low-cost architecture option and considers a backup
+%service that uses the existing cloud computing resource.
 %Since most of backup data is not used in practice, system resource in such a service is not fully utilized. 
 Performing deduplication adds significant  memory cost for comparison of content fingerprints. 
 Since each physical machine in a cluster  hosts many VMs, memory contention happens frequently. 

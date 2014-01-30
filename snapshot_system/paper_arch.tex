@@ -1,8 +1,8 @@
-\section{Prototyping and Implementation Details}
+\section{Prototype Implementation}
 \label{sect:architecture}
 
-Our system runs on a cluster of Linux machines with Xen-based VMs and
-an open-source package for the distributed file system  called QFS~\cite{michael2013}. 
+Our prototype system runs on a cluster of Linux machines with Xen-based VMs 
+and the QFS~\cite{michael2013} distributd file system. 
 %to %manage  the physical disk storage. 
 All data needed for the backup service including snapshot data and metadata
 %and snapshot data for backup purposes, 
@@ -10,7 +10,7 @@ resides in this distributed file system.
 One physical node hosts tens of VMs, each of which accesses its virtual machine disk image through the
 virtual block device driver (called TapDisk\cite{Warfield2005} in Xen).
 
-\subsection{ Components of a Cluster Node } 
+\subsection{Per Node Software Components} 
 As depicted in Figure~\ref{fig:arch_vm}, 
 there are four key service components running on each cluster
 node  for supporting backup and deduplication: 
@@ -38,24 +38,26 @@ metadata of its chunks (called segment recipe).
 In snapshot and segment recipes, 
 the data structures  include references to the actual data location to eliminate the need for additional indirection.
 
-\begin{figure}[htbp]
+%\begin{figure}[htbp]
+\begin{figure}[t]
     \centering
     \includegraphics[width=2.75in]{images/socc_arch_cluster}
-    \caption{System architecture and data flow during snapshot backup}
+    \caption{Per node architecture and data flow during snapshot backup}
     \label{fig:arch_vm}
 \end{figure}
 
 \subsection{A VM-centric Snapshot Store for Backup Data}
 \label{sect:store}
-We build the snapshot storage on the top of a distributed file system.
+We use the QFS distributed file system to hold snapshot backups.
 Following the VM-centric idea for the purpose of fault isolation,
 each VM has its own snapshot store, containing new data chunks which are considered
 to be non-duplicates.
 As shown in Figure~\ref{fig:as_arch}, we explain the data structure of the snapshot stores as follows.
-\begin{figure}[htbp]
+%\begin{figure}[htbp]
+\begin{figure}[t]
   \centering
   \includegraphics[width=2.75in]{images/sstore_arch}
-  \caption{Data structure of a VM snapshot store.}
+  \caption{VM snapshot store data structures}
   \label{fig:as_arch}
 \end{figure}
 

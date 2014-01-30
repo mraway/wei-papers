@@ -1,4 +1,5 @@
-\begin{table}[htbp]
+%\begin{table}[htbp]
+\begin{table}[t]
 \centering
 \tabcolsep=0.11cm
 \begin{tabular}{|p{1.0cm}|p{5.75cm}|}
@@ -46,7 +47,7 @@ A(r) & availability of a file block with $r$ replicas and $d$ failed physical ma
 
 
 
-\subsection{ Impact on Fault Isolation}
+\subsection{Fault Isolation}
  
 \begin{figure}
     \centering
@@ -119,13 +120,13 @@ Each non-PDS block is associated with one VM
 shared by an average of $V_c$ VMs. 
 Then, 
 \[
-n* N_1   \approx \mbox{ No of non-PDS file system blocks} 
+n* N_1   \approx \mbox{ Number of non-PDS file system blocks} 
 \]
 
 For VO, each VM has an average of $N_o$ file system blocks
 and let $V_o$ be the average number of VMs shared by each file block.
 \[
-n *N_o   =  V_o *\mbox{ No of file system blocks} 
+n *N_o   =  V_o *\mbox{ Number of file system blocks} 
 \]
 
 Since the number of PDS file system blocks is small, 
@@ -159,7 +160,7 @@ $N_1$ is much smaller than $N_o$ as the formula shows above.
                 width=\linewidth,
                 height=0.6\linewidth,
 		xlabel={Number of VMs},
-		ylabel={Avg. no file system blocks  used by VM},
+		ylabel={file system blocks},
                 xmin=0,
                 ymin=0,
                 xmax=106,
@@ -206,10 +207,9 @@ A(r)^{N_o}.
 \]
 %\end{equation}
 
-For VC, there are two cases: 
-\begin{itemize}
-\item
-When $r \le d<r_c$,  there is no PDS data loss and we need to look at the non-PDS data loss. 
+For VC, there are two cases: $r \le d<r_c$ and $r_c \leq d$.  
+
+\noindent $r \le d<r_c$:  In this case there is no PDS data loss and we need to look at the non-PDS data loss. 
 The full snapshot availability of a VM is: 
 %\begin{equation}
 %\label{eq:VC1}
@@ -226,8 +226,7 @@ the VC approach has a higher availability of VM snapshots than VO in this case.
 %Even with $N_2$ being much higher than $N_o$ (as discussed below),
 %the availability of VC snapshots is much higher than VO.
 
-\item
-When $r_c \leq d$, both non-PDS and PDS file system blocks in VC can have a loss.
+\noindent $r_c \leq d$: Both non-PDS and PDS file system blocks in VC can have a loss.
 The full snapshot availability of  a VM in the VC approach is
 %\begin{equation}
 %\label{eq:VC2}
@@ -245,7 +244,6 @@ Table~\ref{tab:fsb-availability} lists the $A(r)$ values with
 different replication degrees, to demonstrate the gap between  $A(r)$ and  $A(r_c)$.
 %\end{equation}
 %comparing  Formula~\ref{eq:VO} and~\ref{eq:VC}. 
-\end{itemize} 
 %In the evaluation discussed in Section~\ref{sect:evaldedup},
 %We have considered a worst case scenario that
 %every PDS FSB is shared by all VMs in the VC approach, which leads to a large $N_2$ value. 

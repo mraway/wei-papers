@@ -72,18 +72,27 @@ the number of failures in the cluster changes.
 %count the number of dependencies from a file system block to VM.
 %In the case of having 2500 or even 25000 VMs, this number can only increase, thus this number represents the best
 %case for VO approach. 
+<<<<<<< HEAD
 Our results show that VC  has a significantly  higher availability than VO as the number of failed machines increases.
+=======
+Our results show that VC has a significantly  higher availability than VO as the number of
+failed machines increases.
+>>>>>>> 41d762c3e2756d729b8efb0b69e18c148e029e77
 %Our VM-centric approach shows significant improvements
 %in VM availability.
-For example, with 5/100 machines failed and 25 VMs per machine, VO with 93.256\% availability would lose data in 169 VMs 
-while VC with 97.763\% loses data for 56 VMs.
-The key reason is that for most data in VC, only a single
-VM can be affected by the loss of a single FSB. Since most FSBs contain chunks for a single VM, VMs can depend on a smaller number of FSBs.
+For example, with 3/100 machines failed and 25 VMs per machine, VO with 69.5\% availability could lose data in 763 VMs 
+while VC with 99.7\% loses data for 8 VMs.
+The key reason is that for most data in VC, only a single VM can be affected by
+the loss of a single file block. Since most blocks contain chunks for a single
+VM, VMs can depend on a smaller number of blocks, while in VO, the loss of a
+single block tends to affect many VMs.
 % because our VM-centric approach
 %localizes deduplication.  
 
 Although the loss of a PDS block affects many VMs,
-by increasing replication for those blocks we minimize the effect on VM snapshot availability.
+by increasing replication for those blocks we minimize the effect on VM
+snapshot availability, and this is one of the key contributions of our
+approach, the clear separation of highly popular data from less popular data.
 %By having extra replicas for the PDS data, we reduce the failure rate of PDS
 %FSBs enough that the failure rate for the VM approaches the failure rate of the
 %Non-PDS blocks. This minimizes the drop in availability between the expected
@@ -93,9 +102,11 @@ by increasing replication for those blocks we minimize the effect on VM snapshot
 %popular and non-popular data to facilitate improved reliability. 
 Figure~\ref{fig:pds-replication} shows
 the impact of increasing PDS data replication. 
-While the impact on storage cost is small, 
-a replication degree of 6  has a significant improvement over 4, but the availability is about
-the same for $r_c=6$ and $r_c=9$ (beyond $r_c=6$ improvements are minimal).
+While the impact on storage cost is small (because we have separated out only
+the most popular blocks),
+a replication degree of 6  has a significant improvement over 4. The
+availability is very similar
+for $r_c=6$ and $r_c=9$, and beyond $r_c=6$ improvements are minimal.
  
 %This is because, as described before, the availability of the VM approaches the
 %availiability of the Non-PDS data as the failure rate of PDS data gets very small.
@@ -257,7 +268,7 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
 		xlabel={Failed storage nodes},
 		ylabel={VM Snapshot Availability (\%)},
                 xmin=0,
-                xmax=6,
+                xmax=10,
 		%extra y ticks={99.9}, %if important numbers are missing
                 mark options=solid,
                 legend style={
@@ -284,6 +295,7 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
   \label{fig:pds-replication}
 \end{figure}
 
+\comments{
 \begin{figure}[htb]
   \centering
 	\begin{tikzpicture}
@@ -294,7 +306,7 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
 		xlabel={Failed storage nodes},
 		ylabel={VM Snapshot Availability (\%)},
                 xmin=0,
-                xmax=10,
+                xmax=20,
 		%extra y ticks={99.9}, %if important numbers are missing
                 mark options=solid,
                 legend style={
@@ -304,13 +316,13 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
                 reverse legend,
 		]
                 %\addplot+[dashed] table[x=NodesFailed,y=VO]{figures/node_failures_100.txt};
-                \addplot table[x=NodesFailed,y=VC1]{figures/node_failures_100.txt};
+                %\addplot table[x=NodesFailed,y=VC1]{figures/node_failures_100.txt};
                 \addplot table[x=NodesFailed,y=VC2]{figures/node_failures_100.txt};
                 \addplot table[x=NodesFailed,y=VC3]{figures/node_failures_100.txt};
                 \addplot table[x=NodesFailed,y=VC4]{figures/node_failures_100.txt};
                 \legend{
                     %VO,
-                    $r_c=4$,
+                    %$r_c=4$,
                     $r_c=5$,
                     $r_c=6$,
                     $r_c=9$
@@ -321,9 +333,12 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
   \label{fig:pds-replication-old}
 \end{figure}
 
+}
+
 \subsection{Deduplication Efficiency}
 \label{sect:evaldedup}
 
+\comments{
 %this version combines the old and the minhash alg. to compare against srb
 \begin{figure}[ht]
   \centering
@@ -384,31 +399,52 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
   \label{fig:exbin-efficiency-graph2}
 \end{figure}
 
+}
+
 \begin{figure}[]
     \centering
     \begin{tikzpicture}
         \begin{axis}[
+                width=\linewidth,
+                height=0.6\linewidth,
                 ybar,
-                xtick=data,
-                %symbolic x coords={VC(No PDS), VC($\sigma=2\%$\, No similarity guidance), VC($\sigma=2\%$), VC( $\sigma=4\%$), SRB},
-                symbolic x coords={VC0, VC2N, VC2, VC4, SRB},
+                bar width=0.5cm,
+                ymax=98.7,
+                enlarge x limits=0.15,
+                style=thin,
+                ylabel={Dedup. Efficiency (\%)},
+                ytick={93,94,95,96,97,98},
+                xtick=\empty,
+                ymajorgrids,
+                grid style=densely dotted,
+                %symbolic x coords={VC-No PDS, VC-2\%PDS w/o similarity, VC-2\%PDS, VC-4\%PDS, SRB},
+                %symbolic x coords={VC0, VC2N, VC2, VC4, SRB},
                 %xticklabels from table={figures/efficiency_comparison_bars.txt}{alg}
+                nodes near coords,
+                every node near coord/.append style={
+                    anchor=-145+\coordindex*10
+                }
             ]
-            \addplot[fill=blue] coordinates {(VC0,93.02) (VC2N,94.31) (VC2,96.01) (VC4,96.58) (SRB,97.86)};
+            %\addplot[fill=blue] coordinates {(VC0,93.02) (VC2N,94.31) (VC2,96.01) (VC4,96.58) (SRB,97.86)};
+            %\addplot[fill=blue] coordinates { (VC-No PDS,93.02) (VC-2\%PDS w/o similarity,94.31) (VC-2\%PDS,96.01) (VC-4\%PDS,96.58) (SRB,97.86) };
+            \addplot [%
+                point meta=explicit symbolic,
+                fill=blue
+            ] table [x expr=\coordindex, y=efficiency,meta=alg] {figures/efficiency_comparison_bars.txt};
         \end{axis}
     \end{tikzpicture}
     \caption{Efficiency Comparison between different VC settings and SRB}
-    \label{tab:efficiency-comparison}
+    \label{fig:efficiency-comparison}
 \end{figure}
 
-Figure~\ref{fig:exbin-efficiency-graph2} shows the deduplication efficiency for SRB and VC,
+Figure~\ref{fig:efficiency-comparison} shows the deduplication efficiency for SRB and VC using different settings,
 % <<<<<<< HEAD
 % Our deduplication efficiency is defined as the percent of duplicate chunks
 % which are detected and deduplicated, so only global perfect deduplication can have 100\% efficiency.
 % The figure also compares several PDS sizes chosen for VC. ``$\sigma=2\%$'' 
 % is defined in Table~\ref{tab:symbol}. 
 % =======
-namely the percent of duplicate chunks
+that is the percent of duplicate chunks
 which are detected and removed.
 % so only global perfect deduplication can have 100\% efficiency.
 % We also compare several PDS sizes chosen for VC.
@@ -416,17 +452,17 @@ which are detected and removed.
 %we allocate the space of distributed shared memory  to accommodate 2\%
 %of data chunks shared among VMs, as defined in 
 With $\sigma=2\%$, memory usage for PDS index lookup per machine is about 100MB per machine
-and  the deduplication efficiency can reach over 96.33\%.
-When $\sigma=4\%$, the deduplication efficiency can reach 96.9\% while space consumption increases to 200MB per machine. 
+and  the deduplication efficiency can reach over 96\%.
+When $\sigma=4\%$, the deduplication efficiency can reach 96.6\% while space consumption increases to 200MB per machine. 
 %and  the deduplication efficiency can reach 96.489\%.
 %When $\sigma=4\%$, the deduplication efficiency can reach 97.027\% while space consumption increases to 200MB per machine. 
 The loss of efficiency in VC is caused by the restriction of the physical memory available
 in the cluster for fast in-memory PDS index lookup. 
 %In the extreme case if we put all the fingerprint into PDS 
 %index ($\sigma=100\%$) then VC will have 100\% efficiency.
-SRB can deliver up to 97.79\% deduplication efficiency, which is slightly better than VC.
+SRB can deliver up to 97.86\% deduplication efficiency, which is slightly better than VC.
 Thus this represents a tradeoff that VC provides better fault tolerance and fast approximate deletion
-with competitive deduplication efficiency.
+with a slight reduction in deduplication efficiency.
 
 % SRB can deliver up to 97.935\% deduplication efficiency which is slightly better than VC.
 % Thus this represents a tradeoff: VC provides better fault tolerance and fast
@@ -439,17 +475,17 @@ with competitive deduplication efficiency.
 %because we are rewarded by architecture-wise benefits such as fault-tolerance and fast 
 %Though not our primary goal, this result does show that VC can remove competitive amount of duplicates.
 
-Figure~\ref{fig:exbin-efficiency-graph2} also shows the curve  of VC without local similarity search.
-There is a big efficiency drop in this curve when the number of VMs is about 30.
-The reason is that  
+Figure~\ref{fig:efficiency-comparison} also shows the efficiency of VC without local similarity search.
+%There is a big efficiency drop in this curve when the number of VMs is about 30.
+The reason similarity search provides such an improvement is that
 %Without this (i.e. when we only 
 there are VMs in which
 data  segments are moved to another location on disk, for example when a file is rewritten
 rather than modified in place,  
-a dirty-bit or offset based detection would not be able to detect such a movement and 
-similarity search becomes especially important.  We have found that in
+and a dirty-bit or offset-only based detection would not be able to detect such a movement.
+We have found that in
 approximately 1/3 of the VMs in our dataset this movement happens frequently.
-In general, adding local similarity-guided search increases deduplication efficiency from 93\% to over 96\%.
+In general, adding local similarity-guided search increases deduplication efficiency from 94\% to over 96\%.
 That is one significant improvement compared to the work in ~\cite{WeiZhangIEEE}
 which uses the parent segment at the same offset to detect duplicates instead of similarity-guided search.
 % In general, our experiments show that
@@ -549,7 +585,7 @@ significantly because of the controlled  disk read time.
 %at 40GB size, our snapshot system can finish backing up all the VMs (1TB total) in 1.58 hours.
 
 {\bf Processing Time breakdown}.
-Figure~\ref{fig:vc_srb_combined} shows
+Table~\ref{tab:vc_srb_combined} shows
 the  average  processing  time of  a VM segment under VC and SRB. 
 VC uses $\sigma=2\%$ and $4\%$.
 It has a breakdown of processing time.
@@ -580,12 +616,58 @@ to remote machines for comparison while   VC handles most of chunk fingerprints 
 %While data reading dominates the backup process, PDS lookup spends about a similar amount
 %of time as local search.
 
-\begin{figure}[htbp]
+\begin{table}[t]
   \centering
-  \epsfig{file=figures/vc_srb_combined, width=3in}
-  \caption{Average time to backup a dirty VM segment under SRB and VC}
-  \label{fig:vc_srb_combined}
-\end{figure}
+    \footnotesize
+    %\tabcolsep=0.11cm
+    \pgfplotstabletypeset[
+        comment chars=!,%use ! before a row in the data table to exclude it
+        col sep=tab,
+        %columns={Algorithm,Snapshot Read/Write,Network Transfer,Index access and comparison},
+        columns={Algorithm,ReadWrite,Network,Index},
+        columns/Algorithm/.style={
+            string type,
+            column name={\multirow{2}{*}{Algorithm}}
+        },
+        columns/ReadWrite/.style={
+            column name={
+                \multicolumn{3}{c|}{Time Spent in Task (ms)}\\&
+                Read/Write
+            },
+            multiply by={1000},
+            %preproc cell content/.code={1#1 1},
+            fixed, precision=3
+        },
+        columns/Network/.style={
+            column name={Network},
+            multiply by={1000},
+            fixed, precision=3
+        },
+        columns/Index/.style={
+            column name={Index Lookup},
+            multiply by={1000},
+            fixed, precision=3
+        },
+        every head row/.style={
+            before row={\hline},
+            after row={\hline},
+        },
+        every last row/.style={after row=\hline},
+        column type/.add={}{|},
+        every first column/.style={column type/.add={|}{}},
+    ]{figures/vc_srb_combined_pgfplots.txt}
+    \caption{Average time to backup a dirty VM segment under SRB and VC
+%        \todo{Decide between this and bar plot with the same caption}
+    }
+    \label{tab:vc_srb_combined}
+\end{table}
+
+%\begin{figure}[htbp]
+%  \centering
+%  \epsfig{file=figures/vc_srb_combined, width=3in}
+%  \caption{Average time to backup a dirty VM segment under SRB and VC}
+%  \label{fig:vc_srb_combined}
+%\end{figure}
 
 % \begin{figure}[htbp]
 %   \centering
@@ -617,7 +699,8 @@ to remote machines for comparison while   VC handles most of chunk fingerprints 
 % \caption{Throughput of software layers under different concurrency}
 % \label{tab:throughput}
 % \end{table*}
-\begin{table}[htbp]
+%\begin{table}[htbp]
+\begin{table}[t]
 \begin{small}
     \centering
     \begin{tabular}{|c|ccc|}
@@ -684,6 +767,7 @@ per machine with 6 concurrent backup tasks. With a higher disk storage bandwidth
  \subsection{Effectiveness of Approximate Deletion}
 
  \begin{figure}
+\vspace{-0.1in}
      \centering
      \includegraphics[width=3in]{figures/leakage}
      \caption{Accumulated storage leakage by approximate snapshot deletions ($\Delta u/u=0.025$)}
@@ -693,9 +777,14 @@ per machine with 6 concurrent backup tasks. With a higher disk storage bandwidth
 %In this experiment, we start with the incremetnal backup of 10 versions of 100 VMs with a total of 1,000 snapshots.
 Figure~\ref{fig:leakage} shows the average accumulated storage leakage in terms of percentage of
 storage space per VM caused  by approximate deletions.
+We choose 35 VMs, first let all the VMs accumulate to 10 snapshots, then start to delete snapshots
+in reverse order from the latest to the second using approximate deletion.
+As we already know the actual storage needs after each snapshot creation,
+thus the storage leakage can be verified by
+comparing the size of remain data in use after deletion to what it should be.
 The top dashed line is the predicted leakage using Formula~\ref{eq:leakrepair} from Section~\ref{sect:delete}
 given $\Delta u/u=0.025$,
-while the solid line represents the actual leakage measured during the experiment. 
+while the solid line represents the actual average leakage measured during the experiment for all the VMs. 
 The Bloom filter setting is based on $\Delta u/u=0.025$.
 After 9 snapshot deletions, the actual leakage ratio reaches 0.0015 and this means that
 there is only 1.5MB space leaked for every 1GB of stored data.

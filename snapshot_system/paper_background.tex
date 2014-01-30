@@ -140,7 +140,7 @@ In a converged setting, the resources that are used to implement snapshot
 backup and deduplication are the same resources that must support cloud-hosted
 VMs.  Thus the backup service must share the resources available to
 other cloud services as illustrated in Figure~\ref{fig:collocated},
-and thus minimize its impact on user-deliverable performance.
+and has to minimize its impact on user-deliverable performance.
 %The key resource for global comparison  is memory for storing the fingerprints.
 %During snapshot deletion, reference counting for all unique blocks used in all VMs requires a significant resource usage
 %too.  Thus we seek for the low-profile techniques with approximation and low resource consumption. 
@@ -153,7 +153,7 @@ VM-centric approach (called VC)
 for a co-located backup service that has a resource usage profile
 suitable for use with converged cloud architecture.  
 
-In designing a VC duplication solution, we have considered and adopted some of
+In designing a VC deduplication solution, we have considered and adopted some of
 the following previously-developed techniques.
 \begin{itemize}
 \item {\em Changed Block Tracking} --
@@ -165,7 +165,7 @@ history for each VM.
 %global signature comparison can deliver additional compression~\cite{Guo2011,Dong2011,extreme_binning09}.
 \item {\em Stateless  Data Routing} --
 One approach to scalable duplicate comparison is to use a content-based hash
-partitioning algorithm called stateless data routing by Dong et al.~\cite{Dong2011} 
+partitioning algorithm called stateless data routing by Dong et al.~\cite{Dong2011}.
 Stateless data routing divides the deduplication work with a similarity approximation. This work 
 is similar to Extreme Binning by Bhagwat et al.~\cite{extreme_binning09} and 
 each request is routed  to a machine which holds
@@ -180,7 +180,6 @@ To use a distributed memory version of the sampled index, every deduplication re
 may access a remote machine for index lookup and the overall overhead of access latency for all requests
 can be significant.  
 \end{itemize}
-
 
 We will first discuss and analyze the integration of the VM-centric deduplication strategies with fault isolation, 
 and discuss snapshot deletion support, then present an implementation design. 
