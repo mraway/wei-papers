@@ -203,7 +203,7 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
     \footnotesize
     \tabcolsep=0.11cm
     \pgfplotstabletypeset[
-        comment chars=!,
+        comment chars=!,%use ! before a row in the data table to exclude it
         columns={NodesFailed,VO100,VC100,VO1000,VC1000},
         columns/NodesFailed/.style={
             column name={\multirow{3}{*}{Failures ($d$)}}
@@ -238,7 +238,7 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
         %skip rows between index={11}{20},
         %skip rows between index={21}{41}
     ]{figures/availability_table.txt}
-    \caption{Availability of VM snapshots for VO and VC.}
+    \caption{Availability of VM snapshots for VO and VC ($r_c=6$).}
     \label{tab:vm-availability}
 \end{table}
 
@@ -252,7 +252,7 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
 		xlabel={Failed storage nodes},
 		ylabel={VM Snapshot Availability (\%)},
                 xmin=0,
-                xmax=10,
+                xmax=6,
 		%extra y ticks={99.9}, %if important numbers are missing
                 mark options=solid,
                 legend style={
@@ -377,6 +377,23 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
     \end{tikzpicture}
     \caption{Deduplication efficiency of VC and SRB.}
   \label{fig:exbin-efficiency-graph2}
+\end{figure}
+
+\begin{figure}[]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+                ybar,
+                xtick=data,
+                %symbolic x coords={VC(No PDS), VC($\sigma=2\%$\, No similarity guidance), VC($\sigma=2\%$), VC( $\sigma=4\%$), SRB},
+                symbolic x coords={VC0, VC2N, VC2, VC4, SRB},
+                %xticklabels from table={figures/efficiency_comparison_bars.txt}{alg}
+            ]
+            \addplot[fill=blue] coordinates {(VC0,93.02) (VC2N,94.31) (VC2,96.01) (VC4,96.58) (SRB,97.86)};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Efficiency Comparison between different VC settings and SRB}
+    \label{tab:efficiency-comparison}
 \end{figure}
 
 Figure~\ref{fig:exbin-efficiency-graph2} shows the deduplication efficiency for SRB and VC,
