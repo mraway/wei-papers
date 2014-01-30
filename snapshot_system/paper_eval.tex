@@ -15,8 +15,8 @@ using  a min-hash function discussed in \cite{extreme_binning09}. Once a data ch
 a machine, the chunk is compared with the fingerprint index within this machine locally. 
 
 \subsection{Settings}
-We have performed a trace-driven study using a production dataset~\cite{WeiZhangIEEE} from 
-Alibaba Aliyun's cloud platform with about 100 machines. 
+We have performed a trace-driven study based on a dataset~\cite{WeiZhangIEEE} from 
+Alibaba Aliyun's cloud platform with about 2500 VMs, running on 100 physical machines. 
 Each machine hosts up to 25 VMs and each VM keeps 10 automatically-generated snapshots in the storage system while
 a user may instruct extra snapshots to be saved.
 The VMs of the sampled data set use popular operating systems such as 
@@ -34,9 +34,15 @@ The fingerprint for variable-sized chunks is computed using their SHA-1 hash~\ci
 \subsection{Fault Isolation and Snapshot Availability}
 
  Table~\ref{tab:vm-availability} shows the availability of VM snapshots when 
-there are up to 20 machine nodes failed in a 100-node cluster and  a 1000-node cluster. 
+there are up to 20 machine nodes failed in a cluster with $p=100$ physical machines.
+The trace driven execution allows us to estimate the number of file blocks shared by each VM in the VO and VC approaches
+and thus calculate the average availability of VM snapshots.
+The availability for  a 1000-node cluster is also listed, assuming file block sharing patterns among VMs remain
+the same from $p=100$ setting to $p=1000$. With differnet $p$ values, how the availability varies when 
+the number of failures in the cluster changes.
+
 %Two VC curves use $V_c=1250$ and $V_c=2500$ representing the average number of VMs that share a PDS file system block. 
-We have assumed a worst-case scenario that  a PDS block is shared by every VM. 
+%We have assumed a worst-case scenario that  a PDS block is shared by every VM. 
 %($V_c=p*V$), which is to be expected when PDS
 %blocks are sorted by hash, as their order is randomized.
 %$V_c=2500$ represents  the absolute worst case for 2500 VMs. 
@@ -66,8 +72,7 @@ We have assumed a worst-case scenario that  a PDS block is shared by every VM.
 %count the number of dependencies from a file system block to VM.
 %In the case of having 2500 or even 25000 VMs, this number can only increase, thus this number represents the best
 %case for VO approach. 
-Our results show that even the worst case,  VC  still has a significantly  higher availability than VO as the number of
-failed machines increases.
+Our results show that VC  has a significantly  higher availability than VO as the number of failed machines increases.
 %Our VM-centric approach shows significant improvements
 %in VM availability.
 For example, with 5/100 machines failed and 25 VMs per machine, VO with 93.256\% availability would lose data in 169 VMs 
