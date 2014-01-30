@@ -395,15 +395,25 @@ at 3 and PDS replication is 6 \emph{THIS PLOT IS BEING REPLACED BY A TABLE}
     \centering
     \begin{tikzpicture}
         \begin{axis}[
+                width=\linewidth,
+                height=0.6\linewidth,
                 ybar,
+                bar width=0.5cm,
+                ymax=98.7,
+                enlarge x limits=0.15,
+                style=thin,
                 ylabel={Dedup. Efficiency (\%)},
+                ytick={93,94,95,96,97,98},
                 xtick=\empty,
+                ymajorgrids,
+                grid style=densely dotted,
                 %symbolic x coords={VC-No PDS, VC-2\%PDS w/o similarity, VC-2\%PDS, VC-4\%PDS, SRB},
                 %symbolic x coords={VC0, VC2N, VC2, VC4, SRB},
                 %xticklabels from table={figures/efficiency_comparison_bars.txt}{alg}
                 nodes near coords,
                 every node near coord/.append style={
-                anchor=-145+\coordindex*10}
+                    anchor=-145+\coordindex*10
+                }
             ]
             %\addplot[fill=blue] coordinates {(VC0,93.02) (VC2N,94.31) (VC2,96.01) (VC4,96.58) (SRB,97.86)};
             %\addplot[fill=blue] coordinates { (VC-No PDS,93.02) (VC-2\%PDS w/o similarity,94.31) (VC-2\%PDS,96.01) (VC-4\%PDS,96.58) (SRB,97.86) };
@@ -595,6 +605,52 @@ to remote machines for comparison while   VC handles most of chunk fingerprints 
 %similarity-guided local search, global PDS lookup, and non-duplicate data writing. 
 %While data reading dominates the backup process, PDS lookup spends about a similar amount
 %of time as local search.
+
+\begin{table}
+  \centering
+    \footnotesize
+    %\tabcolsep=0.11cm
+    \pgfplotstabletypeset[
+        comment chars=!,%use ! before a row in the data table to exclude it
+        col sep=tab,
+        %columns={Algorithm,Snapshot Read/Write,Network Transfer,Index access and comparison},
+        columns={Algorithm,ReadWrite,Network,Index},
+        columns/Algorithm/.style={
+            string type,
+            column name={\multirow{2}{*}{Algorithm}}
+        },
+        columns/ReadWrite/.style={
+            column name={
+                \multicolumn{3}{c|}{Time Spent in Task (ms)}\\&
+                Read/Write
+            },
+            multiply by={1000},
+            %preproc cell content/.code={1#1 1},
+            fixed, precision=3
+        },
+        columns/Network/.style={
+            column name={Network},
+            multiply by={1000},
+            fixed, precision=3
+        },
+        columns/Index/.style={
+            column name={Index Lookup},
+            multiply by={1000},
+            fixed, precision=3
+        },
+        every head row/.style={
+            before row={\hline},
+            after row={\hline},
+        },
+        every last row/.style={after row=\hline},
+        column type/.add={}{|},
+        every first column/.style={column type/.add={|}{}},
+    ]{figures/vc_srb_combined_pgfplots.txt}
+    \caption{Average time to backup a dirty VM segment under SRB and VC
+        \todo{Decide between this and bar plot with the same caption}
+    }
+    \label{tab:vc_srb_combined}
+\end{table}
 
 \begin{figure}[htbp]
   \centering
