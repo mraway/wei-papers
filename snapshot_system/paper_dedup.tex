@@ -104,14 +104,17 @@ any PDS chunks, such that our goal of fault isolation is maintained.
 In addition, storing PDS chunks separately allows special replication handling for those popular shared data. 
 %%% talk something about snapshot store advantage here? %%%
 
+\comments{
 It should not be noted that one could consider 
 to rely on filesystem features to provide more replication to popular
-blocks, without the extra complexity of separating popular and non-popular
-data. The main problem with this  approach is that without separating the
+chunks.
+%, without the extra complexity of separating popular and non-popular
+%data. 
+The main problem with this  approach is that without separating the
 popular chunks from the less-popular, the popular chunks are dispersed across
 all of the filesystem blocks in the storage system.  We would
 have to add extra replication to each file block as long as it contains a popular chunk.
-
+}
 %factor on popular chunks. This explains why we must separate the PDS and
 %non-PDS data in our system to achieve the desired $r_c/r$ ratio (though both
 %can be stored on the same DFS).

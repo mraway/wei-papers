@@ -15,15 +15,16 @@ using  a min-hash function discussed in \cite{extreme_binning09}. Once a data ch
 a machine, the chunk is compared with the fingerprint index within this machine locally. 
 
 \subsection{Settings}
-We have performed a trace-driven study based on a dataset~\cite{WeiZhangIEEE} from 
+We have performed a trace-driven study based on a production dataset~\cite{WeiZhangIEEE} from 
 Alibaba Aliyun's cloud platform with about 2500 VMs, running on 100 physical machines. 
 Each machine hosts up to 25 VMs and each VM keeps 10 automatically-generated snapshots in the storage system while
 a user may instruct extra snapshots to be saved.
 The VMs of the sampled data set use popular operating systems such as 
 Debian, Ubuntu, Redhat, CentOS, win2008 and win2003. 
 %The backup of VM snapshots is required to complete within few  hours every night.
-Based on our study of production  data,  each VM has about 40GB of storage  data  on average
+Each VM has about 40GB of storage  data  on average
 including OS and user data disk.
+The daily snapshot change rate is about 2-3\% on average.
 %All data are divided into 2 MB fix-sized segments and 
 The fingerprint for variable-sized chunks is computed using their SHA-1 hash~\cite{similar94,rabin81}. 
 %Each segment is divided into 
@@ -72,12 +73,10 @@ the number of failures in the cluster changes.
 %count the number of dependencies from a file system block to VM.
 %In the case of having 2500 or even 25000 VMs, this number can only increase, thus this number represents the best
 %case for VO approach. 
-<<<<<<< HEAD
-Our results show that VC  has a significantly  higher availability than VO as the number of failed machines increases.
-=======
+
+
 Our results show that VC has a significantly  higher availability than VO as the number of
 failed machines increases.
->>>>>>> 41d762c3e2756d729b8efb0b69e18c148e029e77
 %Our VM-centric approach shows significant improvements
 %in VM availability.
 For example, with 3/100 machines failed and 25 VMs per machine, VO with 69.5\% availability could lose data in 763 VMs 

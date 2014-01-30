@@ -16,7 +16,7 @@
 %\hline
 %$\sigma$ & = percentage of unique data  belonging to  PDS\\
 \hline
-$r$, $r_c$ & replication degree of non-PDS, and PDS file blocks in VC\\
+$r$, $r_c$ & replication degree of non-PDS and PDS file blocks in VC. $r$ is also replication degree in VO.\\
 \hline
 $n$, $p$ & no. of virtual and physical machines in the cluster\\
 %\hline
@@ -34,9 +34,9 @@ $n$, $p$ & no. of virtual and physical machines in the cluster\\
 %\hline
 %$E$ & the size of an popular data index entry\\
 \hline
-$N_1$, $N_2$ & the average number  of non-PDS and PDS file blocks in a VM for VC\\
+$N_1$, $N_2$ & the average no.  of non-PDS and PDS file blocks in a VM in VC\\
 \hline
-$N_o$ & the average number  of file blocks  in a VM for VO\\
+$N_o$, $V_o$ & the average no.  of file blocks  in a VM and the average no. of VMs shared by a file system block in VO\\
 \hline
 A(r) & availability of a file block with $r$ replicas and $d$ failed physical machines\\
 \hline
@@ -66,12 +66,11 @@ A(r) & availability of a file block with $r$ replicas and $d$ failed physical ma
     \label{fig:share}
 \end{figure}
 
-We analyze the impact of the above VM centric design on fault isolation and compare it
-with a VM oblivious design.
+%We analyze the impact of the above VM centric design on fault isolation and compare it
+%with a VM oblivious design.
 %Let $r$ be the replication degree of standard file blocks in the underlying backup storage. 
 %$r=3$ is a typical setting in distributed file systems~\cite{googlefs03,hdfs10}.
 %Let $r_c$ be the replication degree of file blocks for PDS. 
-Parameters used in our analysis below are defined in Table~\ref{tab:symbol}. 
 %The replication degree of the backup storage 
 %is $r$ for regular file system blocks and 
 %Since $\sigma$ is small (e.g.  2\% in our experiments),  
@@ -90,8 +89,9 @@ Parameters used in our analysis below are defined in Table~\ref{tab:symbol}.
 %Thus the impact on storage increase is very small even when we choose a large $r_c/r$ ratio. 
 %For example, $r_c/r=2$ or 3. 
 
-Now we  assess  the impact of losing $d$ machines 
+Now we  analyze  the impact of losing $d$ physical machines 
 to the VM centric and oblivious approaches.  
+Parameters used in our analysis below are defined in Table~\ref{tab:symbol}. 
 %A large $r_c/r$ ratio can have a positive impact on full availability of VM snapshot blocks.
 %We use an FSB rather than a deduplication
 %data chunk as our unit of failure because the DFS keeps
@@ -106,33 +106,34 @@ block of a VM in each approach as follows.
 
 As illustrated in Figure~\ref{fig:share}, we build a bipartite graph representing the
 association from unique file system blocks to their corresponding VMs in two 
-approaches. We use a file system block rather than data chunk as our unit of failure
-because the underlying file system keeps file system blocks as its base unit of storage, and in
-the case of 64MB file system blocks  and 4KB chunks, there are 16K chunks per file block. For VM centric,
-we assign extra replication to the PDS blocks, while for VM oblivious, the replication
-degree is fixed.
-
-
+approaches. 
+%We use a file system block rather than data chunk as our unit of failure
+%because the underlying file system keeps file system blocks as its base unit of storage, and in
+%the case of 64MB file system blocks  and 4KB chunks, there are 16K chunks per file block. For VM centric,
+%we assign extra replication to the PDS blocks, while for VM oblivious, the replication
+%degree is fixed.
 For VC, each VM has an average number $N_1$ of non-PDS file system blocks
 and  has  an average of  $N_2$ PDS file system blocks. 
-Each non-PDS block is associated with one VM
- and  we denote that PDS blocks are
-shared by an average of $V_c$ VMs. 
-Then, 
+Each non-PDS block is associated with only one VM.
+% and  we denote that PDS blocks are shared by an average of $V_c$ VMs. 
+Then by counting outgoing edges from VMs in Figure~\ref{fig:share}(a),
 \[
-n* N_1   \approx \mbox{ Number of non-PDS file system blocks} 
+n* N_1   = \mbox{ Number of non-PDS file system blocks in VC.} 
 \]
 
-For VO, each VM has an average of $N_o$ file system blocks
-and let $V_o$ be the average number of VMs shared by each file block.
+For VO, 
+%each VM has an average of $N_o$ file system blocks
+%and let $V_o$ be the average number of VMs shared by each file block.
+by counting outgoing edges from VMs in Figure~\ref{fig:share}(b) with parameters defined in
+Table~\ref{tab:symbol}: 
 \[
-n *N_o   =  V_o *\mbox{ Number of file system blocks} 
+n *N_o   =  V_o *\mbox{ Number of file system blocks in VO.} 
 \]
 
-Since the number of PDS file system blocks is small, 
-and the deduplication efficiency of VC is very close to that of VO,
-Section~\ref{sect:evaluation} shows that
-the number of non-PDS file blocks in VC is close to the number of file blocks in VO.
+Since we choose 2-4\% of unique chunks for PDS
+and Section~\ref{sect:evaldedup} 
+shows that the deduplication efficiency of VC is very close to that of VO,
+the number of non-PDS file blocks in VC is approximately close to the number of file blocks in VO.
 Then
 \[
 \frac{N_o}{N_1} \approx  V_o.
@@ -189,7 +190,7 @@ VC and VO. }
 
 %The full snapshot availability of a VM is estimated as follows with parameters $N_1$ and
 % $N_2$ for VC and $N_o$ for VO.
-Given $d$ failed physical machines and $r$ replicas fr each block,
+Given $d$ failed physical machines and $r$ replicas for each file block,
 %normal data replication degree $r$, PDS data replication degree $r_c$, 
 the availability of a file block is the probability that  
 all of its replicas do not appear in any group of $d$ failed machines among the total of $p$ machines. 

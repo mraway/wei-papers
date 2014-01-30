@@ -10,15 +10,15 @@ by many virtual machines creates data dependence and is less fault-resilient.
 %fault resilidence  of virtual machine snapshots, created by data dependence  among duplicates
 %and proposes a VM-centric approach that strikes a balance between deduplication efficiency
 %and fault isolation 
-This paper proposes a VM-centric backup service on a converged  storage cluster architecture
+This paper proposes a VM-centric backup service on a converged  cloud cluster architecture
 and  strikes a tradeoff for better fault isolation with competitive  deduplication efficiency.
 It localizes deduplication as much as possible within each 
 virtual machine, guided by similarity
 search, and it restricts global deduplication under popular chunks with extra replication support.
 It associates  underlying file blocks with one VM for most cases
 and proposes an approximate method for fast and simplified snapshot deletion.
-This VM-centric scheme also has  an advantage of   using less  computing resources, suitable for a collocated 
-backup service on a non-dedicated cluster architecture.
+This VM-centric scheme also has  an advantage of   using less  computing resources, suitable for running
+the backup service on a converged cloud architecture that cohosts  many other services.
 This  paper  describes an evaluation of this scheme to assess  its deduplication 
 efficiency and fault resilience.
 

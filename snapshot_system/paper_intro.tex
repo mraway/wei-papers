@@ -16,7 +16,7 @@ there are no resources specifically dedicated to cloud services.
 In particular, these providers use software to
 aggregate multiple direct attached low-cost disks together across
 servers as a way of avoiding the relatively high cost of network attached 
-storage~\cite{googlefs03,hdfs10}.
+storage~\cite{googlefs03,hdfs10,NutanixPaper}.
 %systems. %This(e.g. ~\cite{NutanixPaper}).  Leading cloud platform companies
 %such as Google, Amazon, Alibaba, Microsoft Azure  have built a converged
 %compute and storage infrastructure and used a distributed file system such as
@@ -63,14 +63,13 @@ In this paper we consider a backup service for converged cloud architectures
 that is co-located with user VMs, sharing the cloud computer, network, and
 storage resource with them.
 We describe methodologies to address the following two challenges: 
-\begin{itemize}
-\item simple deduplication and snapshot deletion with competitive efficiency and 
-a small resource usage without affecting other collocated cloud services.
-\item augmented fault isolation for the sharing of deduplicated data,
+1) simple deduplication and snapshot deletion with competitive efficiency and 
+a small resource usage without affecting other collocated cloud services;
+2) augmented fault isolation for the sharing of deduplicated data,
 given that node failures in converged architecture are the norm rather than
 exception. 
 % so that users stop incurring storage charges immediately after snapshot deletion.
-\end{itemize}
+%\end{itemize}
 
 % low-cost VM-centric snapshot backup approach that is co-located within 
 % the existing converged storage architecture. Our solution leverages the scalability of the underlying
@@ -139,8 +138,7 @@ to achieve both storage savings and fault isolation.
 %limited set of most popular blocks.  
 %In our method, local deduplication uses
 %similarity-guided elimination to improve the deduplication coverage.  
-Since
-the file system block size is normally bigger than the average data chunk size
+Since the underlying storage file system block size is typically bigger than the average data chunk size
 used for deduplication,  packaging
 content from different VMs into the same file block  creates a ``false'' sharing that 
 affects fault isolation. Thus we choose to avoid such VM-oblivious packaging.
