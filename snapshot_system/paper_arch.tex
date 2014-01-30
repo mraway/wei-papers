@@ -19,7 +19,7 @@ node  for supporting backup and deduplication:
 and 4)  a PDS client to support PDS metadata access. 
 
 We use the virtual device driver in Xen that employs a bitmap to track the changes 
-that have been made to the virtual disk (CBT).
+that have been made to the virtual disk.
 Every bit in the bitmap represents a fixed-sized (2MB) segment, indicating whether the segment
 has been modified since last backup. 
 Segments are further divided into variable-sized chunks (average 4KB) 

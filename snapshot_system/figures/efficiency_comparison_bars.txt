@@ -1,0 +1,6 @@
+alg	efficiency
+\scriptsize{}VC-2\%\tiny{}No\ Similarity	94.3132243792193
+\scriptsize{}VC-NoPDS	93.0202119345744
+\scriptsize{}VC-2\%PDS	96.0127647380588
+\scriptsize{}VC-4\%PDS	96.5784837160482
+\scriptsize{}SRB	97.8625610883421

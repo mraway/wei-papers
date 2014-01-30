@@ -13,17 +13,17 @@ physical host.
 For VM snapshot backup, file-level semantics are normally not provided.
 Snapshot operations take place at the virtual device driver level, which
 means no fine-grained file system metadata can be used to determine the changed data. 
-%This architecture does not use a seperate  backup facility for a lower cost and 
+%This architecture does not use a separate  backup facility for a lower cost and 
 %reduces the network bandwidth consumption in transferring the raw data for backup. 
-%A backup sevice may collocate with other cloud services on these commodity servers and 
+%A backup service may co-locate with other cloud services on these commodity servers and 
 %stores deduplicated data  in  the storage in this cluster or in
-%a seperate storage cluster.
+%a separate storage cluster.
 
 
 %runs a backup service and 
 
 
-%As discussed earlier, collocating a backup service on the existing
+%As discussed earlier, co-locating a backup service on the existing
 %cloud cluster avoids the extra cost to acquire a dedicated backup facility
 
 \begin{figure}[htb]
@@ -46,7 +46,7 @@ accessed.
 %An improvement to this work with parallelization is in ~\cite{MAD210,DEBAR}.
 Approximation techniques are studied in~\cite{extreme_binning09,Guo2011,WeiZhangIEEE}  
 to reduce memory requirements at the cost of some loss of deduplication
-eficiency.
+efficiency.
 Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,Srinivasan2012}
 and a parallel batch solution for cluster-based deduplication is 
 studied in ~\cite{wei2013}. 
@@ -111,23 +111,23 @@ setting.
 Thus,
 localizing deduplication to the VM can align fault isolation properties and
 guarantees, improve the computational efficiency of snapshot maintenance, and
-simplyfy snapshot deletion over non-localized approaches at the possible
+simplify snapshot deletion over non-localized approaches at the possible
 expense of storage efficiency.
 
 %minimize data sharing and simplify deletion while sacrificing 
 %deduplication efficiency, and  can facilitate parallel execution of snapshot operations.
 \paragraph*{Units of Storage versus Units of Sharing} --
-The file system block (FSB) size in a distributed file system such as  
-the Hadoop file system and the Google file system
-is uniform and large (e.g.  64MB) so as to optimize file system performance
-for bandwidth usage.
+The file system block  size in a distributed file system such as  
+the Hadoop file system and the Google file system~\cite{googlefs03}
+is large (e.g.  64MB) so as to optimize file system performance
+for big data.
 Typically, deduplication implementations use smaller block sizes (4K bytes to
-8K bytes on average).
+8K bytes on average~\cite{Jin2009}).
 In addition to the failure correlation that cross-VM data deduplication can
 introduce, disk block sharing of data chunks is another potential source of
 hidden data dependence.
 Thus a VM-centric solution should consider how data chunks from VMs are
-distriuted among large file system blocks when a large-scale distributed file
+distributed among large file system blocks when a large-scale distributed file
 system is used for disk image files.
 
 %a minimum association of FSBs to VMs in the packaging
@@ -140,9 +140,9 @@ In a converged setting, the resources that are used to implement snapshot
 backup and deduplication are the same resources that must support cloud-hosted
 VMs.  Thus the backup service must share the resources available to
 other cloud services as illustrated in Figure~\ref{fig:collocated},
-and thus miniomize its impact on user-deliverable performance.
+and thus minimize its impact on user-deliverable performance.
 %The key resource for global comparison  is memory for storing the fingerprints.
-%During snapshot deltion, reference counting for all unique blocks used in all VMs requires a significant resource usage
+%During snapshot deletion, reference counting for all unique blocks used in all VMs requires a significant resource usage
 %too.  Thus we seek for the low-profile techniques with approximation and low resource consumption. 
 
 For the remainder of this paper, 
