@@ -575,7 +575,7 @@ significantly because of the controlled  disk read time.
 %at 40GB size, our snapshot system can finish backing up all the VMs (1TB total) in 1.58 hours.
 
 {\bf Processing Time breakdown}.
-Figure~\ref{fig:vc_srb_combined} shows
+Table~\ref{tab:vc_srb_combined} shows
 the  average  processing  time of  a VM segment under VC and SRB. 
 VC uses $\sigma=2\%$ and $4\%$.
 It has a breakdown of processing time.
@@ -606,7 +606,7 @@ to remote machines for comparison while   VC handles most of chunk fingerprints 
 %While data reading dominates the backup process, PDS lookup spends about a similar amount
 %of time as local search.
 
-\begin{table}
+\begin{table}[t]
   \centering
     \footnotesize
     %\tabcolsep=0.11cm
@@ -647,17 +647,17 @@ to remote machines for comparison while   VC handles most of chunk fingerprints 
         every first column/.style={column type/.add={|}{}},
     ]{figures/vc_srb_combined_pgfplots.txt}
     \caption{Average time to backup a dirty VM segment under SRB and VC
-        \todo{Decide between this and bar plot with the same caption}
+%        \todo{Decide between this and bar plot with the same caption}
     }
     \label{tab:vc_srb_combined}
 \end{table}
 
-\begin{figure}[htbp]
-  \centering
-  \epsfig{file=figures/vc_srb_combined, width=3in}
-  \caption{Average time to backup a dirty VM segment under SRB and VC}
-  \label{fig:vc_srb_combined}
-\end{figure}
+%\begin{figure}[htbp]
+%  \centering
+%  \epsfig{file=figures/vc_srb_combined, width=3in}
+%  \caption{Average time to backup a dirty VM segment under SRB and VC}
+%  \label{fig:vc_srb_combined}
+%\end{figure}
 
 % \begin{figure}[htbp]
 %   \centering
@@ -689,7 +689,8 @@ to remote machines for comparison while   VC handles most of chunk fingerprints 
 % \caption{Throughput of software layers under different concurrency}
 % \label{tab:throughput}
 % \end{table*}
-\begin{table}[htbp]
+%\begin{table}[htbp]
+\begin{table}[t]
 \begin{small}
     \centering
     \begin{tabular}{|c|ccc|}
@@ -756,6 +757,7 @@ per machine with 6 concurrent backup tasks. With a higher disk storage bandwidth
  \subsection{Effectiveness of Approximate Deletion}
 
  \begin{figure}
+\vspace{-0.1in}
      \centering
      \includegraphics[width=3in]{figures/leakage}
      \caption{Accumulated storage leakage by approximate snapshot deletions ($\Delta u/u=0.025$)}
