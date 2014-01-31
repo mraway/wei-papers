@@ -14,7 +14,8 @@ SRB executes distributed deduplication by routing data chunks to cluster machine
 using  a min-hash function discussed in \cite{extreme_binning09}. Once a data chunk is routed to
 a machine, the chunk is compared with the fingerprint index within this machine locally based 
 on~\cite{extreme_binning09}.
-\subsection{Settings}
+
+{\bf Settings}.
 We have performed a trace-driven study based on a production dataset~\cite{WeiZhangIEEE} from 
 Alibaba Aliyun's cloud platform with about 2500 VMs, running on 100 physical machines. 
 Each machine hosts up to 25 VMs and each VM keeps 10 automatically-generated snapshots in the storage 
@@ -33,7 +34,8 @@ The fingerprint for variable-sized chunks is computed using their SHA-1 hash~\ci
 %Popularity of data blocks are collected through global counting and 
 %and top popular ones ($\delta=2\%$)  are  kept in the PDS, as discussed in Section~\ref{sect:store}.
 
-\subsection{Fault Isolation and Snapshot Availability}
+%\subsection{Fault Isolation and Snapshot Availability}
+\subsection{Snapshot Availability}
 
  Table~\ref{tab:vm-availability} shows the availability of VM snapshots when 
 there are up to 20 machines failed in a cluster with $p=100$ physical machines.
@@ -124,7 +126,7 @@ $r$ is fixed as 3. Thus when $r=3$, the reasonable choice for $r_c$ would be a n
 %availiability of the Non-PDS data as the failure rate of PDS data gets very small.
 
 
-\begin{table}
+\begin{table}[htbp]
   \centering
     \footnotesize
     \tabcolsep=0.11cm
@@ -168,7 +170,7 @@ $r$ is fixed as 3. Thus when $r=3$, the reasonable choice for $r_c$ would be a n
     \label{tab:vm-availability}
 \end{table}
 
-\begin{figure}[htb]
+\begin{figure}[htbp]
   \centering
 	\begin{tikzpicture}
 		\begin{axis}[
@@ -207,7 +209,7 @@ $r$ is fixed as 3. Thus when $r=3$, the reasonable choice for $r_c$ would be a n
 
 
 
-\subsection{Competitiveness of Deduplication Efficiency}
+\subsection{Deduplication Efficiency}
 \label{sect:evaldedup}
 
 
@@ -258,7 +260,7 @@ alg     efficiency
 \scriptsize{}VC-4\%PDS  96.5784837160482
 \scriptsize{}SRB        97.8625610883421
 }
-\begin{table}
+\begin{table}[htbp]
 \begin{small}
     \begin{tabular}{|c|c|c|c|c|}
     \hline
@@ -649,7 +651,7 @@ throughput would be higher.
 \begin{small}
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-   &     1 &  3  & 5 & 7  & 9 \\ 
+Del. step   &     1 &  3  & 5 & 7  & 9 \\ 
 \hline   
      Estimated& .02\% & .06\% & .10\%& .14\% & .18\%\\ 
 \hline   
@@ -665,13 +667,15 @@ throughput would be higher.
 Table~\ref{tab:leakage} shows the average accumulated storage leakage in terms of percentage of
 storage space per VM caused  by approximate deletions.
 In this experiment, we select 1050 snapshots from 105 VMs and let all the VMs accumulate 10 snapshots, 
-then start to delete those snapshots one by one.
+then start to delete 9 snapshots one by one.
 As we know the actual storage needs after each snapshot creation,
 the storage leakage can be detected by
 comparing the size of remaining data in use after deletion to the correct number.
-The top dashed line is the predicted leakage using Formula~\ref{eq:leakrepair} from Section~\ref{sect:delete}
+Row 1 in  Table~\ref{tab:leakage} 
+is the deletion step. 3 means that version 3 is deleted. 
+Row  2 is the predicted leakage using Formula~\ref{eq:leakrepair} from Section~\ref{sect:delete}
 given $\Delta u/u=0.025$,
-while the solid line represents the actual average leakage measured during the experiment for all the VMs. 
+while Row 3 lists the actual average leakage measured during the experiment for all the VMs. 
 The Bloom filter setting is based on $\Delta u/u=0.025$.
 After 9 snapshot deletions, the actual leakage ratio reaches 0.0015 and this means that
 there is only 1.5MB space leaked for every 1GB of stored data.
@@ -680,8 +684,8 @@ to the  leakage under 5\%.
 This experiment shows that the leakage of our approximate snapshot deletion is very small, 
 below the estimated number.
 
-The space cost for deletion is insignificant.
-Leakage repair needs less than 85MB of memory
+The space cost for each snapshot deletion is insignificant.
+Leakage repair for each VM needs less than 85MB of memory
 considering each reference consumes 8 bytes plus  1 mark bit and  
 each VM snapshot has 40GB backup data with about 10 million chunks. 
 This VM-specific leakage  repair takes  less than half an hour for each VM, 
