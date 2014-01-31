@@ -349,11 +349,12 @@ which uses the parent segment at the same offset to detect duplicates instead of
 % can reduce the size further to 8.6\% of original size, namely it 
 % delivers an additional 3.45\% reduction.
 
-In general, our experiments show that
+In summary, our experiments show that
 version detection at the segment level can reduce the data size to about 24.14\% of original data, 
 which leads to about a 75.86\% reduction. Namely 10TB snapshot data per machine is reduced to 2.414TB.
 Similarity-guided local search can further reduce the data size
-to about 1.205T, which is  12.05\% of original. Thus it delivers a 50.08\% reduction to the dirty segments.
+to about 1.205T, which is  12.05\% of original. Thus it delivers a 50.08\% reduction after the version-based
+ deduplication.
 The popularity-guided global deduplication with $\sigma=2\% $
 reduces the data further to 860GB, namely 8.6\% of the original size. 
 So it provides additional 28.63\% reduction. 
