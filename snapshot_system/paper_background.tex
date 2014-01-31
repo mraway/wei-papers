@@ -6,8 +6,7 @@ where
 each commodity server hosts a number of virtual machines and storage of these servers
 is clustered using a distributed file system~\cite{googlefs03,hdfs10,NutanixPaper}.
 Each physical machine hosts multiple virtual machines.  Every virtual machine
-runs its own guest operating system (typically one of only a few
-installed on the system) and accesses virtual hard disks 
+runs its own guest operating system and accesses virtual hard disks 
 stored as image files maintained by the operating system running on the
 physical host.
 For VM snapshot backup, file-level semantics are normally not provided.
@@ -35,7 +34,7 @@ means no fine-grained file system metadata can be used to determine the changed 
 
 File backup systems have been developed to use fingerprints generated for
 data ``chunks''  to identify duplicate
-content~\cite{venti02,Rhea2008}.  In its simple implementation,
+content~\cite{venti02,Rhea2008}.  In a simple implementation,
 it is expensive to compare a large number of 
 fingerprints
 so several techniques have been proposed to improve duplicate identification. 
@@ -51,7 +50,7 @@ Additional inline deduplication techniques are studied in ~\cite{sparseindex09,G
 and a parallel batch solution for cluster-based deduplication is 
 studied in ~\cite{wei2013}. 
 All of the above approaches have focused on optimization of deduplication
-efficiency, and none of them have considered the impact
+efficiency or speed, and none of them have considered the impact
 of deduplication on fault resilience in a cloud environment.  To do so, we
 examine the following properties of VM snapshot deduplication for converged
 IaaS architectures.
@@ -77,7 +76,7 @@ data chunk.
 %VMs that share it.  
 
 Indeed, the greater the deduplication efficiency, the less
-the data redundancy that is maintained, and the greater the ``hidden'' data
+the data redundancy is maintained, and the greater the ``hidden'' data
 dependence between VMs that must be hosted as if they were physically isolated.
 %machine failures happen periodically 
 %in a large-scale cloud and
@@ -93,18 +92,18 @@ cloud at the possible expense of storage efficiency.
 
 Additionally, storage efficient deduplication can be computationally expensive
 to implement in a distributed setting.  In particular, duplicate detection is
-logically a ``global'' operation with respect to the population of data chunks
+logically a ``global'' operation over all data chunks
 under consideration.
 By localizing duplicate search, the computational requirements
 for deduplication can be reduced, because fewer chunks must be compared.
-Further, deduplication of otherwise unrelated VMs can be implemented in
+Further, deduplication of VMs can easily be implemented in
 parallel.
  
 Another disadvantage of cross-VM sharing is that it complicates 
 snapshot deletion, 
 which occurs frequently when snapshots expire regularly. 
 The mark-and-sweep approach~\cite{Guo2011,Fabiano2013}  is effective for
-deletion, but still carries a significant cost, again in the distributed cloud
+deletion, but still carries a significant cost, especially in the distributed cloud
 setting.
 %to count if a data chunk is still shared by other snapshots. 
 
@@ -128,7 +127,7 @@ introduce, disk block sharing of data chunks is another potential source of
 hidden data dependence.
 Thus a VM-centric solution should consider how data chunks from VMs are
 distributed among large file system blocks when a large-scale distributed file
-system is used for disk image files.
+system is used for snapshot storage.
 
 %a minimum association of FSBs to VMs in the packaging
 %process. By minimizing this association we can improve fault tolerance by
@@ -151,7 +150,7 @@ because it manages duplicate data chunks without consideration of VMs.
 With the above  considerations in mind, we propose a 
 VM-centric approach (called VC)
 for a co-located backup service that has a resource usage profile
-suitable for use with converged cloud architecture.  
+suitable for use with converged cloud architectures.  
 
 In designing a VC deduplication solution, we have considered and adopted some of
 the following previously-developed techniques.
@@ -181,5 +180,5 @@ may access a remote machine for index lookup and the overall overhead of access 
 can be significant.  
 \end{itemize}
 
-We will first discuss and analyze the integration of the VM-centric deduplication strategies with fault isolation, 
+We will first discuss and analyze the integration of the VM-centric deduplication strategies with fault isolation 
 and discuss snapshot deletion support, then present an implementation design. 

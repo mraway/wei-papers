@@ -6,9 +6,8 @@ The main contribution of this paper is a low-profile and VM-centric deduplicatio
 maximize fault isolation while delivering competitive deduplication efficiency using
 a small amount of system resource.
 Evaluation using  this scheme strikes a tradeoff and restricted cross-VM duplicate detection
-can accomplish 96.33\% or 96.9\% of what complete global
-deduplication can do, and the VM-centric
-approximate snapshot deletion effectively manages deleted chunks with a 
+can accomplish up to 96.58\% of what complete global
+deduplication can do, and the approximate snapshot deletion effectively manages deleted chunks with a 
 low-resource usage.  The availability of snapshots increases substantially when
 adding more replication for popular cross-VM chunks and packaging chunks from the same 
 VM in one file system block. The analysis shows that the replication degree

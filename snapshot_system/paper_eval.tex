@@ -2,7 +2,7 @@
 \label{sect:evaluation}
 We have implemented and evaluated a prototype of our VC scheme on a Linux cluster of machines with
 8-core 3.1Ghz AMD FX-8120 and 16 GB RAM. 
-Our implementation is based on Alibaba cloud platform~\cite{Aliyun,WeiZhangIEEE}
+Our implementation is based on the Alibaba cloud platform~\cite{Aliyun,WeiZhangIEEE}
 and the underlying DFS uses  QFS with default replication degree 3 while the PDS replication degree is 6.
 Our evaluation objective is to
 study the benefit in fault tolerance and   deduplication efficiency of VC,  
@@ -10,7 +10,7 @@ and assess its backup throughput and  resource usage.
 
 We will compare VC with a VO approach  using stateless routing with binning (SRB) 
 based on~\cite{Dong2011,extreme_binning09}.
-SRB executes a distributed deduplication by routing a data chunk to one of cluster machines~\cite{Dong2011}
+SRB executes distributed deduplication by routing a data chunks to cluster machines~\cite{Dong2011}
 using  a min-hash function discussed in \cite{extreme_binning09}. Once a data chunk is routed to
 a machine, the chunk is compared with the fingerprint index within this machine locally. 
 

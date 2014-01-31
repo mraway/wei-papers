@@ -39,7 +39,7 @@ major virtualization solution vendors.
 \end{figure}
 
 Since the best deduplication uses a non-uniform chunk size 
-in the average of 4KB or 8KB~\cite{Jin2009},
+with an average of 4KB or 8KB~\cite{Jin2009},
 we conduct additional local similarity guided deduplication on a snapshot by comparing
 chunk fingerprints of a dirty segment 
 with those in  {\em similar} segments from its parent snapshot. 
@@ -50,13 +50,13 @@ content similarity is an approximation~\cite{resemblance97}.  When processing a 
 its  similar segments can be found easily from the
 parent snapshot recipe.  Then recipes of the similar segments are loaded to memory,
 which contain chunk fingerprints to be compared.
-To control the time cost of search, we set a limit on the number of  similar segments recipes to be fetched. 
+To control the time cost of search, we set a limit on the number of  similar segment recipes to be fetched. 
 % Then,
 %given a set of data chunks within a dirty segment,  we compare  these chunk fingerprints
 %with those in similar segments.  
 For example, assume that  a segment is of size  2MB, 
-its segment recipe is roughly 19KB which contains about 500 chunk fingerprints and other chunk metadata,
-by limiting at most 10 similar segments to search, the amount of memory for maintaining those 
+its segment recipe is roughly 19KB which contains about 500 chunk fingerprints and other chunk metadata.
+By limiting at most 10 similar segments to search, the amount of memory for maintaining those 
 similar segment recipes is small.
 As part of our local duplicate search we also compare the current segment
 against the parent segment at the same offset.
@@ -82,7 +82,7 @@ Since $k$ is relatively small and these top $k$ chunks are shared among multiple
 we can afford to provide extra replicas for these popular chunk data to enhance the fault resilience.
 We have studied the distribution of chunk popularity~\cite{WeiZhangIEEE} 
 based on a data trace from Alibaba with over 2500 VMs.
-The distribution is zipf-like and popular chunks are dominating the large portion of data chunks.
+The distribution is zipf-like and popular chunks dominate the distribution.
 We denote $\sigma$ as the percentage of unique data chunks belonging to PDS and from the evaluation we find that
 $\sigma$ with a range of 1 to 4\% can deliver a fairly competitive deduplication efficiency.
 
