@@ -681,16 +681,19 @@ to the  leakage under 5\%.
 This experiment shows that the leakage of our approximate snapshot deletion is very small, 
 below the estimated number.
 
-The space cost for deletion and leakage repair is very small.
-Consider each reference consumes 8 bytes plus  1 mark bit. 
-A VM that has 40GB backup data with about 10 million chunks will need less than 85MB of memory.
-A VM-specific mark-and-sweep process takes  less than half an hour, when disk bandwidth is controlled as 50MB/s. 
-
-When using the traditional mark-and-sweep~\cite{Guo2011,Fabiano2013} in VO for 2500 VMs, a total of 212GB memory
-space on 100 node is accessed for processing each VM and each machine quires 2.12GB.
-Assuming snapshot deletion happens daily,
-such a  mark-and-sweep deletion needs to be conducted every two days to control garbage space under 5\%
-since there is 2.5\% data change for each snapshot.
+The space cost for deletion is insignificant.
+Leakage repair need less than 85MB of memory
+considering each reference consumes 8 bytes plus  1 mark bit and  
+each VM snapshot has 40GB backup data with about 10 million chunks. 
+Our VM-specific mark-and-sweep process in VC takes  less than half an hour, when disk bandwidth is controlled as 50MB/s. 
+When using the traditional mark-and-sweep~\cite{Guo2011,Fabiano2013} in VO for 2500 VMs, 
+a total of 212GB memory
+space on 100 node is accessed for processing each VM and each machine requires 2.12GB.
+To control the garbage growth, such a process needs to be conducted much more frequently than our
+VM-centric leakage repair. 
+%Assuming snapshot deletion happens daily,
+%such a  mark-and-sweep deletion needs to be conducted every two days to control garbage space under 5\%
+%since there is 2.5\% data change for each snapshot.
 
 
 % We also measure the storage leakage under $\Delta u/u=0.05$ and $0.10$ settings for summary vectors.
