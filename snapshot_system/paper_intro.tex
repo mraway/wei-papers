@@ -53,11 +53,11 @@ avoids potential performance degradation to production applications when
 backups are in progress.
 However, sending out undeduplicated backup data wastes huge amount
 of network bandwidth that would otherwise be available to user VMs. 
-%Even when the storage system implements deduplication internally
-%such dedicated backup storage is either difficult to scale out
-%(which can comprise the overall scalability of the converged architecture) 
-%or it must forego global deduplication in order to gain scalability 
-%(which increases backup cost).
+Even when the storage system implements deduplication internally
+such dedicated backup storage is either difficult to scale out
+(which can comprise the overall scalability of the converged architecture) 
+or it must forego global deduplication in order to gain scalability 
+(which increases backup cost).
 
 In this paper we consider a backup service for converged cloud architectures
 that is co-located with user VMs, sharing the cloud computer, network, and
