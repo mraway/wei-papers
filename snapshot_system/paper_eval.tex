@@ -38,12 +38,12 @@ The fingerprint for variable-sized chunks is computed using their SHA-1 hash~\ci
 \subsection{Snapshot Availability}
 
  Table~\ref{tab:vm-availability} shows the availability of VM snapshots when 
-there are up to 20 machines failed in a cluster with $p=100$ physical machines.
+there are up to 20 machines failed in a cluster. 
 The trace driven execution allows us to estimate the number of file blocks shared by each VM in the VO and VC approaches
 and then calculate the average availability of VM snapshots.
-The availability for  a 1000-node cluster is also listed, assuming file block sharing patterns among VMs remain
-the same from $p=100$ setting to $p=1000$. With different $p$ values, how the availability varies when 
-the number of failures in the cluster changes.
+The case for  a 1000-node cluster is also listed, assuming file block sharing patterns among VMs remain
+the same from $p=100$ setting to $p=1000$. Each machine hosts about 25 VMs in both cases
+and with different $p$ values, the availability varies when the number of failures in the cluster changes.
 
 %Two VC curves use $V_c=1250$ and $V_c=2500$ representing the average number of VMs that share a PDS file system block. 
 %We have assumed a worst-case scenario that  a PDS block is shared by every VM. 
@@ -78,23 +78,25 @@ the number of failures in the cluster changes.
 %case for VO approach. 
 
 
-Our results show that VC has a significantly  higher availability than VO as the number of
-failed machines increases from 3 to 20
-in this table.
+ Table~\ref{tab:vm-availability} shows 
+that VC has a significantly  higher availability than VO.
+% as the number of failed machines increases from 3 to 20.
 %Our VM-centric approach shows significant improvements
 %in VM availability.
-With $p=100$ and 3 machine failures,
-there are 2500 VMs in total. VO with 69.5\% availability could lose data in 763 VMs 
-while VC with 99.7\% loses data for 8 VMs.
+With $p=100$ and 3 failures,
+VO with 69.5\% availability could lose data in 763 VMs 
+while VC with 99.7\% only loses data for 8 VMs out of 2500 VMs.
 The key reason is that for most data in VC, only a single VM can be affected by
-the loss of a single file block. Since most blocks contain chunks for a single
-VM, VMs can depend on a smaller number of blocks, while in VO, the loss of a
+the loss of a single file block
+%Since most blocks contain chunks for a single
+%VM, VMs can depend on a smaller number of blocks, 
+while in VO, the loss of a
 single block tends to affect many VMs.
 When the number of physical machines failed reaches 20, the availability of VO reaches 0\%
 and VC also drops to 1.13\%. This is because even there is a good availability for PDS data, VC still
 loses most of non-PDS blocks given the replication degree for non PDS is 3.
-On the other hand, when $p=1000$, the percentage of machine failure is then 2\% and
- VC outperforms VO significantly in availability in this case by delivering a meaningful availability with 99.62\%.
+When $p=1000$, the percentage of failures is then 2\% and VC delivers a meaningful availability 
+with 99.62\%, outperforming VO significantly. 
 
 % because our VM-centric approach
 %localizes deduplication.  

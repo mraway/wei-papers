@@ -47,7 +47,7 @@ In snapshot and segment recipes,
 the data structures  include references to the actual data location to eliminate the need for additional indirection.
 
 
-\subsection{A VM-centric Snapshot Store for Backup Data}
+\subsection{A VM-centric Snapshot Store}
 \label{sect:store}
 %\begin{figure}[htbp]
 \begin{figure}[htbp]
@@ -89,12 +89,11 @@ A periodic cleanup is conducted  to remove unused PDS chunks (e.g. every few mon
 %\end{itemize}
 
 For non PDS data, the snapshot store of a VM is  divided into a set of containers and 
-each container is approximately 1GB. 
-The reason for dividing the snapshot store into containers is to simplify the compaction process
-conducted periodically. As discussed later, data chunks are deleted from old snapshots
-and chunks without any reference from other snapshots can be removed by this compaction process.
-By limiting the size of a container, we can effectively control the length of each round of compaction.
-The compaction  routine can work on one container at a time and move the in-use data chunks to another container. 
+each container is approximately 1GB.  The reason for this  divison is to simplify the compaction process
+conducted periodically. When  chunks are deleted from old snapshots,
+chunks without any reference from other snapshots can be removed by this compaction process.
+By limiting the size of a container, we can control the length of each round of compaction.
+The compaction  can work on one container at a time and move the in-use data chunks to another container. 
 
 Each non-PDS data container is further divided into a set of chunk data groups. Each chunk group is composed of
 a set of data chunks and is the basic unit in data access and retrieval. 
@@ -132,12 +131,11 @@ Three API calls are supported for data backup:
 %\item
 \noindent\textbf{Append()}. 
 For PDS data, the chunk is appended to the end of the PDS file and the offset is returned as the  reference.
-Note that PDS append may only be used during PDS recalculation.
+This operation  may only be used during PDS recalculation.
 For non-PDS data, this call places a chunk into 
-the snapshot store and returns a reference to be stored in 
-the recipe metadata of a snapshot. 
-The write requests to append data chunks to a VM store are accumulated at the client side. 
-When the number of write requests reaches a fixed group size, the snapshot store client compresses
+the snapshot store and returns a reference to be stored in the recipe of a snapshot. 
+The write requests to append chunks to a VM store are accumulated at the client side. 
+When the number of write requests reaches a fixed group size, the client compresses
 the accumulated   chunk group, adds a chunk group index  to the beginning of the group, and then
 appends the header and data  to the corresponding VM file.
 A new container  index entry is also created for each chunk group and is written to the corresponding
@@ -145,16 +143,16 @@ container index file.
 
 %\item
 \noindent\textbf{Get()}.
-The fetch operation for the PDS data chunk is straightforward since each reference contains 
+Fetching PDS data is straightforward since each reference contains 
 the file offset, and the size of a PDS chunk is available from a segment recipe.
 We also maintain a small data cache for the PDS data service to speedup common data fetching.
-
-To read a non-PDS chunk using its reference with container ID and local chunk ID,  the snapshot store client first loads the
+To read a non-PDS chunk using its reference with container ID and local chunk ID,  the snapshot store client 
+first loads the
 corresponding VM's container index file specified by the container ID, then searches the chunk
 groups  using their  chunk ID coverage.
 After that, it reads the identified chunk group from DFS, decompresses it, and seeks to the exact chunk data 
 specified by the chunk ID. 
-Finally, the client updates its internal chunk data cache with the newly loaded content to 
+Finally, the client updates its internal chunk cache with the newly loaded content to 
 anticipate future sequential reads.
 
 %\item

@@ -51,7 +51,7 @@ This can be done during periodic leakage repair described below.
 
 \item {\bf Fast approximate deletion with summary comparison.}
 When there is a snapshot deletion,  
-we need to identify if chunks to be deleted from that snapshot
+we identify if chunks to be deleted from that snapshot
 are still referenced by other snapshots. 
 This is done approximately and quickly by comparing the 
 reference of deleted chunks  with
@@ -61,9 +61,8 @@ and the merged vector still takes $z$ bits.
 Since the number of live snapshots $h$ is limited for
 each VM, 
 the time and memory cost of this comparison is small, linear to the number of chunks to be deleted.
-
-If a chunk's reference is not found in the merged summary vector, we are sure that
-this chunk is not used by any live snapshots, thus it can be deleted safely.
+If a chunk's reference is not found in the merged summary vector, 
+this chunk is not used by any live snapshots. Thus it can be deleted safely.
 However, among all the chunks to be deleted, 
 there are a small percentage of unused chunks  which
 are misjudged as  being in use, resulting in storage leakage.
@@ -95,14 +94,14 @@ which scans snapshot chunks from all VMs, even with optimization~\cite{Guo2011}.
 \end{itemize}
 
 %{\bf Discussion}
-We now estimate the size of storage leakage and how often leak repair needs to be conducted.
-Assume that  a VM keeps $h$ snapshots in the backup storage, creates and deletes one snapshot
-every day. Let $u$ be the total number of chunks brought by the initial backup for a VM, $\Delta u$ be the average
+We estimate storage leakage size and how often leak repair should be conducted.
+Assume that  a VM keeps $h$ snapshots in backup storage, creates and deletes one snapshot
+every day. Let $u$ be the number of chunks brought by initial backup for a VM, $\Delta u$ be the average
 number of additional chunks added from one version to next snapshot version. Then the total number of 
 chunks in a VM's snapshot store is about:
-\[
+$
 U = u + (h-1)\Delta u.
-\]
+$
 
 Each Bloom filter vector has  $z$ bits for each snapshot and let $j$ be the number of hash functions used by the
 Bloom filter.  Notice that a chunk may appear multiple times in these summary vectors; however, this should not 
@@ -119,9 +118,9 @@ For each snapshot deletion, the number of chunks to be deleted is nearly identic
 newly added chunks $\Delta u$. 
 Let $R$ be the total number of runs of approximate deletion between two consecutive 
 repairs. We estimate  the total leakage $L$ after $R$ runs as:
-\[
+$
 L = R \epsilon \Delta u.
-\]
+$
 
 When leakage ratio $L/U$ exceeds a pre-defined threshold $\tau$, we trigger a leak repair. Namely,
 
@@ -131,9 +130,9 @@ When leakage ratio $L/U$ exceeds a pre-defined threshold $\tau$, we trigger a le
 \Longrightarrow R > \frac{\tau}{\epsilon}\times\frac{u + (h-1)\Delta u}{\Delta u}.
 \end{equation}
 
-For example in our tested dataset,  
+For example for our test data in Section~\ref{sect:evaluation},  
 $h=10$ and each snapshot adds
-about 0.1-5\% of new data. Thus we take ${\Delta u}/{u} \approx 0.025$. For a 40GB snapshot, $u\approx  10$ million.
+about 0.1-5\% of new data. Thus ${\Delta u}/{u} \approx 0.025$. For a 40GB snapshot, $u\approx  10$ million.
 Then $U=12.25$ million.
 We choose  $\epsilon = 0.01$ and $\tau=0.05$.  From Equation~\ref{eq:falserate}, 
 each summary vector requires $z=10U=122.5$ million bits or 15MB. From Equation~\ref{eq:leakrepair}, 
