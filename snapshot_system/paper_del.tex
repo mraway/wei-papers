@@ -84,9 +84,9 @@ A mark-and-sweep process  requires a scan of all the metadata for a snapshot sto
 %although certain optimized algorithms may apply\cite{Przemyslaw2013}. But 
 Since it is a VM-specific procedure, 
 the space cost for processing each VM is proportional to the number of chunks
-within each VM. For example, it is about 85MB space requirement for a VM of size 40GB in our tested dataset.
+within each VM. For example, the space requirement is about 85MB for a VM of size 40GB in our tested dataset.
  This is  much less expensive  than  the VM-oblivious mark-and-sweep
-which scans snapshot chunks from all VMs, even with optimization~\cite{Guo2011}
+which scans snapshot chunks from all VMs, even with optimization~\cite{Guo2011}.
 
 %Given $n$ VMs in a cluster, the space cost is $n$ times larger.
 %For example, consider each reference consumes 8 bytes plus  1 mark bit. A VM that has 40GB backup data with about

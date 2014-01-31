@@ -681,11 +681,11 @@ This experiment shows that the leakage of our approximate snapshot deletion is v
 below the estimated number.
 
 The space cost for deletion is insignificant.
-Leakage repair need less than 85MB of memory
+Leakage repair needs less than 85MB of memory
 considering each reference consumes 8 bytes plus  1 mark bit and  
 each VM snapshot has 40GB backup data with about 10 million chunks. 
 This VM-specific leakage  repair takes  less than half an hour for each VM, 
-when disk bandwidth is controlled as 50MB/s. 
+when disk bandwidth is controlled to 50MB/s. 
 %When using the traditional mark-and-sweep~\cite{Guo2011,Fabiano2013} in VO for 2500 VMs, 
 %a total of 212GB memory
 %space on 100 node is accessed for processing each VM and each machine requires 2.12GB.
