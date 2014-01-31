@@ -29,7 +29,7 @@ requires a global refence counting~\cite{Guo2011,Fabiano2013}
 Since our VM-centric design restricts sharing of data chunks only to a small dataset,
 we can greatly simplify the deletion process by 
 focusing on  unreferenced non-PDS chunks within each VM. 
-This process can be conducted by independent among VMs, and thus results in  a simpler flow control and 
+This process can be conducted independently per VM, and thus results in  a simpler flow control and 
 lower resource usage. 
 %The PDS data chunks are commonly shared among all VMs and we do not consider them
 %during snapshot deletion.  The selection of PDS data chunks is updated periodically independent of snapshot deletion process.
@@ -44,7 +44,7 @@ Every time there is a new snapshot created,
 we compute a Bloom-filter with $z$ bits as the reference summary vector for all non-PDS chunks used 
 in this snapshot.
 The items we put into the summary vector are all the references appearing in the metadata of the snapshot.
-For each VM we preset the vector size according to  estimation of VM image size,
+For each VM we preset the vector size according to estimated VM image size;
 given $h$ snapshots stored for a VM, there are $h$ summary vectors maintained.
 We adjust the summary vector size and recompute the vectors if the VM size changes substantially over time.
 This can be done during the periodic leakage repair stage described below.
@@ -72,7 +72,7 @@ are misjudged as  being in use, resulting in storage leakage.
 %[exlpain why second Bloom filter, why scan append store]
 Leakage repair is conducted periodically to fix the above approximation error.
 This procedure compares the live chunks for each VM with what are truly used in the VM snapshot recipes.
-A mark-and-sweep process  requires a scan of the entire snapshot store.
+A mark-and-sweep process  requires a scan of all the metadata for a snapshot store.
 %Our VM-centric mark-and-sweep procedure is similar to Guo\cite{Guo2011} 
 %in a way that the data dependency is clearly known.
 %This generally requires a scan of almost the entire snapshot store which is much more expensive than approximate deletion,

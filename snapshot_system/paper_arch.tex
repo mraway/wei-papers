@@ -73,8 +73,8 @@ Each reference to a PDS data chunk in the PDS index is the offset within the PDS
 %for the simpler format because
 Additional compression is not applied because 
 for the data sets we have tested, we only observed limited spatial locality 
-among popular data chunks. On average the number of consecutive PDS index hits is lower than 7.
-Thus it is not very effective to group a large number of chunks as a compression and data fetch unit. 
+among popular data chunks. On average the number of consecutive PDS index hits is lower than 7,
+thus it is not very effective to group a large number of chunks as a compression and data fetch unit. 
 For the same reason, we decide not to take the sampled index approach~\cite{Guo2011} 
 for detecting duplicates from PDS as limited spatial locality is not sufficient to enable
 effective prefetching for sampled indexing.
@@ -121,11 +121,7 @@ Each container maintains a local  chunk counter and assigns the current number
 as a chunk ID  when  a new chunk is added to this  container. 
 Since data chunks are always appended to a snapshot store during backup, 
 local chunk IDs are monotonically increasing.
-When a chunk is to be accessed, the segment recipe contains a reference pointing to  a data chunk
-in the PDS store or in a non-PDS VM snapshot  store. 
-Using  a container ID, the corresponding container index file of this VM is accessed and 
-the chunk group is identified using a simple chunk ID range search. Once the chunk group is loaded to memory, 
-its header contains the exact offset of the corresponding chunk ID and the content is then accessed from the memory buffer.
+When a chunk is to be accessed, the segment recipe contains a reference pointing to  a data chunk, which is used to lookup up the chunk data as described shortly.
 
 %\item
 
@@ -163,9 +159,7 @@ anticipate future sequential reads.
 
 %\item
 \noindent\textbf{Delete()}.
-Chunk deletion occurs when a snapshot expires or gets deleted explicitly by a user and we discuss this in more details in next
-subsection.
-%(we will discuss the snapshot deletion in detail in the following subsection).
+Chunk deletion occurs when a snapshot expires or gets deleted explicitly by a user (the overall deletion strategy was discussed in detail in Section~\ref{sect:delete}).
 When deletion requests are issued for a specific container,
 those requests are simply recorded into the  container's deletion log initially and thus  a lazy
 deletion strategy is exercised.
