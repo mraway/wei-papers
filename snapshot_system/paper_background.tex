@@ -103,7 +103,7 @@ Another disadvantage of cross-VM sharing is that it complicates
 snapshot deletion, 
 which occurs frequently when snapshots expire regularly. 
 The mark-and-sweep approach~\cite{Guo2011,Fabiano2013}  is effective for
-deletion, but still carries a significant cost, especially in the distributed cloud
+deletion, but still carries a significant cost, especially in a distributed 
 setting.
 %to count if a data chunk is still shared by other snapshots. 
 
@@ -163,8 +163,8 @@ history for each VM.
 %We are seeking for a tradeoff since 
 %global signature comparison can deliver additional compression~\cite{Guo2011,Dong2011,extreme_binning09}.
 \item {\em Stateless  Data Routing} --
-One approach to scalable duplicate comparison is to use a content-based hash
-partitioning algorithm called stateless data routing by Dong et al.~\cite{Dong2011}.
+One approach to scalable duplicate comparison is to use content-based hash
+partitioning called stateless data routing by Dong et al.~\cite{Dong2011}.
 Stateless data routing divides the deduplication work with a similarity approximation. This work 
 is similar to Extreme Binning by Bhagwat et al.~\cite{extreme_binning09} and 
 each request is routed  to a machine which holds

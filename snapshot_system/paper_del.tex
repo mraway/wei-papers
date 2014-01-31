@@ -47,7 +47,7 @@ The items we put into the summary vector are all the references appearing in the
 For each VM we preset the vector size according to estimated VM image size;
 given $h$ snapshots stored for a VM, there are $h$ summary vectors maintained.
 We adjust the summary vector size and recompute the vectors if the VM size changes substantially over time.
-This can be done during the periodic leakage repair stage described below.
+This can be done during periodic leakage repair described below.
 
 \item {\bf Fast approximate deletion with summary comparison.}
 When there is a snapshot deletion,  
@@ -83,7 +83,7 @@ A mark-and-sweep process  requires a scan of all the metadata for a snapshot sto
 %This generally requires a scan of almost the entire snapshot store which is much more expensive than approximate deletion,
 %although certain optimized algorithms may apply\cite{Przemyslaw2013}. But 
 Since it is a VM-specific procedure, 
-the space cost for processing each VM is proportional to the number of chunks
+the space cost is proportional to the number of chunks
 within each VM. For example, the space requirement is about 85MB for a VM of size 40GB in our tested dataset.
  This is  much less expensive  than  the VM-oblivious mark-and-sweep
 which scans snapshot chunks from all VMs, even with optimization~\cite{Guo2011}.
@@ -98,8 +98,8 @@ which scans snapshot chunks from all VMs, even with optimization~\cite{Guo2011}.
 We now estimate the size of storage leakage and how often leak repair needs to be conducted.
 Assume that  a VM keeps $h$ snapshots in the backup storage, creates and deletes one snapshot
 every day. Let $u$ be the total number of chunks brought by the initial backup for a VM, $\Delta u$ be the average
-number of additional chunks added from one snapshot to the next snapshot version. Then the total number of 
-chunks stored in a VM's snapshot store is about:
+number of additional chunks added from one version to next snapshot version. Then the total number of 
+chunks in a VM's snapshot store is about:
 \[
 U = u + (h-1)\Delta u.
 \]

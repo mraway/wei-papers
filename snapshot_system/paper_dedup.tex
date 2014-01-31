@@ -6,7 +6,7 @@
 
 We describe our overall deduplication approach as consisting of three
 complementary strategies: VM-local
-duplicate search optimization, global deduplication using popular chunks, and 
+duplicate search, global deduplication using popular chunks, and 
 VM-centric file system block management. 
 %\begin{itemize}
 %\item 
@@ -84,10 +84,10 @@ The distribution is Zipf-like and popular chunks dominate the distribution.
 We denote $\sigma$ as the percentage of unique data chunks belonging to PDS and from the evaluation we find that
 $\sigma$ with a range of 2 to 4\% can deliver a fairly competitive deduplication efficiency.
 For example,
-with top 2\% of the most popular chunks stored in PDS, nearly 40\% of the raw backup 
+with top 2\% of the most popular chunks stored in PDS, up-to 40\% of the raw backup 
 data can be eliminated by fingerprint lookup in PDS index.
 
-Since $k$ is relatively small and these top $k$ chunks are shared among multiple VMs, 
+Since $\sigma$ is relatively small and these top chunks are shared among multiple VMs, 
 we can afford to provide extra replicas for these popular chunk data to enhance the fault resilience.
 
 
