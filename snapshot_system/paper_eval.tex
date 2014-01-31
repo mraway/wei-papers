@@ -36,7 +36,7 @@ The fingerprint for variable-sized chunks is computed using their SHA-1 hash~\ci
 \subsection{Fault Isolation and Snapshot Availability}
 
  Table~\ref{tab:vm-availability} shows the availability of VM snapshots when 
-there are up to 20 machine nodes failed in a cluster with $p=100$ physical machines.
+there are up to 20 machines failed in a cluster with $p=100$ physical machines.
 The trace driven execution allows us to estimate the number of file blocks shared by each VM in the VO and VC approaches
 and thus calculate the average availability of VM snapshots.
 The availability for  a 1000-node cluster is also listed, assuming file block sharing patterns among VMs remain
@@ -275,15 +275,14 @@ alg     efficiency
 
 
 Table~\ref{tab:efficiency-comparison} shows the deduplication efficiency for SRB and VC with different 
-settings
-and
+settings.
 % <<<<<<< HEAD
 % Our deduplication efficiency is defined as the percent of duplicate chunks
 % which are detected and deduplicated, so only global perfect deduplication can have 100\% efficiency.
 % The figure also compares several PDS sizes chosen for VC. ``$\sigma=2\%$'' 
 % is defined in Table~\ref{tab:symbol}. 
 % =======
-duplication efficiency is defined as the percent of duplicate chunks which are removed
+Deduplication efficiency is defined as the percent of duplicate chunks which are removed
 compared to a perfect scheme which detects and removes  all deduplicates. 
 % so only global perfect deduplication can have 100\% efficiency.
 % We also compare several PDS sizes chosen for VC.
@@ -319,10 +318,10 @@ with a slight reduction in deduplication efficiency.
 %because we are rewarded by architecture-wise benefits such as fault-tolerance and fast 
 %Though not our primary goal, this result does show that VC can remove competitive amount of duplicates.
 
-Column 2 of Table~\ref{fig:efficiency-comparison} shows deduplication efficiency of VC without 
+Column 2 of Table~\ref{tab:efficiency-comparison} shows deduplication efficiency of VC without 
 using PDS and it achieves 93.02\%, missing about 3-3.56\% of the original data. That is losing upto
 356GB per physical machine because every machine deals with about 10TB data of snapshots. 
-Column 1 of Table~\ref{fig:efficiency-comparison} shows deduplication efficiency of VC without 
+Column 1 of Table~\ref{tab:efficiency-comparison} shows deduplication efficiency of VC without 
 local similarity search.
 %There is a big efficiency drop in this curve when the number of VMs is about 30.
 The reason similarity search provides such an improvement is that
@@ -416,10 +415,10 @@ Table ~\ref{tab:resource_usage} gives the resource usage  when
 running 1 or multiple  VM backup tasks at the same time on each physical machine. 
 ``CPU'' column is the percentage of a single core used. 
 ``Mem'' column includes 100MB memory usage for PDS index and other space cost for executing deduplication tasks such as 
-receipt metadata and cache. 
-``Read'' column is controlled as 50MB/s bandwidth usage with I/O throttling so that other cloud services are not impacted too much.
+recipe metadata and cache. 
+The ``Read'' column is controlled to 50MB/s bandwidth usage with I/O throttling so that other cloud services are not impacted too much.
 The peak raw storage read performance is about 300MB/s and we only use 16.7\% with this collocation consideration.
-``Write'' column is the I/O write usage of QFS and notice that each QFS write triggers disk writes in multiple machines due to
+``Write'' is the I/O write usage of QFS; note that each QFS write triggers disk writes in multiple machines due to
 data replication.     50MB/s dirty segment read speed triggers about 16.4MB/s disk write for non duplicates with one backup task.
 % [ NOT REASONABLE: Notice that memory and CPU used by PDS index and QFS are not included since they belong to 
 % the cloud infrastructure services and are shared among many applications.]
@@ -445,7 +444,7 @@ The total space used in SRB is about 1GB per machine.
 
 {\bf Processing Time breakdown}.
 Table~\ref{tab:vc_srb_combined} shows
-the  average  processing  time of  a VM segment under VC and Stateless Routing with Binning (SRB). 
+the  average processing  time breakdown of  a VM segment under VC and Stateless Routing with Binning (SRB). 
 VC uses $\sigma=2\%$ and $4\%$.
 For VC, the change of $\sigma$ does not significantly affect the overall backup speed as
 PDS lookup takes only a small amount of time. 
@@ -580,14 +579,14 @@ to remote machines for comparison while   VC handles most chunk fingerprints loc
 \end{table}
 
 {\bf Throughput of software layers without I/O throttling.}
-Table~\ref{tab:throughput} shows the  average throughput of software layer
-when when I/O throttling is not applied to control the usage.
+Table~\ref{tab:throughput} shows the  average throughput of the software layer
+when when I/O throttling is not applied to control usage. The
 %machine when all machine nodes execute one or multiple MV backup tasks.
 ``Backup'' column is the throughput  of the backup service  per machine.
 ``Snapshot store" is the  write throughput of the snapshot store layer and the significant reduction from this
 column to  ``Backup" column is caused by deduplication.
 Only non-duplicate chunks trigger a snapshot store write.
-``QFS'' column is the write request traffic to the underlying file system after compression.
+``QFS'' is the write request traffic to the underlying file system after compression.
 For example, with 148MB/second write traffic to the snapshot store, QFS write traffic is about 35.3MB/second
 after compression.  The underlying disk storage traffic will be three times greater with replication.
 The result shows that the backup service can deliver up to 5.46GB/second 
