@@ -14,7 +14,8 @@ SRB executes distributed deduplication by routing data chunks to cluster machine
 using  a min-hash function discussed in \cite{extreme_binning09}. Once a data chunk is routed to
 a machine, the chunk is compared with the fingerprint index within this machine locally based 
 on~\cite{extreme_binning09}.
-\subsection{Settings}
+
+{\bf Settings}.
 We have performed a trace-driven study based on a production dataset~\cite{WeiZhangIEEE} from 
 Alibaba Aliyun's cloud platform with about 2500 VMs, running on 100 physical machines. 
 Each machine hosts up to 25 VMs and each VM keeps 10 automatically-generated snapshots in the storage 
@@ -33,7 +34,8 @@ The fingerprint for variable-sized chunks is computed using their SHA-1 hash~\ci
 %Popularity of data blocks are collected through global counting and 
 %and top popular ones ($\delta=2\%$)  are  kept in the PDS, as discussed in Section~\ref{sect:store}.
 
-\subsection{Fault Isolation and Snapshot Availability}
+%\subsection{Fault Isolation and Snapshot Availability}
+\subsection{Snapshot Availability}
 
  Table~\ref{tab:vm-availability} shows the availability of VM snapshots when 
 there are up to 20 machines failed in a cluster with $p=100$ physical machines.
@@ -124,7 +126,7 @@ $r$ is fixed as 3. Thus when $r=3$, the reasonable choice for $r_c$ would be a n
 %availiability of the Non-PDS data as the failure rate of PDS data gets very small.
 
 
-\begin{table}
+\begin{table}[htbp]
   \centering
     \footnotesize
     \tabcolsep=0.11cm
@@ -168,7 +170,7 @@ $r$ is fixed as 3. Thus when $r=3$, the reasonable choice for $r_c$ would be a n
     \label{tab:vm-availability}
 \end{table}
 
-\begin{figure}[htb]
+\begin{figure}[htbp]
   \centering
 	\begin{tikzpicture}
 		\begin{axis}[
@@ -207,7 +209,7 @@ $r$ is fixed as 3. Thus when $r=3$, the reasonable choice for $r_c$ would be a n
 
 
 
-\subsection{Competitiveness of Deduplication Efficiency}
+\subsection{Deduplication Efficiency}
 \label{sect:evaldedup}
 
 
@@ -258,7 +260,7 @@ alg     efficiency
 \scriptsize{}VC-4\%PDS  96.5784837160482
 \scriptsize{}SRB        97.8625610883421
 }
-\begin{table}
+\begin{table}[htbp]
 \begin{small}
     \begin{tabular}{|c|c|c|c|c|}
     \hline
