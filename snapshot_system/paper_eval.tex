@@ -12,9 +12,10 @@ We will compare VC with a VO approach  using stateless routing with binning (SRB
 based on~\cite{Dong2011,extreme_binning09}.
 SRB executes distributed deduplication by routing data chunks to cluster machines~\cite{Dong2011}
 using  a min-hash function discussed in \cite{extreme_binning09}. Once a data chunk is routed to
-a machine, the chunk is compared with the fingerprint index within this machine locally. 
+a machine, the chunk is compared with the fingerprint index within this machine locally based 
+on~\cite{extreme_binning09}.
 
-\subsection{Settings}
+{\bf Settings}.
 We have performed a trace-driven study based on a production dataset~\cite{WeiZhangIEEE} from 
 Alibaba Aliyun's cloud platform with about 2500 VMs, running on 100 physical machines. 
 Each machine hosts up to 25 VMs and each VM keeps 10 automatically-generated snapshots in the storage 
@@ -33,14 +34,15 @@ The fingerprint for variable-sized chunks is computed using their SHA-1 hash~\ci
 %Popularity of data blocks are collected through global counting and 
 %and top popular ones ($\delta=2\%$)  are  kept in the PDS, as discussed in Section~\ref{sect:store}.
 
-\subsection{Fault Isolation and Snapshot Availability}
+%\subsection{Fault Isolation and Snapshot Availability}
+\subsection{Snapshot Availability}
 
  Table~\ref{tab:vm-availability} shows the availability of VM snapshots when 
 there are up to 20 machines failed in a cluster with $p=100$ physical machines.
 The trace driven execution allows us to estimate the number of file blocks shared by each VM in the VO and VC approaches
 and thus calculate the average availability of VM snapshots.
 The availability for  a 1000-node cluster is also listed, assuming file block sharing patterns among VMs remain
-the same from $p=100$ setting to $p=1000$. With differnet $p$ values, how the availability varies when 
+the same from $p=100$ setting to $p=1000$. With different $p$ values, how the availability varies when 
 the number of failures in the cluster changes.
 
 %Two VC curves use $V_c=1250$ and $V_c=2500$ representing the average number of VMs that share a PDS file system block. 
@@ -91,8 +93,8 @@ single block tends to affect many VMs.
 When the number of physical machines failed reaches 20, the availability of VO reaches 0\%
 and VC also drops to 1.13\%. This is because even there is a good availability for PDS data, VC still
 loses most of non-PDS blocks given the replication degree for non PDS is 3.
-On the other hand, when $p=1000$, the pecetnage of machine failure is then 2\% and
- VC outperforms VO significantly in availabilty in this case by delivering a meaningful avaiability with 99.62\%.
+On the other hand, when $p=1000$, the percentage of machine failure is then 2\% and
+ VC outperforms VO significantly in availability in this case by delivering a meaningful availability with 99.62\%.
 
 % because our VM-centric approach
 %localizes deduplication.  
@@ -117,14 +119,14 @@ a replication degree of 6  has a significant improvement over 4. The
 availability does not increase much  when increasing
 $r_c$ from 6 to 9 and the benefit is not so visible after $r_c>9$. 
 That is because when the number of failed machines increases beyond 6, 
-the non-PDS data availability starts to deteroriate significantly given its replication degree
+the non-PDS data availability starts to deteriorate significantly given its replication degree
 $r$ is fixed as 3. Thus when $r=3$, the reasonable choice for $r_c$ would be a number between 6 and 9.
  
 %This is because, as described before, the availability of the VM approaches the
 %availiability of the Non-PDS data as the failure rate of PDS data gets very small.
 
 
-\begin{table}
+\begin{table}[htbp]
   \centering
     \footnotesize
     \tabcolsep=0.11cm
@@ -168,7 +170,7 @@ $r$ is fixed as 3. Thus when $r=3$, the reasonable choice for $r_c$ would be a n
     \label{tab:vm-availability}
 \end{table}
 
-\begin{figure}[htb]
+\begin{figure}[htbp]
   \centering
 	\begin{tikzpicture}
 		\begin{axis}[
@@ -207,7 +209,7 @@ $r$ is fixed as 3. Thus when $r=3$, the reasonable choice for $r_c$ would be a n
 
 
 
-\subsection{Competitiveness of Deduplication Efficiency}
+\subsection{Deduplication Efficiency}
 \label{sect:evaldedup}
 
 
@@ -258,7 +260,7 @@ alg     efficiency
 \scriptsize{}VC-4\%PDS  96.5784837160482
 \scriptsize{}SRB        97.8625610883421
 }
-\begin{table}
+\begin{table}[htbp]
 \begin{small}
     \begin{tabular}{|c|c|c|c|c|}
     \hline
@@ -283,7 +285,7 @@ settings.
 % is defined in Table~\ref{tab:symbol}. 
 % =======
 Deduplication efficiency is defined as the percent of duplicate chunks which are removed
-compared to a perfect scheme which detects and removes  all deduplicates. 
+compared to a perfect scheme which detects and removes  all duplicates. 
 % so only global perfect deduplication can have 100\% efficiency.
 % We also compare several PDS sizes chosen for VC.
 %(see Table~\ref{tab:symbol} for definition of ``$\sigma=2\%$'')
@@ -426,26 +428,33 @@ data replication.     50MB/s dirty segment read speed triggers about 16.4MB/s di
 %The  local deduplication only needs to keep the parent snapshot recipe and a few similar segment recipes in 
 %memory during duplicate detection.
 
-Table ~\ref{tab:resource_usage} shows that  a single backup task per node can complete the backup of the entire
-VM cluster in about 1.31 hours. Since there are about 25 VMs per machine, we could execute
+Table ~\ref{tab:resource_usage} shows that when  each machine conducts
+backup one VM at a time, the backup of the entire
+VM cluster completes in about 1.31 hours. Since there are about 25 VMs per machine, we could execute
 more tasks in parallel at each machine. But adding more backup concurrency does not shorten the overall time
-significantly because of the controlled  disk read bandwidth usage.
+significantly in this case because of the controlled  disk read bandwidth usage.
 %,  we can still process raw data at near 175 MB/s. If we consider the extreme case in which each machine has 25 VMs
 %at 40GB size, our snapshot system can finish backing up all the VMs (1TB total) in 1.58 hours.
 
-It should be noted that global fingerprint  space requirement of VC is about 2\% of SRB 
-(with $\sigma$=2\%) since we only deal with popular items. 
+It should be noted that global fingerprint  space requirement of VC is about 2\% of all unique fingerprints 
+with $\sigma$=2\%. SRB uses an approximated method to look for a match within a bin and
+its memory space usage is about 190MB per machine. That is compared with 118MB used in VC with $\sigma=2\%$.
+Using a bloom filter with an index cache would require more memory space~\cite{Dong2011}.
+
+ 
 \comments{
 The total memory space would cost over 6GB per machine.
-We have implemented a bloomfilter for SRB which uses a comparable in-memory
+We have implemented a bloom-filter for SRB which uses a comparable in-memory
 index space size per machine compared VC, but SRB also needs extra space for caching hot index.
 The total space used in SRB is about 1GB per machine. 
 }
 
-{\bf Processing Time breakdown}.
+{\bf Processing Time breakdown without I/O throttling}.
 Table~\ref{tab:vc_srb_combined} shows
-the  average processing  time breakdown of  a VM segment under VC and Stateless Routing with Binning (SRB). 
+the  average  time breakdown for processing a dirty VM segment in milliseconds
+under VC and Stateless Routing with Binning (SRB). 
 VC uses $\sigma=2\%$ and $4\%$.
+The overall processing latency of SRB is about 23.9\% slower than VC.
 For VC, the change of $\sigma$ does not significantly affect the overall backup speed as
 PDS lookup takes only a small amount of time. 
 It has a breakdown of processing time.
@@ -454,7 +463,7 @@ updating of the metadata.
 ``Network'' includes the cost of transferring raw and meta data from one machine to another during 
 snapshot read and write.
 ``Index Lookup'' is the disk, network and CPU time during fingerprint comparison.
-This includes PDS data lookup for VC and index lookup from disk in SRB after Bloom filter lookup.
+This includes PDS data lookup for VC and index lookup from disk in SRB. 
 The network transfer time for VC and SRB is about the same, because the 
 amount of raw data they transfer is comparable.
 SRB spends slightly more time for snapshot read/write because during each snapshot  backup, SRB involves many small bins,
@@ -515,7 +524,7 @@ to remote machines for comparison while   VC handles most chunk fingerprints loc
         column type/.add={}{|},
         every first column/.style={column type/.add={|}{}},
     ]{figures/vc_srb_combined_pgfplots.txt}
-    \caption{Average time in microsecond to backup a dirty 2MB VM segment under SRB and VC with I/O throttling.
+    \caption{Average time in milliseconds  to backup a dirty 2MB VM segment under SRB and VC with I/O throttling.
 %        \todo{Decide between this and bar plot with the same caption}
     }
     \label{tab:vc_srb_combined}
@@ -592,7 +601,7 @@ after compression.  The underlying disk storage traffic will be three times grea
 The result shows that the backup service can deliver up to 5.46GB/second 
 per machine without I/O restriction
 under 6 concurrent backup tasks. 
-For our dataset with 1TB per machine to backup snapshots of 25 VMs, each machine
+For our dataset, each version of total snapshots  has abut  1TB per machine for 25 VMs and  thus  each machine
 would complete the backup in about 3.05 minutes.
 With a higher disk storage bandwidth available, the above backup
 throughput would be higher. 
@@ -629,6 +638,7 @@ throughput would be higher.
 
  \subsection{Effectiveness of Approximate Deletion}
 
+\comments{
  \begin{figure}
 \vspace{-0.1in}
      \centering
@@ -636,20 +646,37 @@ throughput would be higher.
      \caption{Accumulated storage leakage by approximate snapshot deletions ($\Delta u/u=0.025$)}
      \label{fig:leakage}
  \end{figure}
+}
+\begin{table}
+\begin{small}
+    \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+   &     1 &  3  & 5 & 7  & 9 \\ 
+\hline   
+     Estimated& .02\% & .06\% & .10\%& .14\% & .18\%\\ 
+\hline   
+     Measured & .01\% & .055\% & .09\% & .12\% & .15\% \\
+\hline   
+    \end{tabular}
+\end{small}
+     \caption{Accumulated storage leakage by approximate snapshot deletions ($\Delta u/u=0.025$)}
+     \label{tab:leakage}
+\end{table}
 
+Table~\ref{tab:leakage} shows the average accumulated storage leakage in terms of percentage of
+storage space per VM caused  by approximate deletions.
 In this experiment, we select 105 VMs and let all the VMs accumulate 10 snapshots, 
 then start to delete those snapshots one by one in reverse order.
 As we know the actual storage needs after each snapshot creation,
 the storage leakage can be detected by
 comparing the size of remaining data in use after deletion to the correct number.
-Figure~\ref{fig:leakage} shows the average accumulated storage leakage in terms of percentage of
-storage space per VM caused  by approximate deletions.
 The top dashed line is the predicted leakage using Formula~\ref{eq:leakrepair} from Section~\ref{sect:delete}
 given $\Delta u/u=0.025$,
 while the solid line represents the actual average leakage measured during the experiment for all the VMs. 
 The Bloom filter setting is based on $\Delta u/u=0.025$.
 After 9 snapshot deletions, the actual leakage ratio reaches 0.0015 and this means that
 there is only 1.5MB space leaked for every 1GB of stored data.
-The actual leakage can reach  4.1\% after  245 deletions.
-This experiment shows that the leakge of our approximate snapshot deletion is very small, 
+The actual leakage can reach  4.1\% after  245 deletions and such a repair is needed every 12 days
+to the  leakage under 5\%. 
+This experiment shows that the leakage of our approximate snapshot deletion is very small, 
 below the estimated number.

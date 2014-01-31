@@ -5,14 +5,14 @@
 
 \begin{figure}[htbp]
   \centering
-  \epsfig{file=images/deletion.pdf, width=3in}
-  \caption{Approximate deletion}
+  \epsfig{file=images/deletion.pdf, width=2.7in}
+  \caption{Fast approximate deletion}
   \label{fig:deletion_flow}
 \end{figure}
 
 Snapshot deletions can occur frequently since old snapshots become less useful.
 General deduplication complicates the deletion process because sharing of duplicates
-requires a global refence counting~\cite{Guo2011,Fabiano2013} 
+requires a global reference counting~\cite{Guo2011,Fabiano2013} 
  to identify if  a chunk can be  safely removed without any reference.
 %The complexity of our distributed environment obviates reference counting as an option,
 %and While we can use the mark-and-sweep, 
@@ -49,7 +49,7 @@ given $h$ snapshots stored for a VM, there are $h$ summary vectors maintained.
 We adjust the summary vector size and recompute the vectors if the VM size changes substantially over time.
 This can be done during the periodic leakage repair stage described below.
 
-\item {\bf Approximate deletion with fast summary comparison.}
+\item {\bf Fast approximate deletion with summary comparison.}
 When there is a snapshot deletion,  
 we need to identify if chunks to be deleted from that snapshot
 are still referenced by other snapshots. 
@@ -68,6 +68,11 @@ However, among all the chunks to be deleted,
 there are a small percentage of unused chunks  which
 are misjudged as  being in use, resulting in storage leakage.
 
+One advantage of the above fast method is that it can finish  and free storage 
+usage immediately, while other offline methods (e.g. ~\cite{Guo2011,Fabiano2013})
+can't. That is important for storage accounting as users pay what are used and delayed deletion
+affects the accounting.
+
 \item {\bf Periodic repair of leakage}.
 %[exlpain why second Bloom filter, why scan append store]
 Leakage repair is conducted periodically to fix the above approximation error.
@@ -78,11 +83,15 @@ A mark-and-sweep process  requires a scan of all the metadata for a snapshot sto
 %This generally requires a scan of almost the entire snapshot store which is much more expensive than approximate deletion,
 %although certain optimized algorithms may apply\cite{Przemyslaw2013}. But 
 Since it is a VM-specific procedure, 
-the space and time cost is relatively small compared to the tranditional mark-and-sweep
-which scans snapshot chunks from all VMs.
-For example, consider each reference consumes 8 bytes plus  1 mark bit. A VM that has 40GB backup data with about
-10 million chunks will need less than 85MB of memory to complete a VM-specific mark-and-sweep process
-in less than half an hour, assuming 50MB/s disk bandwidth is allocated.
+the space cost for processing each VM is proportional to the number of chunks
+within each VM. For example, the space requirement is about 85MB for a VM of size 40GB in our tested dataset.
+ This is  much less expensive  than  the VM-oblivious mark-and-sweep
+which scans snapshot chunks from all VMs, even with optimization~\cite{Guo2011}.
+
+%Given $n$ VMs in a cluster, the space cost is $n$ times larger.
+%For example, consider each reference consumes 8 bytes plus  1 mark bit. A VM that has 40GB backup data with about
+%10 million chunks will need less than 85MB of memory to complete a VM-specific mark-and-sweep process
+%in less than half an hour, assuming 50MB/s disk bandwidth is allocated.
 \end{itemize}
 
 %{\bf Discussion}
