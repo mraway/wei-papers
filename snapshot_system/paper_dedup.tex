@@ -84,7 +84,9 @@ We have studied the distribution of chunk popularity~\cite{WeiZhangIEEE}
 based on a data trace from Alibaba with over 2500 VMs.
 The distribution is zipf-like and popular chunks dominate the distribution.
 We denote $\sigma$ as the percentage of unique data chunks belonging to PDS and from the evaluation we find that
-$\sigma$ with a range of 1 to 4\% can deliver a fairly competitive deduplication efficiency.
+$\sigma$ with a range of 1 to 4\% can deliver a fairly competitive deduplication efficiency. For example,
+with top 2\% of the most popular chunks stored in PDS, nearly 40\% of the raw backup data can be eliminated
+by fingerprint lookup in PDS index.
 
 % Figure~\ref{fig:Datazipf} illustrates the distribution of chunk popularity based on a data trace from Alibaba with over 2500 VMs.
 % The distribution is zipf like and popular chunks are dominating the large portion of data chunks.
