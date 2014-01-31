@@ -600,12 +600,12 @@ when I/O throttling is not applied to control usage. The
 column to  ``Backup" column is caused by deduplication.
 Only non-duplicate chunks trigger a snapshot store write.
 Column ``QFS'' is the write request traffic to the underlying file system after compression.
-For example, with 148MB/second write traffic to the snapshot store, QFS write traffic is about 35.3MB/second
-after compression.  The underlying disk storage traffic will be three times greater with replication.
-The result shows that the backup service can deliver up to 5.46GB/second 
+For example, with 148 MB/s write traffic to the snapshot store, QFS write traffic is about 35.3 MB/s
+after compression.  However, the underlying disk storage traffic will be three times greater with replication.
+The result shows that the backup service can deliver up to 5.46 GB/s 
 per machine without I/O restriction
 under 6 concurrent backup tasks. 
-For our dataset, each version of total snapshots  has abut  1TB per machine for 25 VMs and  thus  each machine
+For our dataset, each version of total snapshots has abut 1TB per machine for 25 VMs and  thus  each machine
 would complete the backup in about 3.05 minutes.
 With a higher disk storage bandwidth available, the above backup
 throughput would be higher. 
