@@ -91,7 +91,17 @@ A(r) & availability of a file block with $r$ replicas and $d$ failed physical ma
 
 Now we  analyze  the impact of losing $d$ physical machines 
 to the VM centric and oblivious approaches.  
-Parameters used in our analysis below are defined in Table~\ref{tab:symbol}. 
+There are two impacts to VC. 
+1) Some PDS fingerprint lookup services do not respond.  As  a result, some duplicates
+are not detected and deduplication efficiency suffers, but the overall systems can still
+function well and fault tolerance is not affected.  As discussed in Section ~\ref{sect:architecture}, 
+PDS index is distributed
+among all machines in our implementation and thus a percentage of failed nodes
+causes an increase in missed duplicates proportionally.
+2) Some storage nodes do not  respond and file blocks on those machines are lost. The availability of
+VM snapshots is affected and we analyze this impact as follows.
+
+
 %A large $r_c/r$ ratio can have a positive impact on full availability of VM snapshot blocks.
 %We use an FSB rather than a deduplication
 %data chunk as our unit of failure because the DFS keeps
@@ -99,6 +109,7 @@ Parameters used in our analysis below are defined in Table~\ref{tab:symbol}.
 To compute the full availability of all snapshots of a VM, we estimate
 the number of file system blocks per VM and the probability of losing a snapshot file system 
 block of a VM in each approach as follows.
+Parameters used in our analysis below are defined in Table~\ref{tab:symbol}. 
 %As illustrated in Figure~\ref{fig:share},
 %we build a bipartite graph representing the association from unique file system blocks
 %to their corresponding VMs in each approach. An association edge is  drawn  from an FSB to a VM 
@@ -133,14 +144,15 @@ n *N_o   =  V_o *\mbox{ Number of file system blocks in VO.}
 Since we choose 2-4\% of unique chunks for PDS
 and Section~\ref{sect:evaldedup} 
 shows that the deduplication efficiency of VC is very close to that of VO,
-the number of non-PDS file blocks in VC is similar to the number of file blocks in VO.
+the number of non-PDS file blocks in VC is fairly close to the number of file blocks in VO.
 Then
 \[
 \frac{N_o}{N_1} \approx  V_o.
 \]
 %Thus $N_o >> N_1$.
 
-Figure~\ref{fig:vm-links} shows $N_1$, $N_2$, and $N_o$ values in our tested dataset when increasing the number of VMs.  
+Figure~\ref{fig:vm-links} shows $N_1$, $N_2$, and $N_o$ values of 105 VMs from a  test dataset 
+discussed in Section~\ref{sect:evaluation} when increasing the number of VMs.  
 %the average number of file system blocks for each VM in VC and in VO
 $N_1$ is much smaller than $N_o$ as the formula shows above. 
 

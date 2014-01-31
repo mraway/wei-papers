@@ -78,13 +78,14 @@ most popular chunk fingerprints (called \textbf{PDS index}) in a distributed sha
 %this paper provides  a more comprehensive scheme with  improved deduplication efficiency and fault tolerance, and
 %analytic design guidance. 
 
+We have studied the distribution of chunk popularity~\cite{WeiZhangIEEE} 
+based on a production data trace from Alibaba with over 2500 VMs.
+The distribution is Zipf-like and popular chunks dominate the distribution.
+We denote $\sigma$ as the percentage of unique data chunks belonging to PDS and from the evaluation we find that
+$\sigma$ with a range of 2 to 4\% can deliver a fairly competitive deduplication efficiency.
+
 Since $k$ is relatively small and these top $k$ chunks are shared among multiple VMs, 
 we can afford to provide extra replicas for these popular chunk data to enhance the fault resilience.
-We have studied the distribution of chunk popularity~\cite{WeiZhangIEEE} 
-based on a data trace from Alibaba with over 2500 VMs.
-The distribution is zipf-like and popular chunks dominate the distribution.
-We denote $\sigma$ as the percentage of unique data chunks belonging to PDS and from the evaluation we find that
-$\sigma$ with a range of 1 to 4\% can deliver a fairly competitive deduplication efficiency.
 
 % Figure~\ref{fig:Datazipf} illustrates the distribution of chunk popularity based on a data trace from Alibaba with over 2500 VMs.
 % The distribution is zipf like and popular chunks are dominating the large portion of data chunks.
