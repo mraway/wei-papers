@@ -78,11 +78,14 @@ A mark-and-sweep process  requires a scan of all the metadata for a snapshot sto
 %This generally requires a scan of almost the entire snapshot store which is much more expensive than approximate deletion,
 %although certain optimized algorithms may apply\cite{Przemyslaw2013}. But 
 Since it is a VM-specific procedure, 
-the space and time cost is relatively small compared to the tranditional mark-and-sweep
-which scans snapshot chunks from all VMs.
-For example, consider each reference consumes 8 bytes plus  1 mark bit. A VM that has 40GB backup data with about
-10 million chunks will need less than 85MB of memory to complete a VM-specific mark-and-sweep process
-in less than half an hour, assuming 50MB/s disk bandwidth is allocated.
+the space cost for processing each VM is proportional to the number of chunks
+within each VM. For example, it is about 85MB space requirement for a VM of size 40GB in our tested dataset.
+ This is  much smaller compared to the tranditional mark-and-sweep
+which scans snapshot chunks from all VMs. Given $n$ VMs in a cluster, the space cost
+is $n$ times larger.
+%For example, consider each reference consumes 8 bytes plus  1 mark bit. A VM that has 40GB backup data with about
+%10 million chunks will need less than 85MB of memory to complete a VM-specific mark-and-sweep process
+%in less than half an hour, assuming 50MB/s disk bandwidth is allocated.
 \end{itemize}
 
 %{\bf Discussion}
