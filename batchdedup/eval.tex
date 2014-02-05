@@ -17,14 +17,19 @@ Objectives of our evaluation are:
 %the CPU usage is very small during the experiments. 
 We have performed a trace-driven study using  a 1323 VM dataset  collected from 
 %100 Alibaba Aliyun's cloud nodes~\cite{WeiZhangIEEE}.
-a cloud cluster at Alibaba's Aliyun.
+a cloud cluster at Alibaba's Aliyun. based on the data distribution from the
+trace data, we have also simulated the VM size distribution of several much
+larger clusters by generating synthetic traces (e.g. the two clusters in
+Fig~\ref{fig:hist} have 4224 and 8046 VMs).
 % ~\cite{WeiZhangIEEE}.
 % and each of machine nodes has 16 cores and 12 disk drives,  hosting  up to 25 VMs. 
-For each VM, the system keeps 10 automatically-backed snapshots in the storage while
-a user may instruct extra snapshots to be saved.
-The backup of VM snapshots is completed within a few  hours every night.
-Based on our study of its production  data,  each VM has about  40GB of storage  data usage on average
-including OS and user data disk.
+For each VM, the system keeps 10 automatically-backed snapshots in the storage
+while a user may instruct extra snapshots to be saved.  The backup of VM
+snapshots is completed within a few  hours every night.  Based on our study of
+its production  data,  each VM has an average of 40GB of storage  data usage on
+including OS and user data disk (though the exact size of a VM varies with a
+long-tail distribution).
+
 Each VM image is  divided into 2 MB fix-sized segments and each segment is divided into 
 variable-sized content blocks  with an average size of 4KB.
 %variable sizes~\cite{similar94,rabin81} with an average size of 4KB. 

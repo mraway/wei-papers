@@ -1,9 +1,9 @@
 \section{Multi-round Batch Scheduling}
 \label{sect:scheduling}
-The naive way for synchronized backup is   to schedule all of the backup tasks in one round.
-Since parallel backup of these tasks goes through several stages,
-that results in the backup time of each VM is approximately equal to the total execution of all backup tasks.
-Given VM sizes are highly skewed in a large cluster, some big VMs will take a long time and other
+The na\"{\i}ve way for synchronized backup is to schedule all of the backup tasks in one round.
+Since parallel backup of these tasks goes through several synchronized stages,
+the backup time of each VM is approximately equal to the total execution of all backup tasks.
+Given VM sizes are highly skewed in a large cluster (see Fig.~\ref{fig:hist} for a plot of the distribution in several real clusters), some big VMs will take a long time and other
 small VM backup tasks synchronized in one round will have to wait.
 Thus the average backup time for small VMs is fairly large. 
 
@@ -40,8 +40,8 @@ and single-round operation synchronization significantly increases COW overhead.
 To determine how evenly distributed VM sizes are, we obtained statistical data
 for 22 Aliyun clusters. The clusters in our dataset all have a very long tail
 distribution, though local minima exist in the histogram and the range of VM
-sizes varies. Other production clusters may have different distributions, but
-all of the clusters we have looked at have similarly shaped distributions. Size
+sizes varies.
+All of the clusters we have looked at have similarly shaped distributions. Size
 distribution histograms for two of the clusters are shown in
 Fig.~\ref{fig:hist}. There is a long tail on both histrograms which has been
 cut (out to 100GB for the first, and out to 2000GB for the second). The

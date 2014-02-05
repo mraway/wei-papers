@@ -320,17 +320,16 @@ write non-duplicate blocks to the  backup storage;
 {\bf Snapshot deletion.} Each VM will keep a limited number of  automatically-saved snapshots and 
 expired snapshots are normally deleted.
 % unless its owner explicitly asks for its retention.
-We adopt the idea of mark-and-sweep~\cite{Guo2011}. 
+To perform compaction of unused blocks, We adopt the idea of mark-and-sweep~\cite{Guo2011}. 
 A block or a segment can be deleted if its reference count is zero.
 %As we discussed in Section~\ref{sect:data}, the reference counter is kept in the global index, partitioned among machines. 
-To delete useless  blocks or segments periodically, we read the meta data  of all
-snapshots and compute the reference count of all blocks and segments  in parallel.
+To delete unreferenced blocks or segments periodically, we read the meta data  of all
+snapshots and determine which blocks and segments are referenced  in parallel.
 %while following the fingerprint-based partitioning.
-Similar to the multi-stage duplicate detection process, reference counting is conducted in multi-stages. 
+Similar to the multi-stage duplicate detection process, marking is conducted in multiple stages. 
 Stage  1 is to read  the segment and block  metadata 
-to accumulate  reference count requests in different machines  in the fingerprint based distribution.
-Stage   2 is to count references within each partition and detect those records with zero 
-reference. 
+to accumulate  references in different machines  based on the fingerprint based distribution.
+Stage   2 is to mark blocks/segments within each partition and detect those records which are unmarked (and therefore can be deleted).
 %Stage 3 is that every VM gathers its z confirmed deletion requests for its content and sends them to the backup storage.
 The backup  data repository logs deletion instructions,  and will periodically perform a compaction operation when 
 its deletion log is too big. 
