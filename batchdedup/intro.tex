@@ -20,15 +20,15 @@ the attached backup system.  Such a dedicated backup  configuration can be expen
 considering that significant networking  and computing resource  is required 
 to transfer undeduplicatd data and conduct signature comparison. 
 Our work is targeted applications where data processing and archiving  can be conducted
-in an inexpensive commodity storage cluster using the  Google file system or Hadoop~\cite{googlefs03}
-and such a storage cluster is non-dedicated, shared with other services running in the entire cluster.
-Resource sharing is common especially in the cloud where many computing and storage
-services are collocated in the same physical machines.
-
+in an inexpensive commodity storage cluster using a distributed file system
+such as the Google file system or Hadoop~\cite{googlefs03,hdfs10}.
+Resource sharing is common, especially in the cloud where many computing and storage
+services are collocated in the same physical machines, so we 
+expect the storage cluster to be non-dedicated.
 
 With  resource sharing with other services as an assumption, we are motivated to develop a 
 low-profile backup solution with deduplication. 
-Deduplication is a major
+%Deduplication is a major
 
 
 %This paper seeks for a low-cost architecture option and considers a backup
@@ -44,10 +44,21 @@ that deletion of old snapshots compete for computing resource as well, because d
 by duplicate relationship among snapshots  adds processing complexity.
 % especially when  VMs can migrate around in the cloud. 
 
-Among the three factors - time, cost and deduplication efficiency, one of them has to be compromised for the other two. For instance, if we were building a deduplication system that has a high rate of duplication detection and has a very fast response time, 
-it would need a lot of memory to hold fingerprint index and cache.  This leads to a compromise on cost. 
-Our objective is to lower the cost incurred while sustaining the highest de-duplication ratio
-and  a sufficient throughput in dealing with a large number of VM images.% This business model partially  resembles that of Amazon Glacier.
+%Among the three factors - time, cost and deduplication efficiency, one of them
+%has to be compromised for the other two. For instance, if we were building a
+%deduplication system that has a high rate of duplication detection and has a
+%very fast response time, 
+%it would need a lot of memory to hold fingerprint index and cache.  This leads to a compromise on cost. 
+%Our objective is to lower the cost incurred while sustaining the highest de-duplication ratio
+%and  a sufficient throughput in dealing with a large number of VM images.% This business model partially  resembles that of Amazon Glacier.
+
+Among the three factors - time, cost, and deduplication efficiency, our main
+objective is low cost, so as to not significantly impact primary services. By
+sacrificing memory a faster deduplication system
+can be built, but then machines must be dedicated to backup, which goes
+against the converged architecture model that we are supporting. For daily
+backup jobs, it is ok if the job takes 2-3 hours, as long as the resource
+usage is minimal and it can be finished during lower usage hours of the day.
 
 %Our solution  only uses a very small amount of memory space during backup while completing  snapshot backup and 
 %deletion in a reasonable amount of time. 

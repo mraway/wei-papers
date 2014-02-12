@@ -1,0 +1,46 @@
+\begin{tikzpicture}[]\sffamily\scriptsize
+    \colorlet{schblue}{blue!20!white}
+    \foreach \r in {1, 2} {
+        %I build up the Rround from the bottom left
+        \coordinate (corner) at ($4*(\r-1,0)$);
+        \draw (corner) rectangle ++(2.46,4.5)
+        rectangle ++(-2.46,-0.4) node [midway,anchor=center] {\footnotesize{}Round \r}
+        ++(0,-0.1) coordinate (gridbox)
+        rectangle +(2.46,-0.35);
+        \foreach \x in { 0.82, 1.64 }
+            \draw ([xshift=\x cm]gridbox) -- ([xshift=\x cm]corner);
+        \foreach \x in { 1, 2, 3 }
+            \path ($(gridbox)+0.82*(\x-1,0)$) -- +(0.82,-0.35)
+            node[midway,anchor=center]{M\x};
+    }
+
+    %the next 4 draw statements just build up various already scheduled VMs
+    \draw[fill=schblue] (0.82,0)
+    rectangle ++(0.82,1.1) node[midway]{VM};
+
+    \draw[fill=schblue] (4.82,0)
+    rectangle ++(0.82,1.1) node[midway]{VM};
+
+    \draw[fill=schblue] (1.64,0)
+    rectangle ++(0.82,0.3) node[midway]{VM}
+    rectangle ++(-0.82,0.6) node[midway]{VM}
+    rectangle ++(0.82,0.9) node[midway]{VM};
+
+    \draw[fill=schblue] (4.0,0)
+    rectangle ++(0.82,0.8) node[midway]{VM}
+    rectangle ++(-0.82,0.4) node[midway]{VM}
+    rectangle ++(0.82,0.6) coordinate (rtwotop) node[midway]{VM};
+
+    %now we draw the next VM to be scheduled, and two possible locations for it
+    \draw[fill=white,dashed,ultra thick] (0,0) rectangle +(0.82,1.5)
+    node[midway,anchor=south]{VM1A}
+    node[midway,anchor=north]{?};
+    \draw[fill=white,dashed,ultra thick] (rtwotop) rectangle +(-0.82,1.5)
+    node[midway,anchor=south]{VM1A}
+    node[midway,anchor=north]{?};
+
+    \draw[fill=white,dashed,ultra thick] (2.82,0) rectangle +(0.82,1.5)
+    node[midway,anchor=south]{VM1A}
+    node[midway,anchor=north]{?};
+
+\end{tikzpicture}

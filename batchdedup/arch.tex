@@ -17,7 +17,7 @@ uses coarse-grain segment  dirty bits for version-based detection~\cite{Clements
 % to identify difference from the previous snapshot to the current snapshot.  
 %That  can be accomplished efficiently and inexpensively in the OS level.
 %We use a segment-level coarse-grain setting to reduce the efforts in detection and maintaining dirty bits. 
-Our experiment with Alibaba's production dataset shows that over 70 percentage of 
+Our experiments with Alibaba's production dataset shows that over 70 percent of 
 duplicates can be detected using segment dirty bits when the segment size is 2M bytes.  
 This setting requires the virtual disk driver to maintain segment dirty bits,
 which has a negligible space cost (1 bit per 2 MB). In the second level of deduplication, content blocks of dirty segments 
@@ -36,7 +36,7 @@ The second level detection requires a global comparison of fingerprints.
 %waiting while  it memory consumption is still significant in competing with stand virtual 
 %machine activities.  
 Our approach is to perform duplicate detection first before actual data backup.
-That requires a prescanning of  dirty VM segments, which
+This requires a prescanning of  dirty VM segments, which
 %  and after that, real backup  for those non-duplicates is conducted. 
 does incur an extra  round of VM reading.
 % while avoiding inline deduplication and leading to a much smaller resource requirement.  
@@ -44,7 +44,8 @@ During VM prescanning, detection requests are accumulated.
 Aggregated deduplicate requests can be processed partition by partition. 
 %We also accumulate the delete requests and perform them partition by partitions. 
 Since each partition corresponds to a small portion of global index, 
-memory cost to process detection requests within a partition is small.
+memory cost to process detection requests within a partition is small and can
+be handled in memory.
 %the cost to process detection requests within a partition is significantly smaller than processing all 
 %the requests globally.
 
@@ -110,7 +111,9 @@ this cluster  or use another  external storage system.
 
 \begin{figure}
 \centering
-\includegraphics[width=0.5\textwidth]{images/batch_arch.pdf}
+%\includegraphics[width=0.5\textwidth]{batch_arch}
+%this is an alternate version of the figure done completely in latex
+\input{figures/batch_arch}
 \caption{Overall architecture of parallel VM snapshot deduplication}
 \label{fig:snapshot}
 \end{figure}
@@ -146,7 +149,7 @@ the block metadata contains a reference pointer to the earlier block.
 
 \begin{figure}[th]
 \centering
-\includegraphics[width=0.5\textwidth]{images/Stage1.pdf}
+\includegraphics[width=0.5\textwidth]{Stage1}
 \caption{Processing flow of Stage 1.}
 \label{fig:stage1}
 \end{figure}
@@ -174,7 +177,7 @@ since a content block in a VM image of this machine can be sent to any of these 
 $p$ receive buffers to collect requests  from other machines.
 Then the system copies requests from each of $p$ receive buffers to  $q$ local request buffers,
 and outputs each request buffer to one of the request partitions on the disk
-when this request buffer becomes full.  Option 2, which is  depicted in Figure~\ref{fig:flow},
+when this request buffer becomes full.  Option 2, which is  depicted in Figure~\ref{fig:stage1},
 is much more efficient than Option 1 because $2p+q$ is much smaller than
 $p\times q$, except for the very small  values. 
 As a result, each buffer in Option 2 has a bigger size to accumulate requests and that means
@@ -207,7 +210,7 @@ that, the percentage of redundant blocks due to concurrent processing  is small.
 
 \begin{figure}[th]
 \centering
-\includegraphics[width=0.5\textwidth]{images/Stage2.pdf}
+\includegraphics[width=0.5\textwidth]{Stage2}
 \caption{Processing flow of Stage 2.}
 \label{fig:stage2}
 \end{figure}
@@ -250,7 +253,7 @@ blocks. Our experiment shows that it is faster to read dirty segments in the tes
 
 \begin{figure}[th]
 \centering
-\includegraphics[width=0.5\textwidth]{images/Stage3.pdf}
+\includegraphics[width=0.5\textwidth]{Stage3}
 \caption{Processing flow of Stage 3.}
 \label{fig:stage3}
 \end{figure}
@@ -268,7 +271,7 @@ duplicate result lists to be returned in Stage 4.
 
 \begin{figure}[th]
 \centering
-\includegraphics[width=0.5\textwidth]{images/Stage4.pdf}
+\includegraphics[width=0.5\textwidth]{Stage4}
 \caption{Processing flow of Stage 4.}
 \label{fig:stage4}
 \end{figure}

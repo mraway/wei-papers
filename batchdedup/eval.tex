@@ -51,10 +51,62 @@ The final content copied to the backup storage is reduced by 94.4\% in total.
 
 \begin{figure}
 \centering
-\includegraphics[width=0.4\textwidth]{mem_time.pdf}
+\includegraphics[width=0.4\textwidth]{mem_time}
 \caption{ Parallel time when memory limit varies.}
 \label{fig:memory}
 \end{figure}
+
+\comments{
+alternate version of fig:memory done all in pgfplots
+\begin{figure}[ht]
+  \centering
+    \begin{tikzpicture}
+            \begin{axis}[
+            %title={Extreme-Binning Efficiency},
+            ybar stacked,
+            width=0.85\columnwidth,
+            cycle list name=mfill,
+            bar width=0.70cm,
+            style=very thin,
+            symbolic x coords={35M,45M,55M,65M,95M,190M},
+            %xlabel={Memory Usage},
+            ylabel={Time (hours)},
+            %extra y ticks={4.5,5.5,6.5}, %to add extra ticks
+            xtick=data, %without this the symbolic coords may be repeated as filler
+            enlarge x limits=0.15, %used to push plots towards center
+            ymin=0,
+            %ymax=4.,
+            ytick={0,0.5,1,...,4},
+            %{/pgf/number format/.cd,fixed,precision=2},
+            ymajorgrids,
+            grid style=densely dotted,
+            major x tick style=transparent,
+            tick label style={font=\scriptsize\mathversion{sans}\sffamily},
+            label style={font=\footnotesize\sf},
+            legend pos=south east,
+            reverse legend,
+            area legend,
+            legend cell align=right,
+            legend style={
+                %    at={(0.5,-0.2)},
+                %anchor=north,
+                font=\scriptsize\sf,
+                %draw=none,
+            },
+            ]
+            \addplot table[header=false,x index=0,y index=2] {figures/mem_time_new.data};
+            \addlegendentry{Stage 1}
+            \addplot table[header=false,x index=0,y index=3] {figures/mem_time_new.data};
+            \addlegendentry{Stage 2}
+            \addplot table[header=false,x index=0,y index=4] {figures/mem_time_new.data};
+            \addlegendentry{Stage 3}
+            %\legend{Data read/write,Network cost, Index access/lookup}
+            \end{axis}
+    \end{tikzpicture}
+    \caption{Parallel time when memory limit varies}
+  \label{fig:memory}
+\end{figure}
+}
 
 \begin{figure}[ht]
   \centering

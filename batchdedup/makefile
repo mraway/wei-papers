@@ -1,6 +1,6 @@
 MAIN = main
-TEX = main.tex abs.tex background.tex arch.tex eval.tex concl.tex intro.tex steps.pdf snapshotdata.pdf mem_time.pdf analysis.tex scheduling.tex
-FIG = mem_time.pdf
+TEX = main.tex abs.tex background.tex arch.tex eval.tex concl.tex intro.tex steps.pdf snapshotdata.pdf analysis.tex scheduling.tex
+FIG = figures/mem_time.pdf
 BIB = dedup1.bib library.bib
 
 all: ${MAIN}.pdf 
@@ -21,9 +21,9 @@ remake:
 bibtex:
 	bibtex ${MAIN}
 
-${FIG}: mem_time_new.plot mem_time_new.data
-	gnuplot mem_time_new.plot
-	epstopdf mem_time.eps
+${FIG}: figures/mem_time_new.plot figures/mem_time_new.data
+	gnuplot figures/mem_time_new.plot
+	epstopdf figures/mem_time.eps
 
 clean:
 	rm -rf *.out *.aux *.log *.blg *.bbl main.pdf *.dvi *.ps ${MAIN}

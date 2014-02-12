@@ -1,0 +1,29 @@
+\begin{tikzpicture}[semithick,rounded corners]\sffamily
+    \foreach \x in {0, 2.4, 4.8} {
+        \draw[] (\x,2) rectangle +(2.10,1.7) 
+        +(1.05,0.625) node[anchor=center]{\footnotesize$\cdots$}
+        +(1.05,1.4) node[anchor=center]{\scriptsize{}Cluster Machine};
+        \foreach \vmx in {0.15, 1.35} \foreach \vmy in {0.15, 0.65} {
+            \draw[rounded corners=0.05cm] ($(\x,2)+(\vmx,\vmy)$)
+            rectangle +(0.6,0.45) node[pos=0.5]{\scriptsize{}VM};
+        }
+    }
+    %edit the list below to change the stage names
+    %the first column is just an index (they should increment from 0)
+    %the next column is the text that goes in the box for the stage
+    %the final column is the text that goes above the stage by the arrows
+    \foreach \y / \stage / \proc in {
+        0/Compare fingerprints for deduplication/Accumulate and exchange dedup requests,
+        1/Backup data for new blocks/Exchange dedup results,
+        2/Update partition index/Exchange new block references,
+        3/Update metadata/Exchange references of detected duplicates
+    } {
+        \coordinate (stagecorner) at ($(0,1.1)-\y*(0,1.7)$);
+        \coordinate (arrowstart) at ($(1.1,2.0)-\y*(0,1.7)$);
+        \draw (stagecorner) rectangle +(7.05,-0.8)
+        node[midway] {\footnotesize\textsf{\textbf{\stage}}}
+        +(2,0.45) node[anchor=west] {\scriptsize$\cdots$ \proc};
+
+        \foreach \a in {-0.9,0,0.9} \draw[-stealth] (arrowstart) -- +(\a,-0.9);
+    }
+\end{tikzpicture}

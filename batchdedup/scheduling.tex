@@ -43,11 +43,11 @@ distribution, though local minima exist in the histogram and the range of VM
 sizes varies.
 All of the clusters we have looked at have similarly shaped distributions. Size
 distribution histograms for two of the clusters are shown in
-Fig.~\ref{fig:hist}. There is a long tail on both histrograms which has been
+Fig.~\ref{fig:hist}. Note that there is a long tail on both histrograms which has been
 cut (out to 100GB for the first, and out to 2000GB for the second). The
-important thing to get from this data is that in none of the productions
-clusters we evaluated was the VM Size distribution flat, which motivates the
-importance of round scheduling.
+key insight from these size distributions is that in all of the productions
+clusters we evaluated, the VM Size distribution is highly skewed, which
+motivates the importance of round scheduling.
 
 %\begin{figure}[ht]
 %  \centering
@@ -179,8 +179,10 @@ When a multi-round schedule is deployed, the backup of a  VM can be executed in 
 Tasks at each round go through the processing stages discussed in Section~\ref{processingStage}.
 \begin{figure}[thb]
 \centering
-\includegraphics[width=0.5\textwidth]{images/VMRound.pdf}
-\caption{Choosing a round to schedule a VM (marked as VM1D in a two-round schedule.  }
+%\includegraphics[width=0.5\textwidth]{VMRound}
+%implementation of the above figure in pure latex
+\input{figures/VMRound}
+\caption{Choosing a round to schedule a VM. New VM marked as VM1A.}
 \label{fig:VMRound}
 \end{figure}
 
