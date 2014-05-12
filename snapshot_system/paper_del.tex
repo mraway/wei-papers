@@ -14,29 +14,19 @@ Snapshot deletions can occur frequently since old snapshots become less useful.
 General deduplication complicates the deletion process because sharing of duplicates
 requires a global reference counting~\cite{Guo2011,Fabiano2013} 
  to identify if  a chunk can be  safely removed without any reference.
-%The complexity of our distributed environment obviates reference counting as an option,
-%and While we can use the mark-and-sweep, 
-%While the mark-and-sweep techniques can be used and optimization can be considered~\cite{Fabiano2013},
-%it still takes significant resources to conduct reference counting every time there is a snapshot deletion.
-%
-%In the case of Alibaba, snapshot backup is conducted automatically and there are 
-%about 10 snapshot stored for every VM customer.
-% Snapshot deletion can occur frequently, for example when there is
-% a new snapshot created every day,  there will usually be a snapshot expired every day to maintain
-% balanced storage use. 
-%In addition, cloud users expect the reduced storage usage to be reflected
-%instantly, which makes it difficult to adopt some resource efficient techniques such like perfect hashing\cite{Fabiano2013}.
-Since our VM-centric design restricts sharing of data chunks only to a small dataset,
-we can greatly simplify the deletion process by 
-focusing on  unreferenced non-PDS chunks within each VM. 
-This process can be conducted independently per VM, and thus results in  a simpler flow control and 
-lower resource usage. 
-%The PDS data chunks are commonly shared among all VMs and we do not consider them
-%during snapshot deletion.  The selection of PDS data chunks is updated periodically independent of snapshot deletion process.
+%Since our VM-centric design restricts sharing of data chunks only to a small dataset,
+%we can greatly simplify the deletion process by 
+%focusing on  unreferenced non-PDS chunks within each VM. 
+%This process can be conducted independently per VM, and thus results in  a simpler flow control and 
+%lower resource usage. 
+One of the key benefits of our VM-centric design is that it allows for faster and simpler deletion. First, since
+sharing in our approach is limited to only a small dataset, we can greatly simplify deletion by focusing
+on intra-VM sharing rather than inter-VM sharing. Our deletion can therefore be conducted independently per VM.
+Second, we propose an {\em approximate} deletion stragegy to trade deletion accuracy for speed and
+resource usage.
 
-We further propose an {\em approximate} deletion strategy to trade deletion accuracy for
-speed and resource usage. Our method sacrifices a small percent of storage leakage
-to efficiently identify unused chunks.
+Our approximate deletion method sacrifices a small percent of storage leakage
+to efficiently identify unused chunks using a per-snapshot bloomfilter.
 The algorithm contains three aspects.
 \begin{itemize}
 \item {\bf Computation for snapshot reference summary.}
