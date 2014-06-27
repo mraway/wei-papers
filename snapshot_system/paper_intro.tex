@@ -78,9 +78,12 @@ This paper considers a backup service for converged cloud architectures
 that is co-located with user VMs, sharing the cloud computer, network, and
 storage resource with them.  We propose a VM-centric approach that
 simplifies deduplication and snapshot deletion.
-The key benefit is that while maintaining  a competitive deduplication efficiency,
+The key advantage of this approach  is that while maintaining  a competitive deduplication efficiency,
 the scheme uses a small resource usage without affecting other collocated cloud services.
 \comments{
+The key contribution of this work is a set of methodologies to address the following two challenges:
+1) simple deduplication and snapshot deletion with competitive efficiency and 
+a small resource usage without affecting other collocated cloud services;
 2) improved fault isolation for the sharing of deduplicated data,
 given that node failures in converged architecture are the norm rather than
 exception.

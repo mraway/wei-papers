@@ -1,15 +1,16 @@
 \begin{abstract}
 Data deduplication has been widely used for cloud data backup
 because of excessive redundant content blocks. Common techniques 
-%use dirty bits to detect
-%the version  change and  
 perform fingerprint comparison to remove duplicates
-across virtual machines. However, letting a duplicate data block be shared
-by many virtual machines creates data dependence and is less fault-resilient. 
-%This paper studies the impact of deduplication on 
-%fault resilidence  of virtual machine snapshots, created by data dependence  among duplicates
-%and proposes a VM-centric approach that strikes a balance between deduplication efficiency
-%and fault isolation 
+across virtual machines.
+However, letting a duplicate data block be shared
+by many virtual machines represents a tradeoff between
+storage efficiency and data availability.
+%by many virtual machines creates data dependence and is less fault-resilient. 
+%%This paper studies the impact of deduplication on 
+%%fault resilidence  of virtual machine snapshots, created by data dependence  among duplicates
+%%and proposes a VM-centric approach that strikes a balance between deduplication efficiency
+%%and fault isolation 
 This paper proposes a VM-centric backup service on a converged  cloud cluster architecture
 and  strikes a tradeoff for better fault isolation with competitive  deduplication efficiency.
 It localizes deduplication as much as possible within each 
