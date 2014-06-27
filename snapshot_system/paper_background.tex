@@ -12,6 +12,10 @@ physical host.
 For VM snapshot backup, file-level semantics are normally not provided.
 Snapshot operations take place at the virtual device driver level, which
 means no fine-grained file system metadata can be used to determine the changed data. 
+In a converged setting with source-side deduplication, the resources that are used to implement snapshot
+backup and deduplication are the same resources that must support cloud-hosted
+VMs.  Thus the backup service colocated with 
+other cloud services has to minimize its resource impact.  
 %This architecture does not use a separate  backup facility for a lower cost and 
 %reduces the network bandwidth consumption in transferring the raw data for backup. 
 %A backup service may co-locate with other cloud services on these commodity servers and 
@@ -49,14 +53,58 @@ efficiency.
 Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,Srinivasan2012}
 and a parallel batch solution for cluster-based deduplication is 
 studied in ~\cite{wei2013}. 
+
+\comments{
 All of the above approaches have focused on optimization of deduplication
 efficiency or speed, and none of them have considered the impact
 of deduplication on fault resilience in a cloud environment.  To do so, we
 examine the following properties of VM snapshot deduplication for converged
 IaaS architectures.
+}
 %considered in this paper.
 %Our consideration is discussed below.
 %VM dependence minimization during deduplication and file system block management.
+
+Even with these optimization and approximation techniques, resource usage for deduplication
+is still extensive for a shared cloud cluster.  For example, the
+sampled index with prefetching, proposed  by Guo and Efstathopoulos\cite{Guo2011},
+uses 5GB memory space for 100TB of raw data even the compressed data size
+is about 5TB. It is fairly typical for
+a physical machine with terabytes of disk storage and tens of gigabytes of memory
+to support  more than 20 VMs and 10 snapshots per VM and can require  over 100TB of raw space
+even the actual storage space need is about 5TB assuming 20:1 compression ratio with deduplication.
+It is not easy  to adopt the sampled index method  for a distributed architecture
+and every deduplication request may access a remote machine for index lookup and the overall overhead of access latency 
+for all requests can be significant.  In general
+with a cluster of machines in a cloiud cluster, there will be more memory requirement per machine such as a 
+fingerprint cache, for cross-machine fingerprint comparison~\cite{bottleneck08,Dong2011} and a deduplication
+task often needs several gigabytpes of memory, which impacts other cloud services sharing the omputing resource.
+
+
+Whiel deduplication reduces storage cost, it creates an artitical data dependence among VMs: when a shared data chunk
+is lost in the storage, all VMs that refer such chunks after deduplication face a data loss.
+This issue is identified in ~\cite{Baghat2006} which proposes to use more replication for data shared by more files.
+It is complex to implement this idea in VM snapshot backup. 
+This is because the file system block  size in a distributed file system such as  
+the Hadoop file system and the Google file system~\cite{googlefs03}
+is large (e.g.  64MB) so as to optimize file system performance
+for big data. Since  deduplication implementations~\cite{Guo2011,extreme_binning09,bottleneck08,Jin2009,Dong2011}
+ typically use smaller chunk sizes (e.g. 4K bytes),  a large file block contains many small chunks with different 
+degree of sharing and  these file blocks would have to be replicated.
+ 
+Cross-VM chunk sharing also complicates snapshot deletion which occurs frequently when snapshots expire regularly
+and reference counting is required to identify chunks that are no longer used. 
+The mark-and-sweep approach~\cite{Guo2011,Fabiano2013}  is effective for
+deletion, but still carries a significant cost, especially in a distributed 
+setting.  
+%to count if a data chunk is still shared by other snapshots. 
+
+
+%still significant
+%especailly for a distributed setting.
+
+
+\comments{
 \paragraph*{Local versus Global Deduplication} --
 If deduplication is implemented strictly in the storage system,
 a data chunk is compared with fingerprints collected from all VMs during
@@ -70,18 +118,9 @@ by the IaaS cloud platform.  That is, the unit of failure visible to the cloud
 user is the VM, but the unit of sharing in a deduplicated data store is the
 data chunk. 
 
-%Further, 
-%this artificial dependence affects fault isolation since 
-%the loss of all replicas of a data chunk can affect the otherwise unrelated
-%VMs that share it.  
-
 Indeed, the greater the deduplication efficiency, the less
 the data redundancy is maintained, and the greater the ``hidden'' data
 dependence between VMs that must be hosted as if they were physically isolated.
-%machine failures happen periodically 
-%in a large-scale cloud and
-%loss of a small number of shared data chunks can 
-%cause the unavailability of snapshots for a large number of virtual machines.
 Thus,
 restricting deduplication to be local to each VM (but across snapshots) 
 aligns the units of storage with the isolation properties guaranteed by the
@@ -144,14 +183,19 @@ and has to minimize its impact on user-deliverable performance.
 %During snapshot deletion, reference counting for all unique blocks used in all VMs requires a significant resource usage
 %too.  Thus we seek for the low-profile techniques with approximation and low resource consumption. 
 
-For the remainder of this paper, 
-we term the traditional deduplication approach {\em VM-oblivious} (VO)
-because it manages duplicate data chunks without consideration of VMs.
+}
+
+\comments{
 With the above  considerations in mind, we propose a 
 VM-centric approach (called VC)
 for a co-located backup service that has a resource usage profile
 suitable for use with converged cloud architectures.  
-
+This compares the traditional deduplication approach {\em VM-oblivious} (VO)
+which manages duplicate data chunks without consideration of VMs.
+We discuss our key ideas and design in the next section.
+%Our key idea is to simplify deduplication management and 
+}
+\comments{
 In designing a VC deduplication solution, we have considered and adopted some of
 the following previously-developed techniques.
 1) {\em Changed Block Tracking}. 
@@ -178,6 +222,6 @@ To use a distributed memory version of the sampled index, every deduplication re
 may access a remote machine for index lookup and the overall overhead of access latency for all requests
 can be significant.  
 
-
 We will first discuss and analyze the integration of the VM-centric deduplication strategies with fault isolation 
 and discuss snapshot deletion support, then present an implementation design. 
+}

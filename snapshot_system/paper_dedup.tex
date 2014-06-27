@@ -1,18 +1,88 @@
 \section{VM-centric Snapshot Deduplication}
 \label{sect:deduplication}
 
-%\subsection{VM centric  strategies}
-%\label{sect:vc-strategies}
+
+With the considerations discussed in the previous section, we propose a
+VM-centric approach (called VC)
+for a co-located backup service that has a resource usage profile
+suitable for use with converged cloud architectures.
+This compares the traditional deduplication approach {\em VM-oblivious} (VO)
+which manages duplicate data chunks without consideration of VMs.
+Section~\ref{sect:vc-strategies} discusses  our key ideas and design for duplicate detection.
+Section~\ref{sect:delete} presents  a simplified snapshot deletion with  the VM-centric approach.
+
+\subsection{VM centric  strategies}
+\label{sect:vc-strategies}
 
 We describe our overall deduplication approach as consisting of three
 complementary strategies: VM-local
 duplicate search, global deduplication using popular chunks, and 
 VM-centric file system block management. 
-%\begin{itemize}
-%\item 
+\begin{itemize}
+\item 
+\textbf{Cross-VM global deduplication using popular chunks} --
+We seperate the deduplication within a VM and cross VMs.
+This is because global deduplication that detects the apperance of a chunk 
+in any VM requires a substantial resource for fingerprint comparison.
+%This step accomplishes the canonical global fingerprint lookup using a popular fingerprint index.
+Our key observation is for those chunks that appear in different VMs, top $k$ most popular items
+dominate the apperance. 
+ \begin{figure}
+ \centering
+  \includegraphics[width=2.5in]{figures/zipf_count_rank.pdf}
+ \caption{Duplicate frequency versus  chunk ranking in a log scale after local deduplication.}
+ \label{fig:Datazipf}
+ \end{figure}
 
-\textbf{VM-local duplicate search optimization} --
-We use the standard version-based detection~\cite{Clements2009,Vrable2009}
+
+% {\it [Need to find a place to put these numbers in: Total number of chunks 
+% in 350 snapshots: 1,546,635,485. 
+% Total number of chunks after localized dedup: 283,121,924. Total number of unique chunks: 87,692,682.]}
+
+ Figure~\ref{fig:Datazipf} shows the distribution of chunk popularity for a data trace 
+from Alibaba with 2500 VMs discussed in Section ~\ref{sect:evaluation}.
+%the distribution of chunk popularity~\cite{WeiZhangIEEE} 
+%based on a production data trace from Alibaba with over 2500 VMs.
+The distribution is Zipf-like and popular chunks dominate the distribution.
+We denote $\sigma$ as the percentage of unique data chunks belonging to PDS and 
+from the evaluation in Section~\ref{sect:evaluation}, we find that
+$\sigma$ with a range of 2 to 4\% can deliver a fairly competitive deduplication efficiency.
+%For example,
+%with top 2\% of the most popular chunks stored in PDS, up-to 40\% of the raw backup 
+%data can be eliminated by fingerprint lookup in PDS index.
+
+Since $\sigma$ is relatively small and these top chunks are shared among multiple VMs, 
+we can afford to provide extra replicas for these popular chunk data to enhance the fault resilience.
+
+%when restricting fingerprint comparison within a VM uses
+%only a small amount of resource. 
+%ehat the local deduplication has removed most of the duplicates.
+%There are fewer deduplication opportunities across VMs while the memory and network
+%consumption for global comparison is more expensive.
+Thus our approximation is that the global cross-VM fingerprint comparison only searches for the top $k$
+most popular items. This dataset is called the \textbf{PDS} (popular data set). 
+We define chunk popularity as the number of unique copies of the chunk in the data-store,
+i.e., the number of copies of the chunk after local deduplication.
+This number can be computed periodically, e.g., on a weekly basis.
+Once the popularity of all data chunks is collected, the system only maintains the top $k$
+most popular chunk fingerprints (called \textbf{PDS index}) in a distributed shared memory.  
+%Compared to a preliminary solution which  uses data popularity~\cite{WeiZhangIEEE}, 
+%this paper provides  a more comprehensive scheme with  improved deduplication efficiency and fault tolerance, and
+%analytic design guidance. 
+
+% Figure~\ref{fig:Datazipf} illustrates the distribution of chunk popularity based on a data trace from Alibaba with over 2500 VMs.
+% The distribution is zipf like and popular chunks are dominating the large portion of data chunks.
+% We denote $\sigma$ as the percentage of unique data chunks belonging to PDS and from the evaluation we find that
+% $\sigma$ with a range of 1 to 4\% can deliver a fairly competitive deduplication efficiency.
+
+
+\item 
+\textbf{VM-specific duplicate search optimization} --
+Fingerprint lookup within a VM does not require a signficant  amount of memory resource.
+While cross-VM deduplication is simplified, we intend to optimize the VM-sepcific deduplication 
+as much as possible. 
+
+We start with the standard version-based detection~\cite{Clements2009,Vrable2009}
 to identify changed content with dirty bits in a coarse grain segment level.
 %In our implementation 
 %the segment size is 2MB
@@ -38,8 +108,9 @@ major virtualization solution vendors.
   \label{fig:local_dedup}
 \end{figure}
 
-Since the best deduplication uses a non-uniform chunk size 
-with an average of 4KB or 8KB~\cite{Jin2009},
+Since the previous work typically uses a non-uniform chunk size 
+with an average of 4KB or 8KB for the best deduplication 
+effectiveness~\cite{Guo2011,extreme_binning09,bottleneck08,Dong2011},
 we conduct additional local similarity guided deduplication on a snapshot by comparing
 chunk fingerprints of a dirty segment 
 with those in  {\em similar} segments from its parent snapshot. 
@@ -61,45 +132,7 @@ similar segment recipes is small.
 As part of our local duplicate search we also compare the current segment
 against the parent segment at the same offset.
 
-%\item 
-\textbf{Global deduplication using popular chunks} --
-This step accomplishes the canonical global fingerprint lookup using a popular fingerprint index.
-Our key observation is that the local deduplication has removed most of the duplicates.
-There are fewer deduplication opportunities across VMs while the memory and network
-consumption for global comparison is more expensive.
-Thus our approximation is that the global fingerprint comparison only searches for the top $k$
-most popular items. This dataset is called the \textbf{PDS} (popular data set). 
-We define chunk popularity as the number of unique copies of the chunk in the data-store,
-i.e., the number of copies of the chunk after local deduplication.
-This number can be computed periodically, e.g., on a weekly basis.
-Once the popularity of all data chunks is collected, the system only maintains the top $k$
-most popular chunk fingerprints (called \textbf{PDS index}) in a distributed shared memory.  
-%Compared to a preliminary solution which  uses data popularity~\cite{WeiZhangIEEE}, 
-%this paper provides  a more comprehensive scheme with  improved deduplication efficiency and fault tolerance, and
-%analytic design guidance. 
-
- Figure~\ref{fig:Datazipf} shows the distribution of chunk popularity for a data trace 
-from Alibaba with 2500 VMs discussed in Section ~\ref{sect:evaluation}.
-%the distribution of chunk popularity~\cite{WeiZhangIEEE} 
-%based on a production data trace from Alibaba with over 2500 VMs.
-The distribution is Zipf-like and popular chunks dominate the distribution.
-We denote $\sigma$ as the percentage of unique data chunks belonging to PDS and 
-from the evaluation in Section~\ref{sect:evaluation}, we find that
-$\sigma$ with a range of 2 to 4\% can deliver a fairly competitive deduplication efficiency.
-%For example,
-%with top 2\% of the most popular chunks stored in PDS, up-to 40\% of the raw backup 
-%data can be eliminated by fingerprint lookup in PDS index.
-
-Since $\sigma$ is relatively small and these top chunks are shared among multiple VMs, 
-we can afford to provide extra replicas for these popular chunk data to enhance the fault resilience.
-
-
-% Figure~\ref{fig:Datazipf} illustrates the distribution of chunk popularity based on a data trace from Alibaba with over 2500 VMs.
-% The distribution is zipf like and popular chunks are dominating the large portion of data chunks.
-% We denote $\sigma$ as the percentage of unique data chunks belonging to PDS and from the evaluation we find that
-% $\sigma$ with a range of 1 to 4\% can deliver a fairly competitive deduplication efficiency.
-
-%\item 
+\item 
 \textbf{VM-centric file system block management} --
 When a chunk is not detected as a duplicate to any existing chunk, this chunk will be written
 to the file system. Since the backend file system typically uses a large block size such as 64MB, each VM will 
@@ -127,17 +160,6 @@ we have to add extra replication to each file block as long as it contains a pop
 
 %The system allows all machines conduct backups in parallel, and each machine
 %conducts the backup of one VM at a time, and thus only requires a write buffer for one VM.
-%\end{itemize}
+\end{itemize}
 
- \begin{figure}
- \centering
-  \includegraphics[width=2.5in]{figures/zipf_count_rank.pdf}
- \caption{Duplicate frequency versus  chunk ranking in a log scale after local deduplication.}
- \label{fig:Datazipf}
- \end{figure}
-
-
-% {\it [Need to find a place to put these numbers in: Total number of chunks 
-% in 350 snapshots: 1,546,635,485. 
-% Total number of chunks after localized dedup: 283,121,924. Total number of unique chunks: 87,692,682.]}
 
