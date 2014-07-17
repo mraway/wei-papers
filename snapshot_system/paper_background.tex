@@ -45,16 +45,15 @@ fingerprints
 so several techniques have been proposed to improve duplicate identification. 
 For example, the data domain method ~\cite{bottleneck08} 
 uses  an in-memory Bloom filter and a prefetching cache for data chunks 
-which may be
-accessed.  
+which may be accessed.  
 %An improvement to this work with parallelization is in ~\cite{MAD210,DEBAR}.
-Approximation techniques are studied in~\cite{extreme_binning09,Guo2011,WeiZhangIEEE}  
-to reduce memory requirements at the cost of some loss of deduplication
-efficiency.
-Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,Srinivasan2012}
-and a parallel batch solution for cluster-based deduplication is 
-studied in ~\cite{WeiZhangIEEE}. 
-
+%Approximation techniques are studied in~\cite{extreme_binning09,Guo2011,WeiZhangIEEE}  
+%to reduce memory requirements at the cost of some loss of deduplication
+%efficiency.
+Additional inline deduplication and  approximation techniques
+are studied in ~\cite{extreme_binning09,Guo2011,sparseindex09,Guo2011,Srinivasan2012,WeiZhangIEEE}.  
+%and a parallel batch solution for cluster-based deduplication is 
+%studied in ~\cite{WeiZhangIEEE}. 
 \comments{
 All of the above approaches have focused on optimization of deduplication
 efficiency or speed, and none of them have considered the impact
@@ -65,9 +64,10 @@ IaaS architectures.
 %considered in this paper.
 %Our consideration is discussed below.
 %VM dependence minimization during deduplication and file system block management.
-
-Even with these optimization and approximation techniques, resource usage for deduplication
-is still extensive for a shared cloud cluster.  For example, the
+Even with these optimization and approximation techniques, resource usage such as memory  for deduplication
+is still extensive for a shared cloud cluster.  
+\comments{
+For example, the
 sampled index with prefetching, proposed  by Guo and Efstathopoulos\cite{Guo2011},
 uses 5GB memory space for 100TB of raw data even the compressed data size
 is about 5TB. It is fairly typical for
@@ -76,22 +76,23 @@ to support  more than 20 VMs and 10 snapshots per VM and can require  over 100TB
 even the actual storage space need is about 5TB assuming 20:1 compression ratio with deduplication.
 It is not easy  to adopt the sampled index method  for a distributed architecture
 and every deduplication request may access a remote machine for index lookup and the overall overhead of access latency 
-for all requests can be significant.  In general
-with a cluster of machines in a cloiud cluster, there will be more memory requirement per machine such as a 
+for all requests can be significant. 
+ In general
+with a cluster of machines in a cloud cluster, there will be more memory requirement per machine such as a 
 fingerprint cache, for cross-machine fingerprint comparison~\cite{bottleneck08,Dong2011} and a deduplication
-task often needs several gigabytpes of memory, which impacts other cloud services sharing the omputing resource.
+task often needs several gigabytpes of memory, which impacts other cloud services sharing the computing resource.
+}
 
-
-Whiel deduplication reduces storage cost, it creates an artitical data dependence among VMs: when a shared data chunk
+While deduplication reduces storage cost, it creates an artificial data dependence among VMs: when a shared data chunk
 is lost in the storage, all VMs that refer such chunks after deduplication face a data loss.
-This issue is identified in ~\cite{Reliability06} which proposes to use more replication for data shared by more files.
-It is complex to implement this idea in VM snapshot backup. 
-This is because the file system block  size in a distributed file system such as  
-the Hadoop file system and the Google file system~\cite{googlefs03}
-is large (e.g.  64MB) so as to optimize file system performance
-for big data. Since  deduplication implementations~\cite{Guo2011,extreme_binning09,bottleneck08,Jin2009,Dong2011}
- typically use smaller chunk sizes (e.g. 4K bytes),  a large file block contains many small chunks with different 
-degree of sharing and  these file blocks would have to be replicated.
+This issue is identified in ~\cite{Reliability06} which proposes to use more replication for data shared by more files,
+and we will adopt this idea.
+When the backup storage is implemented using a distributed file system such as Hadoop and Google file system~\cite{googlefs03},  
+the file system block  size is often chosen to be large. On the other hand, 
+deduplication implementations~\cite{Guo2011,extreme_binning09,bottleneck08,Jin2009,Dong2011}
+ typically use smaller chunk sizes (e.g. 4K bytes).
+Thus we need to consider the size gap between file system blocks and chunks  in adding more replications for popular chunks. 
+
  
 Cross-VM chunk sharing also complicates snapshot deletion which occurs frequently when snapshots expire regularly
 and reference counting is required to identify chunks that are no longer used. 

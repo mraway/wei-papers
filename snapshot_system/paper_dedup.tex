@@ -21,12 +21,12 @@ VM-centric file system block management.
 \begin{itemize}
 \item 
 \textbf{Cross-VM global deduplication using popular chunks} --
-We seperate the deduplication within a VM and cross VMs.
-This is because global deduplication that detects the apperance of a chunk 
+We separate the deduplication within a VM and cross VMs
+and simplify the cross-VM deduplication while maximizing the inter-VM deduplication efficiency  as much as possible.
+This is because global deduplication that detects the appearance of a chunk 
 in any VM requires a substantial resource for fingerprint comparison.
+To simplify cross-VM deduplication, we restrict the search scope of deduplication within the top $k$ most popular items.
 %This step accomplishes the canonical global fingerprint lookup using a popular fingerprint index.
-Our key observation is for those chunks that appear in different VMs, top $k$ most popular items
-dominate the apperance. 
  \begin{figure}
  \centering
   \includegraphics[width=2.5in]{figures/zipf_count_rank.pdf}
@@ -38,13 +38,16 @@ dominate the apperance.
 % {\it [Need to find a place to put these numbers in: Total number of chunks 
 % in 350 snapshots: 1,546,635,485. 
 % Total number of chunks after localized dedup: 283,121,924. Total number of unique chunks: 87,692,682.]}
-
- Figure~\ref{fig:Datazipf} shows the distribution of chunk popularity for a data trace 
+Our key observation is for those chunks that appear in different VMs, top $k$ most popular items
+dominate the distribution.  This popular data set is called the \textbf{PDS}. 
+Figure~\ref{fig:Datazipf} shows the distribution of chunk popularity for a data trace 
 from Alibaba with 2500 VMs discussed in Section ~\ref{sect:evaluation}.
+We define chunk popularity as the number of unique copies of the chunk in the data-store,
+i.e., the number of copies of the chunk after local deduplication.
 %the distribution of chunk popularity~\cite{WeiZhangIEEE} 
 %based on a production data trace from Alibaba with over 2500 VMs.
-The distribution is Zipf-like and popular chunks dominate the distribution.
-We denote $\sigma$ as the percentage of unique data chunks belonging to PDS and 
+The distribution from this figure is Zipf-like. 
+Let  $\sigma$ denote as the percentage of unique data chunks belonging to PDS and 
 from the evaluation in Section~\ref{sect:evaluation}, we find that
 $\sigma$ with a range of 2 to 4\% can deliver a fairly competitive deduplication efficiency.
 %For example,
@@ -56,15 +59,13 @@ $\sigma$ with a range of 2 to 4\% can deliver a fairly competitive deduplication
 %ehat the local deduplication has removed most of the duplicates.
 %There are fewer deduplication opportunities across VMs while the memory and network
 %consumption for global comparison is more expensive.
-Thus our approximation is that the global cross-VM fingerprint comparison only searches for the top $k$
-most popular items. This dataset is called the \textbf{PDS} (popular data set). 
-We define chunk popularity as the number of unique copies of the chunk in the data-store,
-i.e., the number of copies of the chunk after local deduplication.
-This number can be computed periodically, e.g., on a weekly basis.
-Once the popularity of all data chunks is collected, the system only maintains the top $k$
-most popular chunk fingerprints (called \textbf{PDS index}) in a distributed shared memory.  
-These top chunks are shared among multiple VMs and  since $\sigma$ is relatively small, 
-we can afford to provide extra replicas for these popular chunk data to enhance the fault resilience.
+%Thus our approximation is that the global cross-VM fingerprint comparison only searches for the top $k$
+%most popular items. 
+PDS  can be computed periodically, e.g., on a monthly basis.
+%Once the popularity of all data chunks is collected, the system only maintains the top $k$
+%most popular chunk fingerprints (called \textbf{PDS index}) in a distributed shared memory.  
+%These top chunks are shared among multiple VMs and  since $\sigma$ is relatively small, 
+%we can afford to provide extra replicas for these popular chunk data to enhance the fault resilience.
 %Compared to a preliminary solution which  uses data popularity~\cite{WeiZhangIEEE}, 
 %this paper provides  a more comprehensive scheme with  improved deduplication efficiency and fault tolerance, and
 %analytic design guidance. 
@@ -74,16 +75,19 @@ we can afford to provide extra replicas for these popular chunk data to enhance 
 % We denote $\sigma$ as the percentage of unique data chunks belonging to PDS and from the evaluation we find that
 % $\sigma$ with a range of 1 to 4\% can deliver a fairly competitive deduplication efficiency.
 
-It should be noted that the fingerprint-guided mapping used in ~\cite{extreme_binning09,Dong2011} narrows
+Compared to ~\cite{bottleneck08}, the fingerprint index  size is reduced by $1-\sigma$
+and the searchable fingerprint space  becomes very small under the popularity constraint.  
+The fingerprint-guided distributed mapping in ~\cite{extreme_binning09,Dong2011} narrows
 the search scope of each data chunk, but it does not reduce th total amount of searchable fingerprints
-used for the entire deduplication. In comparison we only focus on top popular chunks among VMs and this
-significantly reduces the total amount of  searchable fingerprints. 
+used for the entire deduplication. 
+%In comparison we only focus on top popular chunks among VMs and this
+%significantly reduces the total amount of  searchable fingerprints. 
 
 \item 
 \textbf{VM-specific duplicate search optimization} --
-While cross-VM deduplication is simplified, we intend to optimize the VM-sepcific deduplication 
+While cross-VM deduplication is simplified, we intend to optimize the VM-specific deduplication 
 as much as possible under a reasonable memory consumption
- to make up the loss of deduplication opportunites due to the cross-VM popularity constraint.
+ to make up the loss of deduplication opportunities due to the cross-VM popularity constraint.
 
 %Fingerprint lookup within a VM does not require a signficant  amount of memory resource.
 
@@ -92,7 +96,7 @@ to identify changed content with dirty bits in a coarse grain segment level.
 %In our implementation 
 %the segment size is 2MB
 %and the device driver is extended to support tracking changed segments using a dirty bitmap. 
-The reason to choose a coarse grain level is that 
+The reason to choose a coarse grain segment level is that 
 since every write for a segment will touch a dirty bit, the device driver maintains dirty bits in 
 memory and cannot afford a small segment size.
 It should be noted that dirty bit tracking is supported or can be easily implemented in 
@@ -119,12 +123,13 @@ effectiveness~\cite{Guo2011,extreme_binning09,bottleneck08,Dong2011},
 we conduct additional local similarity guided deduplication on a snapshot by comparing
 chunk fingerprints of a dirty segment 
 with those in  {\em potentially similar} segments from its parent snapshot. 
-We define a parent  segment is  potentially similar to the currnet segment if 1) the paranet segment
+We define a parent  segment is  potentially similar to the current segment if 1) the parent segment
 at the same offset as the current segment.
 2) the signature of these segments is the same.
 This segment content signature value is defined as the minimum value of all its chunk fingerprints 
-computed during backup and is recorded in the snapshot metadata (called recipe). Note that this definition of
-content similarity is an approximation~\cite{resemblance97}.  When processing a dirty segment,
+computed during backup and is recorded in the snapshot metadata (called recipe). 
+%Note that this definition of content similarity is an approximation~\cite{resemblance97}.  
+When processing a dirty segment,
 its  similar segments can be found easily from the
 parent snapshot recipe.  Then recipes of the similar segments are loaded to memory,
 which contain chunk fingerprints to be compared.
@@ -143,24 +148,29 @@ similar segment recipes is 190K, which is small.
 \item 
 \textbf{VM-centric file system block management} --
 When a chunk is not detected as a duplicate to any existing chunk, this chunk will be written
-to the file system. Since the backend file system typically uses a large block size such as 64MB, each VM will 
-accumulate small local chunks. 
+into a file system block.  A  backend file system block can contain a number of chunks,
+there are   two reasons. In addition to the reason that a file system block is often
+configured to be large, there is another reason that a number of chunks can be combined together
+and compressed further using a standard data compression method. 
 %We manage this accumulation process using a log-structured storage scheme built
 %on a distributed file system discussed in Section~\ref{sect:architecture}.
 %Non-PDS chunks from the same VM are stored in one append store. 
-Each file system block is either dedicated to non-PDS chunks, or PDS-chunks.
-A file system block for non-PDS chunks is associated with one VM and does not contain
-any PDS chunks, such that our goal of fault isolation is maintained.
+We set two constraints in composing chunks for a file system block as follows:
+1) Each file system block is either dedicated to non-PDS chunks, or PDS-chunks.
+2) A non-PDS file system block is only associated with one VM.
+
+Restricting the association with one VM improves fault isolation when some file blocks are lost during failure. 
 In addition, storing PDS chunks separately allows special replication handling for those popular shared data. 
 %%% talk something about snapshot store advantage here? %%%
-
-
 %One could try to rely on filesystem features to 
 If we do not separate the
 popular chunks from the less-popular, the popular chunks are dispersed across
-all of the filesystem blocks in the storage system.  Then we cannot leverage the file system features to 
-provide extra replication to popular and shared chunks because  
-we have to add extra replication to each file block as long as it contains a popular chunk.
+all of the filesystem blocks in the storage system and we would have
+to add extra replications for {\em all} file blocks in order to   follow the popularity-driven replication idea 
+from ~\cite{Reliability06}. That reduces the storage efficiency.
+%Then we cannot leverage the file system features to 
+%provide extra replication to popular and shared chunks because  
+%we have to add extra replication to each file block as long as it contains a popular chunk.
 
 %factor on popular chunks. This explains why we must separate the PDS and
 %non-PDS data in our system to achieve the desired $r_c/r$ ratio (though both
