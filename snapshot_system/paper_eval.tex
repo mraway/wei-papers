@@ -35,7 +35,7 @@ The fingerprint for variable-sized chunks is computed using their SHA-1 hash~\ci
 %Popularity of data blocks are collected through global counting and 
 %and top popular ones ($\delta=2\%$)  are  kept in the PDS, as discussed in Section~\ref{sect:store}.
 
-\subsection{Deduplication Efficiency}
+\subsection{Deduplication Efficiency and Memory Usage}
 \label{sect:evaldedup}
 
 
@@ -86,9 +86,10 @@ alg     efficiency
 \scriptsize{}VC-4\%PDS  96.5784837160482
 \scriptsize{}SRB        97.8625610883421
 }
-\begin{table}[htb]
-\centering
-\begin{small}
+
+
+\comments{
+old table, delete 4%
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline 
 &
@@ -99,6 +100,22 @@ alg     efficiency
 Dedup &     94.31\%& 93.02\%  & 96.01\% & 96.58\% & 97.86\% \\ \hline
 Mem(MB) &     108&  46 & 118  & 190 & 2400 \\ \hline
     \end{tabular}
+
+}
+\begin{table}[htb]
+\centering
+\begin{small}
+    \begin{tabular}{|c|c|c|c|c|}
+    \hline 
+&
+     \multicolumn{3}{|c|}{VC}  & VO \\ \hline
+&
+     2\%No PDS &2\%PDS     & 2\%PDS & SRB  \\ 
+&        &&     no-simi & \\ \hline
+Dedup &      93.02\%  & 96.01\% & 94.31\% & 97.86\% \\ 
+efficiency &          &       &           &      \\    \hline 
+Memory(MB) &      46 & 118  & 108 & 2400 \\ \hline
+    \end{tabular}
 \end{small}
     \caption{Deduplication efficiency and per-machine memory usage for different VC settings and
         Stateless Routing with Binning (SRB).}
@@ -106,7 +123,7 @@ Mem(MB) &     108&  46 & 118  & 190 & 2400 \\ \hline
 \end{table}
 
 
-Table~\ref{tab:efficiency-comparison} shows the deduplication efficiency for SRB and VC with different 
+Table~\ref{tab:efficiency-comparison} shows the deduplication efficiency and per-machine memory usage for SRB and VC with different 
 settings.
 % <<<<<<< HEAD
 % Our deduplication efficiency is defined as the percent of duplicate chunks
@@ -125,20 +142,19 @@ Notice $\sigma$ is the percentage of unique chunks selected in PDS.
 With $\sigma =2\%$, Column 3 shows its 
 %memory usage for PDS index lookup per machine is about 100MB per machine and  the 
 deduplication efficiency can 
-reach over 96\%.
-When $\sigma=4\%$, Column 4 shows that the deduplication efficiency can reach 96.6\% while 
-more index space is allocated  per machine for  PDS fingerprint lookup.
-% increases from 100MB to 200MB per physical machine as discussed later. 
-%and  the deduplication efficiency can reach 96.489\%.
-%When $\sigma=4\%$, the deduplication efficiency can reach 97.027\% while space consumption increases to 200MB per machine. 
+reach over 96\%. 
+%When $\sigma=4\%$, Column 4 shows that the deduplication efficiency can reach 96.6\% while 
+%more index space is allocated  per machine for  PDS fingerprint lookup.
 The loss of efficiency in VC is caused by the restriction of the physical memory available
 in the cluster for fast in-memory PDS index lookup. 
+Memory usage per machine is low because each machine only hosts $1/p$  of  index for PDS plus some buffer space. 
 %In the extreme case if we put all the fingerprint into PDS 
 %index ($\sigma=100\%$) then VC will have 100\% efficiency.
 SRB in Column 5 can deliver up to 97.86\% deduplication efficiency, which is slightly better than VC.
 Thus this represents a tradeoff that VC provides better fault tolerance and fast approximate deletion
 with a slight reduction in deduplication efficiency.
-
+Memory usage per machine in SRB includes the Bloom filter space to access the on-disk index
+and  cache for frequently or recently accessed chunk index.  
 % SRB can deliver up to 97.935\% deduplication efficiency which is slightly better than VC.
 % Thus this represents a tradeoff: VC provides better fault tolerance and fast
 % approximate deletion with competitive (but slightly lower) deduplication
@@ -153,8 +169,9 @@ with a slight reduction in deduplication efficiency.
 Column 2 of Table~\ref{tab:efficiency-comparison} shows deduplication efficiency of VC without 
 using PDS and it achieves 93.02\% and  missed duplicates take  up-to  3.56\% of the original space, which
 is about 356GB per physical machine. 
-Column 1 of Table~\ref{tab:efficiency-comparison} shows deduplication efficiency of VC without 
-local similarity search.
+Column 4 of Table~\ref{tab:efficiency-comparison} shows deduplication efficiency of VC which only uses
+the same offset in the parent segment to look for duplicates  but does not use 
+the fingerprint-guided similarity search. 
 %There is a big efficiency drop in this curve when the number of VMs is about 30.
 The reason similarity search provides such an improvement is that
 %Without this (i.e. when we only 
@@ -186,11 +203,15 @@ The popularity-guided global deduplication with $\sigma=2\% $
 reduces the data further to 860GB, namely 8.6\% of the original size. 
 So it provides additional 28.63\% reduction. 
 
+The overall memory usage of VC for each physical machine is very small, which is not visible to other hosted cloud services.
+The 2.4GB memory usage of SRB is very visible to other services even each physical machine has 32GB memory.
+
 %Figure~\ref{fig:exbin-efficiency-graph2} also shows the benefits of our minhash
 %similar segment search in the parent snapshot. 
 
-\subsection{Resource Usage and Processing Time}
+\subsection{More on Resource Usage and Processing Time}
 
+We show  more experimental results on resource usage and processing time with SRB.
 \comments{
 \begin{table}
     \begin{tabular}{|c|c|}
@@ -284,7 +305,8 @@ The total space used in SRB is about 1GB per machine.
 Table~\ref{tab:vc_srb_combined} shows
 the  average  time breakdown for processing a dirty VM segment in milliseconds
 under VC and Stateless Routing with Binning (SRB). 
-VC uses $\sigma=2\%$ and $4\%$.
+%VC uses $\sigma=2\%$ and $4\%$.
+VC uses $\sigma=2\%$. 
 The overall processing latency of SRB is about 23.9\% slower than VC.
 For VC, the change of $\sigma$ does not significantly affect the overall backup speed as
 PDS lookup takes only a small amount of time. 
