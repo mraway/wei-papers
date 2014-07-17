@@ -35,183 +35,6 @@ The fingerprint for variable-sized chunks is computed using their SHA-1 hash~\ci
 %Popularity of data blocks are collected through global counting and 
 %and top popular ones ($\delta=2\%$)  are  kept in the PDS, as discussed in Section~\ref{sect:store}.
 
-%\subsection{Fault Isolation and Snapshot Availability}
-\subsection{Snapshot Availability}
-
- Table~\ref{tab:vm-availability} shows the availability of VM snapshots when 
-there are up to 20 machines failed in a cluster. 
-The trace driven execution allows us to estimate the number of file blocks shared by each VM in the VO and VC approaches
-and then calculate the average availability of VM snapshots.
-The case for  a 1000-node cluster is also listed, assuming file block sharing patterns among VMs remain
-the same from $p=100$ setting to $p=1000$. Each machine hosts about 25 VMs in both cases
-and with different $p$ values, the availability varies when the number of failures in the cluster changes.
-
-%Two VC curves use $V_c=1250$ and $V_c=2500$ representing the average number of VMs that share a PDS file system block. 
-%We have assumed a worst-case scenario that  a PDS block is shared by every VM. 
-%($V_c=p*V$), which is to be expected when PDS
-%blocks are sorted by hash, as their order is randomized.
-%$V_c=2500$ represents  the absolute worst case for 2500 VMs. 
-%The VO curve has  $V_o=6.3$ which is the average number of VMs that share a file system block in our smaller dataset.
-%To get this number, we perform perfect deduplication over 105 VMs, append unique chunks to a DFS file and
-%count the number of dependencies from a file system block to VM.
-%In the scenario of having 2500 VMs, this number can only increase, thus this number represents the best
-%case for VO approach. 
-%Our results show that the VC approach even with $V_c=2500$ has a higher availability than VO.
-%For example, with 10 machines failed, VO with 98.5\% availability would lose snapshots of 37 VMs 
-%while VC with 99.9\% loses snapshots of 2.5 VMs.
-%The key reason is that  $N_1 +N_2 < N_o$, caused by the fact that the VM-centric approach localizes deduplication
-%and packs  data blocks for one VM as much as possible.  The extra replication
-%for PDS blocks also significantly increases the snapshot availability even when
-%a PDS file block is shared by every VM.
-%=======
-%Figure~\ref{tab:vm-availability} shows the availability of VM snapshots
-%as storage nodes fail. 
-%We assume a random distirbution of 64MB file system
-%blocks (FSBs). where FSBs are not randomly distributed availability might
-%be improved by limiting the number of storage nodes a particualr VM depends
-%on but we take the conservative approach. We compare VO, the expected case for
-%VC ($V_c=p*V/2$), and the worst case for VC ($V_c=p*V/2$). We set $V_o=6.3$
-%based on measured values in our dataset.
-%To obtain VO sharing of file blocks, we perform perfect deduplication over 105 VMs, 
-%append unique chunks to a DFS file and
-%count the number of dependencies from a file system block to VM.
-%In the case of having 2500 or even 25000 VMs, this number can only increase, thus this number represents the best
-%case for VO approach. 
-
-
- Table~\ref{tab:vm-availability} shows 
-that VC has a significantly  higher availability than VO.
-% as the number of failed machines increases from 3 to 20.
-%Our VM-centric approach shows significant improvements
-%in VM availability.
-With $p=100$ and 3 failures,
-VO with 69.5\% availability could lose data in 763 VMs 
-while VC with 99.7\% only loses data for 8 VMs out of 2500 VMs.
-The key reason is that for most data in VC, only a single VM can be affected by
-the loss of a single file block
-%Since most blocks contain chunks for a single
-%VM, VMs can depend on a smaller number of blocks, 
-while in VO, the loss of a
-single block tends to affect many VMs.
-When the number of physical machines failed reaches 20, the availability of VO reaches 0\%
-and VC also drops to 1.13\%. This is because even there is a good availability for PDS data, VC still
-loses most of non-PDS blocks given the replication degree for non PDS is 3.
-When $p=1000$, the percentage of failures is then 2\% and VC delivers a meaningful availability 
-with 99.62\%, outperforming VO significantly. 
-
-% because our VM-centric approach
-%localizes deduplication.  
-
-%Although the loss of a PDS block affects many VMs,
-%by increasing replication for those blocks we minimize the effect on VM
-%snapshot availability, and this is one of the key contributions of our
-%approach, the clear separation of highly popular data from less popular data.
-
-%By having extra replicas for the PDS data, we reduce the failure rate of PDS
-%FSBs enough that the failure rate for the VM approaches the failure rate of the
-%Non-PDS blocks. This minimizes the drop in availability between the expected
-%and worst case for VC.
-%
-%One of the advantages of VC is that there is a division between
-%popular and non-popular data to facilitate improved reliability. 
-Figure~\ref{fig:pds-replication} shows
-the impact of increasing PDS data replication degree. 
-While the impact on storage cost is small (because we have separated out only
-the most popular blocks),
-a replication degree of 6  has a significant improvement over 4. The
-availability does not increase much  when increasing
-$r_c$ from 6 to 9 and the benefit is not so visible after $r_c>9$. 
-That is because when the number of failed machines increases beyond 6, 
-the non-PDS data availability starts to deteriorate significantly given its replication degree
-$r$ is set to 3. Thus when $r=3$, the reasonable choice for $r_c$ would be a number between 6 and 9.
- 
-%This is because, as described before, the availability of the VM approaches the
-%availiability of the Non-PDS data as the failure rate of PDS data gets very small.
-
-
-\begin{table}[htbp]
-  \centering
-    \footnotesize
-    \tabcolsep=0.11cm
-    \pgfplotstabletypeset[
-        comment chars=!,%use ! before a row in the data table to exclude it
-        columns={NodesFailed,VO100,VC100,VO1000,VC1000},
-        columns/NodesFailed/.style={
-            column name={\multirow{3}{*}{Failures ($d$)}}
-        },
-        columns/VO100/.style={
-            column name={
-                \multicolumn{4}{c|}{VM Snapshot Availability(\%)}\\&
-                \multicolumn{2}{c|}{$p=100$}&\multicolumn{2}{c|}{$p=1000$}\\&
-            VO},
-            fixed, precision=6
-        },
-        columns/VC100/.style={
-            column name={VC},
-            fixed, precision=6},
-        columns/VO1000/.style={
-            column name={VO},
-            fixed, precision=6},
-        columns/VC1000/.style={
-            column name={VC},
-            fixed, precision=6},
-        every head row/.style={
-            before row={\hline},
-            after row={\hline},
-        },
-        every last row/.style={after row=\hline},
-        column type/.add={}{|},
-        every first column/.style={column type/.add={|}{}},
-        %the below rows can be used to extract rows 3,5,10,20 from rows 0-40
-        %skip rows between index={0}{3},
-        %skip rows between index={4}{5},
-        %skip rows between index={6}{10},
-        %skip rows between index={11}{20},
-        %skip rows between index={21}{41}
-    ]{figures/availability_table.txt}
-    \caption{Availability of VM snapshots for VO ($r=3$) and VC ($r_c=6$, $r=3$).}
-    \label{tab:vm-availability}
-\end{table}
-
-\begin{figure}[htbp]
-  \centering
-	\begin{tikzpicture}
-		\begin{axis}[
-                        width=\linewidth,
-                        height=0.6\linewidth,
-		%title={PDS Replication affect on availability},
-		xlabel={Failed storage nodes},
-		ylabel={Availability (\%)},
-                xmin=0,
-                xmax=10,
-		%extra y ticks={99.9}, %if important numbers are missing
-                mark options=solid,
-                legend style={
-                    cells={anchor=west}, %legend entry alignment
-                    legend pos=south west %legend position
-                },
-                reverse legend,
-		]
-                \addplot+[dashed] table[x=NodesFailed,y=VO]{figures/node_failures_100.txt};
-                \addplot table[x=NodesFailed,y=VC1]{figures/node_failures_100.txt};
-                \addplot table[x=NodesFailed,y=VC2]{figures/node_failures_100.txt};
-                \addplot table[x=NodesFailed,y=VC3]{figures/node_failures_100.txt};
-                \addplot table[x=NodesFailed,y=VC4]{figures/node_failures_100.txt};
-                \legend{
-                    VO,
-                    $r_c=4$,
-                    $r_c=5$,
-                    $r_c=6$,
-                    $r_c=9$
-                }
-		\end{axis}
-	\end{tikzpicture}
-  \caption{Availability of VM snapshots in VC with different PDS replication degrees on a $p=100$-node cluster.}
-  \label{fig:pds-replication}
-\end{figure}
-
-
-
 \subsection{Deduplication Efficiency}
 \label{sect:evaldedup}
 
@@ -266,15 +89,18 @@ alg     efficiency
 \begin{table}[htb]
 \centering
 \begin{small}
-    \begin{tabular}{|c|c|c|c|c|}
-    \hline
+    \begin{tabular}{|c|c|c|c|c|c|}
+    \hline 
+&
      \multicolumn{4}{|c|}{VC}  & VO \\ \hline
+&
      2\%PDS  &  No PDS &2\%PDS     & 4\%PDS & SRB  \\ 
-     no-simi&   &&  &    \\ \hline
-     94.31\%& 93.02\%  & 96.01\% & 96.58\% & 97.86\% \\ \hline
+&     no-simi&   &&  &    \\ \hline
+Dedup &     94.31\%& 93.02\%  & 96.01\% & 96.58\% & 97.86\% \\ \hline
+Mem(MB) &     108&  46 & 118  & 190 & 2400 \\ \hline
     \end{tabular}
 \end{small}
-    \caption{Deduplication efficiency for different VC settings and
+    \caption{Deduplication efficiency and per-machine memory usage for different VC settings and
         Stateless Routing with Binning (SRB).}
     \label{tab:efficiency-comparison}
 \end{table}
@@ -709,4 +535,181 @@ This VM-specific leakage  repair takes  less than half an hour for each VM.
 % We also measure the storage leakage under $\Delta u/u=0.05$ and $0.10$ settings for summary vectors.
 % As this value increases, larger summary vectors are generated thus results in a decrease on the
 % false-positive ratio, therefore less amount of unused chunks are misjudged. 
+
+%\subsection{Fault Isolation and Snapshot Availability}
+\subsection{Snapshot Availability}
+
+ Table~\ref{tab:vm-availability} shows the availability of VM snapshots when 
+there are up to 20 machines failed in a cluster. 
+The trace driven execution allows us to estimate the number of file blocks shared by each VM in the VO and VC approaches
+and then calculate the average availability of VM snapshots.
+The case for  a 1000-node cluster is also listed, assuming file block sharing patterns among VMs remain
+the same from $p=100$ setting to $p=1000$. Each machine hosts about 25 VMs in both cases
+and with different $p$ values, the availability varies when the number of failures in the cluster changes.
+
+%Two VC curves use $V_c=1250$ and $V_c=2500$ representing the average number of VMs that share a PDS file system block. 
+%We have assumed a worst-case scenario that  a PDS block is shared by every VM. 
+%($V_c=p*V$), which is to be expected when PDS
+%blocks are sorted by hash, as their order is randomized.
+%$V_c=2500$ represents  the absolute worst case for 2500 VMs. 
+%The VO curve has  $V_o=6.3$ which is the average number of VMs that share a file system block in our smaller dataset.
+%To get this number, we perform perfect deduplication over 105 VMs, append unique chunks to a DFS file and
+%count the number of dependencies from a file system block to VM.
+%In the scenario of having 2500 VMs, this number can only increase, thus this number represents the best
+%case for VO approach. 
+%Our results show that the VC approach even with $V_c=2500$ has a higher availability than VO.
+%For example, with 10 machines failed, VO with 98.5\% availability would lose snapshots of 37 VMs 
+%while VC with 99.9\% loses snapshots of 2.5 VMs.
+%The key reason is that  $N_1 +N_2 < N_o$, caused by the fact that the VM-centric approach localizes deduplication
+%and packs  data blocks for one VM as much as possible.  The extra replication
+%for PDS blocks also significantly increases the snapshot availability even when
+%a PDS file block is shared by every VM.
+%=======
+%Figure~\ref{tab:vm-availability} shows the availability of VM snapshots
+%as storage nodes fail. 
+%We assume a random distirbution of 64MB file system
+%blocks (FSBs). where FSBs are not randomly distributed availability might
+%be improved by limiting the number of storage nodes a particualr VM depends
+%on but we take the conservative approach. We compare VO, the expected case for
+%VC ($V_c=p*V/2$), and the worst case for VC ($V_c=p*V/2$). We set $V_o=6.3$
+%based on measured values in our dataset.
+%To obtain VO sharing of file blocks, we perform perfect deduplication over 105 VMs, 
+%append unique chunks to a DFS file and
+%count the number of dependencies from a file system block to VM.
+%In the case of having 2500 or even 25000 VMs, this number can only increase, thus this number represents the best
+%case for VO approach. 
+
+
+ Table~\ref{tab:vm-availability} shows 
+that VC has a significantly  higher availability than VO.
+% as the number of failed machines increases from 3 to 20.
+%Our VM-centric approach shows significant improvements
+%in VM availability.
+With $p=100$ and 3 failures,
+VO with 69.5\% availability could lose data in 763 VMs 
+while VC with 99.7\% only loses data for 8 VMs out of 2500 VMs.
+The key reason is that for most data in VC, only a single VM can be affected by
+the loss of a single file block
+%Since most blocks contain chunks for a single
+%VM, VMs can depend on a smaller number of blocks, 
+while in VO, the loss of a
+single block tends to affect many VMs.
+When the number of physical machines failed reaches 20, the availability of VO reaches 0\%
+and VC also drops to 1.13\%. This is because even there is a good availability for PDS data, VC still
+loses most of non-PDS blocks given the replication degree for non PDS is 3.
+When $p=1000$, the percentage of failures is then 2\% and VC delivers a meaningful availability 
+with 99.62\%, outperforming VO significantly. 
+
+% because our VM-centric approach
+%localizes deduplication.  
+
+%Although the loss of a PDS block affects many VMs,
+%by increasing replication for those blocks we minimize the effect on VM
+%snapshot availability, and this is one of the key contributions of our
+%approach, the clear separation of highly popular data from less popular data.
+
+%By having extra replicas for the PDS data, we reduce the failure rate of PDS
+%FSBs enough that the failure rate for the VM approaches the failure rate of the
+%Non-PDS blocks. This minimizes the drop in availability between the expected
+%and worst case for VC.
+%
+%One of the advantages of VC is that there is a division between
+%popular and non-popular data to facilitate improved reliability. 
+Figure~\ref{fig:pds-replication} shows
+the impact of increasing PDS data replication degree. 
+While the impact on storage cost is small (because we have separated out only
+the most popular blocks),
+a replication degree of 6  has a significant improvement over 4. The
+availability does not increase much  when increasing
+$r_c$ from 6 to 9 and the benefit is not so visible after $r_c>9$. 
+That is because when the number of failed machines increases beyond 6, 
+the non-PDS data availability starts to deteriorate significantly given its replication degree
+$r$ is set to 3. Thus when $r=3$, the reasonable choice for $r_c$ would be a number between 6 and 9.
+ 
+%This is because, as described before, the availability of the VM approaches the
+%availiability of the Non-PDS data as the failure rate of PDS data gets very small.
+
+
+\begin{table}[htbp]
+  \centering
+    \footnotesize
+    \tabcolsep=0.11cm
+    \pgfplotstabletypeset[
+        comment chars=!,%use ! before a row in the data table to exclude it
+        columns={NodesFailed,VO100,VC100,VO1000,VC1000},
+        columns/NodesFailed/.style={
+            column name={\multirow{3}{*}{Failures ($d$)}}
+        },
+        columns/VO100/.style={
+            column name={
+                \multicolumn{4}{c|}{VM Snapshot Availability(\%)}\\&
+                \multicolumn{2}{c|}{$p=100$}&\multicolumn{2}{c|}{$p=1000$}\\&
+            VO},
+            fixed, precision=6
+        },
+        columns/VC100/.style={
+            column name={VC},
+            fixed, precision=6},
+        columns/VO1000/.style={
+            column name={VO},
+            fixed, precision=6},
+        columns/VC1000/.style={
+            column name={VC},
+            fixed, precision=6},
+        every head row/.style={
+            before row={\hline},
+            after row={\hline},
+        },
+        every last row/.style={after row=\hline},
+        column type/.add={}{|},
+        every first column/.style={column type/.add={|}{}},
+        %the below rows can be used to extract rows 3,5,10,20 from rows 0-40
+        %skip rows between index={0}{3},
+        %skip rows between index={4}{5},
+        %skip rows between index={6}{10},
+        %skip rows between index={11}{20},
+        %skip rows between index={21}{41}
+    ]{figures/availability_table.txt}
+    \caption{Availability of VM snapshots for VO ($r=3$) and VC ($r_c=6$, $r=3$).}
+    \label{tab:vm-availability}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+	\begin{tikzpicture}
+		\begin{axis}[
+                        width=\linewidth,
+                        height=0.6\linewidth,
+		%title={PDS Replication affect on availability},
+		xlabel={Failed storage nodes},
+		ylabel={Availability (\%)},
+                xmin=0,
+                xmax=10,
+		%extra y ticks={99.9}, %if important numbers are missing
+                mark options=solid,
+                legend style={
+                    cells={anchor=west}, %legend entry alignment
+                    legend pos=south west %legend position
+                },
+                reverse legend,
+		]
+                \addplot+[dashed] table[x=NodesFailed,y=VO]{figures/node_failures_100.txt};
+                \addplot table[x=NodesFailed,y=VC1]{figures/node_failures_100.txt};
+                \addplot table[x=NodesFailed,y=VC2]{figures/node_failures_100.txt};
+                \addplot table[x=NodesFailed,y=VC3]{figures/node_failures_100.txt};
+                \addplot table[x=NodesFailed,y=VC4]{figures/node_failures_100.txt};
+                \legend{
+                    VO,
+                    $r_c=4$,
+                    $r_c=5$,
+                    $r_c=6$,
+                    $r_c=9$
+                }
+		\end{axis}
+	\end{tikzpicture}
+  \caption{Availability of VM snapshots in VC with different PDS replication degrees on a $p=100$-node cluster.}
+  \label{fig:pds-replication}
+\end{figure}
+
+
 
