@@ -83,11 +83,13 @@ the search scope of each data chunk, but it does not reduce th total amount of s
 used for the entire deduplication. 
 %In comparison we only focus on top popular chunks among VMs and this
 %significantly reduces the total amount of  searchable fingerprints. 
+
+\comments{
 We have not adopted the index sampling in \cite{Guo2011} because its extension for
 for a distributed architecture is difficult.  To use a distributed memory version of the sampled index, every deduplication 
 request may access a remote machine for index lookup and the overall overhead of access latency for all requests
 can be significant.
-
+}
 \item 
 \textbf{VM-specific duplicate search optimization} --
 While cross-VM deduplication is simplified, we intend to optimize the VM-specific deduplication 
