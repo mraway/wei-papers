@@ -66,6 +66,12 @@ IaaS architectures.
 %VM dependence minimization during deduplication and file system block management.
 Even with these optimization and approximation techniques, resource usage such as memory  for deduplication
 is still extensive for a shared cloud cluster.  
+For example, in the experiment discussed in Section~\ref{sect:dedup}, 
+cross-machine fingerprint comparison using Bloom filter and approximated routing~\cite{bottleneck08,Dong2011} 
+still needs several gigabytes of memory per machine, which impacts other cloud services sharing the same
+computing resource while our objective is to have an approximation scheme 
+which uses about 100 or few hundred megabytes of memory.
+
 \comments{
 For example, the
 sampled index with prefetching, proposed  by Guo and Efstathopoulos\cite{Guo2011},
