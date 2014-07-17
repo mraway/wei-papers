@@ -52,7 +52,7 @@ to reduce memory requirements at the cost of some loss of deduplication
 efficiency.
 Additional inline deduplication techniques are studied in ~\cite{sparseindex09,Guo2011,Srinivasan2012}
 and a parallel batch solution for cluster-based deduplication is 
-studied in ~\cite{wei2013}. 
+studied in ~\cite{WeiZhangIEEE}. 
 
 \comments{
 All of the above approaches have focused on optimization of deduplication
@@ -83,7 +83,7 @@ task often needs several gigabytpes of memory, which impacts other cloud service
 
 Whiel deduplication reduces storage cost, it creates an artitical data dependence among VMs: when a shared data chunk
 is lost in the storage, all VMs that refer such chunks after deduplication face a data loss.
-This issue is identified in ~\cite{Baghat2006} which proposes to use more replication for data shared by more files.
+This issue is identified in ~\cite{Reliability06} which proposes to use more replication for data shared by more files.
 It is complex to implement this idea in VM snapshot backup. 
 This is because the file system block  size in a distributed file system such as  
 the Hadoop file system and the Google file system~\cite{googlefs03}

@@ -46,7 +46,7 @@ storage demand.
 %the use of deduplication
 
 %Without deduplication,
-Source-side deduplication (e.g. ~\cite{Symantic Netbean})
+Source-side deduplication (e.g. ~\cite{Symantec2009})
  eliminates duplicates before backup data is transmitted
 to a secondary storage, which saves network bandwidth significantly; however its resource
 usage can impact other co-located cloud services. 
@@ -55,7 +55,7 @@ duplicates, even optimization or approximation techniques are developed~\cite{Gu
 When deleting unused snapshots, a mark-and-sweep approach~\cite{Guo2011,Fabiano2013}  
 is effective while it still carries a significant cost, especially in a distributed
 setting.  Another side effect of deduplication is the possible loss of failure
-resilience~\cite{Bhagwat2006}.  Separate files share the same physical copies of blocks that are
+resilience~\cite{Reliability06}.  Separate files share the same physical copies of blocks that are
 logically duplicated among them.  If a shared block is lost, all files that
 share that block are affected.  
 A cloud may offload backup workload from production 
