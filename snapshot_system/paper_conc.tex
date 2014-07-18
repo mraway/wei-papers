@@ -12,8 +12,9 @@ Our evaluation with an Alibaba dataset has the following results.
 \item {\em Competitive deduplication efficiency with a tradeoff}. 
 The proposed VC scheme 
 can accomplish over  96\% of what complete global
-deduplication can do. In comparison, the SRB and sampled index~\cite{Dong2011,extreme_binning09,Guo2011}
-can accomplish 97\% to 97.86\%.
+deduplication can do. In comparison, SRB~\cite{Dong2011,extreme_binning09}
+can accomplish 97.86 while 
+the sampled index~\cite{Guo2011} can deliver 97\% for a different test dataset. 
 \item {\em Low resource usage in deduplication}. 
 The VC scheme achieves a 85K:1 ratio between raw snapshot data and memory usage
 and is much more memory-efficient than 
@@ -21,6 +22,7 @@ SRB  with 4K:1 ratio and sampled index with 20K:1.
 Both VC and SRB are designed for a distributed cluster architecture while
 the sampled index method is for a single-machine architecture.
 \item {\em Low cost in snapshot deletion}. 
+The VC deletion takes less than a minute for snapshot deletion 
 \item {\em Higher availability}. 
 The availability of snapshots increases substantially when
 adding more replication for popular cross-VM chunks and packaging chunks from the same 
