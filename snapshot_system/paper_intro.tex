@@ -64,7 +64,7 @@ backup services (e.g. Amazon S3). This approach simplifies the cluster
 architecture and 
 avoids potential performance degradation to production applications when 
 backups are in progress.
-However, sending out undeduplicated backup data wastes huge amount
+However, sending out undeduplicated backup data wastes a huge amount
 of network bandwidth that would otherwise be available to user VMs. 
 \comments{
 Even when the storage system implements deduplication internally
@@ -75,11 +75,11 @@ or it must forego global deduplication in order to gain scalability
 }
 
 This paper considers a backup service for converged cloud architectures
-that is co-located with user VMs, sharing the cloud computer, network, and
+that is co-located with user VMs, sharing the cloud compute, network, and
 storage resource with them.  We propose a VM-centric approach that
 simplifies deduplication and snapshot deletion.
 The key advantage of this approach  is that while maintaining  a competitive deduplication efficiency,
-the scheme uses a small resource usage without affecting other collocated cloud services.
+the scheme requires little resource usage to minimize the impact on other collocated cloud services.
 \comments{
 The key contribution of this work is a set of methodologies to address the following two challenges:
 1) simple deduplication and snapshot deletion with competitive efficiency and 
