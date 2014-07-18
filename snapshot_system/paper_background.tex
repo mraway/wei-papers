@@ -14,7 +14,7 @@ Snapshot operations take place at the virtual device driver level, which
 means no fine-grained file system metadata can be used to determine the changed data. 
 In a converged setting with source-side deduplication, the resources that are used to implement snapshot
 backup and deduplication are the same resources that must support cloud-hosted
-VMs.  Thus the backup service colocated with 
+VMs.  Thus the backup service collocated with 
 other cloud services has to minimize its resource impact.  
 %This architecture does not use a separate  backup facility for a lower cost and 
 %reduces the network bandwidth consumption in transferring the raw data for backup. 
@@ -51,7 +51,7 @@ which may be accessed.
 %to reduce memory requirements at the cost of some loss of deduplication
 %efficiency.
 Additional inline deduplication and  approximation techniques
-are studied in ~\cite{extreme_binning09,Guo2011,sparseindex09,Guo2011,Srinivasan2012,WeiZhangIEEE}.  
+are studied in ~\cite{extreme_binning09,sparseindex09,Srinivasan2012,WeiZhangIEEE}.  
 %and a parallel batch solution for cluster-based deduplication is 
 %studied in ~\cite{WeiZhangIEEE}. 
 \comments{
@@ -68,14 +68,25 @@ IaaS architectures.
 Even with these optimization and approximation techniques, resource usage such as memory  for deduplication
 is still extensive for a shared cloud cluster.  
 For example, in the experiment discussed in Section~\ref{sect:evaldedup}, 
+the raw snapshot data has a size of 1,000TB on 100 physical machines that host VMs,
 cross-machine fingerprint comparison using Bloom filter and approximated routing~\cite{bottleneck08,Dong2011} 
 still needs several gigabytes of memory per machine. This can impact other primary cloud services sharing the same
-computing resource while our objective is to have an approximation scheme 
+computing resource. Our objective is to have an approximation scheme 
 which uses no more than a few hundred megabytes of memory during normal operation.
-We have not adopted the index sampling in \cite{Guo2011} because its extension for
-for a distributed architecture is difficult.  To use a distributed memory version of the sampled index, every deduplication
-request may access a remote machine for index lookup and the overall overhead of access latency for all requests
-can be significant.
+The desired ratio of raw data to memory ratio is from 100K:1 to 30K:1 
+and this ratio remains to be a constant as the number of machines increases.
+Our proposed scheme achieves 86K:1.
+
+Index sampling with a prefetch cache  is proposed in
+in~\cite{Guo2011} for efficient single-machine deduplication. 
+This scheme uses 25GB memory per 500TB of raw data
+and thus the ratio is 20K:1. Our scheme proposed in this paper 
+uses 4 times less memory and we have not incorporated this index 
+sampling technique because its extension for
+for a distributed architecture is difficult.  To use a distributed memory version 
+of the sampled index, every deduplication
+request may access a remote machine for index lookup and the overall overhead 
+of access latency for all requests can be significant.
 
 \comments{
 For example, the
@@ -99,17 +110,22 @@ is lost in the storage, all VMs that refer such chunks after deduplication face 
 This issue is identified in ~\cite{Reliability06} which proposes to use more replication for data shared by more files,
 and we will adopt this idea.
 When the backup storage is implemented using a distributed file system such as Hadoop and Google file system~\cite{googlefs03},  
-the file system block  size is often chosen to be large. On the other hand, 
+the file system block  size is often chosen to be large (e.g. 64MB). On the other hand, 
 deduplication implementations~\cite{Guo2011,extreme_binning09,bottleneck08,Jin2009,Dong2011}
  typically use smaller chunk sizes (e.g. 4K bytes).
 Thus we need to consider the size gap between file system blocks and chunks  in adding more replications for popular chunks. 
 
  
-Cross-VM chunk sharing also complicates snapshot deletion which occurs frequently when snapshots expire regularly
-and reference counting is required to identify chunks that are no longer used. 
-The mark-and-sweep approach~\cite{Guo2011,Fabiano2013}  is effective for
-deletion, but still carries a significant cost, especially in a distributed 
-setting.  
+%Cross-VM chunk sharing also complicates 
+Snapshot deletion occurs frequently since  snapshots expire regularly
+and reference counting is required to identify chunks that are no longer used.
+The grouped mark-and-sweep approach~\cite{Guo2011}
+is effective for deletion, but still carries a significant cost, especially in a distributed 
+setting.   This is because any data chunk can be used by any snapshot
+of virtual machines in a large cloud cluster and there are multiple rounds of  extensive I/O involved
+to scan through the metadata of snapshots to determine if a chunk has been used or not.
+As the number of virtual  machines increases, the cost becomes even worse.
+%~\cite{Guo2011,Fabiano2013}  
 %to count if a data chunk is still shared by other snapshots. 
 
 
