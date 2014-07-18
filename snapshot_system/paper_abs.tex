@@ -1,27 +1,31 @@
 \begin{abstract}
 Data deduplication has been widely used for cloud data backup
-because of excessive redundant content blocks. Common techniques 
+because of excessive redundant content. Common techniques 
 perform fingerprint comparison to remove duplicates
 across virtual machines.
-However, letting a duplicate data block be shared
-by many virtual machines represents a tradeoff between
-storage efficiency and data availability.
+However, fingerprint search for source-side duplicate detection is resource
+intensive when the backup service is co-located with  other cloud services.
+%letting a duplicate data block be shared
+%by many virtual machines represents a tradeoff between
+%storage efficiency and data availability.
 %by many virtual machines creates data dependence and is less fault-resilient. 
 %%This paper studies the impact of deduplication on 
 %%fault resilidence  of virtual machine snapshots, created by data dependence  among duplicates
 %%and proposes a VM-centric approach that strikes a balance between deduplication efficiency
 %%and fault isolation 
-This paper proposes a VM-centric backup service on a converged  cloud cluster architecture
-and  strikes a tradeoff for better fault isolation with competitive  deduplication efficiency.
-It localizes deduplication as much as possible within each 
+This paper proposes a VM-centric backup service 
+which  strikes a tradeoff for a competitive  deduplication efficiency while
+has  an advantage of   using less  computing resources, suitable for running
+on a converged cloud architecture that cohosts  many other services.
+This VM-centric scheme also leads to  better fault isolation and simplifies snapshot deletion.  
+The key techniques used are to
+localize deduplication as much as possible within each 
 virtual machine, guided by similarity
-search, and it restricts global deduplication under popular chunks with extra replication support.
-It associates  underlying file blocks with one VM for most cases
+search, and to restrict global deduplication under popular chunks with extra replication support.
+This scheme associates  underlying file blocks with one VM for most cases
 and proposes an approximate method for fast and simplified snapshot deletion.
-This VM-centric scheme also has  an advantage of   using less  computing resources, suitable for running
-the backup service on a converged cloud architecture that cohosts  many other services.
 This  paper  describes an evaluation of this scheme to assess  its deduplication 
-efficiency and fault resilience.
+efficiency, resource usage,  and fault resilience.
 
 % Collocating a cluster-based duplicate service with other cloud services
 %   necessary to eliminate
