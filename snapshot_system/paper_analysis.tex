@@ -48,6 +48,7 @@ A(r) & availability of a file block with $r$ replicas and $d$ failed physical ma
 
 
 \section{Impact on Fault Isolation}
+\label{sect:fault}
  
 \begin{figure}[htb]
     \centering
@@ -89,7 +90,7 @@ A(r) & availability of a file block with $r$ replicas and $d$ failed physical ma
 %Thus the impact on storage increase is very small even when we choose a large $r_c/r$ ratio. 
 %For example, $r_c/r=2$ or 3. 
 
-Now we  analyze  the impact of losing $d$ physical machines 
+We  analyze  the impact of losing $d$ physical machines 
 to the VM centric and oblivious approaches.  
 There are two impacts to VC. 
 1) Some PDS fingerprint lookup services do not respond.  As  a result, some duplicates
@@ -128,24 +129,27 @@ and  has  an average of  $N_2$ PDS file system blocks.
 Each non-PDS block is associated with only one VM.
 % and  we denote that PDS blocks are shared by an average of $V_c$ VMs. 
 Then by counting outgoing edges from VMs in Figure~\ref{fig:share}(a), we get:
-$
+\[
 n* N_1   = \mbox{ Number of non-PDS file system blocks in VC.} 
-$
+\]
 
 For VO, 
 %each VM has an average of $N_o$ file system blocks
 %and let $V_o$ be the average number of VMs shared by each file block.
 by counting outgoing edges from VMs in Figure~\ref{fig:share}(b) with parameters defined in
-Table~\ref{tab:symbol},  we have $n *N_o   =  V_o * $Number of file system blocks in VO.
+Table~\ref{tab:symbol},  we have 
+\[
+n *N_o   =  V_o * \mbox{Number of file system blocks in VO}.
+\]
 
 Since we choose 2-4\% of unique chunks for PDS
 and Section~\ref{sect:evaldedup} 
 shows that the deduplication efficiency of VC is very close to that of VO,
 the number of non-PDS file blocks in VC is fairly close to the number of file blocks in VO.
 Then
-$
+\[
 \frac{N_o}{N_1} \approx  V_o.
-$
+\]
 %Thus $N_o >> N_1$.
 
 Figure~\ref{fig:vm-links} shows $N_1$, $N_2$, and $N_o$ values of 105 VMs from a  test dataset 
@@ -204,11 +208,11 @@ VC and VO. }
 Given $d$ failed machines and $r$ replicas for each file block,
 %normal data replication degree $r$, PDS data replication degree $r_c$, 
 the availability of a file block is the probability that  
-all of its replicas do not appear in any group of $d$ failed machines among $p$ nodes. 
+all of its replicas do not appear in any group of $d$ failed machines among $p$ nodes~\cite{CoHadoop2011}. 
 Namely, 
-$
+\[
 A(r) = 1-\binom{d}{r}/ \binom{p}{r}. 
-$
+\]
 Then the availability of one VM's snapshot data under VO approach is the probability that
  all its file blocks  are unaffected during the system failure:
 %\begin{equation}
@@ -407,6 +411,8 @@ Thus the deduplication efficiency is stable  as $p$ increases as long as $\sigma
 
 
 \begin{figure}[htbp]
+\vspace{2em}
+
   \centering
     \begin{tikzpicture}
             \begin{axis}[

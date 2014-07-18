@@ -2,18 +2,32 @@
 \label{sect:conclusion}
 %In this paper we propose a collocated backup service built on
 %the top of a cloud cluster to reduce network traffic and infrastructure requirements.
-The main contribution of this paper is a low-profile and VM-centric deduplication scheme to 
-maximize fault isolation while delivering competitive deduplication efficiency using
-a small amount of system resource.
-Evaluation using  this scheme shows it strikes a tradeoff and restricted cross-VM duplicate detection
-can accomplish up to 96.58\% of what complete global
-deduplication can do, and the simple and approximate snapshot deletion 
-effectively manages deleted chunks with
-much lower resource usage.  The availability of snapshots increases substantially when
+The main contribution of this paper is a low-profile and VM-centric deduplication scheme that
+uses  a small amount of system resource in both snapshot deduplication and deletion
+while delivering competitive deduplication efficiency.
+The VM-centric design also allows an optimization for  fast snapshot fault isolation.
+ 
+Our evaluation with an Alibaba dataset has the following results.
+\begin{itemize}
+\item {\em Competitive deduplication efficiency with a tradeoff}. 
+The proposed VC scheme 
+can accomplish over  96\% of what complete global
+deduplication can do. In comparison, the SRB and sampled index~\cite{Dong2011,extreme_binning09,Guo2011}
+can accomplish 97\% to 97.86\%.
+\item {\em Low resource usage in deduplication}. 
+The VC scheme achieves a 85K:1 ratio between raw snapshot data and memory usage
+and is much more memory-efficient than 
+SRB  with 4K:1 ratio and sampled index with 20K:1.
+Both VC and SRB are designed for a distributed cluster architecture while
+the sampled index method is for a single-machine architecture.
+\item {\em Low cost in snapshot deletion}. 
+\item {\em Higher availability}. 
+The availability of snapshots increases substantially when
 adding more replication for popular cross-VM chunks and packaging chunks from the same 
 VM in one file system block. The analysis shows that the replication degree
 for the popular data set between 6 and 9 is good enough when the replication degree
 for other data blocks is 3, and adds only a small cost to storage.
+\end{itemize}
 %Currently we are studying how the 
 
 %Similarity guided local search reduces cross-VM data dependency and exposes more parallelism  
