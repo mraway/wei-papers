@@ -1,4 +1,4 @@
-\documentclass{acm_proc_article-sp}
+\documentclass[10pt,reprint]{socc14}
 \usepackage{mathptmx}
 \usepackage[colorlinks,linkcolor=red,anchorcolor=blue,citecolor=green,urlcolor=black]{hyperref}
 \usepackage{subfigure}
@@ -76,7 +76,13 @@
 
 %\linespread{.98} % to squeeeze lines and put figures in same page
 \begin{document}
-
+\special{papersize=8.5in,11in}
+\setlength{\pdfpageheight}{\paperheight}
+\setlength{\pdfpagewidth}{\paperwidth}
+\conferenceinfo{Submission to SoCC '14}{October, 2014, Seattle, WA, USA}
+\copyrightyear{2014}
+\copyrightdata{978-1-nnnn-nnnn-n/yy/mm}
+\doi{nnnnnnn.nnnnnnn}
 %\title{VM-Centric Deduplication with Fault Isolation for Virtual Machine Snapshot Backup }
 %Collocated Snapshot Backup with VM-Centric Deduplication in the Cloud}
 
@@ -84,7 +90,7 @@
 \title{
 VM-Centric  Snapshot Deduplication  for Converged Cloud Architectures} 
 %VM-Centric  Deduplication  with Fault Isolation for Snapshot Backup in the Cloud
-\author{
+\authorinfo{
   Wei Zhang$^{\star}$, Daniel Agun$^\star$, Tao Yang$^\star$, Rich Wolski$^{\star}$, and  Hong Tang$^\dagger$\\
   $^\star$University of California at Santa Barbara \\
   $^\dagger$Alibaba Inc. \\
@@ -97,10 +103,11 @@ VM-Centric  Snapshot Deduplication  for Converged Cloud Architectures}
 \input{paper_abs}
 
 \category{D.2.8}{Information Systems}{Information Storage Systems}
-\terms{Design, Experimentation, Performance, Analysis}
+\terms
+Design, Experimentation, Performance, Analysis
 
-\keywords{Virtual machine images, snapshot backup and deletion, source-side deduplication, 
-cloud clusters and distributed architectures} % NOT required for Proceedings
+\keywords
+Virtual machine images, snapshot backup and deletion, source-side deduplication, cloud clusters and distributed architectures
 
 \input{paper_intro}
 \input{paper_background}
@@ -111,8 +118,8 @@ cloud clusters and distributed architectures} % NOT required for Proceedings
 \input{paper_conc}
 
 %\linespread{.97} % to squeeeze lines and put figures in same page
-\bibliographystyle{abbrv}
-\bibliography{library,dedup1}
 \appendix
 \input{paper_analysis}
+\bibliographystyle{abbrvnat}
+\bibliography{library,dedup1}
 \end{document}
