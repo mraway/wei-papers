@@ -115,16 +115,33 @@ deduplication implementations~\cite{Guo2011,extreme_binning09,bottleneck08,Jin20
  typically use smaller chunk sizes (e.g. 4K bytes).
 Thus we need to consider the size gap between file system blocks and chunks  in adding more replications for popular chunks. 
 
- 
+Another disadvantage of cross-VM sharing is that it complicates
+snapshot deletion, which is the garbage collection in VM environment
+that occurs frequently because snapshots expire regularly.
+Several well developed garbage collection methods do not apply to the
+converged virtualized architecture due to various environment and resource limitations:
+Grouped mark-and-sweep~\cite{Guo2011} is an effective approach by tracking
+the dependencies from data containers to metadata groups, such that only a subset of
+metadata needs to be scanned in order to reclaim the garbage in any given data container.
+However, data in VM environment tend to be highly dedupable which means
+such dependency could be extensive, therefore scanning a large subset of metadata still carries a significant cost,
+ especially in a distributed setting.
+Perfect hashing~\cite{Fabiano2013} provides a very memory efficient way to represent a large set of
+hashes in a compact form, however, it still requires the scan of all data hashes before any garbage collection could begin,
+which limits its application to only offline batch garbage collection. In addition, it requires a centralized location
+to store the hashing result which is still too big to be hold anywhere in a converged architecture.
+
+
+
 %Cross-VM chunk sharing also complicates 
-Snapshot deletion occurs frequently since  snapshots expire regularly
-and reference counting is required to identify chunks that are no longer used.
-The grouped mark-and-sweep approach~\cite{Guo2011}
-is effective for deletion, but still carries a significant cost, especially in a distributed 
-setting.   This is because any data chunk can be used by any snapshot
-of virtual machines in a large cloud cluster and there are multiple rounds of  extensive I/O involved
-to scan through the metadata of snapshots to determine if a chunk has been used or not.
-As the number of virtual  machines increases, the cost becomes even worse.
+% Snapshot deletion occurs frequently since  snapshots expire regularly
+% and reference counting is required to identify chunks that are no longer used.
+% The grouped mark-and-sweep approach~\cite{Guo2011}
+% is effective for deletion, but still carries a significant cost, especially in a distributed
+% setting.   This is because any data chunk can be used by any snapshot
+% of virtual machines in a large cloud cluster and there are multiple rounds of  extensive I/O involved
+% to scan through the metadata of snapshots to determine if a chunk has been used or not.
+% As the number of virtual  machines increases, the cost becomes even worse.
 %~\cite{Guo2011,Fabiano2013}  
 %to count if a data chunk is still shared by other snapshots. 
 
@@ -180,7 +197,8 @@ such dependency could be extensive, therefore scanning a large subset of metadat
 Perfect hashing~\cite{Fabiano2013} provides a very memory efficient way to represent a large set of
 hashes in a compact form, however, it still requires the scan of all data hashes before any garbage could begin,
 which limits its application to only offline batch garbage collection. In addition, it requires a centralized location
-to store the hashing result which is still too big to be hold anywhere in converged architecture.
+to store the hashing result which is still too big to be hold anywhere in a converged architecture.
+
 %to count if a data chunk is still shared by other snapshots. 
 
 Thus,
