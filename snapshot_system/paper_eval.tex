@@ -549,23 +549,25 @@ As we know the actual storage needs after each snapshot creation,
 the storage leakage can be detected by
 comparing the size of remaining data in use after deletion to the correct number.
 Row 1 in  Table~\ref{tab:leakage} 
-is the deletion step. 3 means that version 3 is deleted. 
+is the deletion step. Entry value 3 in this row   means that Version 3 is deleted. 
 Row  2 is the predicted leakage using Formula~\ref{eq:leakrepair} from Section~\ref{sect:delete}
 given $\Delta u/u=0.025$,
 while Row 3 lists the actual average leakage measured during the experiment for all the VMs. 
 The Bloom filter setting is based on $\Delta u/u=0.025$.
 After 9 snapshot deletions, the actual leakage ratio reaches 0.0015 and this means that
 there is only 1.5MB space leaked for every 1GB of stored data.
-The actual leakage can reach  4.1\% after  245 deletions and such a repair is needed every 12 days
-to the  leakage under 5\%. 
+The actual leakage can reach  4.1\% after  245 deletions.
+% and such a repair is needed every 12 days to the  leakage under 5\%. 
 This experiment shows that the leakage of our approximate snapshot deletion is very small, 
 below the estimated number.
 
+\comments{
 The space cost for each snapshot deletion is insignificant.
 Leakage repair for each VM needs less than 85MB of memory
 considering each reference consumes 8 bytes plus  1 mark bit and  
 each VM snapshot has 40GB backup data with about 10 million chunks. 
 This VM-specific leakage  repair takes  less than half an hour for each VM. 
+}
 %when disk bandwidth is controlled to 50MB/s. 
 %When using the traditional mark-and-sweep~\cite{Guo2011,Fabiano2013} in VO for 2500 VMs, 
 %a total of 212GB memory
