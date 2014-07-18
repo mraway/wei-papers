@@ -28,15 +28,16 @@ In such an environment,
 %costs and performance limitations associated with network storage.
 each physical machine runs a number of virtual machines (VMs)
 %as  instances of a guest operating system 
-and their virtual disks are stored as disk image files, typically
-using a local (possibly shared) file system.
-Frequent snapshot backup of virtual disk images can
+and their virtual disks are stored as disk image files.
+% typically using a local (possibly shared) file system.
+Frequent snapshot backup of virtual machine images can
 increase the service reliability by allowing VMs to restart from their latest
-snapshot in the event of a server failure.  However, because the disk
-blocks that make up the VMs are often the same from snapshot to snapshot
-and are shared among VMs,  
-deduplication of redundant content
-blocks~\cite{venti02,bottleneck08} is necessary to substantially reduce the
+snapshot in the event of a server failure. Snapshots contain highly redundant content chunks and 
+%  However, because the disk
+%blocks that make up the VMs are often the same from snapshot to snapshot
+%and are shared among VMs,  
+deduplication of redundant 
+content~\cite{venti02,bottleneck08} is necessary to substantially reduce the
 storage demand. 
 
 %For example, the Aliyun cloud, which is  the largest cloud service provider
@@ -50,7 +51,7 @@ Source-side deduplication (e.g. ~\cite{Symantec2009})
  eliminates duplicates before backup data is transmitted
 to a secondary storage, which saves network bandwidth significantly; however its resource
 usage can impact other co-located cloud services. 
-But it is memory-intensive to compare a large number of fingerprints and identify
+It is memory-intensive to compare a large number of fingerprints and identify
 duplicates, even optimization or approximation techniques are developed~\cite{Guo2011,Dong2011,extreme_binning09}. 
 When deleting unused snapshots, a mark-and-sweep approach~\cite{Guo2011,Fabiano2013}  
 is effective while it still carries a significant cost, especially in a distributed
