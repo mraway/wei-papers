@@ -19,12 +19,17 @@ on~\cite{extreme_binning09}.
 We have performed a trace-driven study based on a production dataset
 from Alibaba Aliyun's cloud platform~\cite{Aliyun} 
 with about 2500 VMs, running on 100 physical machines. 
+Each machine in the production environment is more powerful than our evaluation cluster
+and has 16 cores with 48GB memory.
 Each machine hosts up to 25 VMs and each VM keeps 10 automatically-generated snapshots in the storage 
 system while a user may instruct extra snapshots to be saved.
 Each VM has about 40GB of storage  data  on average
-including OS and user data disk.
+including OS and user data disk while the size distribution is highly skewed and the maximum to
+the average ratio is close to 40.
 Each physical machine deals with about 10TB of snapshot data and each 1TB data represents one snapshot version
-of 25 VMs.  The VMs of the sampled data set use popular operating systems such as 
+of 25 VMs.  Thus the total amount of raw snapshot shot in 100 physical machines
+is about 1,000TB.
+The VMs of the sampled data set use popular operating systems such as 
 Debian, Ubuntu, Redhat, CentOS, win2008 and win2003. 
 %The backup of VM snapshots is required to complete within few  hours every night.
 The daily snapshot change rate is about 2-3\% on average.
@@ -112,8 +117,9 @@ Mem(MB) &     108&  46 & 118  & 190 & 2400 \\ \hline
      2\%No PDS &2\%PDS     & 2\%PDS & SRB  \\ 
 &        &&     no-simi & \\ \hline
 Dedup &      93.02\%  & 96.01\% & 94.31\% & 97.86\% \\ 
-efficiency &          &       &           &      \\    \hline 
-Memory(MB) &      46 & 118  & 108 & 2400 \\ \hline
+Efficiency &          &       &           &      \\    \hline 
+Memory &      46MB & 118MB  & 108MB & 2.4GB \\ 
+per-machine &      &   &  &  \\ \hline
     \end{tabular}
     \caption{Deduplication efficiency and per-machine memory usage for different VC settings and
         Stateless Routing with Binning (SRB).}

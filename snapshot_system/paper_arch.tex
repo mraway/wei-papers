@@ -132,9 +132,9 @@ When a chunk is to be accessed, the segment recipe contains a reference pointing
 
 
 Three API calls are supported for data backup:
-%\begin{itemize}
+\begin{itemize}
 
-%\item
+\item
 \noindent\textbf{Append()}. 
 For PDS data, the chunk is appended to the end of the PDS file and the offset is returned as the  reference.
 This operation  may only be used during PDS recalculation.
@@ -147,7 +147,7 @@ appends the header and data  to the corresponding VM file.
 A new container  index entry is also created for each chunk group and is written to the corresponding
 container index file.
 
-%\item
+\item
 \noindent\textbf{Get()}.
 Fetching PDS data is straightforward since each reference contains 
 the file offset, and the size of a PDS chunk is available from a segment recipe.
@@ -161,7 +161,7 @@ specified by the chunk ID.
 Finally, the client updates its internal chunk cache with the newly loaded content to 
 anticipate future sequential reads.
 
-%\item
+\item
 \noindent\textbf{Delete()}.
 Chunk deletion occurs when a snapshot expires or gets deleted explicitly by a user (the overall deletion strategy was discussed in detail in Section~\ref{sect:delete}).
 When deletion requests are issued for a specific container,
@@ -182,6 +182,6 @@ As a result, all data references stored
 in recipes are permanent and stable, and the data reading process
 is as efficient as before. Maintaining the stability of chunk IDs also ensures that recipes do not
 depend directly on physical storage locations, which simplifies data migration.
-%\end{itemize}
+\end{itemize}
 
 
