@@ -15,7 +15,7 @@ using  a min-hash function discussed in \cite{extreme_binning09}. Once a data ch
 a machine, the chunk is compared with the fingerprint index within this machine locally based 
 on~\cite{extreme_binning09}.
 
-{\bf Settings}.
+%{\bf Settings}.
 We have performed a trace-driven study based on a production dataset
 from Alibaba Aliyun's cloud platform~\cite{Aliyun} 
 with about 2500 VMs, running on 100 physical machines. 
@@ -151,7 +151,8 @@ reach over 96\%.
 %more index space is allocated  per machine for  PDS fingerprint lookup.
 The loss of efficiency in VC is caused by the restriction of the physical memory available
 in the cluster for fast in-memory PDS index lookup. 
-Memory usage per machine is low because each machine only hosts $1/p$  of  index for PDS plus some buffer space. 
+Memory usage per machine is low because each machine only hosts $1/p$  of  index for PDS 
+plus some buffer space where $p$ is the number of physical machines. 
 %In the extreme case if we put all the fingerprint into PDS 
 %index ($\sigma=100\%$) then VC will have 100\% efficiency.
 SRB in Column 5 can deliver up to 97.86\% deduplication efficiency, which is slightly better than VC.
@@ -174,13 +175,13 @@ Column 2 of Table~\ref{tab:efficiency-comparison} shows deduplication efficiency
 using PDS and it achieves 93.02\% and  missed duplicates take  up-to  3.56\% of the original space, which
 is about 356GB per physical machine. 
 Column 4 of Table~\ref{tab:efficiency-comparison} shows deduplication efficiency of VC which only uses
-the same offset in the parent segment to look for duplicates  but does not use 
-the fingerprint-guided similarity search. 
+the same offset in the parent segment to look for duplicates  but does not look for other potentially
+similar segments. 
 %There is a big efficiency drop in this curve when the number of VMs is about 30.
-The reason similarity search provides such an improvement is that
+We explain why similarity-guided local search provides such an improvement as follows.
 %Without this (i.e. when we only 
-there are VMs in which
-data  segments are moved to another location on disk, for example when a file is rewritten
+There are VMs in which data  segments are moved to another location on disk, for example 
+when a file is rewritten
 rather than modified in place,  
 and a dirty-bit or offset-only based detection would not be able to detect such a movement.
 We have found that in
@@ -207,15 +208,29 @@ The popularity-guided global deduplication with $\sigma=2\% $
 reduces the data further to 860GB, namely 8.6\% of the original size. 
 So it provides additional 28.63\% reduction. 
 
-The overall memory usage of VC for each physical machine is very small, which is not visible to other hosted cloud services.
-The 2.4GB memory usage of SRB is very visible to other services even each physical machine has 32GB memory.
+The overall memory usage of VC for each physical machine is very small, which is insignificant to other 
+hosted cloud services.  In comparison, the 2.4GB per-machine memory usage of SRB is very visible 
+to other services.
+% even each physical machine in the production environment has 48GB memory.
 
 %Figure~\ref{fig:exbin-efficiency-graph2} also shows the benefits of our minhash
 %similar segment search in the parent snapshot. 
 
-\subsection{More on Resource Usage and Processing Time}
+Comparing the experiment results of the sampled index method reported in~\cite{Guo2011}, 
+our scheme achives a 86K:1 ratio between raw snapshot data and memory usage 
+with 96\% deduplication efficiency
+while the sampled index method achives 20K:1 (10GB memory per 500TB raw data)
+with 97\% deduplication efficiency.
+Thus our scheme is more memory efficient with a good tradeoff for deduplication efficiency.
+If we change $\sigma=4\%$, the deduplication efficiency of VC increases to 96.58\% while
+memory usage per machine increses to about 220MB. 
+Notice that the sampled index method is designed for single-machine deduplication
+and it is not easy to extend to a distributed cluster architecture.
 
-We show  more experimental results on resource usage and processing time with SRB.
+
+\subsection{More on Resource Usage and Processing Speed}
+
+We show  additional experimental results on resource usage, processing time and throughput of VC.
 \comments{
 \begin{table}
     \begin{tabular}{|c|c|}
@@ -269,10 +284,12 @@ We have further studied the memory and disk bandwidth usage
 when running concurrent VM snapshot backup on each machine with $\sigma=2\%$. 
 Table ~\ref{tab:resource_usage} gives the resource usage  when
 running 1 or multiple  VM backup tasks at the same time on each physical machine. 
+Each task handles the backup of one VM snapshop including deduplication.
 ``CPU'' column is the percentage of a single core used. 
 ``Mem'' column includes $\sim$100MB memory usage for PDS index and other space cost for executing deduplication tasks such as 
 recipe metadata and cache. 
-The ``Read'' column is controlled to 50MB/s bandwidth usage with I/O throttling so that other cloud services are not significantly impacted.
+The ``Read'' column is controlled to 50MB/s local disk bandwidth usage with I/O throttling so that other 
+cloud services are not significantly impacted.
 The peak raw storage read performance is about 300MB/s and we only use 16.7\% with this collocation consideration.
 ``Write'' is the I/O write usage of QFS; note that each QFS write triggers disk writes in multiple machines due to
 data replication.     50MB/s dirty segment read speed triggers about 16.4MB/s disk write for non duplicates with one backup task.
@@ -285,16 +302,21 @@ data replication.     50MB/s dirty segment read speed triggers about 16.4MB/s di
 Table ~\ref{tab:resource_usage} shows that when  each machine conducts
 backup one VM at a time, the backup of the entire
 VM cluster completes in about 1.31 hours. Since there are about 25 VMs per machine, we could execute
-more tasks in parallel at each machine. But adding more backup concurrency does not shorten the overall time
+more tasks in parallel at each machine. But adding more backup concurrency does 
+not shorten the overall time
 significantly in this case because of the controlled  disk read bandwidth usage.
+When I/O throttling is not used, we will show later that processing multiple VMs concurrently 
+does improve the throughput of backup.
 %,  we can still process raw data at near 175 MB/s. If we consider the extreme case in which each machine has 25 VMs
 %at 40GB size, our snapshot system can finish backing up all the VMs (1TB total) in 1.58 hours.
 
+
+\comments{
 It should be noted that global fingerprint  space requirement of VC is 2\% of all unique fingerprints 
 with $\sigma$=2\%. SRB uses an approximated method to look for a match within a bin and
 its memory space usage is about 190MB per machine. That is compared with 118MB used in VC with $\sigma=2\%$.
 Using a bloom filter with an index cache would require more memory space~\cite{Dong2011}.
-
+}
  
 \comments{
 The total memory space would cost over 6GB per machine.
@@ -303,7 +325,7 @@ index space size per machine compared VC, but SRB also needs extra space for cac
 The total space used in SRB is about 1GB per machine. 
 }
 
-{\bf Processing Time breakdown without I/O throttling}.
+{\bf Processing time breakdown without I/O throttling}.
 Table~\ref{tab:vc_srb_combined} shows
 the  average  time breakdown for processing a dirty VM segment in milliseconds
 under VC and Stateless Routing with Binning (SRB). 
@@ -458,6 +480,9 @@ For our dataset, each version of total snapshots has abut 1TB per machine for 25
 would complete the backup in about 3.05 minutes.
 With a higher disk storage bandwidth available, the above backup
 throughput would be higher. 
+In comparison, the sampled index method in~\cite{Guo2011} achives about 5.5GB per second
+with 16 concurrent backup tasks and 6GB per second with
+more tasks.  The per-machine throughput of our scheme is reasonable.
 %With 50MB/second controlled I/O bandwidth, each machine can deliver 171MB/second with 1 backup task and can complete the backup of 25 VMs per machine in less than 1.31 hours.
  
 %To begin, on each node we write snapshots for 4 VMs concurrently, and gradually 
