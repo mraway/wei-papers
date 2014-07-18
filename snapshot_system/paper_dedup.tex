@@ -38,7 +38,7 @@ To simplify cross-VM deduplication, we restrict the search scope of deduplicatio
 % {\it [Need to find a place to put these numbers in: Total number of chunks 
 % in 350 snapshots: 1,546,635,485. 
 % Total number of chunks after localized dedup: 283,121,924. Total number of unique chunks: 87,692,682.]}
-Our key observation is for those chunks that appear in different VMs, top $k$ most popular items
+Our key observation is for those chunks that appear in different VMs, the top $k$ most popular items
 dominate the distribution.  This popular data set is called the \textbf{PDS}. 
 Figure~\ref{fig:Datazipf} shows the distribution of chunk popularity for a data trace 
 from Alibaba with 2500 VMs discussed in Section ~\ref{sect:evaluation}.
@@ -131,7 +131,7 @@ we conduct additional local similarity guided deduplication on a snapshot by com
 chunk fingerprints of a dirty segment 
 with those in  {\em potentially similar} segments from its parent snapshot. 
 We define a parent  segment is  potentially similar to the current segment if 1) the parent segment
-at the same offset as the current segment.
+is at the same offset as the current segment.
 2) the signature of these segments is the same.
 This segment content signature value is defined as the minimum value of all its chunk fingerprints 
 computed during backup and is recorded in the snapshot metadata (called recipe). 
@@ -147,7 +147,7 @@ To control the time cost of search, we set a limit on the number of  similar seg
 For example, assume that  a segment is of size  2MB, 
 its segment recipe is roughly 19KB which contains about 500 chunk fingerprints and other chunk metadata.
 By limiting at most 10 similar segments to search, the amount of memory for maintaining those 
-similar segment recipes is 190K, which is small.
+similar segment recipes is 190K, which is tiny compared to other memory requirements.
 
 %As part of our local duplicate search we also compare the current segment
 %against the parent segment at the same offset.
@@ -155,9 +155,9 @@ similar segment recipes is 190K, which is small.
 \item 
 \textbf{VM-centric file system block management} --
 When a chunk is not detected as a duplicate to any existing chunk, this chunk will be written
-into a file system block.  A  backend file system block can contain a number of chunks,
-there are   two reasons. In addition to the reason that a file system block is often
-configured to be large, there is another reason that a number of chunks can be combined together
+into a file system block.  A  backend file system block can contain a large number of chunks.
+In addition to the fact that a distributed file system block is often
+configured to be large (e.g. 64MB), a number of chunks can be combined together
 and compressed further using a standard data compression method. 
 %We manage this accumulation process using a log-structured storage scheme built
 %on a distributed file system discussed in Section~\ref{sect:architecture}.

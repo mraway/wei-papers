@@ -34,19 +34,19 @@ and the speed drops to about 25MB/second when
 when 100 machines read the backend file system concurrently due to the network
 contention. We explain the results for $p=100$ below and notice each physical machine hosts 25VMs on average. The explanation for $p=50$ is similar.
 
-For the mark-sweep approach on $p=100$, a physical machine is responsible of 
+For the mark-sweep approach on $p=100$, a physical machine is responsible for
 reading the metadata of non-deduplicated chunks used in the hosted 
 virtual machines and keeping the usage index table in the memory.
 Then all machines read the meta data 
 of snapshots in parallel and mark the usage of referenced chunks
 in the usage table.
-This process is repeated 100 times for all physical machines.
+This process is repeated 100 times (once for for each physical machine).
 The memory allocated at each physical machine is for the 
 chunk usage table of 25 VMs. The average size is 1.2GB and the maximum is
-3GB. If we reduce the size of  the usage table at each machine, 
+3GB in our dataset. If we reduce the size of  the usage table at each machine, 
 then there are more iterations to mark all data and it 
-will take longer time.    
-For the grouped mark-sweep, about 50\% of snapshot meta reading can be 
+will take more time.    
+For the grouped mark-sweep, about 50\% of snapshot metadata reading can be 
 avoided in assessing the reference usage of non-duplicate chunks. 
 Thus it takes 50\% less time, which is about 43 hours, but the 
 memory requirement does not decrease.

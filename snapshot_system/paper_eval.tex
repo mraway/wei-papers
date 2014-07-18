@@ -264,9 +264,9 @@ when running concurrent VM snapshot backup on each machine with $\sigma=2\%$.
 Table ~\ref{tab:resource_usage} gives the resource usage  when
 running 1 or multiple  VM backup tasks at the same time on each physical machine. 
 ``CPU'' column is the percentage of a single core used. 
-``Mem'' column includes 100MB memory usage for PDS index and other space cost for executing deduplication tasks such as 
+``Mem'' column includes $\sim$100MB memory usage for PDS index and other space cost for executing deduplication tasks such as 
 recipe metadata and cache. 
-The ``Read'' column is controlled to 50MB/s bandwidth usage with I/O throttling so that other cloud services are not impacted too much.
+The ``Read'' column is controlled to 50MB/s bandwidth usage with I/O throttling so that other cloud services are not significantly impacted.
 The peak raw storage read performance is about 300MB/s and we only use 16.7\% with this collocation consideration.
 ``Write'' is the I/O write usage of QFS; note that each QFS write triggers disk writes in multiple machines due to
 data replication.     50MB/s dirty segment read speed triggers about 16.4MB/s disk write for non duplicates with one backup task.
@@ -284,7 +284,7 @@ significantly in this case because of the controlled  disk read bandwidth usage.
 %,  we can still process raw data at near 175 MB/s. If we consider the extreme case in which each machine has 25 VMs
 %at 40GB size, our snapshot system can finish backing up all the VMs (1TB total) in 1.58 hours.
 
-It should be noted that global fingerprint  space requirement of VC is about 2\% of all unique fingerprints 
+It should be noted that global fingerprint  space requirement of VC is 2\% of all unique fingerprints 
 with $\sigma$=2\%. SRB uses an approximated method to look for a match within a bin and
 its memory space usage is about 190MB per machine. That is compared with 118MB used in VC with $\sigma=2\%$.
 Using a bloom filter with an index cache would require more memory space~\cite{Dong2011}.

@@ -42,7 +42,7 @@ data ``chunks''  to identify duplicate
 content~\cite{venti02,Rhea2008}.  In a simple implementation,
 it is expensive to compare a large number of 
 fingerprints
-so several techniques have been proposed to improve duplicate identification. 
+so a number of techniques have been proposed to improve duplicate identification. 
 For example, the data domain method ~\cite{bottleneck08} 
 uses  an in-memory Bloom filter and a prefetching cache for data chunks 
 which may be accessed.  
@@ -69,9 +69,9 @@ Even with these optimization and approximation techniques, resource usage such a
 is still extensive for a shared cloud cluster.  
 For example, in the experiment discussed in Section~\ref{sect:evaldedup}, 
 cross-machine fingerprint comparison using Bloom filter and approximated routing~\cite{bottleneck08,Dong2011} 
-still needs several gigabytes of memory per machine, which impacts other cloud services sharing the same
+still needs several gigabytes of memory per machine. This can impact other primary cloud services sharing the same
 computing resource while our objective is to have an approximation scheme 
-which uses about 100 or few hundred megabytes of memory.
+which uses no more than a few hundred megabytes of memory during normal operation.
 We have not adopted the index sampling in \cite{Guo2011} because its extension for
 for a distributed architecture is difficult.  To use a distributed memory version of the sampled index, every deduplication
 request may access a remote machine for index lookup and the overall overhead of access latency for all requests
