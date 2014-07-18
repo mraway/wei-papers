@@ -176,8 +176,10 @@ blocks to be deduplicated (and then replicated) across VMs.
 The rest of this paper is organized as follows.
 Section~\ref{sect:background} reviews the background and discusses the  design options for snapshot backup 
 with a VM-centric approach. 
-Section~\ref{sect:deduplication}  analyzes the tradeoff and benefits of the VM-centric approach. 
+%Section~\ref{sect:deduplication}  analyzes the tradeoff and benefits of the VM-centric approach. 
+Section~\ref{sect:deduplication}  presents our scheme for  snapshot deduplication and deletion.
 Section~\ref{sect:architecture}  describes a system implementation that evaluates the proposed techniques.
 %   the benefit of our approach for fault isolation. 
 Section~\ref{sect:evaluation} is our experimental evaluation that compares with other approaches.
 Section~\ref{sect:conclusion}  concludes this paper.
+The appendix describes an analysis on the snapshot availability of our scheme during storage failures.
