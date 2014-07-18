@@ -170,9 +170,13 @@ parallel.
 Another disadvantage of cross-VM sharing is that it complicates 
 snapshot deletion, 
 which occurs frequently when snapshots expire regularly. 
-The mark-and-sweep approach~\cite{Guo2011,Fabiano2013}  is effective for
-deletion, but still carries a significant cost, especially in a distributed 
-setting.
+Grouped mark-and-sweep~\cite{Guo2011} is an effective approach by tracking
+the dependencies from data containers to metadata groups, such that only a subset of
+metadata needs to be scanned in order to reclaim the garbage in a given data container.
+However, data in VM environment tend to be highly dedupable which means
+such dependency could be extensive, therefore scanning a large subset of metadata still carries a significant cost.
+
+% especially in a distributed setting.
 %to count if a data chunk is still shared by other snapshots. 
 
 Thus,
