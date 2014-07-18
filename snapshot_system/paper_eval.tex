@@ -217,7 +217,7 @@ to other services.
 %similar segment search in the parent snapshot. 
 
 Comparing the experiment results of the sampled index method reported in~\cite{Guo2011}, 
-our scheme achives a 86K:1 ratio between raw snapshot data and memory usage 
+our scheme achives a 85K:1 ratio between raw snapshot data and memory usage 
 with 96\% deduplication efficiency
 while the sampled index method achives 20K:1 (10GB memory per 500TB raw data)
 with 97\% deduplication efficiency.
@@ -587,10 +587,17 @@ This VM-specific leakage  repair takes  less than half an hour for each VM.
 %\subsection{Fault Isolation and Snapshot Availability}
 \subsection{Snapshot Availability}
 
- Table~\ref{tab:vm-availability} shows the availability of VM snapshots when 
-there are up to 20 machines failed in a cluster. 
-The trace driven execution allows us to estimate the number of file blocks shared by each VM in the VO and VC approaches
+We demonstrate  the impact of adding extra replication for PDS in VC
+and compare the snapshot availability of VC and VO. 
+Appendix~\ref{sect:fault} provides a detailed analysis of 
+snapshot availablility and the estimated result depends on how frequent a duplicate chunk
+is shared among snapshots of VMs.
+The trace driven execution allows us to estimate the number of file blocks shared by each VM in the VO 
+and VC approaches
 and then calculate the average availability of VM snapshots.
+
+Table~\ref{tab:vm-availability} shows the estimated availability of VM snapshots when 
+there are up to 20 machines failed in a cluster. 
 The case for  a 1000-node cluster is also listed, assuming file block sharing patterns among VMs remain
 the same from $p=100$ setting to $p=1000$. Each machine hosts about 25 VMs in both cases
 and with different $p$ values, the availability varies when the number of failures in the cluster changes.

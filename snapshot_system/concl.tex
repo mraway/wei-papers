@@ -1,18 +1,33 @@
 \section{Conclusion}
 \label{sect:final}
-In this paper we propose a collocated backup service built on
-the top of a cloud cluster to reduce network traffic and infrastructure.
-The key contribution is a VM-centric deduplication scheme to 
-maximize fault isolation while delivering competitive deduplication efficiency.
-Inner-VM deduplication localizes backup data dependency and exposes more parallelism  
-while cross-VM deduplication with a small common data set.
-VM-specific file block packing also reduces inter-VM dependence and enhances fault tolerance.
+In this paper we propose a collocated backup service with source-side deduplication built on
+the top of a cloud cluster to reduce network traffic and infrastructure cost.
 The design places a special consideration for low-resource usages as a collocated cloud service.
-Evaluation using  VM backup data shows that
-our solution can accomplish 92\% of what complete global
+The main contribution is a VM-centric deduplication scheme to play
+a tradeoff for low resurce usages and competitive deduplication efficiency. 
+%It also maximizes fault isolation by seperating popular and non-
+Inner-VM deduplication with similarity-guided local search
+maximizes the deduplication efficiency while
+localizing backup data dependency and exposing more parallelism during deduplication.  
+Cross-VM deduplication with a small popular data set leverages the zipf characteristics
+of popular items. 
+VM-specific file block packing reduces inter-VM dependence and enhances fault tolerance.
+
+The evaluation based on  an  Alibaba  production dataset 
+shows that our solution can accomplish 92\% of what complete global
 deduplication can do while the availability of snapshots increases substantially with this VM-centric
 and a small replication overhead for popular inter-VM chunks.
 
+Comparing the experiment results of the sampled index method reported in~\cite{Guo2011},
+our scheme achives a 86K:1 ratio between raw snapshot data and memory usage
+with 96\% deduplication efficiency
+while the sampled index method achives 20K:1 (10GB memory per 500TB raw data)
+with 97\% deduplication efficiency.
+Thus our scheme is more memory efficient with a good tradeoff for deduplication efficiency.
+If we change $\sigma=4\%$, the deduplication efficiency of VC increases to 96.58\% while
+memory usage per machine increses to about 220MB.
+Notice that the sampled index method is designed for single-machine deduplication
+and it is not easy to extend to a distributed cluster architecture.
 % effectively  covers a large percent of duplicate data.
 %The scheme organizes the write of small data chunks into large file system blocks so
 %that each underlying file block is associated with one VM for most cases.
