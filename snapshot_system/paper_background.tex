@@ -44,8 +44,8 @@ it is expensive to compare a large number of
 fingerprints
 so a number of techniques have been proposed to improve duplicate identification. 
 For example, the data domain method ~\cite{bottleneck08} 
-uses  an in-memory Bloom filter and a prefetching cache for data chunks 
-which may be accessed.  
+uses an in-memory Bloom filter to identify non-duplicates and a prefetching cache for potential
+duplicates that might hit in the future.
 %An improvement to this work with parallelization is in ~\cite{MAD210,DEBAR}.
 %Approximation techniques are studied in~\cite{extreme_binning09,Guo2011,WeiZhangIEEE}  
 %to reduce memory requirements at the cost of some loss of deduplication
