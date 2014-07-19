@@ -101,7 +101,7 @@ chunks without any reference from other snapshots can be removed by this compact
 By limiting the size of a container, we can control the length of each round of compaction.
 The compaction  can work on one container at a time and move the in-use data chunks to another container. 
 
-Each non-PDS data container is further divided into a set of chunk data groups. Each chunk group is composed of
+Each non-PDS container is further divided into a set of chunk data groups. Each chunk group is composed of
 a set of data chunks and is the basic unit in data access and retrieval. 
 In writing a chunk during backup, the system accumulates data chunks and stores the entire
 group as a unit after compression. This  compression can reduce data by several times  in our tested data.
@@ -113,7 +113,8 @@ A  typical chunk group contains 1000 chunks in our experiment.
 % with an average size of 200-600 chunks.
 
 %\item
-Each non-PDS data container is represented by three files in the DFS:
+Each non-PDS data container is represented by three files:
+%in the DFS
 1) the container data file holds the actual content, 
 2) the container index file is responsible for translating a data reference
 into its location within a container, and 
