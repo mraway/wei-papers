@@ -1,0 +1,35 @@
+%converged architecture diagram with a disrtibuted dedupe service, and secondary storage
+\begin{tikzpicture}[thick,rounded corners,scale=0.8]\sf
+	\definecolor{dfs}{gray}{0.90}
+    %CDFS is the corner of the drawing (cluster with distributed file system)
+    \coordinate (CDFS) at (0,0);
+    %first we loop to draw 4 machines (and 4 VMs inside each machine)
+    \foreach \x / \i in {0 / -1.5, 2.5 / -0.5, 5 / 0.5,8.0 / 1.5} {
+        %CMAC is the coord of the current cluster machine
+        \coordinate (CMAC) at ([xshift=\x cm]CDFS);
+        %first draw the box around the machine
+        \draw[-stealth] (CMAC) rectangle +(2.3,3) 
+        %then the dots in the middle to represent more vms
+        node[pos=0.5,anchor=south]{\scriptsize\ldots}
+        %next the label centered near the top
+        +(1.15,2.7) node[anchor=center]{\scriptsize{}Cluster Machine};
+        %++(1.15,0) -- (4.9,-0.7);
+        \draw[-stealth] ($(CMAC)+(1.15,0)$) -- ($(4.9,-0.7)+0.5*(\i,0)$);
+        %now loop through the 4 vms we will draw
+        \foreach \vmx in {0.1, 1.3} \foreach \vmy in {1,1.7} {
+            \coordinate (CVM) at ([xshift=\vmx cm,yshift=\vmy cm]CMAC);
+            %first draw the vm rectangle
+            \draw[rounded corners=0.1cm] (CVM) rectangle +(0.8,0.6)
+            %then draw a label node in the middle of it
+            %the nodes is 50% along the line between the last two points
+            %  (i.e. the diagonal of the rectangle)
+            node[pos=0.5]{VM};
+        }
+    }
+	\node at ([xshift=7.67cm,yshift=1.75cm,align=center,anchor=center]CDFS) {$\cdots$} ;
+    %now we draw the distrubuted files systems across the VMs
+    \draw[fill=dfs] ([xshift=0.1cm,yshift=0.1cm]CDFS) rectangle +(10.1,0.8) node[midway]
+    {Source-side deduplication};
+    \draw[fill=dfs] ([xshift=2.1cm,yshift=-1.5cm]CDFS) rectangle +(6.1,0.8) node[midway]
+    {Secondary Storage};
+\end{tikzpicture}
