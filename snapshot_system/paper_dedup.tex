@@ -39,7 +39,7 @@ most popular items. This popular data set is called the \textbf{PDS}.
 % {\it [Need to find a place to put these numbers in: Total number of chunks 
 % in 350 snapshots: 1,546,635,485. 
 % Total number of chunks after localized dedup: 283,121,924. Total number of unique chunks: 87,692,682.]}
-The observation that motivates us to use the PDS
+What  motivates us to use PDS
 is that for those chunks that appear in different VMs, the top $k$ most popular items
 dominate the appearance distribution.  
 Figure~\ref{fig:Datazipf} shows the distribution of chunk popularity for a data trace 
@@ -127,7 +127,7 @@ Since the previous work typically uses a non-uniform chunk size
 with an average of 4KB or 8KB for the best deduplication 
 effectiveness~\cite{Guo2011,extreme_binning09,bottleneck08,Dong2011},
 we conduct additional local similarity guided deduplication 
-by comparing chunk fingerprints of a dirty segment on a snapshot 
+by comparing chunk fingerprints of a dirty segment in a snapshot 
 with those in  {\em potentially similar} segments from its parent snapshot. 
 We consider a parent  segment is  potentially similar to the current dirty segment if 1) the parent segment
 is at the same offset as the current segment.
@@ -143,7 +143,7 @@ deduplication~\cite{extreme_binning09,Dong2011} and near duplicate detection~\ci
 When processing a dirty segment,
 its  similar segments can be found easily from the
 parent snapshot metadata.  Then metadata of the similar segments is loaded to memory,
-which contain chunk fingerprints to be compared.
+containing chunk fingerprints to be compared.
 To control the time cost of search, we set a limit on the number of  similar segment recipes to be fetched. 
 % Then,
 %given a set of data chunks within a dirty segment,  we compare  these chunk fingerprints

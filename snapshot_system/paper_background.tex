@@ -8,8 +8,8 @@ is clustered using a distributed file system~\cite{googlefs03,hdfs10}.
 Each physical machine hosts multiple virtual machines.  Every virtual machine
 runs its own guest operating system and accesses virtual hard disks 
 stored as image files maintained by the operating system running on the
-physical host. The secondary storage can be cluster-based and implemented with a 
-distributed file system~\cite{googlefs03}.   
+physical host. 
+%The secondary storage can be cluster-based and implemented with a distributed file system~\cite{googlefs03}.   
 For VM snapshot backup, file-level semantics are normally not provided.
 Snapshot operations take place at the virtual device driver level, which
 means no fine-grained file system metadata can be used to determine the changed data. 
@@ -141,7 +141,7 @@ Perfect hashing~\cite{Fabiano2013} provides a memory efficient way to represent 
 hashes in a compact form, however, it still requires the scanning of all data hashes before any 
 garbage collection could begin, which limits its application to an offline batch process. 
 In addition, it requires a centralized location
-to store the hashing result which is still too big to hold in a converged architecture.
+to store the hashing result which is still too big to be held in a converged architecture.
 
 
 
