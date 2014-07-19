@@ -4,7 +4,7 @@ because of excessive redundant content. Common techniques
 perform fingerprint comparison to remove duplicates
 across virtual machines.
 However, fingerprint search for source-side duplicate detection is resource
-intensive when the backup service is co-located with  other cloud services.
+intensive when the backup service for virtual machines (VMs)  is co-located with  other cloud services.
 %letting a duplicate data block be shared
 %by many virtual machines represents a tradeoff between
 %storage efficiency and data availability.
@@ -15,10 +15,10 @@ intensive when the backup service is co-located with  other cloud services.
 %%and fault isolation 
 This paper proposes a VM-centric backup service 
 which  strikes a tradeoff for a competitive  deduplication efficiency while
-has  an advantage of   using less  computing resources, suitable for running
+using small  computing resources, suitable for running
 on a converged cloud architecture that cohosts  many other services.
-This VM-centric scheme also leads to  better fault isolation and simplifies snapshot deletion.  
-The key techniques used are to
+This VM-centric design also improves the snapshot availability  during machine failures  
+and simplifies snapshot deletion.  The key techniques used are to
 localize deduplication as much as possible within each 
 virtual machine, guided by similarity
 search, and to restrict global deduplication under popular chunks with extra replication support.
