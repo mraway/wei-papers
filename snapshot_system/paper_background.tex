@@ -8,7 +8,8 @@ is clustered using a distributed file system~\cite{googlefs03,hdfs10}.
 Each physical machine hosts multiple virtual machines.  Every virtual machine
 runs its own guest operating system and accesses virtual hard disks 
 stored as image files maintained by the operating system running on the
-physical host.
+physical host. The secondary storage can be cluster-based and implemented with a 
+distributed file system~\cite{googlefs03}.   
 For VM snapshot backup, file-level semantics are normally not provided.
 Snapshot operations take place at the virtual device driver level, which
 means no fine-grained file system metadata can be used to determine the changed data. 
@@ -110,7 +111,8 @@ is lost in the storage, all VMs that refer such chunks after deduplication face 
 The work in ~\cite{Reliability06} identifies such an issue in file systems 
 and uses more replication for data shared by more files,
 and we will adopt this idea.
-When the backup storage is implemented using a distributed file system such as Hadoop and Google file system~\cite{googlefs03},  
+When the backup storage is implemented using a distributed file system such as Hadoop and 
+Google file system~\cite{googlefs03},  
 the file system block  size is often chosen to be large (e.g. 64MB). On the other hand, 
 deduplication implementations~\cite{Guo2011,extreme_binning09,bottleneck08,Jin2009,Dong2011}
  typically use smaller chunk sizes (e.g. 4K bytes).
