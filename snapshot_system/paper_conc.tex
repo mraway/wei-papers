@@ -6,7 +6,6 @@ The main contribution of this paper is a low-profile and VM-centric deduplicatio
 uses  a small amount of system resource in both snapshot deduplication and deletion
 while delivering competitive deduplication efficiency.
 The VM-centric design also allows an optimization for  better fault isolation and tolerance.
- 
 Our evaluation with an Alibaba dataset has the following results.
 \begin{itemize}
 \item {\em Competitive deduplication efficiency with a tradeoff}. 
@@ -44,6 +43,10 @@ The analysis shows that the replication degree
 for the popular data set between 6 and 9 is good enough when the replication degree
 for other data blocks is 3, and adds only a small cost to storage.
 \end{itemize}
+The offline PDS recomputation does require some modest I/O and memory resource and 
+since the recomputing frequency is relatively low (e.g. on a monthly basis), we expect such resource
+consumption is acceptable in practice.
+
 %Currently we are studying how the 
 
 %Similarity guided local search reduces cross-VM data dependency and exposes more parallelism  

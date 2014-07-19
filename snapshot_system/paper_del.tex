@@ -4,7 +4,7 @@
 
 
 \begin{figure}[htbp]
-\vspace{2em}
+%\vspace{2em}
   \centering
   \epsfig{file=images/deletion.pdf, width=3.35in}
   \caption{Fast approximate deletion}
@@ -97,9 +97,9 @@ Assume that  a VM keeps $h$ snapshots in backup storage, creates and deletes one
 every day. Let $u$ be the number of chunks brought by initial backup for a VM, $\Delta u$ be the average
 number of additional chunks added from one version to next snapshot version. Then the total number of 
 chunks in a VM's snapshot store is about:
-\[
+$
 U = u + (h-1)\Delta u.
-\]
+$
 
 Each Bloom filter vector has  $z$ bits for each snapshot and let $j$ be the number of hash functions used by the
 Bloom filter.  Notice that a chunk may appear multiple times in these summary vectors; however, this should not 

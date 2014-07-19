@@ -41,7 +41,7 @@ most popular items. This popular data set is called the \textbf{PDS}.
 % Total number of chunks after localized dedup: 283,121,924. Total number of unique chunks: 87,692,682.]}
 The observation that motivates us to use the PDS
 is that for those chunks that appear in different VMs, the top $k$ most popular items
-dominate the distribution.  
+dominate the appearance distribution.  
 Figure~\ref{fig:Datazipf} shows the distribution of chunk popularity for a data trace 
 from Alibaba with 2500 VMs discussed in Section ~\ref{sect:evaluation}.
 We define chunk popularity as the number of unique copies of the chunk in the data-store,
@@ -64,7 +64,7 @@ $\sigma$ with about  2\% can deliver a fairly competitive deduplication efficien
 %consumption for global comparison is more expensive.
 %Thus our approximation is that the global cross-VM fingerprint comparison only searches for the top $k$
 %most popular items. 
-PDS  can be computed periodically, e.g., on a monthly basis.
+PDS  can be computed in an offline manner periodically, e.g., on a monthly basis.
 %Once the popularity of all data chunks is collected, the system only maintains the top $k$
 %most popular chunk fingerprints (called \textbf{PDS index}) in a distributed shared memory.  
 %These top chunks are shared among multiple VMs and  since $\sigma$ is relatively small, 
@@ -76,7 +76,6 @@ PDS  can be computed periodically, e.g., on a monthly basis.
 % The distribution is zipf like and popular chunks are dominating the large portion of data chunks.
 % We denote $\sigma$ as the percentage of unique data chunks belonging to PDS and from the evaluation we find that
 % $\sigma$ with a range of 1 to 4\% can deliver a fairly competitive deduplication efficiency.
-
 Compared to ~\cite{bottleneck08}, the fingerprint index  size is reduced by $100-\sigma$ percentage
 (e.g. 98\% with $\sigma=2\%$)
 and the searchable fingerprint space  becomes very small under the popularity constraint.  
@@ -95,11 +94,9 @@ can be significant.
 \item 
 \textbf{VM-specific duplicate search optimization} --
 While cross-VM deduplication is simplified, we intend to optimize the VM-specific deduplication 
-as much as possible under a reasonable memory consumption
+under a reasonable memory consumption
  to make up the loss of deduplication opportunities due to the cross-VM popularity constraint.
-
 %Fingerprint lookup within a VM does not require a signficant  amount of memory resource.
-
 We start with the standard version-based detection~\cite{Clements2009,Vrable2009}
 to identify changed content with dirty bits in a coarse grain segment level.
 %In our implementation 
@@ -145,7 +142,7 @@ deduplication~\cite{extreme_binning09,Dong2011} and near duplicate detection~\ci
 
 When processing a dirty segment,
 its  similar segments can be found easily from the
-parent snapshot recipe.  Then recipes of the similar segments are loaded to memory,
+parent snapshot metadata.  Then metadata of the similar segments is loaded to memory,
 which contain chunk fingerprints to be compared.
 To control the time cost of search, we set a limit on the number of  similar segment recipes to be fetched. 
 % Then,
@@ -154,7 +151,8 @@ To control the time cost of search, we set a limit on the number of  similar seg
 For example, assume that  a segment is of size  2MB, 
 its segment recipe is roughly 19KB which contains about 500 chunk fingerprints and other chunk metadata.
 By limiting at most 10 similar segments to search, the amount of memory for maintaining those 
-similar segment recipes is 190K, which is tiny compared to other memory requirements.
+similar segment recipes is 190K, which is insignificant. 
+%compared to other memory requirements.
 
 %As part of our local duplicate search we also compare the current segment
 %against the parent segment at the same offset.
@@ -170,12 +168,12 @@ Thus a  backend file system block contains a large number of compressed chunks.
 %We manage this accumulation process using a log-structured storage scheme built
 %on a distributed file system discussed in Section~\ref{sect:architecture}.
 %Non-PDS chunks from the same VM are stored in one append store. 
-We set the following two constraints in composing chunks for a file system block as follows:
+We set the following two constraints in composing chunks for a file system block:
 1) Each file system block is either dedicated to non-PDS chunks, or to PDS-chunks.
 2) A non-PDS file system block is only associated with one VM.
 
 Restricting the association with one VM improves fault isolation when some file blocks are lost during 
-storage failure. 
+storage failures. 
 In addition, storing PDS chunks separately from non-PDS chunks
 allows special replication handling for those popular shared data. 
 %%% talk something about snapshot store advantage here? %%%

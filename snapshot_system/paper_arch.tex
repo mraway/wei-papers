@@ -13,10 +13,10 @@ virtual block device driver (called TapDisk\cite{Warfield2005} in Xen).
 \subsection{Per Node Software Components} 
 %\begin{figure}[htbp]
 \begin{figure}[htbp]
-\vspace{2em}
+\vspace{1em}
     \centering
     %\includegraphics[width=2.75in]{images/socc_arch_cluster}
-    \includegraphics[width=3.25in]{images/socc_arch_cluster}
+    \includegraphics[width=3in]{images/socc_arch_cluster}
 %\vspace{1em}
     \caption{Data flow during snapshot backup}
     \label{fig:arch_vm}
@@ -54,10 +54,10 @@ the data structures  include references to the actual data location to eliminate
 
 %\begin{figure}[htbp]
 \begin{figure}[htbp]
-\vspace{2em}
+\vspace{1em}
   \centering
 %  \includegraphics[width=2.75in]{images/sstore_arch}
-  \includegraphics[width=3.25in]{images/sstore_arch}
+  \includegraphics[width=3in]{images/sstore_arch}
 %\vspace{1em}
   \centering
   \caption{VM snapshot store data structures}
@@ -85,7 +85,7 @@ For the same reason, we decide not to take the sampled index approach~\cite{Guo2
 for detecting duplicates from PDS as limited spatial locality is not sufficient to enable
 effective prefetching for sampled indexing.
 
-PDS data are re-calculated periodically, but 
+PDS data are re-calculated periodically in an offline manner, but 
 the total data size is small.  When
 a new PDS data  set is computed, the in-memory PDS index is replaced, but 
 the PDS file on the disk appends the  new PDS data identified and the growth of this file is very slow. 
@@ -163,7 +163,8 @@ anticipate future sequential reads.
 
 \item
 \noindent\textbf{Delete()}.
-Chunk deletion occurs when a snapshot expires or gets deleted explicitly by a user (the overall deletion strategy was discussed in detail in Section~\ref{sect:delete}).
+Chunk deletion occurs when a snapshot expires or gets deleted explicitly by a user. 
+%(the overall deletion strategy was discussed in detail in Section~\ref{sect:delete}).
 When deletion requests are issued for a specific container,
 those requests are simply recorded into the  container's deletion log initially and thus  a lazy
 deletion strategy is exercised.

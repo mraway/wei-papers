@@ -67,26 +67,26 @@ IaaS architectures.
 
 Even with these optimization and approximation techniques, resource usage such as memory  for deduplication
 is still extensive for a shared cloud cluster.  
-For example, in the experiment discussed in Section~\ref{sect:evaldedup}, 
+For example, in the experiments discussed in Section~\ref{sect:evaldedup}, 
 the raw snapshot data has a size of 1,000TB on 100 physical machines that host VMs,
 cross-machine fingerprint comparison using Bloom filter and approximated routing~\cite{bottleneck08,Dong2011} 
 still needs several gigabytes of memory per machine. This can impact other primary cloud services sharing the same
 computing resource. Our objective is to have an approximation scheme 
 which uses no more than a few hundred megabytes of memory during normal operation.
-The desired ratio of raw data to memory ratio is from 100K:1 to 30K:1.
+Thus the  desired ratio of raw data to memory ratio is from 100K:1 to 30K:1.
 Our proposed scheme achieves 85K:1
 and this ratio is about the same as the number of machines increases.
 
-Index sampling with a prefetch cache  is proposed in
+Index sampling with a prefetch cache  is proposed 
 in~\cite{Guo2011} for efficient single-machine deduplication. 
 This scheme uses 25GB memory per 500TB of raw data
-and thus the raw data to memory ratio is 20K:1. Our scheme proposed in this paper 
-uses three times less memory and we have not incorporated this index 
-sampling technique because its extension for
-for a distributed architecture is difficult.  To use a distributed memory version 
+and thus the raw data to memory ratio is 20K:1. The scheme proposed in this paper 
+uses three times less memory. We have not incorporated this index 
+sampling technique because it is difficult to extend 
+for a distributed architecture.  To use a distributed memory version 
 of the sampled index, every deduplication
 request may access a remote machine for index lookup and the overall overhead 
-of access latency for all requests can be significant.
+of access latency for all requests is significant.
 
 \comments{
 For example, the
@@ -107,29 +107,39 @@ task often needs several gigabytpes of memory, which impacts other cloud service
 
 While deduplication reduces storage cost, it creates an artificial data dependence among VMs: when a shared data chunk
 is lost in the storage, all VMs that refer such chunks after deduplication face a data loss.
-This issue is identified in ~\cite{Reliability06} which proposes to use more replication for data shared by more files,
+The work in ~\cite{Reliability06} identifies such an issue in file systems 
+and uses more replication for data shared by more files,
 and we will adopt this idea.
 When the backup storage is implemented using a distributed file system such as Hadoop and Google file system~\cite{googlefs03},  
 the file system block  size is often chosen to be large (e.g. 64MB). On the other hand, 
 deduplication implementations~\cite{Guo2011,extreme_binning09,bottleneck08,Jin2009,Dong2011}
  typically use smaller chunk sizes (e.g. 4K bytes).
-Thus we need to consider the size gap between file system blocks and chunks  in adding more replications for popular chunks. 
+Thus we need to address  the size gap between file system blocks and chunks.  
+%in adding more replications for popular chunks. 
 
-Another disadvantage of cross-VM sharing is that it complicates
-snapshot deletion, which is the garbage collection in VM environment
-that occurs frequently because snapshots expire regularly.
-Several well developed garbage collection methods do not apply to the
-converged virtualized architecture due to various environment and resource limitations:
-Grouped mark-and-sweep~\cite{Guo2011} is an effective approach by tracking
-the dependencies from data containers to metadata groups, such that only a subset of
-metadata needs to be scanned in order to reclaim the garbage in any given data container.
-However, data in VM environment tend to be highly dedupable which means
-such dependency could be extensive, therefore scanning a large subset of metadata still carries a significant cost,
- especially in a distributed setting.
-Perfect hashing~\cite{Fabiano2013} provides a very memory efficient way to represent a large set of
-hashes in a compact form, however, it still requires the scan of all data hashes before any garbage collection could begin,
-which limits its application to only offline batch garbage collection. In addition, it requires a centralized location
-to store the hashing result which is still too big to be hold anywhere in a converged architecture.
+%Another disadvantage of cross-VM sharing is that it complicates
+Snapshot deletion 
+%which is the garbage collection in VM environment
+occurs frequently because snapshots expire regularly
+and reference counting is required to identify chunks that are no loner used.
+%Several well developed garbage collection methods do not apply to the
+%converged virtualized architecture due to various environment and resource limitations:
+Grouped mark-and-sweep~\cite{Guo2011} is effective for deletion by tracking
+the dependencies from data containers to metadata groups, but still it carries
+a significant cost in a cloud cluster. This is because any data chunk can still be
+used by a large number of VMs, and there are multiple rounds of extensive I/O involved
+to scan through the meta data of snapshots to check if a chunk is referenced or not.
+As the number of machines increases, the I/O cost becomes more expensive.
+% and  we show  such that only a subset of
+%metadata needs to be scanned in order to reclaim the garbage in any given data container.
+%However, data in VM environment tend to be highly dedupable which means
+%such dependency could be extensive, therefore scanning a large subset of metadata still carries a significant cost,
+% especially in a distributed setting.
+Perfect hashing~\cite{Fabiano2013} provides a memory efficient way to represent a large set of
+hashes in a compact form, however, it still requires the scanning of all data hashes before any 
+garbage collection could begin, which limits its application to an offline batch process. 
+In addition, it requires a centralized location
+to store the hashing result which is still too big to hold in a converged architecture.
 
 
 
@@ -191,7 +201,7 @@ converged virtualized architecture due to various environment and resource limit
 Grouped mark-and-sweep~\cite{Guo2011} is an effective approach by tracking
 the dependencies from data containers to metadata groups, such that only a subset of
 metadata needs to be scanned in order to reclaim the garbage in any given data container.
-However, data in VM environment tend to be highly dedupable which means
+However, data in VM environment tend to be highly redundant which means
 such dependency could be extensive, therefore scanning a large subset of metadata still carries a significant cost,
  especially in a distributed setting.
 Perfect hashing~\cite{Fabiano2013} provides a very memory efficient way to represent a large set of
