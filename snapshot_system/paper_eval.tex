@@ -5,9 +5,9 @@ We have implemented and evaluated a prototype of our VC scheme on a Linux cluste
 Our implementation is based on the Alibaba cloud platform~\cite{Aliyun,WeiZhangIEEE}
 and the underlying DFS uses  QFS with default replication degree 3 while the PDS replication degree is 6.
 Our evaluation objective is to
-study the benefit in fault tolerance and   deduplication efficiency of VC,  
-and assess its backup throughput and  resource usage. 
-
+study deduplication efficiency and resource usage of VC,  
+and assess its processing time and backup throughput, and  
+the benefit in fault tolerance. 
 We will compare VC with a VO approach  using stateless routing with binning (SRB) 
 based on~\cite{Dong2011,extreme_binning09}.
 SRB executes distributed deduplication by routing data chunks to cluster machines~\cite{Dong2011}
@@ -156,8 +156,8 @@ plus some buffer space where $p$ is the number of physical machines.
 %In the extreme case if we put all the fingerprint into PDS 
 %index ($\sigma=100\%$) then VC will have 100\% efficiency.
 SRB in Column 5 can deliver up to 97.86\% deduplication efficiency, which is slightly better than VC.
-Thus this represents a tradeoff that VC provides better fault tolerance and fast approximate deletion
-with a slight reduction in deduplication efficiency.
+Thus this represents a tradeoff as VC uses much less resource  and faster deletion.
+%with a slight reduction in deduplication efficiency.
 Memory usage per machine in SRB includes the Bloom filter space to access the on-disk index
 and  cache for frequently or recently accessed chunk index.  
 % SRB can deliver up to 97.935\% deduplication efficiency which is slightly better than VC.
@@ -207,7 +207,6 @@ to about 1.205T, which is  12.05\% of original. Thus it delivers a 50.08\% reduc
 The popularity-guided global deduplication with $\sigma=2\% $
 reduces the data further to 860GB, namely 8.6\% of the original size. 
 So it provides additional 28.63\% reduction. 
-
 The overall memory usage of VC for each physical machine is very small, which is insignificant to other 
 hosted cloud services.  In comparison, the 2.4GB per-machine memory usage of SRB is very visible 
 to other services.
@@ -224,8 +223,8 @@ with 97\% deduplication efficiency.
 Thus our scheme is more memory efficient with a good tradeoff for deduplication efficiency.
 If we change $\sigma=4\%$, the deduplication efficiency of VC increases to 96.58\% while
 memory usage per machine increses to about 220MB. 
-Notice that the sampled index method is designed for single-machine deduplication
-and it is not easy to extend to a distributed cluster architecture.
+Notice that the sampled index method is designed for single-machine deduplication.
+%and it is not easy to extend to a distributed cluster architecture.
 
 
 \subsection{More on Resource Usage and Processing Speed}
@@ -305,7 +304,7 @@ VM cluster completes in about 1.31 hours. Since there are about 25 VMs per machi
 more tasks in parallel at each machine. But adding more backup concurrency does 
 not shorten the overall time
 significantly in this case because of the controlled  disk read bandwidth usage.
-When I/O throttling is not used, we will show later that processing multiple VMs concurrently 
+When I/O throttling is not used, we will show below that processing multiple VMs concurrently 
 does improve the throughput of backup.
 %,  we can still process raw data at near 175 MB/s. If we consider the extreme case in which each machine has 25 VMs
 %at 40GB size, our snapshot system can finish backing up all the VMs (1TB total) in 1.58 hours.
@@ -482,7 +481,7 @@ With a higher disk storage bandwidth available, the above backup
 throughput would be higher. 
 In comparison, the sampled index method in~\cite{Guo2011} achives about 5.5GB per second
 with 16 concurrent backup tasks and 6GB per second with
-more tasks.  The per-machine throughput of our scheme is reasonable.
+more tasks.  Thus the per-machine throughput of our scheme is reasonable.
 %With 50MB/second controlled I/O bandwidth, each machine can deliver 171MB/second with 1 backup task and can complete the backup of 25 VMs per machine in less than 1.31 hours.
  
 %To begin, on each node we write snapshots for 4 VMs concurrently, and gradually 
