@@ -300,7 +300,7 @@ data replication.     50MB/s dirty segment read speed triggers about 16.4MB/s di
 
 Table ~\ref{tab:resource_usage} shows that when  each machine conducts
 backup one VM at a time, the backup of the entire
-VM cluster completes in about 1.31 hours. Since there are about 25 VMs per machine, we could execute
+VM cluster completes in about 1.31 hours. Since there are about 25 VMs per physical machine, we could execute
 more tasks in parallel at each machine. But adding more backup concurrency does 
 not shorten the overall time
 significantly in this case because of the controlled  disk read bandwidth usage.
@@ -514,7 +514,7 @@ more tasks.  Thus the per-machine throughput of our scheme is reasonable.
 % \end{figure}
 
  \subsection{Effectiveness of Approximate Deletion}
-
+\label{sect:evaldel}
 \input{paper_eval_del}
 \comments{
  \begin{figure}
