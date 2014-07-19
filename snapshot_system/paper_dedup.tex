@@ -161,7 +161,7 @@ similar segment recipes is 190K, which is insignificant.
 \textbf{VM-centric file system block management} --
 When a chunk is not detected as a duplicate to any existing chunk, this chunk will be written
 into a file system block.  
-In addition to the fact that a distributed file system block is often
+In addition to the fact that a distributed file system block~\cite{googlefs03,hdfs10} is often
 configured to be much  larger than a chunk, a number of chunks can be combined together
 and compressed further using a standard compression method such as LZO. 
 Thus a  backend file system block contains a large number of compressed chunks.
@@ -183,6 +183,11 @@ popular chunks from the less-popular, the popular chunks are dispersed across
 all of the filesystem blocks in the storage system and we would have
 to add extra replications for {\em all} file blocks in order to   follow the popularity-driven replication idea 
 from ~\cite{Reliability06}. That reduces the storage efficiency.
+
+
+
+%and compare
+
 %Then we cannot leverage the file system features to 
 %provide extra replication to popular and shared chunks because  
 %we have to add extra replication to each file block as long as it contains a popular chunk.
@@ -194,5 +199,11 @@ from ~\cite{Reliability06}. That reduces the storage efficiency.
 %The system allows all machines conduct backups in parallel, and each machine
 %conducts the backup of one VM at a time, and thus only requires a write buffer for one VM.
 \end{itemize}
+The underlying distributed  file system has  a fixed replication degree for 
+all file system blocks~\cite{googlefs03,hdfs10}.
+We add extra replicas for file blocks containing PDS chunks  
+and this brings additional  failure protection for these chunks shared by many VMs.
+Appendix~\ref{sect:fault} provides a detailed analysis of snapshot availability
+under this VC scheme and compares it with VO.
 
 
