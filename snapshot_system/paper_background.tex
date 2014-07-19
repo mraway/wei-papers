@@ -54,13 +54,13 @@ Additional inline deduplication and  approximation techniques
 are studied in ~\cite{extreme_binning09,sparseindex09,Srinivasan2012,WeiZhangIEEE}.  
 %and a parallel batch solution for cluster-based deduplication is 
 %studied in ~\cite{WeiZhangIEEE}. 
-\comments{
-All of the above approaches have focused on optimization of deduplication
-efficiency or speed, and none of them have considered the impact
-of deduplication on fault resilience in a cloud environment.  To do so, we
-examine the following properties of VM snapshot deduplication for converged
-IaaS architectures.
-}
+% \comments{
+% All of the above approaches have focused on optimization of deduplication
+% efficiency or speed, and none of them have considered the impact
+% of deduplication on fault resilience in a cloud environment.  To do so, we
+% examine the following properties of VM snapshot deduplication for converged
+% IaaS architectures.
+% }
 %considered in this paper.
 %Our consideration is discussed below.
 %VM dependence minimization during deduplication and file system block management.
@@ -88,22 +88,22 @@ of the sampled index, every deduplication
 request may access a remote machine for index lookup and the overall overhead 
 of access latency for all requests is significant.
 
-\comments{
-For example, the
-sampled index with prefetching, proposed  by Guo and Efstathopoulos\cite{Guo2011},
-uses 5GB memory space for 100TB of raw data even the compressed data size
-is about 5TB. It is fairly typical for
-a physical machine with terabytes of disk storage and tens of gigabytes of memory
-to support  more than 20 VMs and 10 snapshots per VM and can require  over 100TB of raw space
-even the actual storage space need is about 5TB assuming 20:1 compression ratio with deduplication.
-It is not easy  to adopt the sampled index method  for a distributed architecture
-and every deduplication request may access a remote machine for index lookup and the overall overhead of access latency 
-for all requests can be significant. 
- In general
-with a cluster of machines in a cloud cluster, there will be more memory requirement per machine such as a 
-fingerprint cache, for cross-machine fingerprint comparison~\cite{bottleneck08,Dong2011} and a deduplication
-task often needs several gigabytpes of memory, which impacts other cloud services sharing the computing resource.
-}
+% \comments{
+% For example, the
+% sampled index with prefetching, proposed  by Guo and Efstathopoulos\cite{Guo2011},
+% uses 5GB memory space for 100TB of raw data even the compressed data size
+% is about 5TB. It is fairly typical for
+% a physical machine with terabytes of disk storage and tens of gigabytes of memory
+% to support  more than 20 VMs and 10 snapshots per VM and can require  over 100TB of raw space
+% even the actual storage space need is about 5TB assuming 20:1 compression ratio with deduplication.
+% It is not easy  to adopt the sampled index method  for a distributed architecture
+% and every deduplication request may access a remote machine for index lookup and the overall overhead of access latency
+% for all requests can be significant.
+%  In general
+% with a cluster of machines in a cloud cluster, there will be more memory requirement per machine such as a
+% fingerprint cache, for cross-machine fingerprint comparison~\cite{bottleneck08,Dong2011} and a deduplication
+% task often needs several gigabytpes of memory, which impacts other cloud services sharing the computing resource.
+% }
 
 While deduplication reduces storage cost, it creates an artificial data dependence among VMs: when a shared data chunk
 is lost in the storage, all VMs that refer such chunks after deduplication face a data loss.
@@ -160,133 +160,150 @@ to store the hashing result which is still too big to hold in a converged archit
 %especailly for a distributed setting.
 
 
-\comments{
-\paragraph*{Local versus Global Deduplication} --
-If deduplication is implemented strictly in the storage system,
-a data chunk is compared with fingerprints collected from all VMs during
-the deduplication process, and only a small number of
-copies of duplicates are stored in the storage.  This sharing
-artificially creates hidden data dependencies among different VMs owned by
-different 
-who
-contract for isolation 
-by the IaaS cloud platform.  That is, the unit of failure visible to the cloud
-user is the VM, but the unit of sharing in a deduplicated data store is the
-data chunk. 
+% \comments{
+% \paragraph*{Local versus Global Deduplication} --
+% If deduplication is implemented strictly in the storage system,
+% a data chunk is compared with fingerprints collected from all VMs during
+% the deduplication process, and only a small number of
+% copies of duplicates are stored in the storage.  This sharing
+% artificially creates hidden data dependencies among different VMs owned by
+% different
+% who
+% contract for isolation
+% by the IaaS cloud platform.  That is, the unit of failure visible to the cloud
+% user is the VM, but the unit of sharing in a deduplicated data store is the
+% data chunk.
 
-Indeed, the greater the deduplication efficiency, the less
-the data redundancy is maintained, and the greater the ``hidden'' data
-dependence between VMs that must be hosted as if they were physically isolated.
-Thus,
-restricting deduplication to be local to each VM (but across snapshots) 
-aligns the units of storage with the isolation properties guaranteed by the
-cloud at the possible expense of storage efficiency.
-%Localizing the impact of deduplication can increase fault isolation and resilience.
-%Thus from the fault tolerance point of view,  duplicate sharing among multiple VMs is 
-%discouraged. 
+% Indeed, the greater the deduplication efficiency, the less
+% the data redundancy is maintained, and the greater the ``hidden'' data
+% dependence between VMs that must be hosted as if they were physically isolated.
+% Thus,
+% restricting deduplication to be local to each VM (but across snapshots)
+% aligns the units of storage with the isolation properties guaranteed by the
+% cloud at the possible expense of storage efficiency.
+% %Localizing the impact of deduplication can increase fault isolation and resilience.
+% %Thus from the fault tolerance point of view,  duplicate sharing among multiple VMs is
+% %discouraged.
 
-Additionally, storage efficient deduplication can be computationally expensive
-to implement in a distributed setting.  In particular, duplicate detection is
-logically a ``global'' operation over all data chunks
-under consideration.
-By localizing duplicate search, the computational requirements
-for deduplication can be reduced, because fewer chunks must be compared.
-Further, deduplication of VMs can easily be implemented in
-parallel.
- 
-Another disadvantage of cross-VM sharing is that it complicates 
-snapshot deletion, which occurs frequently because snapshots expire regularly.
-Several well developed garbage collection methods do not apply to the
-converged virtualized architecture due to various environment and resource limitations:
-Grouped mark-and-sweep~\cite{Guo2011} is an effective approach by tracking
-the dependencies from data containers to metadata groups, such that only a subset of
-metadata needs to be scanned in order to reclaim the garbage in any given data container.
-However, data in VM environment tend to be highly redundant which means
-such dependency could be extensive, therefore scanning a large subset of metadata still carries a significant cost,
- especially in a distributed setting.
-Perfect hashing~\cite{Fabiano2013} provides a very memory efficient way to represent a large set of
-hashes in a compact form, however, it still requires the scan of all data hashes before any garbage could begin,
-which limits its application to only offline batch garbage collection. In addition, it requires a centralized location
-to store the hashing result which is still too big to be hold anywhere in a converged architecture.
 
-%to count if a data chunk is still shared by other snapshots. 
+% Additionally, storage efficient deduplication can be computationally expensive
+% to implement in a distributed setting.  In particular, duplicate detection is
+% logically a ``global'' operation over all data chunks
+% under consideration.
+% By localizing duplicate search, the computational requirements
+% for deduplication can be reduced, because fewer chunks must be compared.
+% Further, deduplication of VMs can easily be implemented in
+% parallel.
 
-Thus,
-localizing deduplication to the VM can align fault isolation properties and
-guarantees, improve the computational efficiency of snapshot maintenance, and
-simplify snapshot deletion over non-localized approaches at the possible
-expense of storage efficiency.
+% Another disadvantage of cross-VM sharing is that it complicates
+% snapshot deletion, which occurs frequently because snapshots expire regularly.
+% Several well developed garbage collection methods do not apply to the
+% converged virtualized architecture due to various environment and resource limitations:
+% Grouped mark-and-sweep~\cite{Guo2011} is an effective approach by tracking
+% the dependencies from data containers to metadata groups, such that only a subset of
+% metadata needs to be scanned in order to reclaim the garbage in any given data container.
+% However, data in VM environment tend to be highly redundant which means
+% such dependency could be extensive, therefore scanning a large subset of metadata still carries a significant cost,
+%  especially in a distributed setting.
+% Perfect hashing~\cite{Fabiano2013} provides a very memory efficient way to represent a large set of
+% hashes in a compact form, however, it still requires the scan of all data hashes before any garbage could begin,
+% which limits its application to only offline batch garbage collection. In addition, it requires a centralized location
+% to store the hashing result which is still too big to be hold anywhere in a converged architecture.
 
-%minimize data sharing and simplify deletion while sacrificing 
-%deduplication efficiency, and  can facilitate parallel execution of snapshot operations.
-\paragraph*{Units of Storage versus Units of Sharing} --
-The file system block  size in a distributed file system such as  
-the Hadoop file system and the Google file system~\cite{googlefs03}
-is large (e.g.  64MB) so as to optimize file system performance
-for big data.
-Typically, deduplication implementations use smaller block sizes (4K bytes to
-8K bytes on average~\cite{Jin2009}).
-In addition to the failure correlation that cross-VM data deduplication can
-introduce, disk block sharing of data chunks is another potential source of
-hidden data dependence.
-Thus a VM-centric solution should consider how data chunks from VMs are
-distributed among large file system blocks when a large-scale distributed file
-system is used for snapshot storage.
 
-%a minimum association of FSBs to VMs in the packaging
-%process. By minimizing this association we can improve fault tolerance by
-%reducing the number of VMs affected when storage nodes are lost.
- 
+% Another disadvantage of cross-VM sharing is that it complicates
+% snapshot deletion, which occurs frequently because snapshots expire regularly.
+% Several well developed garbage collection methods do not apply to the
+% converged virtualized architecture due to various environment and resource limitations:
+% Grouped mark-and-sweep~\cite{Guo2011} is an effective approach by tracking
+% the dependencies from data containers to metadata groups, such that only a subset of
+% metadata needs to be scanned in order to reclaim the garbage in any given data container.
+% However, data in VM environment tend to be highly dedupable which means
+% such dependency could be extensive, therefore scanning a large subset of metadata still carries a significant cost,
+%  especially in a distributed setting.
+% Perfect hashing~\cite{Fabiano2013} provides a very memory efficient way to represent a large set of
+% hashes in a compact form, however, it still requires the scan of all data hashes before any garbage could begin,
+% which limits its application to only offline batch garbage collection. In addition, it requires a centralized location
+% to store the hashing result which is still too big to be hold anywhere in a converged architecture.
 
-\paragraph*{Moderating Resource Usage} --
-In a converged setting, the resources that are used to implement snapshot
-backup and deduplication are the same resources that must support cloud-hosted
-VMs.  Thus the backup service must share the resources available to
-other cloud services as illustrated in Figure~\ref{fig:collocated},
-and has to minimize its impact on user-deliverable performance.
-%The key resource for global comparison  is memory for storing the fingerprints.
-%During snapshot deletion, reference counting for all unique blocks used in all VMs requires a significant resource usage
-%too.  Thus we seek for the low-profile techniques with approximation and low resource consumption. 
+% %to count if a data chunk is still shared by other snapshots.
 
-}
+% Thus,
+% localizing deduplication to the VM can align fault isolation properties and
+% guarantees, improve the computational efficiency of snapshot maintenance, and
+% simplify snapshot deletion over non-localized approaches at the possible
+% expense of storage efficiency.
 
-\comments{
-With the above  considerations in mind, we propose a 
-VM-centric approach (called VC)
-for a co-located backup service that has a resource usage profile
-suitable for use with converged cloud architectures.  
-This compares the traditional deduplication approach {\em VM-oblivious} (VO)
-which manages duplicate data chunks without consideration of VMs.
-We discuss our key ideas and design in the next section.
-%Our key idea is to simplify deduplication management and 
-}
-\comments{
-In designing a VC deduplication solution, we have considered and adopted some of
-the following previously-developed techniques.
-1) {\em Changed Block Tracking}. 
-VM snapshots can be  backed up  incrementally by identifying data segments that have
-changed from the previous version of the snapshot~\cite{Clements2009,Vrable2009,TanIPDPS2011}.
-Such a scheme  is  VM-centric since deduplication is localized to the snapshot
-history for each VM.
-%We are seeking for a tradeoff since 
-%global signature comparison can deliver additional compression~\cite{Guo2011,Dong2011,extreme_binning09}.
-1) {\em Stateless  Data Routing}.
-One approach to scalable duplicate comparison is to use content-based hash
-partitioning called stateless data routing by Dong et al.~\cite{Dong2011}.
-Stateless data routing divides the deduplication work with a similarity approximation. This work 
-is similar to Extreme Binning by Bhagwat et al.~\cite{extreme_binning09} and 
-each request is routed  to a machine which holds
-a Bloom filter  or can fetch on-disk index for additional comparison.
-While this approach is VM-oblivious, it motivates us to  use  a combined signature of a dataset to narrow
-VM-specific local search.
-3) {\em Sampled Index for Memory Parsimony}. 
-One effective approach that reduces memory usage is 
-to use a sampled index with prefetching, proposed  by Guo and Efstathopoulos\cite{Guo2011}. 
-The algorithm is VM oblivious and it is not easy  to adopt for a distributed architecture. 
-To use a distributed memory version of the sampled index, every deduplication request
-may access a remote machine for index lookup and the overall overhead of access latency for all requests
-can be significant.  
+% %minimize data sharing and simplify deletion while sacrificing
+% %deduplication efficiency, and  can facilitate parallel execution of snapshot operations.
+% \paragraph*{Units of Storage versus Units of Sharing} --
+% The file system block  size in a distributed file system such as
+% the Hadoop file system and the Google file system~\cite{googlefs03}
+% is large (e.g.  64MB) so as to optimize file system performance
+% for big data.
+% Typically, deduplication implementations use smaller block sizes (4K bytes to
+% 8K bytes on average~\cite{Jin2009}).
+% In addition to the failure correlation that cross-VM data deduplication can
+% introduce, disk block sharing of data chunks is another potential source of
+% hidden data dependence.
+% Thus a VM-centric solution should consider how data chunks from VMs are
+% distributed among large file system blocks when a large-scale distributed file
+% system is used for snapshot storage.
 
-We will first discuss and analyze the integration of the VM-centric deduplication strategies with fault isolation 
-and discuss snapshot deletion support, then present an implementation design. 
-}
+% %a minimum association of FSBs to VMs in the packaging
+% %process. By minimizing this association we can improve fault tolerance by
+% %reducing the number of VMs affected when storage nodes are lost.
+
+
+% \paragraph*{Moderating Resource Usage} --
+% In a converged setting, the resources that are used to implement snapshot
+% backup and deduplication are the same resources that must support cloud-hosted
+% VMs.  Thus the backup service must share the resources available to
+% other cloud services as illustrated in Figure~\ref{fig:collocated},
+% and has to minimize its impact on user-deliverable performance.
+% %The key resource for global comparison  is memory for storing the fingerprints.
+% %During snapshot deletion, reference counting for all unique blocks used in all VMs requires a significant resource usage
+% %too.  Thus we seek for the low-profile techniques with approximation and low resource consumption.
+
+% }
+
+% \comments{
+% With the above  considerations in mind, we propose a
+% VM-centric approach (called VC)
+% for a co-located backup service that has a resource usage profile
+% suitable for use with converged cloud architectures.
+% This compares the traditional deduplication approach {\em VM-oblivious} (VO)
+% which manages duplicate data chunks without consideration of VMs.
+% We discuss our key ideas and design in the next section.
+% %Our key idea is to simplify deduplication management and
+% }
+% \comments{
+% In designing a VC deduplication solution, we have considered and adopted some of
+% the following previously-developed techniques.
+% 1) {\em Changed Block Tracking}.
+% VM snapshots can be  backed up  incrementally by identifying data segments that have
+% changed from the previous version of the snapshot~\cite{Clements2009,Vrable2009,TanIPDPS2011}.
+% Such a scheme  is  VM-centric since deduplication is localized to the snapshot
+% history for each VM.
+% %We are seeking for a tradeoff since
+% %global signature comparison can deliver additional compression~\cite{Guo2011,Dong2011,extreme_binning09}.
+% 1) {\em Stateless  Data Routing}.
+% One approach to scalable duplicate comparison is to use content-based hash
+% partitioning called stateless data routing by Dong et al.~\cite{Dong2011}.
+% Stateless data routing divides the deduplication work with a similarity approximation. This work
+% is similar to Extreme Binning by Bhagwat et al.~\cite{extreme_binning09} and
+% each request is routed  to a machine which holds
+% a Bloom filter  or can fetch on-disk index for additional comparison.
+% While this approach is VM-oblivious, it motivates us to  use  a combined signature of a dataset to narrow
+% VM-specific local search.
+% 3) {\em Sampled Index for Memory Parsimony}.
+% One effective approach that reduces memory usage is
+% to use a sampled index with prefetching, proposed  by Guo and Efstathopoulos\cite{Guo2011}.
+% The algorithm is VM oblivious and it is not easy  to adopt for a distributed architecture.
+% To use a distributed memory version of the sampled index, every deduplication request
+% may access a remote machine for index lookup and the overall overhead of access latency for all requests
+% can be significant.
+
+% We will first discuss and analyze the integration of the VM-centric deduplication strategies with fault isolation
+% and discuss snapshot deletion support, then present an implementation design.
+% }
