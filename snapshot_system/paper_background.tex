@@ -148,10 +148,23 @@ In addition, it requires a centralized location
 to store the hashing result which is still too big to be held in a converged architecture.
 
 
+\comments{
 Our previous work on parallel deduplication~\cite{zhangusenix13} is a low-cost
 solution, but it is not an inline solution and th backup for all VMs needs to be conducted
-around the same time. It does not address  snapshot deletion and file system block 
-packaging for fault tolerance. 
+around the same time. 
+It does not address  snapshot deletion and file system block packaging for fault tolerance. 
+}
+
+Our previous work on parallel deduplication~\cite{zhangusenix13,WeiZhangIEEE} 
+is not a comprehensive VM-centric solution and does not address  snapshot deletion and file system block 
+packaging for fault tolerance.  The work in ~\cite{zhangusenix13} a low-cost
+solution, but requires all backups for each day to occur at the same time and is less flexible than the approach presented here.
+
+
+
+% a low cost solution, but it not an inline solution and 
+%the backup for all VMs needs to be conducted
+%around the same time. 
 
 %Cross-VM chunk sharing also complicates 
 % Snapshot deletion occurs frequently since  snapshots expire regularly
