@@ -25,11 +25,12 @@ We separate the deduplication within a VM and cross VMs
 and simplify the cross-VM deduplication while maximizing the inter-VM deduplication efficiency  as much as possible.
 This is because global deduplication that detects the appearance of a chunk 
 in any VM requires a substantial resource for fingerprint comparison.
-To simplify cross-VM deduplication, we restrict the search scope of deduplication within the top $k$ most popular items.
+To simplify cross-VM deduplication, we restrict the search scope of deduplication within the top $k$ 
+most popular items. This popular data set is called the \textbf{PDS}. 
 %This step accomplishes the canonical global fingerprint lookup using a popular fingerprint index.
  \begin{figure}
  \centering
-  \includegraphics[width=2.5in]{figures/zipf_count_rank.pdf}
+  \includegraphics[width=3in]{figures/zipf_count_rank.pdf}
  \caption{Duplicate frequency versus  chunk ranking in a log scale after local deduplication.}
  \label{fig:Datazipf}
  \end{figure}
@@ -38,8 +39,9 @@ To simplify cross-VM deduplication, we restrict the search scope of deduplicatio
 % {\it [Need to find a place to put these numbers in: Total number of chunks 
 % in 350 snapshots: 1,546,635,485. 
 % Total number of chunks after localized dedup: 283,121,924. Total number of unique chunks: 87,692,682.]}
-Our key observation is for those chunks that appear in different VMs, the top $k$ most popular items
-dominate the distribution.  This popular data set is called the \textbf{PDS}. 
+The observation that motivates us to use the PDS
+is that for those chunks that appear in different VMs, the top $k$ most popular items
+dominate the appearance distribution.  
 Figure~\ref{fig:Datazipf} shows the distribution of chunk popularity for a data trace 
 from Alibaba with 2500 VMs discussed in Section ~\ref{sect:evaluation}.
 We define chunk popularity as the number of unique copies of the chunk in the data-store,
@@ -62,7 +64,7 @@ $\sigma$ with about  2\% can deliver a fairly competitive deduplication efficien
 %consumption for global comparison is more expensive.
 %Thus our approximation is that the global cross-VM fingerprint comparison only searches for the top $k$
 %most popular items. 
-PDS  can be computed periodically, e.g., on a monthly basis.
+PDS  can be computed in an offline manner periodically, e.g., on a monthly basis.
 %Once the popularity of all data chunks is collected, the system only maintains the top $k$
 %most popular chunk fingerprints (called \textbf{PDS index}) in a distributed shared memory.  
 %These top chunks are shared among multiple VMs and  since $\sigma$ is relatively small, 
@@ -70,13 +72,12 @@ PDS  can be computed periodically, e.g., on a monthly basis.
 %Compared to a preliminary solution which  uses data popularity~\cite{WeiZhangIEEE}, 
 %this paper provides  a more comprehensive scheme with  improved deduplication efficiency and fault tolerance, and
 %analytic design guidance. 
-
 % Figure~\ref{fig:Datazipf} illustrates the distribution of chunk popularity based on a data trace from Alibaba with over 2500 VMs.
 % The distribution is zipf like and popular chunks are dominating the large portion of data chunks.
 % We denote $\sigma$ as the percentage of unique data chunks belonging to PDS and from the evaluation we find that
 % $\sigma$ with a range of 1 to 4\% can deliver a fairly competitive deduplication efficiency.
-
-Compared to ~\cite{bottleneck08}, the fingerprint index  size is reduced by $1-\sigma$
+Compared to ~\cite{bottleneck08}, the fingerprint index  size is reduced by $100-\sigma$ percentage
+(e.g. 98\% with $\sigma=2\%$)
 and the searchable fingerprint space  becomes very small under the popularity constraint.  
 The fingerprint-guided distributed mapping in ~\cite{extreme_binning09,Dong2011} narrows
 the search scope of each data chunk, but it does not reduce th total amount of searchable fingerprints
@@ -93,11 +94,9 @@ can be significant.
 \item 
 \textbf{VM-specific duplicate search optimization} --
 While cross-VM deduplication is simplified, we intend to optimize the VM-specific deduplication 
-as much as possible under a reasonable memory consumption
+under a reasonable memory consumption
  to make up the loss of deduplication opportunities due to the cross-VM popularity constraint.
-
 %Fingerprint lookup within a VM does not require a signficant  amount of memory resource.
-
 We start with the standard version-based detection~\cite{Clements2009,Vrable2009}
 to identify changed content with dirty bits in a coarse grain segment level.
 %In our implementation 
@@ -119,7 +118,7 @@ major virtualization solution vendors.
 
 \begin{figure}[htbp]
   \centering
-  \epsfig{file=images/mh_local_dedup.pdf, width=2.7in}
+  \epsfig{file=images/mh_local_dedup.pdf, width=3.25in}
   \caption{Similarity-guided local duplicate detection}
   \label{fig:local_dedup}
 \end{figure}
@@ -127,18 +126,23 @@ major virtualization solution vendors.
 Since the previous work typically uses a non-uniform chunk size 
 with an average of 4KB or 8KB for the best deduplication 
 effectiveness~\cite{Guo2011,extreme_binning09,bottleneck08,Dong2011},
-we conduct additional local similarity guided deduplication on a snapshot by comparing
-chunk fingerprints of a dirty segment 
+we conduct additional local similarity guided deduplication 
+by comparing chunk fingerprints of a dirty segment on a snapshot 
 with those in  {\em potentially similar} segments from its parent snapshot. 
-We define a parent  segment is  potentially similar to the current segment if 1) the parent segment
+We consider a parent  segment is  potentially similar to the current dirty segment if 1) the parent segment
 is at the same offset as the current segment.
 2) the signature of these segments is the same.
-This segment content signature value is defined as the minimum value of all its chunk fingerprints 
+The signature of a segment is defined as the minimum value of all its chunk fingerprints 
 computed during backup and is recorded in the snapshot metadata (called recipe). 
 %Note that this definition of content similarity is an approximation~\cite{resemblance97}.  
+This signature definition is motivated by the previous work for similarity-based routing in parallel
+deduplication~\cite{extreme_binning09,Dong2011} and near duplicate detection~\cite{shingling97}. 
+
+
+
 When processing a dirty segment,
 its  similar segments can be found easily from the
-parent snapshot recipe.  Then recipes of the similar segments are loaded to memory,
+parent snapshot metadata.  Then metadata of the similar segments is loaded to memory,
 which contain chunk fingerprints to be compared.
 To control the time cost of search, we set a limit on the number of  similar segment recipes to be fetched. 
 % Then,
@@ -147,7 +151,8 @@ To control the time cost of search, we set a limit on the number of  similar seg
 For example, assume that  a segment is of size  2MB, 
 its segment recipe is roughly 19KB which contains about 500 chunk fingerprints and other chunk metadata.
 By limiting at most 10 similar segments to search, the amount of memory for maintaining those 
-similar segment recipes is 190K, which is tiny compared to other memory requirements.
+similar segment recipes is 190K, which is insignificant. 
+%compared to other memory requirements.
 
 %As part of our local duplicate search we also compare the current segment
 %against the parent segment at the same offset.
@@ -155,19 +160,22 @@ similar segment recipes is 190K, which is tiny compared to other memory requirem
 \item 
 \textbf{VM-centric file system block management} --
 When a chunk is not detected as a duplicate to any existing chunk, this chunk will be written
-into a file system block.  A  backend file system block can contain a large number of chunks.
+into a file system block.  
 In addition to the fact that a distributed file system block is often
-configured to be large (e.g. 64MB), a number of chunks can be combined together
-and compressed further using a standard data compression method. 
+configured to be much  larger than a chunk, a number of chunks can be combined together
+and compressed further using a standard compression method such as LZO. 
+Thus a  backend file system block contains a large number of compressed chunks.
 %We manage this accumulation process using a log-structured storage scheme built
 %on a distributed file system discussed in Section~\ref{sect:architecture}.
 %Non-PDS chunks from the same VM are stored in one append store. 
-We set two constraints in composing chunks for a file system block as follows:
-1) Each file system block is either dedicated to non-PDS chunks, or PDS-chunks.
+We set the following two constraints in composing chunks for a file system block:
+1) Each file system block is either dedicated to non-PDS chunks, or to PDS-chunks.
 2) A non-PDS file system block is only associated with one VM.
 
-Restricting the association with one VM improves fault isolation when some file blocks are lost during failure. 
-In addition, storing PDS chunks separately allows special replication handling for those popular shared data. 
+Restricting the association with one VM improves fault isolation when some file blocks are lost during 
+storage failures. 
+In addition, storing PDS chunks separately from non-PDS chunks
+allows special replication handling for those popular shared data. 
 %%% talk something about snapshot store advantage here? %%%
 %One could try to rely on filesystem features to 
 If we do not separate the

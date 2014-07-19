@@ -16,7 +16,7 @@ there are no resources specifically dedicated to cloud services.
 In particular, these providers use software to
 aggregate multiple direct attached low-cost disks together across
 servers as a way of avoiding the relatively high cost of network attached 
-storage~\cite{googlefs03,hdfs10}.
+storage~\cite{googlefs03,hdfs10,NutanixPaper}.
 %systems. %This(e.g. ~\cite{NutanixPaper}).  Leading cloud platform companies
 %such as Google, Amazon, Alibaba, Microsoft Azure  have built a converged
 %compute and storage infrastructure and used a distributed file system such as
@@ -28,15 +28,17 @@ In such an environment,
 %costs and performance limitations associated with network storage.
 each physical machine runs a number of virtual machines (VMs)
 %as  instances of a guest operating system 
-and their virtual disks are stored as disk image files, typically
-using a local (possibly shared) file system.
-Frequent snapshot backup of virtual disk images can
+and their virtual disks are stored as disk image files.
+% typically using a local (possibly shared) file system.
+Frequent snapshot backup of virtual machine images can
 increase the service reliability by allowing VMs to restart from their latest
-snapshot in the event of a server failure.  However, because the disk
-blocks that make up the VMs are often the same from snapshot to snapshot
-and are shared among VMs,  
-deduplication of redundant content
-blocks~\cite{venti02,bottleneck08} is necessary to substantially reduce the
+snapshot in the event of a server failure. Snapshots contain highly redundant 
+data chunks and 
+%  However, because the disk
+%blocks that make up the VMs are often the same from snapshot to snapshot
+%and are shared among VMs,  
+deduplication of redundant 
+content~\cite{venti02,bottleneck08} is necessary to substantially reduce the
 storage demand. 
 
 %For example, the Aliyun cloud, which is  the largest cloud service provider
@@ -50,13 +52,15 @@ Source-side deduplication (e.g. ~\cite{Symantec2009})
  eliminates duplicates before backup data is transmitted
 to a secondary storage, which saves network bandwidth significantly; however its resource
 usage can impact other co-located cloud services. 
-But it is memory-intensive to compare a large number of fingerprints and identify
+It is memory-intensive to compare a large number of fingerprints and identify
 duplicates, even optimization or approximation techniques are developed~\cite{Guo2011,Dong2011,extreme_binning09}. 
-When deleting unused snapshots, a mark-and-sweep approach~\cite{Guo2011,Fabiano2013}  
+When deleting unused snapshots, a grouped mark-and-sweep approach~\cite{Guo2011}  
 is effective while it still carries a significant cost, especially in a distributed
 setting.  Another side effect of deduplication is the possible loss of failure
-resilience~\cite{Reliability06}.  Separate files share the same physical copies of blocks that are
-logically duplicated among them.  If a shared block is lost, all files that
+resilience~\cite{Reliability06}.  
+%Separate files share the same physical copies of blocks that are
+%logically duplicated among them.  
+If a shared block is lost, all files that
 share that block are affected.  
 A cloud may offload backup workload from production 
 server hosts to dedicated backup proxy servers (e.g. EMC Data Domain) or
@@ -175,8 +179,10 @@ blocks to be deduplicated (and then replicated) across VMs.
 The rest of this paper is organized as follows.
 Section~\ref{sect:background} reviews the background and discusses the  design options for snapshot backup 
 with a VM-centric approach. 
-Section~\ref{sect:deduplication}  analyzes the tradeoff and benefits of the VM-centric approach. 
+%Section~\ref{sect:deduplication}  analyzes the tradeoff and benefits of the VM-centric approach. 
+Section~\ref{sect:deduplication}  presents our scheme for  snapshot deduplication and deletion.
 Section~\ref{sect:architecture}  describes a system implementation that evaluates the proposed techniques.
 %   the benefit of our approach for fault isolation. 
 Section~\ref{sect:evaluation} is our experimental evaluation that compares with other approaches.
 Section~\ref{sect:conclusion}  concludes this paper.
+The appendix describes an analysis on the snapshot availability of our scheme during storage failures.

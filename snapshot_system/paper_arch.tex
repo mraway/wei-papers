@@ -13,9 +13,11 @@ virtual block device driver (called TapDisk\cite{Warfield2005} in Xen).
 \subsection{Per Node Software Components} 
 %\begin{figure}[htbp]
 \begin{figure}[htbp]
+%\vspace{1em}
     \centering
     %\includegraphics[width=2.75in]{images/socc_arch_cluster}
-    \includegraphics[width=2.2in]{images/socc_arch_cluster}
+    \includegraphics[width=2.8in]{images/socc_arch_cluster}
+%\vspace{1em}
     \caption{Data flow during snapshot backup}
     \label{fig:arch_vm}
 \end{figure}
@@ -49,11 +51,15 @@ the data structures  include references to the actual data location to eliminate
 
 \subsection{A VM-centric Snapshot Store}
 \label{sect:store}
+
 %\begin{figure}[htbp]
 \begin{figure}[htbp]
+%\vspace{1em}
   \centering
 %  \includegraphics[width=2.75in]{images/sstore_arch}
-  \includegraphics[width=2.2in]{images/sstore_arch}
+  \includegraphics[width=2.8in]{images/sstore_arch}
+%\vspace{1em}
+  \centering
   \caption{VM snapshot store data structures}
   \label{fig:as_arch}
 \end{figure}
@@ -79,7 +85,7 @@ For the same reason, we decide not to take the sampled index approach~\cite{Guo2
 for detecting duplicates from PDS as limited spatial locality is not sufficient to enable
 effective prefetching for sampled indexing.
 
-PDS data are re-calculated periodically, but 
+PDS data are re-calculated periodically in an offline manner, but 
 the total data size is small.  When
 a new PDS data  set is computed, the in-memory PDS index is replaced, but 
 the PDS file on the disk appends the  new PDS data identified and the growth of this file is very slow. 
@@ -89,7 +95,7 @@ A periodic cleanup is conducted  to remove unused PDS chunks (e.g. every few mon
 %\end{itemize}
 
 For non PDS data, the snapshot store of a VM is  divided into a set of containers and 
-each container is approximately 1GB.  The reason for this  divison is to simplify the compaction process
+each container is approximately 1GB.  The reason for this  division is to simplify the compaction process
 conducted periodically. When  chunks are deleted from old snapshots,
 chunks without any reference from other snapshots can be removed by this compaction process.
 By limiting the size of a container, we can control the length of each round of compaction.
@@ -101,7 +107,7 @@ In writing a chunk during backup, the system accumulates data chunks and stores 
 group as a unit after compression. This  compression can reduce data by several times  in our tested data.
 When accessing a particular chunk, its chunk group is retrieved from the storage
 and decompressed. Given the high spatial locality and usefulness of prefetching  in 
-snapshot chunk accessing~\cite{Guo2011,foundation08},
+snapshot chunk accessing~\cite{Guo2011,Rhea2008},
 retrieval of  a data chunk  group naturally works well with prefetching. 
 A  typical chunk group contains 1000 chunks in our experiment.
 % with an average size of 200-600 chunks.
@@ -126,9 +132,9 @@ When a chunk is to be accessed, the segment recipe contains a reference pointing
 
 
 Three API calls are supported for data backup:
-%\begin{itemize}
+\begin{itemize}
 
-%\item
+\item
 \noindent\textbf{Append()}. 
 For PDS data, the chunk is appended to the end of the PDS file and the offset is returned as the  reference.
 This operation  may only be used during PDS recalculation.
@@ -141,7 +147,7 @@ appends the header and data  to the corresponding VM file.
 A new container  index entry is also created for each chunk group and is written to the corresponding
 container index file.
 
-%\item
+\item
 \noindent\textbf{Get()}.
 Fetching PDS data is straightforward since each reference contains 
 the file offset, and the size of a PDS chunk is available from a segment recipe.
@@ -155,9 +161,10 @@ specified by the chunk ID.
 Finally, the client updates its internal chunk cache with the newly loaded content to 
 anticipate future sequential reads.
 
-%\item
+\item
 \noindent\textbf{Delete()}.
-Chunk deletion occurs when a snapshot expires or gets deleted explicitly by a user (the overall deletion strategy was discussed in detail in Section~\ref{sect:delete}).
+Chunk deletion occurs when a snapshot expires or gets deleted explicitly by a user. 
+%(the overall deletion strategy was discussed in detail in Section~\ref{sect:delete}).
 When deletion requests are issued for a specific container,
 those requests are simply recorded into the  container's deletion log initially and thus  a lazy
 deletion strategy is exercised.
@@ -176,6 +183,6 @@ As a result, all data references stored
 in recipes are permanent and stable, and the data reading process
 is as efficient as before. Maintaining the stability of chunk IDs also ensures that recipes do not
 depend directly on physical storage locations, which simplifies data migration.
-%\end{itemize}
+\end{itemize}
 
 

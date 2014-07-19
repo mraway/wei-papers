@@ -1,33 +1,45 @@
 
-\subsection{VM-Centric Snapshot Deletion with Leak Repair}
+\subsection{VM-Centric Snapshot Deletion with Periodic Leak Repair}
 \label{sect:delete}
 
 
 \begin{figure}[htbp]
+%\vspace{2em}
   \centering
-  \epsfig{file=images/deletion.pdf, width=2.7in}
+  \epsfig{file=images/deletion.pdf, width=3.35in}
   \caption{Fast approximate deletion}
   \label{fig:deletion_flow}
 \end{figure}
 
 Snapshot deletions can occur frequently since old snapshots become less useful.
-General deduplication complicates the deletion process because sharing of duplicates
-requires a global reference counting~\cite{Guo2011,Fabiano2013} 
- to identify if  a chunk can be  safely removed without any reference.
+Both space accounting and reclaimation are difficult because deduplication
+greatly complicates how we identify unused data when deletion occurs.
+To filter out un-referenced data from shared duplicates,
+it would require to either maintain expensive live schemas and operations
+such as global reference counting,
+or use some advanced mark-and-sweep methodologies~\cite{Guo2011,Fabiano2013},
+which are all unsuitable for converged architecture as discussed in section~\ref{sect:background}.
+% to identify if a chunk can be safely removed without any reference.
 %Since our VM-centric design restricts sharing of data chunks only to a small dataset,
 %we can greatly simplify the deletion process by 
 %focusing on  unreferenced non-PDS chunks within each VM. 
 %This process can be conducted independently per VM, and thus results in  a simpler flow control and 
 %lower resource usage. 
-One of the key benefits of our VM-centric design is that it allows for faster and simpler deletion. First, since
+One of the key benefits of our VM-centric design is that it allows for faster and simpler deletion. 
+We propose the following strategies to speedup the deletion process and reduce its resource usage.
+\begin{itemize}
+\item First, since
 sharing in our approach is limited to only a small dataset, we can greatly simplify deletion by focusing
-on intra-VM sharing rather than inter-VM sharing. Our deletion can therefore be conducted independently per VM.
-Second, we propose an {\em approximate} deletion stragegy to trade deletion accuracy for speed and
-resource usage.
-
+on intra-VM sharing rather than inter-VM sharing. Then the snapshot
+ deletion can therefore be conducted independently among VMs.
+\item Second,  we propose an {\em approximate} deletion strategy to trade deletion accuracy for speed and
+resource usage. Since the VM size is highly skewed in practice,  a large VM may still require
+a substantial amount of memory  to facilitate the mark-sweep process of data chunks used within all snapshots
+of this VM. 
 Our approximate deletion method sacrifices a small percent of storage leakage
-to efficiently identify unused chunks using a per-snapshot bloomfilter.
-The algorithm contains three aspects.
+to efficiently identify unused chunks using a per-snapshot bloom-filter.
+\end{itemize}
+The simplified deletion algorithm contains three aspects.
 \begin{itemize}
 \item {\bf Computation for snapshot reference summary.}
 Every time there is a new snapshot created,
@@ -46,7 +58,7 @@ are still referenced by other snapshots.
 This is done approximately and quickly by comparing the 
 reference of deleted chunks  with
 the merged reference summary vectors of other live snapshots.
-The merging of live snapshot Bloom-filter vectors uses the bitwise OR operator 
+The merging of live snapshot Bloom-filter vectors uses the bit-wise OR operator 
 and the merged vector still takes $z$ bits.
 Since the number of live snapshots $h$ is limited for
 each VM, 
@@ -73,7 +85,8 @@ A mark-and-sweep process  requires a scan of all the metadata for a snapshot sto
 %although certain optimized algorithms may apply\cite{Przemyslaw2013}. But 
 Since it is a VM-specific procedure, 
 the space cost is proportional to the number of chunks
-within each VM. For example, the space requirement is about 85MB for a VM of size 40GB in our tested dataset.
+within each VM. 
+%For example, the space requirement is about 85MB for a VM of size 40GB in our tested dataset.
  This is  much less expensive  than  the VM-oblivious mark-and-sweep
 which scans snapshot chunks from all VMs, even with optimization~\cite{Guo2011}.
 
@@ -97,7 +110,9 @@ Each Bloom filter vector has  $z$ bits for each snapshot and let $j$ be the numb
 Bloom filter.  Notice that a chunk may appear multiple times in these summary vectors; however, this should not 
 increase the probability of being a 0 bit in all $h$ summary vectors.
 Thus the probability that a particular bit is 0  in all $h$ summary vectors is  
-$(1- \frac{1}{z}) ^{j U}$. 
+\[
+(1- \frac{1}{z}) ^{j U}.
+\] 
 Then the misjudgment rate of being in use  is: 
 \begin{equation}
 \label{eq:falserate}
@@ -108,10 +123,9 @@ For each snapshot deletion, the number of chunks to be deleted is nearly identic
 newly added chunks $\Delta u$. 
 Let $R$ be the total number of runs of approximate deletion between two consecutive 
 repairs. We estimate  the total leakage $L$ after $R$ runs as:
-$
+\[
 L = R \epsilon \Delta u.
-$
-
+\]
 When leakage ratio $L/U$ exceeds a pre-defined threshold $\tau$, we trigger a leak repair. Namely,
 
 \begin{equation}
