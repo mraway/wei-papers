@@ -1,31 +1,18 @@
 \begin{abstract}
-Data deduplication has been widely used for cloud data backup
-because of excessive redundant content. Common techniques 
-perform fingerprint comparison to remove duplicates
-across virtual machines.
-However, fingerprint search for source-side duplicate detection is resource
-intensive when the backup service for virtual machines (VMs)  is co-located with  other cloud services.
-%letting a duplicate data block be shared
-%by many virtual machines represents a tradeoff between
-%storage efficiency and data availability.
-%by many virtual machines creates data dependence and is less fault-resilient. 
-%%This paper studies the impact of deduplication on 
-%%fault resilidence  of virtual machine snapshots, created by data dependence  among duplicates
-%%and proposes a VM-centric approach that strikes a balance between deduplication efficiency
-%%and fault isolation 
-This paper proposes a VM-centric backup service 
-which  strikes a tradeoff for a competitive  deduplication efficiency while
-using small  computing resources, suitable for running
-on a converged cloud architecture that cohosts  many other services.
+Data deduplication is important  for snapshot backup of virtual machines (VMs)
+because of excessive redundant content.  Fingerprint search for source-side duplicate 
+detection is resource intensive when the backup service for VMs  is co-located with  other 
+cloud services.  This paper proposes a VM-centric backup service with  a tradeoff 
+for a competitive  deduplication efficiency while using small computing resources, 
+suitable for running on a converged cloud architecture that cohosts  many other services.
+The key techniques in the proposed scheme are to localize deduplication as much as 
+possible within each VM guided by similarity search, restrict global 
+deduplication under popular chunks with extra replication support,
+and use an approximate method for fast and simplified snapshot deletion.
 This VM-centric design also improves the snapshot availability  during machine failures  
-and simplifies snapshot deletion.  The key techniques used are to
-localize deduplication as much as possible within each 
-virtual machine, guided by similarity
-search, and to restrict global deduplication under popular chunks with extra replication support.
-This scheme associates  underlying file blocks with one VM for most cases
-and proposes an approximate method for fast and simplified snapshot deletion.
-This  paper  describes an evaluation of this scheme to assess  its deduplication 
-efficiency, resource usage,  and fault resilience.
+by separating popular chunks and associating  file system blocks with one VM for non-popular chunks.
+This  paper  describes an evaluation of this VM-centric scheme to assess  its deduplication 
+efficiency, resource usage,  and fault tolerance.
 
 % Collocating a cluster-based duplicate service with other cloud services
 %   necessary to eliminate
