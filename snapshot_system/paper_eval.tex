@@ -651,8 +651,8 @@ the loss of a single file block
 while in VO, the loss of a
 single block tends to affect many VMs.
 When the number of physical machines failed reaches 20, the availability of VO reaches 0\%
-and VC also drops to 1.13\%. This is because even there is a good availability for PDS data, VC still
-loses most of non-PDS blocks given the replication degree for non PDS is 3.
+and VC also drops to 1.13\%. This is because even though availability for PDS data remains good, VC still
+loses many of the non-PDS blocks given the replication degree for non-PDS is 3.
 When $p=1000$, the percentage of failures is then 2\% and VC delivers a meaningful availability 
 with 99.62\%, outperforming VO significantly. 
 
