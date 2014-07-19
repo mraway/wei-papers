@@ -218,12 +218,12 @@ to other services.
 Comparing the experiment results of the sampled index method reported in~\cite{Guo2011}, 
 our scheme achieves a 85K:1 ratio between raw snapshot data and memory usage 
 with 96\% deduplication efficiency
-while the sampled index method achieves 20K:1 (10GB memory per 500TB raw data)
+while the sampled index method achieves 20K:1 (25GB memory per 500TB raw data)
 with 97\% deduplication efficiency.
 Thus our scheme is more memory efficient with a good tradeoff for deduplication efficiency.
 If we change $\sigma=4\%$, the deduplication efficiency of VC increases to 96.58\% while
 memory usage per machine increases to about 220MB. 
-Notice that the sampled index method is designed for single-machine deduplication.
+Notice also that the sampled index method is designed for single-machine deduplication.
 %and it is not easy to extend to a distributed cluster architecture.
 
 
@@ -651,8 +651,8 @@ the loss of a single file block
 while in VO, the loss of a
 single block tends to affect many VMs.
 When the number of physical machines failed reaches 20, the availability of VO reaches 0\%
-and VC also drops to 1.13\%. This is because even there is a good availability for PDS data, VC still
-loses most of non-PDS blocks given the replication degree for non PDS is 3.
+and VC also drops to 1.13\%. This is because even though availability for PDS data remains good, VC still
+loses many of the non-PDS blocks given the replication degree for non-PDS is 3.
 When $p=1000$, the percentage of failures is then 2\% and VC delivers a meaningful availability 
 with 99.62\%, outperforming VO significantly. 
 
@@ -677,7 +677,7 @@ While the impact on storage cost is small (because we have separated out only
 the most popular blocks),
 a replication degree of 6  has a significant improvement over 4. The
 availability does not increase much  when increasing
-$r_c$ from 6 to 9 and the benefit is not so visible after $r_c>9$. 
+$r_c$ from 6 to 9 and the benefit is minimal after $r_c>9$. 
 That is because when the number of failed machines increases beyond 6, 
 the non-PDS data availability starts to deteriorate significantly given its replication degree
 $r$ is set to 3. Thus when $r=3$, the reasonable choice for $r_c$ would be a number between 6 and 9.
