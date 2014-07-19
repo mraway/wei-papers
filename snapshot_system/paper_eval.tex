@@ -677,7 +677,7 @@ While the impact on storage cost is small (because we have separated out only
 the most popular blocks),
 a replication degree of 6  has a significant improvement over 4. The
 availability does not increase much  when increasing
-$r_c$ from 6 to 9 and the benefit is not so visible after $r_c>9$. 
+$r_c$ from 6 to 9 and the benefit is minimal after $r_c>9$. 
 That is because when the number of failed machines increases beyond 6, 
 the non-PDS data availability starts to deteriorate significantly given its replication degree
 $r$ is set to 3. Thus when $r=3$, the reasonable choice for $r_c$ would be a number between 6 and 9.
