@@ -6,20 +6,20 @@ The main contribution of this paper is a low-profile and VM-centric deduplicatio
 uses  a small amount of system resource in both snapshot deduplication and deletion
 while delivering competitive deduplication efficiency.
 The VM-centric design also allows an optimization for  better fault isolation and tolerance.
-Our evaluation with an Alibaba dataset has the following results.
+Our evaluation has the following results.
 \begin{itemize}
 \item {\em Competitive deduplication efficiency with a tradeoff}. 
 The proposed VC scheme 
 can accomplish over  96\% of what complete global
 deduplication can do. In comparison, SRB~\cite{Dong2011,extreme_binning09}
-can accomplish 97.86 while 
+can accomplish 97.86\% while 
 the sampled index~\cite{Guo2011} can deliver 97\% for a different test dataset. 
 \item {\em Lower resource usage in deduplication}. 
 The VC scheme achieves a 85K:1 ratio between raw snapshot data and memory usage
 and is much more memory-efficient than 
 SRB  with 4K:1 ratio and sampled index with 20K:1.
 VC with 100 machines takes 1.31 hours to complete the backup of 2,500 VMs
-using 19\% of a single core and 16.7\% of IO bandwidth per machine. 
+using 19\% of one core and 16.7\% of IO bandwidth per machine. 
 Processing time of VC is 23.9\% faster  than SRB in our tested cases
 and the per-machine throughput of VC is reasonable based on the result 
 from~\cite{Guo2011}. 
@@ -28,7 +28,7 @@ the sampled index method is for a single-machine architecture.
 \item {\em Lower cost in snapshot deletion}. 
 The deletion in VC with summary vectors
 takes less than a minute for snapshot deletion using 15MB memory per machine
-and all machines run this operation in parallel without data dependence. 
+and all machines can run this operation in parallel without data dependence. 
 The grouped mark-sweep method can take 43 hours using
 1.2 to 3GB memory per machine in our tested cases.
 The leak repair in VC takes 0.82 hours using 50MB on average while processing

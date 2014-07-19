@@ -216,13 +216,13 @@ to other services.
 %similar segment search in the parent snapshot. 
 
 Comparing the experiment results of the sampled index method reported in~\cite{Guo2011}, 
-our scheme achives a 85K:1 ratio between raw snapshot data and memory usage 
+our scheme achieves a 85K:1 ratio between raw snapshot data and memory usage 
 with 96\% deduplication efficiency
-while the sampled index method achives 20K:1 (10GB memory per 500TB raw data)
+while the sampled index method achieves 20K:1 (10GB memory per 500TB raw data)
 with 97\% deduplication efficiency.
 Thus our scheme is more memory efficient with a good tradeoff for deduplication efficiency.
 If we change $\sigma=4\%$, the deduplication efficiency of VC increases to 96.58\% while
-memory usage per machine increses to about 220MB. 
+memory usage per machine increases to about 220MB. 
 Notice that the sampled index method is designed for single-machine deduplication.
 %and it is not easy to extend to a distributed cluster architecture.
 
@@ -283,7 +283,7 @@ We have further studied the memory and disk bandwidth usage
 when running concurrent VM snapshot backup on each machine with $\sigma=2\%$. 
 Table ~\ref{tab:resource_usage} gives the resource usage  when
 running 1 or multiple  VM backup tasks at the same time on each physical machine. 
-Each task handles the backup of one VM snapshop including deduplication.
+Each task handles the backup of one VM snapshot including deduplication.
 ``CPU'' column is the percentage of a single core used. 
 ``Mem'' column includes $\sim$100MB memory usage for PDS index and other space cost for executing deduplication tasks such as 
 recipe metadata and cache. 
@@ -479,7 +479,7 @@ For our dataset, each version of total snapshots has abut 1TB per machine for 25
 would complete the backup in about 3.05 minutes.
 With a higher disk storage bandwidth available, the above backup
 throughput would be higher. 
-In comparison, the sampled index method in~\cite{Guo2011} achives about 5.5GB per second
+In comparison, the sampled index method in~\cite{Guo2011} achieves about 5.5GB per second
 with 16 concurrent backup tasks and 6GB per second with
 more tasks.  Thus the per-machine throughput of our scheme is reasonable.
 %With 50MB/second controlled I/O bandwidth, each machine can deliver 171MB/second with 1 backup task and can complete the backup of 25 VMs per machine in less than 1.31 hours.
@@ -586,10 +586,12 @@ This VM-specific leakage  repair takes  less than half an hour for each VM.
 %\subsection{Fault Isolation and Snapshot Availability}
 \subsection{Snapshot Availability}
 
-We demonstrate  the impact of adding extra replication for PDS in VC
-and compare the snapshot availability of VC and VO. 
+We demonstrate  
+%the impact of adding extra replication for PDS in VC
+%and compare 
+the snapshot availability of VC and VO (e.g. SRB-based) when there are failed machines. 
 Appendix~\ref{sect:fault} provides a detailed analysis of 
-snapshot availablility and the estimated result depends on how frequent a duplicate chunk
+snapshot availability and the estimated result depends on how frequent a duplicate chunk
 is shared among snapshots of VMs.
 The trace driven execution allows us to estimate the number of file blocks shared by each VM in the VO 
 and VC approaches

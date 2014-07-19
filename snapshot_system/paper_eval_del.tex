@@ -8,10 +8,10 @@
 	    &Time p=50 & Time p=100 & Memory \\
 	    &(hours)  & (hours) & (GB) \\
 \hline
-Mark-sweep  & 35.9  &  84.3  & 1.2--3 \\
+Mark\&sweep  & 35.9  &  84.3  & 1.2--3 \\
 \hline
 Grouped &     18.6    & 43.6   & 1.2--3 \\
-mark-sweep &        &    &  \\
+mark\&sweep &        &    &  \\
 \hline
 VC w/o sum &  0.7     & 0.82   & 0.05 -- 1.96 \\
 \hline
@@ -29,21 +29,22 @@ deletion}
 Table~\ref{tab:deletion-cmp}   lists a comparison of processing time and memory usage
 using the four deletion methods when the number of physical machines
 $p=100$ and $p=50$. These four 
-methods are 1) the standard mark-sweep method. 2) Grouped mark-sweep~\cite{Guo2011}. 
+methods are 1) the standard mark-and-sweep method. 2) Grouped mark-and-sweep~\cite{Guo2011}. 
 3)   VC without using summary vectors (Row 4). 4) VC with summary vectors.
 Last row of Table~\ref{tab:deletion-cmp} 
 is the cost of the leakage  repair for VC with summary vectors.
-The mark-sweep process requires all machines read snapshot metadata for usage comparison.
+The mark-and-sweep process requires all machines read snapshot metadata for usage comparison.
 The I/O read speed for the backend distributed file system is about 50MB/second
 and there is some throughout contention when all machines read data simultaneously:
-the speed drops to about 30MB/second when $p=50$ and 25 with $p=100$.
-We explain the results for $p=100$ below and notice each physical machine hosts 25VMs on average. 
+the speed drops to about 30MB/second when $p=50$ and 25MB/s with $p=100$.
+We explain the results for $p=100$ below.
+% and notice each physical machine hosts 25VMs on average. 
 The explanation for $p=50$ is similar and the result difference for $p=100$ and $p=50$ shows
 our deletion method scales well when the number of machines increases.
 
 
-For the mark-sweep method (Row 2 of Table~\ref{tab:deletion-cmp}) 
-on $p=100$, we contact $p$ phases of the mark-sweep process.
+For the mark-and-sweep method (Row 2 of Table~\ref{tab:deletion-cmp}) 
+on $p=100$, we conduct $p$ phases of the mark-and-sweep process.
 At each phase, a physical machine 
 reads $1/p$ of the non-deduplicated chunk metadata
 and keeps a reference table in the memory.
@@ -57,13 +58,13 @@ chunk reference table at each phase. The average size is 1.2GB and the maximum i
 There is a tradeoff between memory usage of a reference table in terms of the size
 and the total processing time. If we reduce the size of  the reference table at each phase, 
 then there are more phases to mark all data and the whole process  will take more time.
-For the grouped mark-sweep (Row 3), about 50\% of snapshot metadata reading can be 
-avoided in assessing the reference usage of non-duplicate chunks. 
+For the grouped mark-and-sweep (Row 3), about 50\% of snapshot metadata reading can be 
+avoided by actively tracking the reference usage of non-duplicate chunks. 
 Thus it takes 50\% less time, which is about 43 hours, but the 
 memory requirement does not decrease.
 
 For VC without summary vectors (Row 4 of Table~\ref{tab:deletion-cmp}), 
-all physical machines conduct the mark-sweep process in parallel, 
+all physical machines conduct the mark-and-sweep process in parallel, 
 but each machine only handles one VM at time and 
 the scope of meta data comparison is controlled within the single VM.
 Popular chunks are excluded. The average memory usage is the index size of 
@@ -71,11 +72,10 @@ non-deduplicated VM chunks, which is about 50MB on average and the largest
 size is 1.96GB. 
 For VC with summary vectors (Row 5), each physical machine loads
 the VM snapshots and only needs to compare with the summary vectors.
-The memory usage is controlled within 15MB for hosting the summary vectors
+The memory usage is controlled around 15MB for hosting the summary vectors
 and small buffers. The deletion time is reduced to less than 1 minute.
-The periodic leakage repair still takes about 0.83 hours while using
-an average of 50MB memory. For  few big VMs in a skewed data distribution,
-the repair uses upto 1.9GB memory.
-Such a repair does not occur often (e.g. occurs every 19.6 days as discussed in Section~\ref{sect:delete}). 
+The periodic leakage repair (Row 6) still takes about 0.83 hours while using
+an average of 50MB memory. For  few big VMs due to data skewness, the repair uses upto 1.9GB memory.
+Such a repair does not occur often (e.g. every 19.6 days as discussed in Section~\ref{sect:delete}). 
 
 
