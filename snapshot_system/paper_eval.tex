@@ -135,8 +135,8 @@ settings.
 % The figure also compares several PDS sizes chosen for VC. ``$\sigma=2\%$'' 
 % is defined in Table~\ref{tab:symbol}. 
 % =======
-Deduplication efficiency is defined as the percent of duplicate chunks which are removed
-compared to a perfect scheme which detects and removes  all duplicates. 
+Deduplication efficiency is defined as the percent of duplicate 
+chunks removed, comparing to a perfect scheme which detects and removes  all duplicates. 
 % so only global perfect deduplication can have 100\% efficiency.
 % We also compare several PDS sizes chosen for VC.
 %(see Table~\ref{tab:symbol} for definition of ``$\sigma=2\%$'')
@@ -300,8 +300,8 @@ data replication.     50MB/s dirty segment read speed triggers about 16.4MB/s di
 %memory during duplicate detection.
 
 Table ~\ref{tab:resource_usage} shows that when  each machine conducts
-backup one VM at a time, the backup of the entire
-VM cluster completes in about 1.31 hours. Since there are about 25 VMs per physical machine, we could execute
+backup one VM at a time, the entire cluster backup 
+completes in 1.31 hours. Since there are about 25 VMs per physical machine, we could execute
 more tasks in parallel at each machine. But adding more backup concurrency does 
 not shorten the overall time
 significantly in this case because of the controlled  disk read bandwidth usage.
