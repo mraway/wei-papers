@@ -68,7 +68,7 @@ backup services (e.g. Amazon S3). This approach simplifies the cluster
 architecture and 
 avoids potential performance degradation to production applications when 
 backups are in progress.
-However, sending out undeduplicated backup data wastes a huge amount
+However, sending out raw and undeduplicated backup data wastes a huge amount
 of network bandwidth that would otherwise be available to user VMs. 
 \comments{
 Even when the storage system implements deduplication internally
