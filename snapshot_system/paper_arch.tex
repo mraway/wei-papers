@@ -13,7 +13,7 @@ virtual block device driver (called TapDisk\cite{Warfield2005} in Xen).
 \subsection{Per Node Software Components} 
 %\begin{figure}[htbp]
 \begin{figure}[htbp]
-\vspace{1em}
+%\vspace{1em}
     \centering
     %\includegraphics[width=2.75in]{images/socc_arch_cluster}
     \includegraphics[width=3in]{images/socc_arch_cluster}
@@ -54,7 +54,7 @@ the data structures  include references to the actual data location to eliminate
 
 %\begin{figure}[htbp]
 \begin{figure}[htbp]
-\vspace{1em}
+%\vspace{1em}
   \centering
 %  \includegraphics[width=2.75in]{images/sstore_arch}
   \includegraphics[width=3in]{images/sstore_arch}
@@ -107,7 +107,7 @@ In writing a chunk during backup, the system accumulates data chunks and stores 
 group as a unit after compression. This  compression can reduce data by several times  in our tested data.
 When accessing a particular chunk, its chunk group is retrieved from the storage
 and decompressed. Given the high spatial locality and usefulness of prefetching  in 
-snapshot chunk accessing~\cite{Guo2011,foundation08},
+snapshot chunk accessing~\cite{Guo2011,Rhea2008},
 retrieval of  a data chunk  group naturally works well with prefetching. 
 A  typical chunk group contains 1000 chunks in our experiment.
 % with an average size of 200-600 chunks.
