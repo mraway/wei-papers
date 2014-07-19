@@ -24,7 +24,7 @@ Parameters used in our analysis below are defined in Table~\ref{tab:symbol}.
 
 \begin{table}[htbp]
 %\begin{table}[t]
-%\small
+\small
 \centering
 %\tabcolsep=0.11cm
 \begin{tabular}{|p{1.0cm}|p{5.75cm}|}
@@ -77,13 +77,13 @@ A(r) & availability of a file block with $r$ replicas and $d$ failed physical ma
     \centering
     \subfigure[Sharing of file system blocks under VC]
     {
-        \includegraphics[width=3.25in]{images/share_vc}
+        \includegraphics[width=3in]{images/share_vc}
         \label{fig:share_vc}
     }
     \\
     \subfigure[Sharing of file system blocks under VO]
     {
-        \includegraphics[width=3.25in]{images/share_vo}
+        \includegraphics[width=3in]{images/share_vo}
         \label{fig:share_vo}
     }
     \caption{Bipartite association of VMs and file blocks. }
@@ -130,7 +130,7 @@ For VC, each VM has an average number $N_1$ of non-PDS file system blocks
 and  has  an average of  $N_2$ PDS file system blocks. 
 Each non-PDS block is associated with only one VM.
 % and  we denote that PDS blocks are shared by an average of $V_c$ VMs. 
-Then by counting outgoing edges from VMs in Figure~\ref{fig:share}(a), we get:
+By counting outgoing edges from VMs in Figure~\ref{fig:share}(a), we get:
 \[
 n* N_1   = \mbox{ Number of non-PDS file system blocks in VC.} 
 \]
@@ -173,10 +173,9 @@ $N_1$ is much smaller than $N_o$ as the formula shows above.
 	\begin{tikzpicture}
 		\begin{axis}[
 		%title={VO VM links},
-                width=\linewidth,
-                %height=0.6\linewidth,
-                %width=0.7*\linewidth,
-                %height=0.6\linewidth,
+               % width=\linewidth,
+                width=0.7*\linewidth,
+                height=0.6\linewidth,
 		xlabel={Number of VMs},
 		ylabel={file system blocks},
                 xmin=0,
@@ -212,9 +211,9 @@ Given $d$ failed machines and $r$ replicas for each file block,
 the availability of a file block is the probability that  
 all of its replicas do not appear in any group of $d$ failed machines among $p$ nodes~\cite{CoHadoop2011}. 
 Namely, 
-\[
+$
 A(r) = 1-\binom{d}{r}/ \binom{p}{r}. 
-\]
+$
 Then the availability of one VM's snapshot data under VO approach is the probability that
  all its file blocks  are unaffected during the system failure:
 %\begin{equation}
