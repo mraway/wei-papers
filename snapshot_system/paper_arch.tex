@@ -95,7 +95,7 @@ A periodic cleanup is conducted  to remove unused PDS chunks (e.g. every few mon
 %\end{itemize}
 
 For non PDS data, the snapshot store of a VM is  divided into a set of containers and 
-each container is approximately 1GB.  The reason for this  divison is to simplify the compaction process
+each container is approximately 1GB.  The reason for this  division is to simplify the compaction process
 conducted periodically. When  chunks are deleted from old snapshots,
 chunks without any reference from other snapshots can be removed by this compaction process.
 By limiting the size of a container, we can control the length of each round of compaction.
