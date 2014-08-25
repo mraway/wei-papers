@@ -11,14 +11,21 @@ As discussed earlier, collocating a backup service on the existing
 cloud cluster avoids the extra cost to acquire a dedicated backup facility
 and reduces the network bandwidth consumption in transferring the
 raw data for backup. 
-Figure~\ref{fig:collocated} illustrates the cluster architecture where
-each physical machine runs a backup service and a distributed file system (DFS)~\cite{googlefs03,hdfs10} 
-serves a backup store  for the snapshots.
+% Figure~\ref{fig:collocated} illustrates the cluster architecture where
+% each physical machine runs a backup service and a distributed file system (DFS)~\cite{googlefs03,hdfs10}
+% serves a backup store  for the snapshots.
+Figure~\ref{fig:collocated} illustrates a converged IaaS cloud architecture
+where each commodity server hosts a number of virtual machines and storage of these servers
+is clustered using a distributed file system~\cite{googlefs03,hdfs10}.
+Each physical machine hosts multiple virtual machines.  Every virtual machine
+runs its own guest operating system and accesses virtual hard disks
+stored as image files maintained by the operating system running on the
+physical host.
 
 \begin{figure}[htb]
     \centering
     \includegraphics[width=5in]{images/colocated-arch}
-    \caption{Collocated VM Backup System.}
+    \caption{VM snapshot backup running on a converged cloud cluster.}
     \label{fig:collocated}
 \end{figure}
 
@@ -95,7 +102,7 @@ that shared by many VM snapshot stores, we could easily increase its availabilit
 %our snapshot storage.
 
 
-\section{Two Level Hierarchical Design of VM Metadata}
+\section{VM Snapshot Metadata Hierarchy}
 \label{overview:meta}
 
 \begin{figure}[htbp]

@@ -270,7 +270,7 @@ is as efficient as before. Maintaining the stability of chunk IDs also ensures t
 depend directly on physical storage locations, which simplifies data migration.
 %\end{itemize}
 
-Additional APIs such as \textbf{Scan()}, \textbf{Compact()}, \textbf{Create()} and \textit{Remove()} are provided for 
+Additional APIs such as \textbf{Scan()}, \textbf{Compact()}, \textbf{Create()} and \textbf{Remove()} are provided for 
 higher level operations. Scan() is used by the map-reduce procedure to collect the most popular blocks among all snapshot stores.
 Compact() is called when the system determines a container has too much unclaimed space and needs to be reclaimed.
 Create() and Remove() initialize and delete a container respectively.
