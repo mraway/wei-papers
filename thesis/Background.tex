@@ -1,23 +1,25 @@
 \chapter{Background}
 \label{chap:back}
 % what is the problem
-Storage is the biggest challenge in virtualized cloud today.
+
+%Storage is the biggest challenge in virtualized cloud today.
 At a cloud cluster node, each instance of a guest operating 
 system runs on a virtual machine, accessing virtual hard disks 
 represented as virtual disk image files in the host operating system.
-Backing up virtual machines is typically done through taking snapshots,
-which is a copy of the virtual machine's disk file at a given point in time.
-Performing such VM snapshot backup tasks for the entire cluster is a difficult task
+Virtual machine backup is typically conducted through a snapshot,
+which is a copy of the virtual machine's disk files at a given time.
+Performing VM snapshot backup for the entire cluster is difficult 
 for several reasons: 
 \begin{itemize}
-\item \textbf{Huge storage demand.} Each VM contains from tens of GBs to multiple TBs of data,
-the snapshots size of an entire cloud often exceeds one PB, and they need to be backed up from daily to weekly.
-\item \textbf{Big network bandwidth cost.} Sending such amount of backup data requires
-a lot of network bandwidth and may impede normal application activity.
+\item \textbf{Huge storage demand.} The size of each VM snapshot varies from tens of gigabytes to multiple 
+terabytes while the total snapshot size of an entire cloud cluster is often  in a petabyte level.
+Such data needs to be backed up daily or weekly.
+\item \textbf{Big network bandwidth cost.} Sending such a large amount of snapshot data requires
+a large network bandwidth and may impede normal application activities.
 \end{itemize}
 
-As a result, data deduplication is mandatory in order to reduce the storage and bandwidth
-costs of backup in cloud. But adding deduplication at cloud scale brings new
+As a result, data deduplication is necessary in order to reduce the storage and bandwidth
+costs of backup in a cloud cluster. But adding deduplication at a cloud scale brings new
 challenges against previous developed techniques:
 \begin{itemize}
 \item \textbf{Limited resources.} Without dedicated hardware support in backup appliances, 
@@ -36,13 +38,13 @@ means no fine-grained file system metadata can be used to determine the changed 
 \end{itemize}
 
 % summary
-In sum, deduplication systems designed for legacy network storage that are attached to
+In summary, deduplication systems designed for legacy network storage that are attached to
 physical servers are too expensive and complex for virtual machines. 
 Both cloud users and providers are seeking low-cost solutions to effectively backup
 their data, otherwise they will be forced to backup less amount of data or less frequently,
-which in return will compromise the data safty and recovery time. For example, Electronic Arts, which deploys
+which in return will compromise the data safety and recovery time. For example, Electronic Arts, which deploys
 its data analytics platform in Amazon's AWS using several hundreds of VMs, 
-avoids using Amazon's built-in snapshot storage and chooses to backup hand-picked data manuallyv for cost reasons.
+avoids using Amazon's built-in snapshot storage and chooses to backup hand-picked data manually for cost reasons.
 
 To that end, this dissertation proposes low-cost deduplication storage architecture that is
 collocated with other cloud services. We have learned a lot from 
@@ -57,7 +59,7 @@ collocated with other cloud services. We have learned a lot from
 various deduplication systems built in the past for different backup scenarios. 
 In this chapter we will review the literature and discuss several system design options at high-level.
 Section~\ref{back:dedup} introduces the origin and applications of data deduplication.
-Section~\ref{back:optm} talks the optimization and tradeoffs in designing a deduplication storage system.
+Section~\ref{back:optm} talks the optimization and tradeoff in designing a deduplication storage system.
 Section~\ref{back:arch} discusses design options of backup storage architecture.
 
 \section{Deduplication}
@@ -66,7 +68,7 @@ Backup storage for VM snapshots in the cloud contains PBs of data from many VMs,
 the data redundancy in such a data set is very high\cite{Jayaram2011, agrawal07}.
 If we treat each snapshot as a single data object, the similarities between snapshots
 can not be utilized. Therefore we need better method to break files into data blocks.
-In the recent decad, data deduplication techniques are emerged to solve this data
+In the recent decade, data deduplication techniques are emerged to solve this data
 redundancy problem in backup systems.
 Most of data de-duplication methods can be categorized by their granularities:
 
@@ -102,13 +104,13 @@ $s$ is a substring,
 $a$ and $b$ are pre-defined values, then the position of substring $s$
 is considered as a breakpoint. 
 These breakpoints provide 
-modification-resistant boundaries that seperate the file
+modification-resistant boundaries that separate the file
 into many small chunks. A sequence of hash values of such chunks
 is a compact representation of a file, that is then used to compare
 against other fingerprinted files.
 
 There are pathological cases in finding breakpoints, for example,
-a long extent of zeros may never contain a breakpoint. Thus, LBFS\cite{lbfs01}
+a long extent of zeros may never contain a break point. Thus, LBFS\cite{lbfs01}
 introduces min and max thresholds to the chunk size: when scanning the file
 sequentially for breakpoints, if the distance between current substring 
 and previous breakpoint is less than the minimum threshold, then it is skipped;
@@ -148,13 +150,13 @@ sent to the cloud.
 
 Since content-based chunking strips files into data blocks 
 and identify them by content hash,
-it is very natrual to build CAS system base on it.
+it is very natural to build CAS system base on it.
 Jumbo Store and others\cite{jumbo07,efficient_dedup05,you06} encodes directory tree snapshots
 into a graph whose nodes are data blocks and edges
 are hash value pointers.
 Directory metadata, file metadata and data chunk are all
-represented in the form of variable-size data blocks that indetified by content hash.
-A object which encapsulate metadata also has a list of hash indentifiers 
+represented in the form of variable-size data blocks that identified by content hash.
+A object which encapsulate metadata also has a list of hash identifiers 
 that point to other blocks it contains.
 Such a de-duplication storage system has some great advantages 
 in terms of space efficiency, file transmission efficiency (through a LBFS-like protocol), 
@@ -166,12 +168,12 @@ To create a snapshot, Cumulus uses content-based chunking to break files into da
 then compare (by hash) them to the list of stored blocks (in local logs).
 New blocks will be packed and compressed into a segment file, and sent to server.
 The advantage of Cumulus is portability, because it makes 
-the de-duplication backup totoally opaque to the server.
+the de-duplication backup totally opaque to the server.
 However, without the de-duplication support from protocol and server side, 
-it's hard to have efficent storage management, and from server's perspective,
+it's hard to have efficient storage management, and from server's perspective,
 snapshots from many users still contain much redundant data.
 
-\section{Optimizations and Tradeoffs}
+\section{Optimization and Tradeoff}
 \label{back:optm}
 Many previous studies on data deduplication focus on the disk bottleneck problem,
 which refers to the key performance challenge in finding duplicate blocks. 
@@ -209,10 +211,10 @@ because the similarity algorithm does not guarantee always mapping a file to the
 \end{itemize}
 
 Most of approaches discussed above focus on optimization of inline deduplication
-performance by sacraficing a small percent of deduplication efficiency.
+performance by sacrificing a small percent of deduplication efficiency.
 In our cloud backup scenario, we must always satisfy the low resource usage constraints while 
 providing sustainable good throughput. As a result, we consider to sacrifice other performance metrics 
-to achieve our design goals, which we descibe as below:
+to achieve our design goals, which we describe as below:
 % In addition, none of them have considered the impact
 % of deduplication on fault tolerance in the cluster-based environment that we have considered
 % in this dissertation.
@@ -229,7 +231,7 @@ units which is its primary compression goal. Throughput refers
 to the rate at which data can be transferred in and out of
 the system, and constitutes the main performance metric.
 Job turnaround time is the total time for a backup job from submit to finish.
-All three metrics are important. Good dedupe efficiency 
+All three metrics are important. Good deduplication efficiency 
 reduces the storage cost. High throughput
 is particularly important because it can enable fast backups, 
 minimizing the length of a backup window. 
@@ -257,7 +259,7 @@ cost of reference management for garbage collection (upon addition and deletion 
 has become one of the biggest 
 bottlenecks.
 
-This dissertation studies two low-cost deduplication design options with different tradeoffs. 
+This dissertation studies two low-cost deduplication design options with different tradeoff. 
 Chapter~\ref{chap:offline} gives a synchronous parallel deduplication design that
 sacrifices the job turnaround time to achieve high throughput and deduplication efficiency.
 Chapter~\ref{chap:inline} describes an multi-level selective deduplication solution
