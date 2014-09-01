@@ -25,8 +25,8 @@ challenges against previous developed techniques:
 \item \textbf{Limited resources.} Without dedicated hardware support in backup appliances, 
 VM backup and data deduplication in cloud must not race for CPU and memory resources with
 existing VM activities. Compare to dedicated backup appliances which are typically equipped with
-tens of GBs of memory and  multiple processors, backup service in the cloud are only allowed to use
-no more than a few hundred MBs of memory, and its CPU usage must always stay low.
+tens of GB of memory and  multiple processors, backup service in the cloud are only allowed to use
+no more than a few hundred MB of memory, and its CPU usage must always stay low.
 \item \textbf{Garbage collection for shared data.} Data management for deduplicated storage
 is complicated due to the need of tracking use of every shared data block. In order to reclaim
 disk space, the reference counts of
@@ -59,7 +59,7 @@ collocated with other cloud services. We have learned a lot from
 various deduplication systems built in the past for different backup scenarios. 
 In this chapter we will review the literature and discuss several system design options at high-level.
 Section~\ref{back:dedup} introduces the origin and applications of data deduplication.
-Section~\ref{back:optm} talks the optimization and tradeoff in designing a deduplication storage system.
+Section~\ref{back:optm} talks the optimization and trade-off in designing a deduplication storage system.
 Section~\ref{back:arch} discusses design options of backup storage architecture.
 
 \section{Deduplication}
@@ -70,7 +70,7 @@ If we treat each snapshot as a single data object, the similarities between snap
 can not be utilized. Therefore we need better method to break files into data blocks.
 In the recent decade, data deduplication techniques are emerged to solve this data
 redundancy problem in backup systems.
-Most of data de-duplication methods can be categorized by their granularities:
+Most of data de-duplication methods can be categorized by their granularity:
 
 \begin{itemize}
 \item \textbf{By file:} Old storage systems detect the duplicated files by compare their hash value
@@ -97,11 +97,11 @@ best de-duplication efficiency.
 Content-based chunking is first proposed by Manber\cite{similar94}.
 He uses Rabin's fingerprints\cite{rabin81, identify00} to sample
 data in order to find similar files. This technique computes
-fingerprints of all possible substrings of a certain
+fingerprints of all possible sub-strings of a certain
 length in a file and chooses a subset of these fingerprints
 based on their values,  e.g., if $(fingerprint(s)\ mod\ a) = b$, where
-$s$ is a substring,
-$a$ and $b$ are pre-defined values, then the position of substring $s$
+$s$ is a sub-string,
+$a$ and $b$ are pre-defined values, then the position of sub-string $s$
 is considered as a breakpoint. 
 These breakpoints provide 
 modification-resistant boundaries that separate the file
@@ -112,10 +112,10 @@ against other fingerprinted files.
 There are pathological cases in finding breakpoints, for example,
 a long extent of zeros may never contain a break point. Thus, LBFS\cite{lbfs01}
 introduces min and max thresholds to the chunk size: when scanning the file
-sequentially for breakpoints, if the distance between current substring 
+sequentially for breakpoints, if the distance between current sub-string 
 and previous breakpoint is less than the minimum threshold, then it is skipped;
 if the distance reaches the maximum threshold, then a breakpoint
-is enforced. This method also reduces the computation because less substrings
+is enforced. This method also reduces the computation because less sub-strings
 are checked. In order to increase the chance of finding a breakpoint between
 two thresholds, Kave\cite{frame05}
 proposes the two divisors idea, in addition to have a standard breaking condition,
@@ -173,7 +173,7 @@ However, without the de-duplication support from protocol and server side,
 it's hard to have efficient storage management, and from server's perspective,
 snapshots from many users still contain much redundant data.
 
-\section{Optimization and Tradeoff}
+\section{Optimization and Trade-off}
 \label{back:optm}
 Many previous studies on data deduplication focus on the disk bottleneck problem,
 which refers to the key performance challenge in finding duplicate blocks. 
@@ -183,7 +183,7 @@ Given a block size of 4 KB, a deduplication system must process approximately 28
 An in-memory index of all block fingerprints could easily achieve this performance, but the size of the index would limit system size and increase system cost. 
 If we use 20 bytes as block fingerprint size, then supporting 10 TB worth of unique blocks, would require 50 GB just to store the fingerprints.
 An alternative approach is to maintain an on-disk index of block fingerprints and use a cache to accelerate block index accesses. Unfortunately, a traditional cache would not be effective for this workload. Since fingerprint values are random, there is no spatial locality in the block index accesses. 
-With low cache hit ratios, most index lookups require disk operations. If each index lookup requires a disk access which may take 10 msec and 8 disks are used for index lookups in parallel, the write throughput will be about 6.4MB/sec, which is far from the throughput goal of deduplicating at 115 MB/sec for our cloud backup scenario, and don't forget that this goal
+With low cache hit ratios, most index lookups require disk operations. If each index lookup requires a disk access which may take 10 ms and 8 disks are used for index lookups in parallel, the write throughput will be about 6.4MB/sec, which is far from the throughput goal of deduplicating at 115 MB/sec for our cloud backup scenario, and don't forget that this goal
 is conservative since VM users generally want the backup task to finish in tens of minutes without affecting their normal
 application activities.
 
@@ -200,7 +200,7 @@ helps to quickly find consequential duplicates. Improvements to this work with p
 put into memory\cite{sparseindex09} or NAND flash\cite{Guo2011} to accelerate fingerprint lookup. 
 This sampled index is 100 times or more smaller than the full index so that 
 they can be accessed quickly and easily.
-Once there's a hit in the sampled index, system loads the fingerprints that are next to the hitted one on disk,
+Once there's a hit in the sampled index, system loads the fingerprints that are next to the hit one on disk,
 so that it can efficiently catches duplicates based on spatial locality.
 \item \textbf{Similarity based sharding.} Several similarity based techniques\cite{shingling97} such like 
 Extremely Binning\cite{extreme_binning09, Dong2011, Srinivasan2012, chord01} group big files by similarity metrics
@@ -259,7 +259,7 @@ cost of reference management for garbage collection (upon addition and deletion 
 has become one of the biggest 
 bottlenecks.
 
-This dissertation studies two low-cost deduplication design options with different tradeoff. 
+This dissertation studies two low-cost deduplication design options with different trade-off. 
 Chapter~\ref{chap:offline} gives a synchronous parallel deduplication design that
 sacrifices the job turnaround time to achieve high throughput and deduplication efficiency.
 Chapter~\ref{chap:inline} describes an multi-level selective deduplication solution
@@ -269,38 +269,38 @@ that comprises deduplication efficiency to improve throughput and job turnaround
 \label{back:arch}
 The way that backup storage architecture envolves has been following the pace of
 primary storage, so we will give a glimpse on primary storage's evolution first.
-Organizations start with ﻿building ﻿their ﻿virtualization ﻿infrastructure ﻿using ﻿the﻿
-traditional ﻿servers-connected-to-storage-over-a-network ﻿architecture, ﻿which﻿
-can’t ﻿adapt ﻿to ﻿the ﻿ever-changing ﻿demands ﻿of ﻿virtualization. ﻿In ﻿addition ﻿to ﻿slow﻿
-performance,﻿ network ﻿storage ﻿has ﻿become﻿ the﻿ single﻿ biggest﻿ source ﻿of ﻿cost ﻿and﻿
-complexity ﻿in ﻿virtualized ﻿environments.﻿ The ﻿network﻿ storage-based ﻿architecture﻿
-worked﻿ well ﻿for ﻿physical﻿ servers ﻿that ﻿served﻿ relatively﻿ static ﻿workloads.﻿
-Virtualization,﻿ and﻿ now﻿ Cloud﻿ Computing,﻿ has﻿ made﻿ data﻿ centers﻿ extremely﻿
-dynamic\cite{berkeleycloud09};﻿ virtual﻿ machines﻿ are﻿ created﻿ on﻿ the﻿ fly,﻿ move﻿ from﻿ server﻿ to﻿ server﻿ and﻿﻿
-depend﻿ heavily﻿ on﻿ shared﻿ resources.﻿ These ﻿characteristics ﻿make ﻿the ﻿management﻿
-of ﻿virtual ﻿machines ﻿and ﻿their﻿ underlying ﻿physical﻿ infrastructure ﻿extremely﻿
-complex: Data ﻿volumes ﻿are﻿ growing﻿ at ﻿a ﻿rapid ﻿pace﻿ in﻿ the ﻿data ﻿center, ﻿thanks﻿ to ﻿the ﻿ease﻿
-of﻿ creating ﻿new﻿ VMs.﻿ In ﻿the﻿ enterprise,﻿ new﻿ initiatives ﻿like ﻿desktop﻿ virtualization﻿
-contribute﻿ to ﻿this﻿ trend.﻿ Service﻿ providers﻿ deal﻿ with﻿ an﻿ even﻿ larger﻿ number﻿ of﻿
-VMs﻿ as﻿ they﻿ build﻿ data﻿ centers﻿ to﻿ serve﻿ customers﻿ who﻿ can’t﻿ afford﻿ the﻿ cost﻿
-and﻿ management﻿ overhead﻿ that﻿ virtualization ﻿requires. ﻿This﻿ growing ﻿pool ﻿of﻿
-VMs﻿ is ﻿exerting ﻿tremendous ﻿cost, ﻿performance﻿ and ﻿manageability ﻿pressure﻿ on﻿
-the ﻿traditional ﻿architecture ﻿that ﻿connects﻿ compute﻿ to ﻿storage﻿ over ﻿a ﻿multi-hop﻿
-network.﻿
+Organizations start with building their virtualization infrastructure using the
+traditional servers-connected-to-storage-over-a-network architecture, which
+can’t adapt to the ever-changing demands of virtualization. In addition to slow
+performance, network storage has become the single biggest source of cost and
+complexity in virtualized environments. The network storage-based architecture
+worked well for physical servers that served relatively static workloads.
+Virtualization, and now Cloud Computing, has made data centers extremely
+dynamic\cite{berkeleycloud09}; virtual machines are created on the fly, move from server to server and
+depend heavily on shared resources. These characteristics make the management
+of virtual machines and their underlying physical infrastructure extremely
+complex: Data volumes are growing at a rapid pace in the data center, thanks to the ease
+of creating new VMs. In the enterprise, new initiatives like desktop virtualization
+contribute to this trend. Service providers deal with an even larger number of
+VMs as they build data centers to serve customers who can’t afford the cost
+and management overhead that virtualization requires. This growing pool of
+VMs is exerting tremendous cost, performance and manageability pressure on
+the traditional architecture that connects compute to storage over a multi-hop
+network.
 
-Google﻿\cite{googlefs03} and﻿ other﻿ leading ﻿cloud-generation﻿ companies ﻿such﻿ as ﻿Amazon,﻿ Yahoo﻿
-and﻿ Microsoft﻿(Azure)﻿\cite{azure} realized ﻿that ﻿a ﻿network-storage﻿ based﻿ approach﻿ would﻿
-not ﻿work﻿ for﻿ their﻿ data ﻿centers.﻿ They﻿ built﻿ software﻿ technology﻿ (such ﻿as ﻿Google﻿
-File ﻿System)﻿ that﻿ could ﻿glue﻿ a﻿ large﻿ number﻿ of ﻿commodity﻿ servers﻿ with﻿ local﻿
-storage ﻿into ﻿a ﻿single﻿ cluster.﻿ This﻿ approach﻿ allowed﻿ Google﻿ to ﻿build ﻿a ﻿converged﻿
-compute﻿ and﻿ storage ﻿infrastructure﻿ that﻿ used﻿ commodity﻿ servers﻿ with﻿ local﻿
-storage﻿ as ﻿its ﻿building ﻿block\cite{deconstructing05}.﻿ Google﻿ File﻿ System﻿ runs﻿ across﻿ a ﻿cluster ﻿of ﻿servers﻿
-and﻿ creates ﻿a ﻿single ﻿pool﻿ of﻿ local﻿ storage﻿ that﻿ can ﻿be﻿ seamlessly﻿ accessed﻿ by﻿
-applications﻿ running﻿ on ﻿any ﻿server﻿ in﻿ the ﻿cluster.﻿ It ﻿provides﻿ high﻿ availability﻿
-to ﻿applications ﻿by ﻿masking﻿ failures ﻿of ﻿hard﻿ disks ﻿and ﻿even﻿ complete ﻿servers.﻿
-Google﻿ File﻿ System ﻿allowed ﻿Google﻿ to﻿ build﻿ data﻿ centers ﻿with﻿ massively ﻿scalable﻿
-compute﻿ and﻿ storage,﻿ without ﻿incurring ﻿the ﻿costs﻿ and﻿ performance﻿ limitations﻿
-associated ﻿with﻿ network ﻿storage.﻿
+Google\cite{googlefs03} and other leading cloud-generation companies such as Amazon, Yahoo
+and Microsoft(Azure)\cite{azure} realized that a network-storage based approach would
+not work for their data centers. They built software technology (such as Google
+File System) that could glue a large number of commodity servers with local
+storage into a single cluster. This approach allowed Google to build a converged
+compute and storage infrastructure that used commodity servers with local
+storage as its building block\cite{deconstructing05}. Google File System runs across a cluster of servers
+and creates a single pool of local storage that can be seamlessly accessed by
+applications running on any server in the cluster. It provides high availability
+to applications by masking failures of hard disks and even complete servers.
+Google File System allowed Google to build data centers with massively scalable
+compute and storage, without incurring the costs and performance limitations
+associated with network storage.
 
 In cooperate with the changes of primary storage in cloud, backup storage architecture
 has to envolve as well. A dedicated backup storage appliance sits aside the cloud does provide some good properties,
