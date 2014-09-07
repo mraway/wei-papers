@@ -64,13 +64,13 @@ Section~\ref{back:arch} discusses design options of backup storage architecture.
 
 \section{Deduplication}
 \label{back:dedup}
-Backup storage for VM snapshots in the cloud contains PBs of data from many VMs,
+Backup storage for VM snapshots in the cloud contains petabytes of data from many VMs,
 the data redundancy in such a data set is very high\cite{Jayaram2011, agrawal07}.
 If we treat each snapshot as a single data object, the similarities between snapshots
 can not be utilized. Therefore we need better method to break files into data blocks.
 In the recent decade, data deduplication techniques are emerged to solve this data
 redundancy problem in backup systems.
-Most of data de-duplication methods can be categorized by their granularity:
+Most of data deduplication methods can be categorized by their granularity:
 
 \begin{itemize}
 \item \textbf{By file:} Old storage systems detect the duplicated files by compare their hash value
@@ -79,20 +79,20 @@ copies will be saved as metadata plus a pointer to the data. Thus this method ca
 between different files.
 
 \item \textbf{By fixed size block:} Many popular file systems or tools can catch data redundancy at block level.
-It breaks files into many small fixed size blocks, and such block is the basic unit 
-for comparison. Typical applications based on this method are Windows shadow copy, ZFS\cite{zfs} snapshot, and Rsync\cite{rsync}. 
+It breaks files into many small fixed size blocks, and such block is the basic unit
+for comparison. Typical applications based on this method are Windows shadow copy, ZFS\cite{zfs} snapshot, and Rsync\cite{rsync}.
 While this method does better than simple file comparison, it can only be used in pair-wise comparison
 between different versions of
 the same logical data object, and any insertion/deletion will completely destroy the block similarity after the position
 where modifications are taken place.
 
 \item \textbf{By variable size block:} This method breaks data into variable size blocks, and the block boundary
-is only decided by local data content, so it is also called content-based chunking. 
+is only decided by local data content, so it is also called content-based chunking.
 Because of the chunk boundaries are only decided by local data content,
 this method is modification-resistant. It resolves the
 limitations in the previous two methods, and provides
-best de-duplication efficiency. 
-\end{itemize} 
+best deduplication efficiency.
+\end{itemize}
 
 Content-based chunking is first proposed by Manber\cite{similar94}.
 He uses Rabin's fingerprints\cite{rabin81, identify00} to sample
@@ -102,8 +102,8 @@ length in a file and chooses a subset of these fingerprints
 based on their values,  e.g., if $(fingerprint(s)\ mod\ a) = b$, where
 $s$ is a sub-string,
 $a$ and $b$ are pre-defined values, then the position of sub-string $s$
-is considered as a breakpoint. 
-These breakpoints provide 
+is considered as a breakpoint.
+These breakpoints provide
 modification-resistant boundaries that separate the file
 into many small chunks. A sequence of hash values of such chunks
 is a compact representation of a file, that is then used to compare
@@ -112,7 +112,7 @@ against other fingerprinted files.
 There are pathological cases in finding breakpoints, for example,
 a long extent of zeros may never contain a break point. Thus, LBFS\cite{lbfs01}
 introduces min and max thresholds to the chunk size: when scanning the file
-sequentially for breakpoints, if the distance between current sub-string 
+sequentially for breakpoints, if the distance between current sub-string
 and previous breakpoint is less than the minimum threshold, then it is skipped;
 if the distance reaches the maximum threshold, then a breakpoint
 is enforced. This method also reduces the computation because less sub-strings
@@ -123,21 +123,21 @@ a weaker breaking condition is used to find backup breakpoints.
 
 Policroniades\cite{poli04} gives out
 experimental results and present a comparative analysis
-to three de-duplication methods: First, the content based chunking
+to three deduplication methods: First, the content based chunking
 is always the best strategy to discover redundancy in any data sets.
 Second, the fixed size block method can sometimes provides
-close results compare to content based chunking, and it has smalleris less
-computation intensive. Finally, if only for local file system,
-file compression is still the
-best strategy to save disk space, combining the content based chunking
-with compression does not justify the computation it costs.
+close results compare to content based chunking, and it brings significant less
+overhead to computation and data management. Finally, for I/O intensive primary storage system,
+data compression is still the most efficient approach to save disk space,
+inline data reduction through deduplication has too much random I/O overhead, making it difficult to
+justify the limited space savings in a primary storage system.
 
-Data de-duplication is extensively used in saving bandwidth for data synchronization.
+Data deduplication is extensively used in saving bandwidth for data synchronization.
 The popular rsync\cite{rsync} protocol exploits the similarity of two directory trees
-using fixed size blocks de-duplication. 
-LBFS uses content-based chunking to improve the NFS protocol, 
+using fixed size blocks deduplication.
+LBFS uses content-based chunking to improve the NFS protocol,
 it avoids transmitting redundant chunks which already exist at the other side.
-But data du-duplication has its cost. Content-based chunking algorithm needs to
+But data deduplication has its cost. Content-based chunking algorithm needs to
 scan the whole file looking for breakpoints, which is very slow (about 20MB/s using a single 2GHz core). 
 StoreGPU\cite{storegpu08}
 exploits the possibility of using GPU to chunk the file,
@@ -158,7 +158,7 @@ Directory metadata, file metadata and data chunk are all
 represented in the form of variable-size data blocks that identified by content hash.
 A object which encapsulate metadata also has a list of hash identifiers 
 that point to other blocks it contains.
-Such a de-duplication storage system has some great advantages 
+Such a deduplication storage system has some great advantages
 in terms of space efficiency, file transmission efficiency (through a LBFS-like protocol), 
 and data integrity checking (by verifying the hash).
 
@@ -168,8 +168,8 @@ To create a snapshot, Cumulus uses content-based chunking to break files into da
 then compare (by hash) them to the list of stored blocks (in local logs).
 New blocks will be packed and compressed into a segment file, and sent to server.
 The advantage of Cumulus is portability, because it makes 
-the de-duplication backup totally opaque to the server.
-However, without the de-duplication support from protocol and server side, 
+the deduplication backup totally opaque to the server.
+However, without the deduplication support from protocol and server side,
 it's hard to have efficient storage management, and from server's perspective,
 snapshots from many users still contain much redundant data.
 
@@ -267,7 +267,7 @@ that comprises deduplication efficiency to improve throughput and job turnaround
 
 \section{Architecture Options} 
 \label{back:arch}
-The way that backup storage architecture envolves has been following the pace of
+The way that backup storage architecture evolves has been following the pace of
 primary storage, so we will give a glimpse on primary storage's evolution first.
 Organizations start with building their virtualization infrastructure using the
 traditional servers-connected-to-storage-over-a-network architecture, which
@@ -303,7 +303,7 @@ compute and storage, without incurring the costs and performance limitations
 associated with network storage.
 
 In cooperate with the changes of primary storage in cloud, backup storage architecture
-has to envolve as well. A dedicated backup storage appliance sits aside the cloud does provide some good properties,
+has to evolve as well. A dedicated backup storage appliance sits aside the cloud does provide some good properties,
 such like it deduplicates all the backup data together so it provides good deduplication efficiency,
  and because it uses dedicated hardware to fingerprint lookups, it leaves very small resource footprint on the client side.
 However, its weakness on high-cost and bandwidth demand make it unsuitable for large scale cloud
@@ -339,6 +339,11 @@ efficient mechanism to manage the complicated data sharing relationship on dedup
 % cloud cluster avoids the extra cost to acquire a dedicated backup facility
 % and reduces the network bandwidth consumption in transferring the
 % raw data for backup. 
+
+
+
+% ption in transferring the
+% % raw data for backup.
 
 
 
