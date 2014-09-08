@@ -138,17 +138,17 @@ using fixed size blocks deduplication.
 LBFS uses content-based chunking to improve the NFS protocol,
 it avoids transmitting redundant chunks which already exist at the other side.
 But data deduplication has its cost. Content-based chunking algorithm needs to
-scan the whole file looking for breakpoints, which is very slow (about 20MB/s using a single 2GHz core). 
+scan the whole file looking for breakpoints, which is very slow (about 20MB/s using a single 2GHz core).
 StoreGPU\cite{storegpu08}
 exploits the possibility of using GPU to chunk the file,
 their results are exciting. Another option is to use parallel
 chunking algorithm to improve the chunking speed,
-so that future's many-core chips will be helpful. 
+so that future's many-core chips will be helpful.
 Meanwhile, stripping files is not a quite big issue in cloud storage scenario,
 because it is expected to be done at the client side before files are
 sent to the cloud.
 
-Since content-based chunking strips files into data blocks 
+Since content-based chunking strips files into data blocks
 and identify them by content hash,
 it is very natural to build CAS system base on it.
 Jumbo Store and others\cite{jumbo07,efficient_dedup05,you06} encodes directory tree snapshots
@@ -156,18 +156,18 @@ into a graph whose nodes are data blocks and edges
 are hash value pointers.
 Directory metadata, file metadata and data chunk are all
 represented in the form of variable-size data blocks that identified by content hash.
-A object which encapsulate metadata also has a list of hash identifiers 
+A object which encapsulate metadata also has a list of hash identifiers
 that point to other blocks it contains.
 Such a deduplication storage system has some great advantages
-in terms of space efficiency, file transmission efficiency (through a LBFS-like protocol), 
+in terms of space efficiency, file transmission efficiency (through a LBFS-like protocol),
 and data integrity checking (by verifying the hash).
 
-Cumulus\cite{cumulus09} is a client side backup tool to store 
+Cumulus\cite{cumulus09} is a client side backup tool to store
 file system snapshots in exist cloud storage such as S3.
 To create a snapshot, Cumulus uses content-based chunking to break files into data blocks,
 then compare (by hash) them to the list of stored blocks (in local logs).
 New blocks will be packed and compressed into a segment file, and sent to server.
-The advantage of Cumulus is portability, because it makes 
+The advantage of Cumulus is portability, because it makes
 the deduplication backup totally opaque to the server.
 However, without the deduplication support from protocol and server side,
 it's hard to have efficient storage management, and from server's perspective,
@@ -176,13 +176,13 @@ snapshots from many users still contain much redundant data.
 \section{Optimization and Trade-off}
 \label{back:optm}
 Many previous studies on data deduplication focus on the disk bottleneck problem,
-which refers to the key performance challenge in finding duplicate blocks. 
+which refers to the key performance challenge in finding duplicate blocks.
 Let's consider a single machine in cluster which hosts many VMs and has 10 TB of virtual disks in total,
 if it needs to be backed up daily, then the performance target would be 115 MB/sec on each machine.
 Given a block size of 4 KB, a deduplication system must process approximately 28,900 blocks per second.
-An in-memory index of all block fingerprints could easily achieve this performance, but the size of the index would limit system size and increase system cost. 
+An in-memory index of all block fingerprints could easily achieve this performance, but the size of the index would limit system size and increase system cost.
 If we use 20 bytes as block fingerprint size, then supporting 10 TB worth of unique blocks, would require 50 GB just to store the fingerprints.
-An alternative approach is to maintain an on-disk index of block fingerprints and use a cache to accelerate block index accesses. Unfortunately, a traditional cache would not be effective for this workload. Since fingerprint values are random, there is no spatial locality in the block index accesses. 
+An alternative approach is to maintain an on-disk index of block fingerprints and use a cache to accelerate block index accesses. Unfortunately, a traditional cache would not be effective for this workload. Since fingerprint values are random, there is no spatial locality in the block index accesses.
 With low cache hit ratios, most index lookups require disk operations. If each index lookup requires a disk access which may take 10 ms and 8 disks are used for index lookups in parallel, the write throughput will be about 6.4MB/sec, which is far from the throughput goal of deduplicating at 115 MB/sec for our cloud backup scenario, and don't forget that this goal
 is conservative since VM users generally want the backup task to finish in tens of minutes without affecting their normal
 application activities.
@@ -191,75 +191,75 @@ Massive efforts have been put into the optimization of searching duplicate
 fingerprints in large index. They can be summarized into three categories:
 
 \begin{itemize}
-\item \textbf{Reduce disk index access.} The data domain method ~\cite{bottleneck08} 
+\item \textbf{Reduce disk index access.} The data domain method ~\cite{bottleneck08}
 uses an in-memory Bloom filter and a locality-based prefetching cache to intercept fingerprint lookup which may
 access the on-disk index. Bloom filter\cite{Bonomi2006} helps to tell if a fingerprint is new, and prefetching cache
 helps to quickly find consequential duplicates. Improvements to this work with parallelization can be found
  in ~\cite{MAD210,DEBAR,nath08}.
-\item \textbf{Index sampling.} A sampled index can be 
-put into memory\cite{sparseindex09} or NAND flash\cite{Guo2011} to accelerate fingerprint lookup. 
-This sampled index is 100 times or more smaller than the full index so that 
+\item \textbf{Index sampling.} A sampled index can be
+put into memory\cite{sparseindex09} or NAND flash\cite{Guo2011} to accelerate fingerprint lookup.
+This sampled index is 100 times or more smaller than the full index so that
 they can be accessed quickly and easily.
 Once there's a hit in the sampled index, system loads the fingerprints that are next to the hit one on disk,
 so that it can efficiently catches duplicates based on spatial locality.
-\item \textbf{Similarity based sharding.} Several similarity based techniques\cite{shingling97} such like 
+\item \textbf{Similarity based sharding.} Several similarity based techniques\cite{shingling97} such like
 Extremely Binning\cite{extreme_binning09, Dong2011, Srinivasan2012, chord01} group big files by similarity metrics
 such that similar files are likely to fall into the same group. Then block level deduplication is performed
 within the group. While all the group indices are still on the disk, it can deduplicate an entire file
-by only load one group index into memory. This approach can easily scale-out, but it misses small amount of duplicates 
+by only load one group index into memory. This approach can easily scale-out, but it misses small amount of duplicates
 because the similarity algorithm does not guarantee always mapping a file to the most similar group.
 \end{itemize}
 
 Most of approaches discussed above focus on optimization of inline deduplication
 performance by sacrificing a small percent of deduplication efficiency.
-In our cloud backup scenario, we must always satisfy the low resource usage constraints while 
-providing sustainable good throughput. As a result, we consider to sacrifice other performance metrics 
+In our cloud backup scenario, we must always satisfy the low resource usage constraints while
+providing sustainable good throughput. As a result, we consider to sacrifice other performance metrics
 to achieve our design goals, which we describe as below:
 % In addition, none of them have considered the impact
 % of deduplication on fault tolerance in the cluster-based environment that we have considered
 % in this dissertation.
 
-% \section{Tradeoff in Design Goals}
+% \section{Trade-off in Design Goals}
 % \label{back:trade}
 Given we are designing scalable low-cost collocated deduplication solutions,
-the effectiveness of a deduplication system is determined 
-by the extent to which it can achieve three mutually competing goals: 
-deduplication efficiency, throughput, and job turnaround time. 
+the effectiveness of a deduplication system is determined
+by the extent to which it can achieve three mutually competing goals:
+deduplication efficiency, throughput, and job turnaround time.
 Deduplication efficiency refers to
 how well the system can detect and share duplicate data
 units which is its primary compression goal. Throughput refers
 to the rate at which data can be transferred in and out of
 the system, and constitutes the main performance metric.
 Job turnaround time is the total time for a backup job from submit to finish.
-All three metrics are important. Good deduplication efficiency 
+All three metrics are important. Good deduplication efficiency
 reduces the storage cost. High throughput
-is particularly important because it can enable fast backups, 
-minimizing the length of a backup window. 
-Job turnaround time reflects how fast primary storage 
+is particularly important because it can enable fast backups,
+minimizing the length of a backup window.
+Job turnaround time reflects how fast primary storage
 can be released from backup related I/O activity.
 Among the three goals, it is easy to optimize any two of them,
-but not all. To get good deduplication efficiency, 
+but not all. To get good deduplication efficiency,
 it is necessary to perform data indexing for duplicate detection.
-The indexing metadata size grows linearly with the capacity of the system. 
+The indexing metadata size grows linearly with the capacity of the system.
 Keeping this metadata in memory,
-would yield good throughput. 
+would yield good throughput.
 But the amount of available RAM would set a hard limit to the scalability of the
 system. Partition indexing metadata man remove
 the scalability limit, but significantly hurt job turnaround time.
-Finally, we can optimize for both throughput and turnaround time, 
-, but then we lose deduplication as there's no cheap solution to search all metadata quickly. 
+Finally, we can optimize for both throughput and turnaround time,
+, but then we lose deduplication as there's no cheap solution to search all metadata quickly.
 Achieving all three goals is a non-trivial task.
 
 Another less obvious but equally important problem is
 duplicate reference management: duplicate data sharing
-introduces the need to determine who is using a particular data unit, and when it can be reclaimed. 
-The computational and space complexity of these reference management mechanisms grows 
+introduces the need to determine who is using a particular data unit, and when it can be reclaimed.
+The computational and space complexity of these reference management mechanisms grows
 with the amount of supported capacity. Real world experience has shown that the
-cost of reference management for garbage collection (upon addition and deletion of data) 
-has become one of the biggest 
+cost of reference management for garbage collection (upon addition and deletion of data)
+has become one of the biggest
 bottlenecks.
 
-This dissertation studies two low-cost deduplication design options with different trade-off. 
+This dissertation studies two low-cost deduplication design options with different trade-off.
 Chapter~\ref{chap:offline} gives a synchronous parallel deduplication design that
 sacrifices the job turnaround time to achieve high throughput and deduplication efficiency.
 Chapter~\ref{chap:inline} describes an multi-level selective deduplication solution
@@ -328,7 +328,7 @@ efficient mechanism to manage the complicated data sharing relationship on dedup
 
 % Collocated deduplication generally consists of backup application software with embedded deduplication at the client layer and some form of disk storage to serve as the repository for backup data. As the name implies, Collocated data deduplication takes place at the source or where data originates - at the server or application layer. Collocated deduplication offerings consist of placing a lightweight backup agent at the virtual or physical server and then only backing up the unique data segments that have changed since the prior backup job. The data segments are then sent over the LAN and/or WAN to a disk based storage grid for protection.
 
-% The advantages of Collocated deduplication are rapid backup windows and a large reduction in the volume of LAN/WAN traffic generated during the backup window. Instead of pushing a full backup over the wire from a media server each night, unique deduplicated backup segments trickle between the application hosts and the backend deduplication storage grid. The data transfers are extremely efficient - equivalent to a meta-data handshake. Think speed of source side deduplication as an incremental (only more efficient) forever with the benefit of producing a full backup each night.
+% The advantages of Collocated deduplication are rapid backup windows and a large reduction in the volume of LAN/WAN traffic generated during the backup window. Instead of pushing a full backup over the wire from a media server each night, unique deduplicated backup segments trickle between the application hosts and the backend deduplication storage grid. The data transfers are extremely efficient - equivalent to a metadata handshake. Think speed of source side deduplication as an incremental (only more efficient) forever with the benefit of producing a full backup each night.
 
 % In general, Collocated deduplication is a great solution for environments with a low daily data change rate. Great use cases for Collocated deduplication solutions include data on the edge  remote offices and laptops in the field (great for C level execs) and file heavy environments (NAS, VMware). In the case of remote offices, often the investment in Collocated deduplication can be justified by the cost avoidance attained by eliminating the legacy remote office backup infrastructure  backup server hardware, software, tape libraries, tape media, courier expenses, etc.
 
