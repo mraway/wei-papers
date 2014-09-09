@@ -1,61 +1,61 @@
 \chapter{Conclusion and Future Works}
 \label{chap:concl}
-Deduplication in storage backup with an ever-increasing demand faces 
-scalability and throughput challenges.  This dissertation investigates 
+Deduplication in storage backup with an ever-increasing demand faces
+scalability and throughput challenges.  This dissertation investigates
 scalable techniques in building a VM snapshot storage system that provides low-cost
-deduplication support for large VM clouds.  In particular, our work focuses on 
-three specific  aspects  of VM snapshot deduplication: a synchronous solution for offline duplicate detection,
+deduplication support for large VM clouds.  In particular, our work focuses on
+three specific  aspects  of VM snapshot deduplication: a synchronous solution for batched duplicate detection,
 a multi-level selective approach for inline deduplication, and data management on the top of
 cloud file system with an emphasis on fault tolerance and garbage collection.
 Our system  has  been  implemented on Xen-based Linux VM clusters.
 
 This dissertation begins with studying a low-cost multi-stage
-parallel deduplication solution for synchronous backup. 
+parallel deduplication solution for synchronous backup.
 We split the original inline deduplication process into different stages to
 facilitate parallel batch processing.
 We first performing parallel duplicate detection for VM content blocks among all
 machines before performing actual data backup. Each
-machine accumulates detection requests and then performs 
-detection partition by partition with a minimal resource usage. 
+machine accumulates detection requests and then performs
+detection partition by partition with a minimal resource usage.
 Fingerprint based partitioning allows
 highly parallel duplicate detection and also simplifies
 reference counting management.
 Because the design separation
 of duplicate detection and actual backup, we are able
-to conduct distributed fingerprint comparison in parallel among clustered machine nodes, 
+to conduct distributed fingerprint comparison in parallel among clustered machine nodes,
 and only load one partition at time
 at each machine for in-memory comparison.
-This makes the proposed scheme very resource-friendly 
+This makes the proposed scheme very resource-friendly
 to the existing cloud services.
 
-We have also presented a multi-level selective deduplication scheme for 
+We have also presented a multi-level selective deduplication scheme for
 on-demand snapshot backup service. Our approach utilizes similarity guided inner-VM
 deduplication to localize backup data dependence and exposes
 more parallelism. Meanwhile cross-VM deduplication uses
-a small popular data set to effectively cover a large amount of  content blocks. 
+a small popular data set to effectively cover a large amount of  content blocks.
 Our solution achieves the majority of what perfect
-global deduplication can accomplish while meeting stringent 
-resource requirements. Compared to the existing snapshot techniques, 
+global deduplication can accomplish while meeting stringent
+resource requirements. Compared to the existing snapshot techniques,
 our scheme reduces about two-third
 of snapshot storage cost. Finally, our scheme uses a very
 small amount of memory on each node, and leaves room for employing other
-optimization techniques. 
+optimization techniques.
 
 %The VM-centric backup service is collocated with other cloud servies.
-%built on the top of a cloud cluster with emphasis on fault tolerance and garbage collection. 
-%Benefited from our multi-level selective deduplication scheme, 
-%we can reduce cross-VM data dependency and exposes more parallelism. 
-The key contribution of our VM-centric data management is 
-VM-specific file block packing that enhances fault tolerance by 
+%built on the top of a cloud cluster with emphasis on fault tolerance and garbage collection.
+%Benefited from our multi-level selective deduplication scheme,
+%we can reduce cross-VM data dependency and exposes more parallelism.
+The key contribution of our VM-centric data management is
+VM-specific file block packing that enhances fault tolerance by
 maximizing data localization and reducing cross VM sharing.
-In addition, such a design allows garbage collection to be performed in a 
+In addition, such a design allows garbage collection to be performed in a
 localized scope and we propose an approximate deletion
 scheme to further reduce the cost.
-As supported by theoretical analysis and experimental studies, 
+As supported by theoretical analysis and experimental studies,
 the availability of VM snapshots increases substantially with a small
 replication overhead for popular inter-VM chunks.
-%Most importantly, our design places a special consideration for 
-%low-resource usages as a collocated cloud service. 
+%Most importantly, our design places a special consideration for
+%low-resource usages as a collocated cloud service.
 
 The design of our VM-centric deduplication approach has a potential of being applied
 to general purpose cloud backup. The idea of collecting
