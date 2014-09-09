@@ -1,4 +1,4 @@
-\chapter{Synchronous and Parallel Approach for Offline Deduplication}
+\chapter{Synchronous and Parallel Approach for Batched Deduplication}
 \label{chap:offline}
 \section{Introduction}
 \label{offline:intro}
@@ -17,7 +17,7 @@ by duplicate relationship among snapshots  adds processing complexity.
 The traditional approach to deduplication is an inline approach which follows
 a sequence of block reading, duplicate detection,  and non-duplicate  block write to the 
 backup storage. In this chapter we introduce an synchronous and parallel approach
-for offline batched deduplication. This solution is suitable for cloud which typically conduct
+for batched deduplication. This solution is suitable for cloud which typically conduct
 automatic backup of all the VMs during system's spare time.
 Our key idea  is to  first perform parallel duplicate detection for VM content blocks 
 among all machines before performing actual data backup. Each machine
@@ -28,7 +28,7 @@ reference counting management.
 % as the entire process can also be divided into a
 %parition-wise  deletion. 
 
-While our synchronous offline solution accomplishes perfect deduplication efficiency while maintaining
+While our synchronous batched solution accomplishes perfect deduplication efficiency while maintaining
 low resource usage,
 the trade-off of this approach is that the job turnaround time for each individual
 VM backup task becomes longer. In addition,
@@ -400,7 +400,7 @@ Snapshot operations take place at the virtual device driver level, which means n
 Backup systems have been developed to use content fingerprints to identify duplicate
 content~\cite{venti02,Rhea2008}.
 Offline deduplication is
-used in ~\cite{EMC,NetAppOffline} to remove previously written duplicate blocks during idle time.
+used in ~\cite{EMC,NetAppOffline} to remove previously written duplicate blocks during system's idle time.
 %,NGmiddleware2011}.
 %Today's commercial data backup systems (e.g. from EMC and NetApp)
 %\cite{emc_avamar}\cite{datadomain_whitepaper}
@@ -448,7 +448,7 @@ nodes, and only load one partition at time at each machine for in-memory compari
 %The trade-off is that every machine has to read dirty segments twice
 %and that some deduplication requests are delayed for staged processing.  
 
-The proposed  scheme is resource-friendly to the existing cloud services.
+The proposed scheme is resource-friendly to the existing cloud services.
 The evaluation shows that the overall 
 deduplication time and throughput of 100 machines  are satisfactory with 
 about 8.76GB per second for 2500 VMs. During processing, each machine uses 
