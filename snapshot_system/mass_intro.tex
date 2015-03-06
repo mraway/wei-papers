@@ -54,9 +54,11 @@ to a secondary storage, which saves network bandwidth significantly; however its
 usage can impact other co-located cloud services. 
 It is memory-intensive to compare a large number of fingerprints and identify
 duplicates, even optimization or approximation techniques are developed~\cite{Guo2011,Dong2011,extreme_binning09}. 
+\comments{
 When deleting unused snapshots, a grouped mark-and-sweep approach~\cite{Guo2011}  
 is effective while it still carries a significant cost, especially in a distributed
-setting.  Another side effect of deduplication is the possible loss of failure
+setting. 
+} Another side effect of deduplication is the possible loss of failure
 resilience~\cite{Reliability06}.  
 %Separate files share the same physical copies of blocks that are
 %logically duplicated among them.  
@@ -78,13 +80,55 @@ or it must forego global deduplication in order to gain scalability
 (which increases backup cost).
 }
 
-This paper considers a backup service for converged cloud architectures
+Our work  considers a backup service for converged cloud architectures
 that is co-located with user VMs, sharing the cloud compute, network, and
-storage resource with them.  The main contribution of this paper is
-the development and comparative study of  a VM-centric approach that
-simplifies deduplication improves snapshot availability.
-The key advantage of this approach  is that while maintaining  a competitive deduplication efficiency,
-the scheme requires little resource usage to minimize the impact on other collocated cloud services.
+storage resource with them.  
+This paper follows our preliminary simulation study  in ~\cite{WeiZhangIEEE} to 
+restrict the scope of cross-VM deduplication and simplify the deduplication process
+by separating popular data chunks and presents the design and implementation of 
+a VM-centric scheme.  
+We term this approach {\em VM-centric} because the deduplication
+algorithm considers VM boundaries in making its decisions as opposed to
+treating all blocks as being equivalent within the storage system.
+Our work focuses on a tradeoff that allows the sharing of only ``popular'' data blocks 
+across virtual machines while using localized deduplication within each VM
+to achieve both storage savings and fault isolation.
+Another issue addressed is fault  isolation in a content sharing environment caused by deduplication.
+One consequence of aggressive deduplication is the possible loss of failure
+resilience.  If a shared block is lost, all files that
+share that block are affected.  Our work is motivated by \cite{Reliability06} that provides more
+replication for shared file system blocks and proposes VM-centric techniques.
+to 
+\comments{
+Since the underlying storage file system block size is typically bigger than the average data chunk size
+used for deduplication,  packaging
+content from different VMs into the same file block  creates a ``false'' sharing that 
+affects fault isolation;
+}
+
+
+The main contribution of this paper is
+1) a similarity-guided local deduplication for
+each VM to make the overall deduplication efficiency more competitive 
+to a transitional deduplication scheme;
+2) a VM-centric file block management to improve snapshot availability by
+separating popular chunk replication and
+packaging data chunks from the same VM into a file system block as much as possible; 
+3) a design and implementation of a VM-centric  backup service to integrate and validate
+the proposed techniques while imposing  little resource usage and  minimizing the impact on other collocated cloud services.
+Our  experimental study compares  the VM-centric approach with the previous 
+VM-oblivious approaches in terms of deduplication efficiency, resource usage,  and snapshot availability.
+%Thus we improve  to avoid such VM-oblivious packaging.
+%our approach uses a deduplication data chunk size that is smaller than a
+%single file block and
+
+ 
+%Deduplicating
+%data locally within a VM also reduces the need to maintain a global index of
+%chunks that are shared among VMs, thereby increasing the scaling efficiency of
+%the snapshot system.  
+
+
 \comments{
 The key contribution of this work is a set of methodologies to address the following two challenges:
 1) simple deduplication and snapshot deletion with competitive efficiency and 
@@ -113,12 +157,6 @@ to provide, and the storage efficiency that deduplication makes possible.
 The previous work on deduplication has not considered the impact of 
 duplicate sharing on  fault tolerance.
 } 
-We term our approach {\em VM-centric} because the deduplication
-algorithm considers VM boundaries in making its decisions as opposed to
-treating all blocks as being equivalent within the storage system.
-Our work focuses on a tradeoff that allows the sharing of only ``popular'' data blocks 
-across virtual machines while using localized deduplication within each VM
-to achieve both storage savings and fault isolation.
 \comments{
 We detail the storage, performance, and fault isolation properties
 of our method and verify these properties empirically using a prototype
@@ -177,11 +215,14 @@ blocks to be deduplicated (and then replicated) across VMs.
 
 %************** Paper sections summary
 %THIS NEEDS MODIFICATION
+
+
 The rest of this paper is organized as follows.
 Section~\ref{sect:background} reviews the background and discusses the  design options for snapshot backup 
 with a VM-centric approach. 
 %Section~\ref{sect:deduplication}  analyzes the tradeoff and benefits of the VM-centric approach. 
-Section~\ref{sect:deduplication}  presents our scheme for  snapshot deduplication and deletion.
+Section~\ref{sect:deduplication}  presents our scheme for  snapshot deduplication. 
+%and deletion.
 Section~\ref{sect:architecture}  describes a system implementation that evaluates the proposed techniques.
 %   the benefit of our approach for fault isolation. 
 Section~\ref{sect:evaluation} is our experimental evaluation that compares with other approaches.
