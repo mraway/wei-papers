@@ -1,0 +1,57 @@
+\section{Conclusions}
+\label{sect:conclusion}
+%In this paper we propose a collocated backup service built on
+%the top of a cloud cluster to reduce network traffic and infrastructure requirements.
+The main contribution of this paper is the development and comparative study of a low-profile and VM-centric deduplication scheme that
+uses  a small amount of system resource in both snapshot deduplication and deletion
+while delivering competitive deduplication efficiency.
+The VM-centric design also allows an optimization for  better fault isolation and tolerance.
+Our evaluation has the following results.
+\begin{itemize}
+\item {\em Competitive deduplication efficiency with a tradeoff}. 
+The proposed VC scheme 
+can accomplish over  96\% of what complete global
+deduplication can do. In comparison, SRB~\cite{Dong2011,extreme_binning09}
+can accomplish 97.86\% while 
+the sampled index~\cite{Guo2011} can deliver 97\% for a different test dataset. 
+\item {\em Lower resource usage in deduplication}. 
+The VC scheme achieves a 85K:1 ratio between raw snapshot data and memory usage
+and is much more memory-efficient than 
+SRB  with 4K:1 ratio and sampled index with 20K:1.
+VC with 100 machines takes 1.31 hours to complete the backup of 2,500 VMs
+using 19\% of one core and 16.7\% of IO bandwidth per machine. 
+Processing time of VC is 23.9\% faster  than SRB in our tested cases
+and the per-machine throughput of VC is reasonable based on the result 
+from~\cite{Guo2011}. 
+Noted that both VC and SRB are designed for a distributed cluster architecture while
+the sampled index method is for a single-machine architecture.
+\item {\em Lower cost in snapshot deletion}. 
+The deletion in VC with summary vectors
+takes less than a minute for snapshot deletion using 15MB memory per machine
+and all machines can run this operation in parallel without data dependence. 
+The grouped mark-sweep method can take 43 hours using
+1.2 to 3GB memory per machine in our tested cases.
+The leak repair in VC takes 0.82 hours using 50MB on average while processing
+some VMs may use upto 1.96GB. Such a repair is conducted infrequently (e.g. every 19.6 days) 
+\item {\em Higher availability}. 
+%The availability of snapshots increases substantially when
+%adding more replication for popular cross-VM file blocks and packaging chunks from the same 
+%VM in one file system block. 
+The snapshot availability of VC is 99.66\% with 3 failed machines in a 100-machine cluster
+while it is 69.54\% for  SRB or a VM-oblivious approach.
+The analysis shows that the replication degree
+for the popular data set between 6 and 9 is good enough when the replication degree
+for other data blocks is 3, and adds only a small cost to storage.
+\end{itemize}
+The offline PDS recomputation does require some modest I/O and memory resource and 
+since the recomputing frequency is relatively low (e.g. on a monthly basis), we expect such resource
+consumption is acceptable in practice.
+
+%Currently we are studying how the 
+
+%Similarity guided local search reduces cross-VM data dependency and exposes more parallelism  
+%while global deduplication with a small common data set eliminates popular duplicates.
+%VM-specific file block packing also enhances fault tolerance by reducing data dependencies.
+%The design places a special consideration for low-resource usages as a collocated cloud service
+%and 
+
