@@ -442,9 +442,9 @@ at this stage.
 \label{inline:impl}
 We have implemented the snapshot deduplication scheme on the Aliyun's cloud platform.
 Objectives of our experimental evaluation are:
-1) Analyze the popularality of content data blocks and the popularity  of hot items. 
-2) Assess the effectiveness  of 3-level deduplication for reducing the storage cost of snapshot 
-backup. 
+1) Analyze the popularity of content data blocks and the popularity  of hot items.
+2) Assess the effectiveness  of 3-level deduplication for reducing the storage cost of snapshot
+backup.
 3) Examine the impacts of PDS size on deduplication ratio.
 
 \subsection{Experimental setup}
@@ -453,7 +453,7 @@ At Aliyun our target is to backup cluster up to 1000 nodes
 with 25 VMs on each.
 %We are running our deduplication/backup  service on 100 nodes.
 %Memory usage is about 150MB space per node during backup and
-%the CPU usage is very small during the experiments. 
+%the CPU usage is very small during the experiments.
 Based on the data studied,  each VM has about  40 GB of storage  data usage on average,
 OS disk and data disk each takes about 50\% of storage space.
 The backup of VM snapshots is completed within two hours every day,
@@ -466,35 +466,35 @@ a user may instruct extra snapshots to be saved.
 %In our snapshot deduplication architecture, PDS is the key to achieve greater deduplication than
 %incremental backup solutions. Our basic assumption of PDS us that VM disks, especially OS disks,
 %have huge amount of data in popular, and such popular data can be represented by a relatively smaller data set
-%because of their high appearence frequency. As a result, the major portion of snapshot deduplication effect shall 
+%because of their high appearence frequency. As a result, the major portion of snapshot deduplication effect shall
 %emerge from eliminating the duplication of such a small data set. In this section, we evaluate
 %the effectiveness of PDS using real user VM disks from our production VM cluster.
 
 Since it's impossible to perform large scale analysis without affecting the VM performance,
 we sampled two data sets from real user VMs to measure the effectiveness of our deduplication scheme.
 Dataset1 is used study the detail impact of 3-level deduplication process,
-it compose of 35 VMs from 7 popular OSes: 
-Debian, Ubuntu, Redhat, CentOS, Win2003 32bit, Win2003 64 bit and Win2008 64 bit. For each OS, 
-5 VMs are chosen, and every VM come with 10 full snapshots of it OS and data disk. 
+it compose of 35 VMs from 7 popular OSes:
+Debian, Ubuntu, Redhat, CentOS, Win2003 32bit, Win2003 64 bit and Win2008 64 bit. For each OS,
+5 VMs are chosen, and every VM come with 10 full snapshots of it OS and data disk.
 The overall data size for this 700 full snapshots is 17.6 TB.
 
-Dataset2 contains the first snapshots of 1323 VMs' data disks from a small cluster with 100 nodes. 
-Since inner-VM deduplication is not involved in the first snapshot, this data set helps us to 
+Dataset2 contains the first snapshots of 1323 VMs' data disks from a small cluster with 100 nodes.
+Since inner-VM deduplication is not involved in the first snapshot, this data set helps us to
 study the PDS deduplication against user-related data. The overall size of dataset2 is 23.5 TB.
 
-All data are divided into 2 MB fix-sized segments and each segment is divided into 
+All data are divided into 2 MB fix-sized segments and each segment is divided into
 variable-sized content blocks ~\cite{similar94,rabin81} with an average size of 4KB.
-The signature for variable-sized blocks is computed using their SHA-1 hash. 
-Popularity of data blocks are collected through global counting 
+The signature for variable-sized blocks is computed using their SHA-1 hash.
+Popularity of data blocks are collected through global counting
 and the top 1\% will fall into PDS, as discussed in Section~\ref{sect:crossVM}.
 
 
 %To compare the effectiveness with a full deduplication approach with an approximation,
-%we use  extreme binning and perfect deduplication~\cite{extreme_binning09}. 
+%we use  extreme binning and perfect deduplication~\cite{extreme_binning09}.
 %For perfect deduplication and extreme binning, each snapshot is also divided into chunk blocks
 %using TTTD with an average size of 4KB. The original extreme binning work uses the whole file
-%as the input unit and  this size is too big in our system. 
-%Thus we split each image snapshot file into variable-sized segments base on the block hash list, 
+%as the input unit and  this size is too big in our system.
+%Thus we split each image snapshot file into variable-sized segments base on the block hash list,
 %using TTTD with average size of 2MB.
 
 \subsection{Effectiveness of Multi-level Deduplication}
@@ -502,7 +502,7 @@ and the top 1\% will fall into PDS, as discussed in Section~\ref{sect:crossVM}.
 \begin{figure}
   \centering
   \includegraphics[width=5in]{images/overall_effect.pdf}
-  \caption{Impacts of 3-level deduplication. The height of each bar is the data size after 
+  \caption{Impacts of 3-level deduplication. The height of each bar is the data size after
 deduplication divided by the original data size and the unit is percentage. }
   \label{fig:overall}
 \end{figure}
@@ -545,21 +545,21 @@ contributing about 10\% of reduction on average.
 
 It is noticeable that level-1 deduplication doesn't work well for CentOS, a significant percentage of data is not
 eliminated until they reach level-3. It shows that even user upgrade his VM system heavily and frequently
-such that data locality is totally lost, those OS-related data can still be identified at level-3. 
+such that data locality is totally lost, those OS-related data can still be identified at level-3.
 
 In general we see a stable data reduction ratio for all OS varieties, ranging from 92\% to 97\%, that means
-the storage cost of 10 full snapshots combined is still smaller than the original disk size. And compare to 
+the storage cost of 10 full snapshots combined is still smaller than the original disk size. And compare to
 today's widely used copy-on-write snapshot technique, which is similar to our level-1 deduplication, our
 solution cut the snapshot storage cost by 64\%.
 
 
-%Combining OS disks in all the VMs, we see the overall 7.4TB of data is reduced to 512GB. 
-%The extreme binning approach can reduce this data set to 542GB, which is slightly worse. As a reference, 
+%Combining OS disks in all the VMs, we see the overall 7.4TB of data is reduced to 512GB.
+%The extreme binning approach can reduce this data set to 542GB, which is slightly worse. As a reference,
 %perfect deduplication achieves 364GB in this experiment.
 
 %Overall speaking, inner   VM deduplication or  PDS-based deduplication
-%can work well alone, but by combining them together we get a fairly good and stable deduplication ratio to 
-%all kind of OSes. 
+%can work well alone, but by combining them together we get a fairly good and stable deduplication ratio to
+%all kind of OSes.
 %Compared to a traditional dirty bit approach based on pages of
 %each file (e.g. segment in our scheme),
 %our PDS-based level 3 approach  can save additional 50\% storage space because many of level 2 block
@@ -578,25 +578,25 @@ solution cut the snapshot storage cost by 64\%.
 %and study their characteristics seperately.
 %In Aliyun's VM cloud, each VM explicitly maintains  one OS disk, plus  one or more data disks.
 %During VM's creation, its OS disk is directly copied from user's choosen base image.
-%Since  they dare brought by the operating system and popular 
+%Since  they dare brought by the operating system and popular
 %software installations,  they are rarely modified or deleted.
 %base image data as a hint.
 %Through users may change configurations, install software, or write user data into OS disk,
-%but most of the OS related data shall keep unchanged. 
+%but most of the OS related data shall keep unchanged.
 
 %Previous study has also supported this\cite{vmimage}. Therefore, we can let all OS disks share these
 %popular data in their snapshot backups.
-%We choose user's data disks rather than OS disks in thie experiment for several reasons: First, the data in OS disks are 
+%We choose user's data disks rather than OS disks in thie experiment for several reasons: First, the data in OS disks are
 %instinctively highly similar, because most of the VM users only make some popular or unique but tiny changes to their OSes,
 %so the data duplication pattern in OS disks cannot reflect the real distribution of general user data.
-%Second, the data disks are way more important in terms of data safty and backup because they are 
+%Second, the data disks are way more important in terms of data safty and backup because they are
 %what users really care about.
 
 %Furthermore, our study on user's data disks has shown that the duplication pattern of
-%variable-sized data blocks follows \emph{Zipf-like} distribution. As a result, the major portion of 
+%variable-sized data blocks follows \emph{Zipf-like} distribution. As a result, the major portion of
 %deduplication effect will emerge from eliminating the duplication of frequently seen data.
 %define PDS
- 
+
 \begin{figure}
 \centering
 \includegraphics[width=5in]{images/ay41a_big_data_disk_cdf.pdf}
@@ -606,16 +606,16 @@ solution cut the snapshot storage cost by 64\%.
 
 One of our biggest advantage is small memory footprint for deduplication, because we only
 eliminate a small amount of highly popular data.
-we use dataset2 to demonstrate the coverage of popular data blocks on user-related data, 
+we use dataset2 to demonstrate the coverage of popular data blocks on user-related data,
 as shown in Figure \ref{fig:userdatacoverage}.
 %content blocks used in image files using 90\% of
 %the collected dataset.
-%Figure \ref{fig:userdatacoverage} shows the cumulative coverage  ratio of  popular popular user data blocks. 
+%Figure \ref{fig:userdatacoverage} shows the cumulative coverage  ratio of  popular popular user data blocks.
 The $X$ axis is the rank of popular user data blocks, and $Y$ shows how much raw data can be covered given
 the size of PDS.
-Let $S_i$ and $F_I$ be the size and duplicate count 
+Let $S_i$ and $F_I$ be the size and duplicate count
 of the $i$-th block ranked by its duplicate rank.  Then $Y$ axis is the coverage of
-the popular dataset covering data items from rank 1 to rank $i$. Namely  
+the popular dataset covering data items from rank 1 to rank $i$. Namely
 \[
 \frac{ \sum_{i=1}^{i} S_i * F_i} {\mbox{Total data size}}.
 \]
@@ -624,10 +624,10 @@ Thus with about 1\% of blocks on data disks, PDS can cover about 38\% of total d
 appeared in all data snapshots. The corresponding PDS index uses no more than 150 MB memory per machine,
 which can be easily co-located with other cloud services.
 
-%Figure~\ref{fig:OSdatacoverage} shows the cumulative coverage  ratio of  popular popular OS blocks. 
-%From both graphs, a small number of most popular popular blocks can coverage a large percentage of 
+%Figure~\ref{fig:OSdatacoverage} shows the cumulative coverage  ratio of  popular popular OS blocks.
+%From both graphs, a small number of most popular popular blocks can coverage a large percentage of
 %snapshot blocks and thus the size of PDS can be chosen to be small while still having a large
-%coverage. 
+%coverage.
 
 %\begin{figure}
 %\centering
@@ -638,35 +638,35 @@ which can be easily co-located with other cloud services.
 
 
 %We define \emph{OS PDS} to be the unchanged data across the base VM image and the snapshots of all
-%OS disks which are derived from it. Such data are brought by the operating system and popular 
-%software installations, they are rarely modified or deleted, and can be easily extracted using 
+%OS disks which are derived from it. Such data are brought by the operating system and popular
+%software installations, they are rarely modified or deleted, and can be easily extracted using
 %base image data as a hint.
 
 
 Because there are a limited number of OS releases, we study popular blocks among
-OS disks loaded with  the same OS release. 
+OS disks loaded with  the same OS release.
 %The selection of PDS is completed by separating OS disk and data disk.
 %While block popularality among data disks may be affected in some degree
 % when we scale up the number of total VMs  to be supported,
-%we expect that  the block popularality among OS disks still remains to be high and  
+%we expect that  the block popularality among OS disks still remains to be high and
 %%can be well covered by a fixed PDS because users still adopt popular OS releases.
 %we choose 7 major OSes in Aliyun's
-%VM cloud platform and they are: 
+%VM cloud platform and they are:
 %Win2008 Server 64 bits, Win2003 Server 32 bits, Win2003 Server 64 bits, RHEL, CentOS, Ubuntu Server and Debian (all Linux
 %distributions are 64 bits).
 %we examine 5 VM user disks from each OS, and 10 snapshots for each VM. These VMs have been actively used by their
 %owners. Some of  OS disks are modified frequently and in some cases,  users even store a large amount of user data on
-%their OS disks. 
+%their OS disks.
 %For example, some Ubuntu OS disks have only 2GB of data while some have 50GB.
 %For each OS, the base image and all OS
-%disk snapshots are divided into variable-sized blocks. Then 
-In  Figure~\ref{fig:OSunchanged},  we list a conservative  popularality study in 7 major OS versions  supported
+%disk snapshots are divided into variable-sized blocks. Then
+In  Figure~\ref{fig:OSunchanged},  we list a conservative  popularity study in 7 major OS versions  supported
 in Aliyun.
 %We consider the earlier snapshot for each OS disk as the base image.
 For every block in the base image, we classify this block as ``unchanged''
 if this block has appeared in all snapshots of the same OS release even they are used by different VMs.
 Figure \ref{fig:OSunchanged} shows that for each
-OS,  at least 70\% of OS blocks are completely unchanged among all snapshots of the same OS. 
+OS,  at least 70\% of OS blocks are completely unchanged among all snapshots of the same OS.
 Some latest release  of OS tends to have a higher percentage of content change
 while  old release tends to have more variations of content versions.
 That can be interpreted as that users with very old  version of operating systems
@@ -690,47 +690,47 @@ They can cover sufficiently over 70\% of OS-related data.
 %That correspond to about  80GB of OS blocks and its corresponding PDS meta occupies 800MB in the cache.
 %  data from 350 OS disk snapshots,
 
-%The above analysis is only an estimation of OS and software related popular data, 
-%some user installed software may not be discovered by this method because they are not 
-%included in the base image. However, as we can see in the next section, 
+%The above analysis is only an estimation of OS and software related popular data,
+%some user installed software may not be discovered by this method because they are not
+%included in the base image. However, as we can see in the next section,
 %the overall duplication of user generated data
 %follows the Zipf-like distribution, thus all popular data can be discovered by statistic analysis.
 
 
-%Zipf's law has been shown to characterize use of words in a natural language, city populations, 
+%Zipf's law has been shown to characterize use of words in a natural language, city populations,
 %popularity of website visits and other internet traffic data.
 
 %Here we present the first fully consistent empirical study showing that data duplication
 %pattern in very large scale storage follows Zipf-like distribution. More specifically,
 %we show that the duplication count of any unique data block is inversely proportional to its rank
-%in the frequency table, with $\alpha$ smaller than unity. 
+%in the frequency table, with $\alpha$ smaller than unity.
 %As far as we know, this is the first study of large scale real user data to disclose
 %the Zipf-like distribution pattern in data storage area.
 
 %\subsubsection{The model}
-%Consider a general storage system that holds user's files without any deduplication. 
-%Let $N$ be the total number of unique data blocks after 
-%content-defined chunking and deduplication, 
+%Consider a general storage system that holds user's files without any deduplication.
+%Let $N$ be the total number of unique data blocks after
+%content-defined chunking and deduplication,
 %$C_N(i)$ be the number of duplicate copies that the $i$th data block being
 %stored in storage, given all the unique data blocks be ranked in order of their number of duplicate copies.
 %Let $S_i$ be the size of $i$th block,
-%then the actual ranking of the $i$th block is reflected by $\sum_{1}^{i-1}S_i$. 
+%then the actual ranking of the $i$th block is reflected by $\sum_{1}^{i-1}S_i$.
 
 %\subsubsection{Methodology}
-%1323 users' virtual data disks were scanned using TTTD content-defined chunking, and we performed global perfect deduplication 
+%1323 users' virtual data disks were scanned using TTTD content-defined chunking, and we performed global perfect deduplication
 %to caculate the number of duplicate copies of each individual unique block. We choose 2KB, 4KB, 16KB as the minimum, average
 %and maximum block size, all variable-sized blocks are compared by their SHA-1 hash arther than real data.
 %
-%We choose user's data disks rather than OS disks in thie experiment for several reasons: First, the data in OS disks are 
+%We choose user's data disks rather than OS disks in thie experiment for several reasons: First, the data in OS disks are
 %instinctively highly similar, because most of the VM users only make some popular or unique but tiny changes to their OSes,
 %so the data duplication pattern in OS disks cannot reflect the real distribution of general user data.
-%Second, the data disks are way more important in terms of data safty and backup because they are 
+%Second, the data disks are way more important in terms of data safty and backup because they are
 %what users really care about.
 
 %In our snapshot deduplication architecture, PDS is the key to achieve greater deduplication than
 %incremental backup solutions. Our basic assumption of PDS us that VM disks, especially OS disks,
 %have huge amount of data in popular, and such popular data can be represented by a relatively smaller data set
-%because of their high appearence frequency. As a result, the major portion of snapshot deduplication effect shall 
+%because of their high appearence frequency. As a result, the major portion of snapshot deduplication effect shall
 %emerge from eliminating the duplication of such a small data set. In this section, we evaluate
 %the effectiveness of PDS using real user VM disks from our production VM cluster.
 
@@ -738,12 +738,12 @@ They can cover sufficiently over 70\% of OS-related data.
 \subsection{A comparison of perfect and PDS-based deduplication }
 %Figure~\ref{fig:pd} shows the compression ratio of perfect deduplication at different dataset sizes
 %as we vary the data size from about 4 terabytes to about 23.5 terabytes.
-After level-1 and level 2 elimination, we find that 
-the complete deduplication would reduce the storage cost further by 50\%. 
-If we put all these unique data into PDS, 
+After level-1 and level 2 elimination, we find that
+the complete deduplication would reduce the storage cost further by 50\%.
+If we put all these unique data into PDS,
 we could achieve complete deduplication,
-but fingerprint lookup in such huge PDS hash index would become a bottleneck as discussed in many pervious works. 
-So we use dataset2 to evaluate how much space saving of 
+but fingerprint lookup in such huge PDS hash index would become a bottleneck as discussed in many pervious works.
+So we use dataset2 to evaluate how much space saving of
 deduplication can be achieved when varying the PDS size.
 %\begin{figure}
 %  \centering
@@ -752,15 +752,15 @@ deduplication can be achieved when varying the PDS size.
 %  \label{fig:pd}
 %\end{figure}
 
-%We rank unique data blocks by their duplication count, and choose the hottest blocks as PDS. 
+%We rank unique data blocks by their duplication count, and choose the hottest blocks as PDS.
 Figure \ref{fig:datacdssize} shows the relationship between PDS cache size and relative space saving ratio
 compared to the full deduplication.  The unit of PDS size is gigabytes.
-We define \emph{space saving ratio} as the space saving of PDS method divided by 
-full deduplication space reduction. 
-With a 100 GB PDS data (namely 1 GB PDS index) can still  accomplish about 75\% 
+We define \emph{space saving ratio} as the space saving of PDS method divided by
+full deduplication space reduction.
+With a 100 GB PDS data (namely 1 GB PDS index) can still  accomplish about 75\%
 of what perfect deduplication can do.
-%But this effect decreases when more data are added to PDS. 
-%The lower bound of PDS space saving ratio is 50\%, which is very easy to accomplish. 
+%But this effect decreases when more data are added to PDS.
+%The lower bound of PDS space saving ratio is 50\%, which is very easy to accomplish.
 
 \begin{figure}
   \centering
@@ -771,17 +771,17 @@ of what perfect deduplication can do.
 
 %PDS size is restricted by system memory resource.
 With dataset2, Figure \ref{fig:datacds} shows how PDS space saving ratio
-compared to the full deduplication is affected by the dataset size. 
+compared to the full deduplication is affected by the dataset size.
 %The calculation is done after level 1 and level 2 deduplication.
-In this experiment we first set out a goal of space saving ratio completed, 
+In this experiment we first set out a goal of space saving ratio completed,
 then watch how much data needs to be placed in PDS cache to achieve this goal.
-From the graph we can see a 75\% saving ratio lead to a stable ratio between 
+From the graph we can see a 75\% saving ratio lead to a stable ratio between
 PDS size and data size, which requires 1\% of data to be placed in PDS.
 
 When we deal with a large cluster of 1,000 nodes, we expect that using
 1\% of data disks can cover more than what we have seen from this
 1323 VM dataset, assuming that the average behavior of every subcluster with 100 machines
-exhibits a similar popularality. 
+exhibits a similar popularity.
 In addition to this, PDS for OS disks will become even more effective when
 there are more VMs sharing the same collection of OS releases. 
 %Base on above data we can estimate the size of data PDS and its effect. 
@@ -885,7 +885,7 @@ Duplicate  search approximation~\cite{extreme_binning09,sparseindex09,Xia2011}  
 to package similar content in one location, and duplicate lookup  only searches
 for chunks within files which have a similar file-level or segment-level  content fingerprints.
 That leads  to a smaller amount of memory usage for storing meta data in signature
-lookup with a tradeoff of the reduced recall ratio.
+lookup with a trade-off of the reduced recall ratio.
 
 \section{Concluding Remarks}
 \label{inline:concl}

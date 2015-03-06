@@ -13,7 +13,7 @@ This thesis research is focused on a low-cost backup and deduplication service c
 other cloud services to reduce infrastructure and network cost.
 
 The previous research for cluster-based data deduplication has concentrated on various inline solutions.
-The first part of the thesis work is a  highly parallel and offline solution with synchronized backup scalable
+The first part of the thesis work is a  highly parallel batched solution with synchronized backup scalable
 for a large number of virtual machines. The key idea is to separate duplicate detection from the actual storage backup,
 and to partition global index and detection requests among machines using fingerprint values.
 Then each machine conducts duplicate detection partition by partition independently with minimal memory consumption.

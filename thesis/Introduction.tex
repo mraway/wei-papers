@@ -3,26 +3,26 @@
 \section{Problem Statement and Motivation}
 \label{intro:prob}
 The ubiquity of the cloud computing has resulted in the 
-widespread availability of cluster-based services and applications accessible through 
+widespread availability of cluster-based services and applications accessible through
 the Internet. Examples include online storage services, big data analytics, and e-commerce websites.
 In such a cluster-based cloud environment,
-each physical machine runs a number of virtual machines as  instances of a guest operating system 
+each physical machine runs a number of virtual machines as  instances of a guest operating system
 to contain different kind of user applications,
-and their data is stored in virtual hard disks which are represented 
+and their data is stored in virtual hard disks which are represented
 as virtual disk image files in the host operating system.
 Frequent snapshot backup of virtual disk images is critical to increase  the service reliability
-and protect data safty.
-For example, the Aliyun cloud, which is  the largest cloud service provider by Alibaba in China, 
+and protect data safety.
+For example, the Aliyun cloud, which is  the largest cloud service provider by Alibaba in China,
 automatically conducts  the backup of virtual disk images to all active users every day.
 
 The cost of supporting a large number of concurrent backup streams is high
-because of the huge storage demand. 
-If such VM snapshot data is plainly backed up without any duplicate reduction, storage waste would be 
+because of the huge storage demand.
+If such VM snapshot data is plainly backed up without any duplicate reduction, storage waste would be
 extreme high. For example, a fresh Windows server 2008 installation costs 25 GB on the virtual disk,
-and they are almost certianly duplicated with other Windows VM instances\cite{common07, pedal96}.
+and they are almost certainly duplicated with other Windows VM instances\cite{common07, pedal96}.
 Using a separate  backup service with full deduplication support~\cite{venti02,bottleneck08}
-can effectively identify and remove content duplicates among snapshots, 
-but such a solution can be expensive. There is also a large amount of 
+can effectively identify and remove content duplicates among snapshots,
+but such a solution can be expensive. There is also a large amount of
 network traffic to transfer  data from the host machines to the backup facility
 before duplicates are removed.
 
@@ -42,33 +42,33 @@ deduplication as much as possible, which brings the benefits
 for increased parallelism and fault isolation.
 
 Despite its importance, storage deduplication remains a challenging task for cloud storage providers,
-especially for resource-constrained large-scale public VM clouds. 
+especially for resource-constrained large-scale public VM clouds.
 In recognizing this importance and
 the associated challenges,  my thesis is that
 
 \textit{It  is  possible  to  build  an efficient, scalable, and fault-tolerant backup service
 supporting highly accurate deduplication with sustainable high throughput.}
 
-In  other  words,  the  main  goal  of this  study  is  to  answer  the  following 
-question.  Given a large scale VM cluster running tens of thousand of VMs, 
+In  other  words,  the  main  goal  of this  study  is  to  answer  the  following
+question.  Given a large scale VM cluster running tens of thousand of VMs,
 how can such a snapshot backup service identify whether a piece of data in VM disk
 really needs a backup? And how to manage backup data under complex sharing relationship?
-This dissertation investigates 
-techniques  in  building  a snapshot storage architecture that provides 
-low-cost deduplication support for large VM clouds.  In particular,  it 
+This dissertation investigates
+techniques  in  building  a snapshot storage architecture that provides
+low-cost deduplication support for large VM clouds.  In particular,  it
 contains the following contributions to establish my thesis:
 
 \begin{itemize}
-\item The design of a low-cost multi-stage parallel deduplication solution for automically batched deduplication.
-\item An inline multi-level deduplication scheme with similarity-guided local detection and 
+\item The design of a low-cost multi-stage parallel deduplication solution for automatically batched deduplication.
+\item An inline multi-level deduplication scheme with similarity-guided local detection and
 popularity-guided global detection.
 \item The development and analysis of a VM-centric storage approach which considers fault isolation and integrates multiple duplicate detection strategies.
 \item Fast and efficient garbage collection with approximate snapshot deletion and leak repair.
 \end{itemize}
 
-In general, this  dissertation  study  is  built  upon  a  large  body  of previous  research 
-in storage deduplication and distributed storage systems.  The goal 
-of this work is to provide low-cost deduplication support and storage management for 
+In general, this  dissertation  study  is  built  upon  a  large  body  of previous  research
+in storage deduplication and distributed storage systems.  The goal
+of this work is to provide low-cost deduplication support and storage management for
 large-scale resource-constrained VM clouds. This solution should be collocated with existing
 cloud infrastructure services and require no dedicated hardware support. It also needs to
 accomplish good deduplication efficiency and does not comprise the data reliability due to the
@@ -79,7 +79,7 @@ and high throughput with the emphasis on low resource usage and fault tolerance.
 
 \section{Dissertation Organization}
 \label{intro:organ}
-The rest of this dissertation is organized as follows.  
+The rest of this dissertation is organized as follows.
 Chapter~\ref{chap:back} gives the background of thesis problems.
 Chapter~\ref{chap:overview} presents the overall VM snapshot storage architecture.
 Chapter~\ref{chap:offline}  describes a synchronous and parallel deduplication scheme for batched complete deduplication.
