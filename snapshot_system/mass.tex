@@ -1,6 +1,6 @@
-\documentclass[10pt,reprint]{socc14}
+%\documentclass[10pt,reprint]{socc14}
 
-%\documentclass[conference]{IEEEtran}
+\documentclass[conference]{IEEEtran}
 
 \usepackage{mathptmx}
 \usepackage[colorlinks,linkcolor=red,anchorcolor=blue,citecolor=green,urlcolor=black]{hyperref}
@@ -106,18 +106,19 @@
            {rich@cs.ucsb.edu}
 }
 
+\comments{
  \authorinfo{
-   Wei Zhang$^{\star,\ast}$, Daniel Agun$^\star$, Tao Yang$^\star$, Rich Wolski$^{\star}$, and  
+   Wei Zhang$^{\star\ast}$, Daniel Agun$^\star$, Tao Yang$^\star$, Rich Wolski$^{\star}$, and  
 Hong Tang$^\dagger$\\
    $^\star$University of California at Santa Barbara \ \ \  \\
    $^\ast$Pure Storage Inc.\ \ \  $^\dagger$Alibaba Inc. }
 %  \{wei, dagun,tyang,rich\}@cs.ucsb.edu, hongtang@alibaba-inc.com
 
   %{\normalsize $^\star$University of California at Santa Barbara} \ \ {\normalsize$^\dagger$Alibaba Inc.} \\
+}
 
-\comments{
 \author{
-\IEEEauthorblockN{Wei Zhang\IEEEauthorrefmark{1,2}, Daniel Agun\IEEEauthorrefmark{2}, 
+\IEEEauthorblockN{Wei Zhang\IEEEauthorrefmark{1}\IEEEauthorrefmark{2}, Daniel Agun\IEEEauthorrefmark{2}, 
 Tao Yang\IEEEauthorrefmark{1}, Rich Wolski\IEEEauthorrefmark{1}, 
 Hong Tan\IEEEauthorrefmark{3}}
 \IEEEauthorblockA{\IEEEauthorrefmark{1}University of California at Santa Barbara}
@@ -127,7 +128,7 @@ Hong Tan\IEEEauthorrefmark{3}}
 %Xiaogang Li$^\dagger$, and Rachael Zeng$^\dagger$ \\
 %   {\normalsize $^\star$UC Santa Barbara}\\
 %   {\normalsize$^\dagger$Alibaba.com}
-}
+
 }
 \maketitle
 
@@ -153,6 +154,7 @@ Hong Tan\IEEEauthorrefmark{3}}
 
 %\linespread{.97} % to squeeeze lines and put figures in same page
 %\appendix
-\bibliographystyle{abbrvnat}
+%\bibliographystyle{abbrvnat}
+\bibliographystyle{abbrv}
 \bibliography{library,dedup1}
 \end{document}
