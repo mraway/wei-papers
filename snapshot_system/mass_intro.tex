@@ -83,10 +83,10 @@ or it must forego global deduplication in order to gain scalability
 Our work  considers a backup service for converged cloud architectures
 that is co-located with user VMs, sharing the cloud compute, network, and
 storage resource with them.  
-This paper follows our preliminary simulation study  in ~\cite{WeiZhangIEEE} to 
+This paper extends our preliminary simulation study  in ~\cite{WeiZhangIEEE} to 
 restrict the scope of cross-VM deduplication and simplify the deduplication process
 by separating popular data chunks and presents the design and implementation of 
-a VM-centric scheme.  
+a VM-centric backup scheme.  
 We term this approach {\em VM-centric} because the deduplication
 algorithm considers VM boundaries in making its decisions as opposed to
 treating all blocks as being equivalent within the storage system.
