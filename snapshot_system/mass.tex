@@ -1,4 +1,7 @@
 \documentclass[10pt,reprint]{socc14}
+
+%\documentclass[conference]{IEEEtran}
+
 \usepackage{mathptmx}
 \usepackage[colorlinks,linkcolor=red,anchorcolor=blue,citecolor=green,urlcolor=black]{hyperref}
 \usepackage{subfigure}
@@ -81,10 +84,10 @@
 \special{papersize=8.5in,11in}
 \setlength{\pdfpageheight}{\paperheight}
 \setlength{\pdfpagewidth}{\paperwidth}
-\conferenceinfo{Submission to SoCC '14}{October, 2014, Seattle, WA, USA}
-\copyrightyear{2014}
-\copyrightdata{978-1-nnnn-nnnn-n/yy/mm}
-\doi{nnnnnnn.nnnnnnn}
+%\conferenceinfo{Submission to SoCC '14}{October, 2014, Seattle, WA, USA}
+%\copyrightyear{2014}
+%\copyrightdata{978-1-nnnn-nnnn-n/yy/mm}
+%\doi{nnnnnnn.nnnnnnn}
 %\title{VM-Centric Deduplication with Fault Isolation for Virtual Machine Snapshot Backup }
 %Collocated Snapshot Backup with VM-Centric Deduplication in the Cloud}
 
@@ -102,8 +105,9 @@
            {UC Santa Barbara}
            {rich@cs.ucsb.edu}
 }
+
  \authorinfo{
-   Wei Zhang$^{\ast}$, Daniel Agun$^\star$, Tao Yang$^\star$, Rich Wolski$^{\star}$, and  
+   Wei Zhang$^{\star,\ast}$, Daniel Agun$^\star$, Tao Yang$^\star$, Rich Wolski$^{\star}$, and  
 Hong Tang$^\dagger$\\
    $^\star$University of California at Santa Barbara \ \ \  \\
    $^\ast$Pure Storage Inc.\ \ \  $^\dagger$Alibaba Inc. }
@@ -111,18 +115,32 @@ Hong Tang$^\dagger$\\
 
   %{\normalsize $^\star$University of California at Santa Barbara} \ \ {\normalsize$^\dagger$Alibaba Inc.} \\
 
+\comments{
+\author{
+\IEEEauthorblockN{Wei Zhang\IEEEauthorrefmark{1,2}, Daniel Agun\IEEEauthorrefmark{2}, 
+Tao Yang\IEEEauthorrefmark{1}, Rich Wolski\IEEEauthorrefmark{1}, 
+Hong Tan\IEEEauthorrefmark{3}}
+\IEEEauthorblockA{\IEEEauthorrefmark{1}University of California at Santa Barbara}
+\IEEEauthorblockA{\IEEEauthorrefmark{2}Pure Storage Inc.}
+\IEEEauthorblockA{\IEEEauthorrefmark{3}Alibaba Inc.}
+%Wei Zhang$^{\star\dagger}$, Hong Tang$^\dagger$, Hao Jiang$^\dagger$, Tao Yang$^\star$,
+%Xiaogang Li$^\dagger$, and Rachael Zeng$^\dagger$ \\
+%   {\normalsize $^\star$UC Santa Barbara}\\
+%   {\normalsize$^\dagger$Alibaba.com}
+}
+}
 \maketitle
 
 \input{mass_abs}
 
 
-\category{}{Information Systems}{Information Storage Systems}
-\category{}{Distributed Architectures}{Cloud Computing}
+%\category{}{Information Systems}{Information Storage Systems}
+%\category{}{Distributed Architectures}{Cloud Computing}
 %\category{D.2.8}{Information Systems}{Information Storage Systems}
-\terms{Design, Experimentation, Performance}
+%\terms{Design, Experimentation, Performance}
 
-\keywords
-Virtual machine images, snapshot backup and deletion, source-side deduplication, cluster-based architectures
+%\keywords
+%Virtual machine images, snapshot backup and deletion, source-side deduplication, cluster-based architectures
 
 \input{mass_intro}
 \input{mass_background}
