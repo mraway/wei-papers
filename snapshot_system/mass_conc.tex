@@ -25,14 +25,6 @@ and the per-machine throughput of VC is reasonable based on the result
 from~\cite{Guo2011}. 
 Noted that both VC and SRB are designed for a distributed cluster architecture while
 the sampled index method is for a single-machine architecture.
-\item {\em Lower cost in snapshot deletion}. 
-The deletion in VC with summary vectors
-takes less than a minute for snapshot deletion using 15MB memory per machine
-and all machines can run this operation in parallel without data dependence. 
-The grouped mark-sweep method can take 43 hours using
-1.2 to 3GB memory per machine in our tested cases.
-The leak repair in VC takes 0.82 hours using 50MB on average while processing
-some VMs may use upto 1.96GB. Such a repair is conducted infrequently (e.g. every 19.6 days) 
 \item {\em Higher availability}. 
 %The availability of snapshots increases substantially when
 %adding more replication for popular cross-VM file blocks and packaging chunks from the same 
@@ -46,6 +38,21 @@ for other data blocks is 3, and adds only a small cost to storage.
 The offline PDS recomputation does require some modest I/O and memory resource and 
 since the recomputing frequency is relatively low (e.g. on a monthly basis), we expect such resource
 consumption is acceptable in practice.
+
+We have also developed a VM-centric strategy for snapshot deletion and the VM-centric design
+allows the deletion be localized for each VM, which greatly simplifies the reference counting
+process. That is not the focus of this paper.
+
+\comments{
+\item {\em Lower cost in snapshot deletion}. 
+The deletion in VC with summary vectors
+takes less than a minute for snapshot deletion using 15MB memory per machine
+and all machines can run this operation in parallel without data dependence. 
+The grouped mark-sweep method can take 43 hours using
+1.2 to 3GB memory per machine in our tested cases.
+The leak repair in VC takes 0.82 hours using 50MB on average while processing
+some VMs may use upto 1.96GB. Such a repair is conducted infrequently (e.g. every 19.6 days) 
+}
 
 %Currently we are studying how the 
 

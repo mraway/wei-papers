@@ -14,13 +14,12 @@ Section~\ref{sect:vc-strategies} discusses  our key ideas and design for duplica
 \subsection{VM centric  strategies}
 \label{sect:vc-strategies}
 
-We describe our overall deduplication approach as consisting of three
-complementary strategies: VM-local
-duplicate search, global deduplication using popular chunks, and 
-VM-centric file system block management. 
-\begin{itemize}
-\item 
-\textbf{Cross-VM global deduplication using popular chunks} --
+%We describe our overall deduplication approach as consisting of three
+%complementary strategies: VM-local
+%duplicate search, 
+%and %VM-centric file system block management. 
+%\textbf{Cross-VM global deduplication using popular chunks} --
+%global deduplication using popular chunks, 
 We separate the deduplication within a VM and cross VMs
 and simplify the cross-VM deduplication while maximizing the inter-VM deduplication efficiency  as much as possible.
 This is because global deduplication that detects the appearance of a chunk 
@@ -41,7 +40,7 @@ most popular items. This popular data set is called the \textbf{PDS}.
 % Total number of chunks after localized dedup: 283,121,924. Total number of unique chunks: 87,692,682.]}
 What  motivates us to use PDS
 is that for those chunks that appear in different VMs, the top $k$ most popular items
-dominate the appearance distribution~\cite{WeiZhangIEEE}.  
+dominate the appearance distribution following our previous evaluation~\cite{WeiZhangIEEE}.  
 Figure~\ref{fig:Datazipf} shows the distribution of chunk popularity for a data trace 
 from Alibaba with 2500 VMs discussed in Section ~\ref{sect:evaluation}.
 We define chunk popularity as the number of unique copies of the chunk in the data-store,
@@ -91,6 +90,12 @@ for a distributed architecture is difficult.  To use a distributed memory versio
 request may access a remote machine for index lookup and the overall overhead of access latency for all requests
 can be significant.
 }
+
+We describe two  complementary strategies below for the above  VM-centric design.
+%duplicate search, 
+%and %VM-centric file system block management. 
+%\textbf{Cross-VM global deduplication using popular chunks} --
+\begin{itemize}
 \item 
 \textbf{VM-specific duplicate search optimization} --
 While cross-VM deduplication is simplified, we intend to optimize the VM-specific deduplication 
@@ -203,7 +208,7 @@ The underlying distributed  file system has  a fixed replication degree for
 all file system blocks~\cite{googlefs03,hdfs10}.
 We add extra replicas for file blocks containing PDS chunks  
 and this brings additional  failure protection for these chunks shared by many VMs.
-Appendix~\ref{sect:fault} provides a detailed analysis of snapshot availability
-under this VC scheme and compares it with VO.
+%Appendix~\ref{sect:fault} provides a detailed analysis of snapshot availability
+%under this VC scheme and compares it with VO.
 
 

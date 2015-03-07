@@ -148,6 +148,15 @@ garbage collection could begin, which limits its application to an offline batch
 In addition, it requires a centralized location
 to store the hashing result which is still too big to be held in a converged architecture.
 
+Our previous work on parallel deduplication~\cite{WeiZhangIEEE}
+demonstrates the simulation results for  
+is not a comprehensive VM-centric solution and does not address  snapshot deletion and file system block 
+packaging for fault tolerance.  
+
+Our previous work on popularity distribution of  deduplication~\cite{WeiZhangIEEE}
+demonstrates the simulation results for  
+The work in ~\cite{zhangusenix13} is a low-cost
+solution, but requires all backups for each day to occur at the same time and is less flexible than the approach presented here.
 }
 
 \comments{
@@ -155,11 +164,6 @@ Our previous work on parallel deduplication~\cite{zhangusenix13} is a low-cost
 solution, but it is not an inline solution and th backup for all VMs needs to be conducted
 around the same time. 
 It does not address  snapshot deletion and file system block packaging for fault tolerance. 
-
-Our previous work on parallel deduplication~\cite{zhangusenix13,WeiZhangIEEE} 
-is not a comprehensive VM-centric solution and does not address  snapshot deletion and file system block 
-packaging for fault tolerance.  The work in ~\cite{zhangusenix13} is a low-cost
-solution, but requires all backups for each day to occur at the same time and is less flexible than the approach presented here.
 
 }
 
