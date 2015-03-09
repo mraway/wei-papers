@@ -1,0 +1,111 @@
+\section{Impact on Deduplication Efficiency}
+Choosing the top $k$ value  for the most popular chunks affects the deduplication efficiency.
+We analyze this impact based on the characteristics  of the VM snapshot traces
+studied from  application datasets.
+A previous study shows that the popularity of data chunks after local deduplication follows 
+a Zipf-like distribution\cite{Breslau1999a} and its
+exponent $\alpha$ is ranged between 0.65  and  0.7~\cite{WeiZhangIEEE}. 
+%Figure~\ref{fig:Datazipf} illustrates the Zipf-like distribution of chunk popularity.
+The parameters we will use in our analysis below are defined in
+Table~\ref{tab:symbol}. 
+
+%Table~\ref{tab:symbol} defines paramters $c$, $c_u$, $f_i$, and $\delta$ used below.
+%let $c$ be the total number of data chunks. 
+%$c_u$ be the total number of fingerprints 
+%in the global index after complete deduplication, and
+%$f_i$ be the frequency for the $i$th most popular fingerprint. 
+By Zipf-like distribution, $f_i = {f_1}/{i^\alpha}.$
+The total number of chunks in our backup storage which
+has local duplicates excluded is $c (1-\delta)$, this can be represented
+as the sum of each unique fingerprint times its frequency:
+%Since $ \sum_{i=1}^{c_u}f_i = c (1-\delta)$,
+\[
+f_1 \sum_{i=1}^{c_u}\frac{1}{i^\alpha} = c (1-\delta).
+\]
+Given $\alpha <1$, $f_1$ can be approximated with integration:
+%\begin{equation}
+\[
+f_1=\frac{c(1-\alpha)(1-\delta)}{c_u^{1-\alpha}}.
+\]
+%\end{equation}
+
+Thus putting the $k$ most popular fingerprints into PDS index can remove the following number of chunks during global 
+deduplication:
+\[
+f_1 \sum_{i=1}^{k}\frac{1}{i^\alpha} \approx  
+f_1 \int_{1}^{k}\frac{1}{x^\alpha} dx  \approx  f_1\frac{  k^{1-\alpha}} {1-\alpha}
+=c(1-\delta) \sigma^{1-\alpha}.
+\]
+
+Deduplication efficiency of the VC approach using top $k$ popular chunks
+is the percentage of duplicates that can be detected:  
+\begin{equation}
+\label{eq:dedupeff}
+%\begin{split}
+%e_k &= 
+E_c=\frac{ c\delta + c(1-\delta) \sigma^{1-\alpha}}
+{c  - c_u }.\\
+%\end{split}
+\end{equation}
+
+% After the global deduplication, the number of remaining chunks is:
+% \[
+% c-E(c-c_u)
+% \] 
+
+We store the PDS index using a distributed shared memory hash table such as Memcached
+and allocate a fixed percentage of memory space per physical machine for top $k$ popular items.
+As the number of physical machines ($p$) increases,
+the entire cloud cluster can host more VMs; however,  ratio $\sigma$ which is $k/c_u$ remains
+a constant because each physical machine on average still hosts a fixed constant number of 
+VMs. Then the overall deduplication efficiency of VC defined in Formula~\ref{eq:dedupeff}
+remains constant.
+Thus the deduplication efficiency is stable  as $p$ increases as long as $\sigma$  is a constant.
+
+
+\begin{figure}[htbp]
+\vspace{2em}
+
+  \centering
+    \begin{tikzpicture}
+            \begin{axis}[
+            %title={PDS Coverage},
+            width=\linewidth,
+            height=0.6\linewidth,
+            cycle multi list={
+                mline\nextlist
+                [3 of]mmark*\nextlist
+            },
+            %cycle list name=mcolor,
+            xlabel={Total num. chunks stored (in billions)},
+            ylabel={PDS Coverage (\%)},
+            %extra y ticks={4.5,5.5,6.5} %to add extra ticks
+            mark options=solid,
+            %legend pos=outer north east,
+            legend columns=2,
+            legend style={
+                at={(0.5,-0.30)},
+            anchor=north},
+            ]
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=A1] {figures/cds_coverage.txt};
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=A2] {figures/cds_coverage.txt};
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=A4] {figures/cds_coverage.txt};
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=T1] {figures/cds_coverage.txt};
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=T2] {figures/cds_coverage.txt};
+            \addplot table[x expr=\thisrow{InputChunks}/1000000000,y=T4] {figures/cds_coverage.txt};
+            \legend{Measured ($\sigma=1\%$),Measured ($\sigma=2\%$),Measured ($\sigma=4\%$),Predicted ($\sigma=1\%$),Predicted ($\sigma=2\%$),Predicted ($\sigma=4\%$)};
+            \end{axis}
+    \end{tikzpicture}
+  \caption{Predicted vs. actual PDS coverage as data size increases.}
+  \label{fig:cds-coverage}
+\end{figure}
+Ratio $\sigma^{1-\alpha}$ represents the percentage of the remaining
+chunks detected as duplicates in global deduplication due to PDS.
+We call this PDS coverage.
+Figure~\ref{fig:cds-coverage} shows predicted PDS coverage using $\sigma^{1-\alpha}$ when $\alpha$ is fixed at
+0.65 and measured PDS coverage in our test dataset.
+$\sigma=2\%$ represents memory usage of approximately 100MB memory per machine for the PDS.
+While the predicted value remains flat, measured PDS coverage increases as more VMs are involved.
+This is because the actual $\alpha$ value increases with the data size.
+%Then  PDS coverage PDS increases as more VMs are involved.
+
