@@ -14,6 +14,9 @@ can accomplish over  96\% of what complete global
 deduplication can do. In comparison, SRB~\cite{Dong2011,extreme_binning09}
 can accomplish 97.86\% while 
 the sampled index~\cite{Guo2011} can deliver 97\% for a different test dataset. 
+Local similarity search removes 12.05\% of the original data after using a segment-based
+ dirty bit method and among them, 3\% is contributed by the increased similarity search compared to
+a simple dirty offset method in ~\cite{WeiZhangIEEE}.
 \item {\em Lower resource usage in deduplication}. 
 The VC scheme achieves a 85K:1 ratio between raw snapshot data and memory usage
 and is much more memory-efficient than 
@@ -39,9 +42,9 @@ The offline PDS recomputation does require some modest I/O and memory resource a
 since the recomputing frequency is relatively low (e.g. on a monthly basis), we expect such resource
 consumption is acceptable in practice.
 
-We have also developed a VM-centric strategy for snapshot deletion and the VM-centric design
-allows the deletion be localized for each VM, which greatly simplifies the reference counting
-process. That is beyond  the scope of this paper.
+%We have also developed a VM-centric strategy for snapshot deletion and the VM-centric design
+%allows the deletion be localized for each VM, which greatly simplifies the reference counting
+%process. That is beyond  the scope of this paper.
 
 \comments{
 \item {\em Lower cost in snapshot deletion}. 

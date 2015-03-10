@@ -93,8 +93,9 @@ alg     efficiency
 }
 
 
+
 \comments{
-old table, delete 4%
+%old table, delete 4%
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline 
 &
@@ -105,7 +106,6 @@ old table, delete 4%
 Dedup &     94.31\%& 93.02\%  & 96.01\% & 96.58\% & 97.86\% \\ \hline
 Mem(MB) &     108&  46 & 118  & 190 & 2400 \\ \hline
     \end{tabular}
-
 }
 \begin{table}[htb]
 \centering
@@ -113,13 +113,12 @@ Mem(MB) &     108&  46 & 118  & 190 & 2400 \\ \hline
     \hline 
 &
      \multicolumn{3}{|c|}{VC}  & VO \\ \hline
-&
-     2\%No PDS &2\%PDS     & 2\%PDS & SRB  \\ 
-&        &&     no-simi & \\ \hline
-Dedup &      93.02\%  & 96.01\% & 94.31\% & 97.86\% \\ 
-Efficiency &          &       &           &      \\    \hline 
-Memory &      10MB & 118MB  & 108MB & 2.4GB \\ 
-per-machine &      &   &  &  \\ \hline
+&       No PDS & No PDS &  2\%PDS     &   SRB  \\ 
+&       no simi &simi   &  simi    &\\ \hline
+Dedup & 75.86\%    &87.91\%  & 96.01\%   & 97.86\% \\ 
+Efficiency & &           &       &                 \\    \hline 
+Memory &     N/A&   10MB & 118MB  & 2.4GB \\ 
+per-machine & &     &   &    \\ \hline
     \end{tabular}
     \caption{Deduplication efficiency and per-machine memory usage for different VC settings and
         SRB.}
@@ -143,7 +142,7 @@ chunks removed, comparing to a perfect scheme which detects and removes  all dup
 %we allocate the space of distributed shared memory  to accommodate 2\%
 %of data chunks shared among VMs, as defined in 
 Notice $\sigma$ is the percentage of unique chunks selected in PDS.
-With $\sigma =2\%$, Column 3 shows its 
+With $\sigma =2\%$, Column 4 shows its 
 %memory usage for PDS index lookup per machine is about 100MB per machine and  the 
 deduplication efficiency can 
 reach over 96\%. 
@@ -172,12 +171,30 @@ and  cache for frequently or recently accessed chunk index.
 %Though not our primary goal, this result does show that VC can remove competitive amount of duplicates.
 
 Column 2 of Table~\ref{tab:efficiency-comparison} shows deduplication efficiency of VC without 
-using PDS and it achieves 93.02\% and  missed duplicates take  up-to  3.56\% of the original space, which
-is about 356GB per physical machine. 
-Column 4 of Table~\ref{tab:efficiency-comparison} shows deduplication efficiency of VC which only uses
-the same offset in the parent segment to look for duplicates  but does not look for other potentially
-similar segments. 
+using PDS and local similarity search.
+It just relies on the file segment dirty bits maintained in the Alibaba  virtual machine platform.
+Thus there is no memory cost (marked as N/A).
+Thus segment-level version detection 
+reduces the data size to about 24.14\% of original data, 
+which is a 75.86\% reduction. Namely 10TB snapshot data per machine is reduced to 2.414TB.
+%Column 3 shows that with local similarity search,
+%deduplication efficiency achieves 93\%.
+% and  missed duplicates take  up-to  3.56\% of the original space, which
+%is about 356GB per physical machine. 
+Column 3 shows the deduplication result with similarity-guided local.
+It  can further reduce the data size
+to about 1.205T, which is  12.05\% of original. Thus it delivers a 50.08\% reduction after the version-based
+deduplication.
+The popularity-guided global deduplication with $\sigma=2\% $
+reduces the data further to 860GB, namely 8.6\% of the original size. 
+So it provides additional 28.63\% reduction. 
+The overall memory usage of VC for each physical machine is very small, which is insignificant to other 
+hosted cloud services.  In comparison, the 2.4GB per-machine memory usage of SRB is very visible 
+to other services.
+
 %There is a big efficiency drop in this curve when the number of VMs is about 30.
+
+
 We explain why similarity-guided local search provides such an improvement as follows.
 %Without this (i.e. when we only 
 There are VMs in which data  segments are moved to another location on disk, for example 
@@ -186,9 +203,15 @@ rather than modified in place,
 and a dirty-bit or offset-only based detection would not be able to detect such a movement.
 We have found that in
 approximately 1/3 of the VMs in our dataset this movement happens frequently.
-In general, adding local similarity-guided search increases deduplication efficiency from 94\% to over 96\%.
-That is one significant improvement compared to the work in ~\cite{WeiZhangIEEE}
-which uses the parent segment at the same offset to detect duplicates instead of similarity-guided search.
+%Column 4 of Table~\ref{tab:efficiency-comparison} shows deduplication efficiency of VC which only uses
+%the same offset in the parent segment to look for duplicates  but does not look for other potentially
+%similar segments. 
+Compared an approach in ~\cite{WeiZhangIEEE} which maintains additional offset dirty bits within each segment,
+ local similarity-guided search adds additional  deduplication efficiency about 3\%,
+which is a saving of 300GB per machine.
+%from 94\% to over 96\%.
+%That is one significant improvement compared to the work in 
+%which uses the parent segment at the same offset to detect duplicates instead of similarity-guided search.
 % In general, our experiments show that
 % dirty-bit detection at the segment level can reduce the data size to about 24.14\% of original data, 
 % which leads about a 75.86\% reduction.
@@ -198,19 +221,6 @@ which uses the parent segment at the same offset to detect duplicates instead of
 % can reduce the size further to 8.6\% of original size, namely it 
 % delivers an additional 3.45\% reduction.
 
-In summary, our experiments show that
-segment-level version detection 
-reduces the data size to about 24.14\% of original data, 
-which is a 75.86\% reduction. Namely 10TB snapshot data per machine is reduced to 2.414TB.
-Similarity-guided local search can further reduce the data size
-to about 1.205T, which is  12.05\% of original. Thus it delivers a 50.08\% reduction after the version-based
- deduplication.
-The popularity-guided global deduplication with $\sigma=2\% $
-reduces the data further to 860GB, namely 8.6\% of the original size. 
-So it provides additional 28.63\% reduction. 
-The overall memory usage of VC for each physical machine is very small, which is insignificant to other 
-hosted cloud services.  In comparison, the 2.4GB per-machine memory usage of SRB is very visible 
-to other services.
 % even each physical machine in the production environment has 48GB memory.
 
 %Figure~\ref{fig:exbin-efficiency-graph2} also shows the benefits of our minhash

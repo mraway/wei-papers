@@ -114,7 +114,7 @@ While deduplication reduces storage cost, it creates an artificial data dependen
 is lost in the storage, all VMs that refer such chunks after deduplication face a data loss.
 The work in ~\cite{Reliability06} identifies such an issue in file systems 
 and uses more replication for data shared by more files,
-and we will adopt this idea.
+and we follow this idea and study VM-centric strategies.
 When the backup storage is implemented using a distributed file system such as Hadoop and 
 Google file system~\cite{googlefs03},  
 the file system block  size is often chosen to be large (e.g. 64MB). On the other hand, 

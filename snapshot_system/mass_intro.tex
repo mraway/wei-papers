@@ -80,7 +80,7 @@ or it must forego global deduplication in order to gain scalability
 (which increases backup cost).
 }
 
-Our work  considers a backup service for converged cloud architectures
+Our work  considers a backup service with source-side deduplication for converged cloud architectures
 that is co-located with user VMs, sharing the cloud compute, network, and
 storage resource with them.  
 This paper extends our preliminary simulation study  in ~\cite{WeiZhangIEEE} to 
@@ -96,9 +96,8 @@ to achieve both storage savings and fault isolation.
 Another issue addressed is fault  isolation in a content sharing environment caused by deduplication.
 One consequence of aggressive deduplication is the possible loss of failure
 resilience.  If a shared block is lost, all files that
-share that block are affected.  Our work is motivated by \cite{Reliability06} that provides more
-replication for shared file system blocks and proposes VM-centric techniques.
-to 
+share that block are affected~\cite{Reliability06} and  our work is motivated by this
+and develops VM-centric fault isolation techniques.
 \comments{
 Since the underlying storage file system block size is typically bigger than the average data chunk size
 used for deduplication,  packaging
@@ -115,7 +114,9 @@ to a transitional deduplication scheme;
 separating popular chunk replication and
 packaging data chunks from the same VM into a file system block as much as possible; 
 3) a design and implementation of a VM-centric  backup service to integrate and validate
-the proposed techniques while imposing  little resource usage and  minimizing the impact on other collocated cloud services.
+the proposed techniques while imposing  little resource usage and  minimizing the impact on other 
+collocated cloud services.We provide an analysis on the deduplication efficiency by using popular items
+and also on fault isolation.
 Our  experimental study compares  the VM-centric approach with the previous 
 VM-oblivious approaches in terms of deduplication efficiency, resource usage,  and snapshot availability.
 %Thus we improve  to avoid such VM-oblivious packaging.
