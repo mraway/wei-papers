@@ -6,11 +6,12 @@
 Choosing the top $k$ value  for the most popular chunks affects the deduplication efficiency.
 We analyze this impact based on the characteristics  of the VM snapshot traces
 studied from  application datasets.
-A previous study shows that the popularity of data chunks after local deduplication follows 
-a Zipf-like distribution\cite{Breslau1999a} and its
-exponent $\alpha$ is ranged between 0.65  and  0.7~\cite{WeiZhangIEEE}. 
-%Figure~\ref{fig:Datazipf} illustrates the Zipf-like distribution of chunk popularity.
 Additional parameters used in this analysis are defined in Table~\ref{tab:symbol2}. 
+%A previous study shows that 
+The popularity of data chunks after local deduplication follows 
+a Zipf-like distribution\cite{Breslau1999a} and its
+exponent $\alpha$ is ranged between 0.65  and  0.7.
+%Figure~\ref{fig:Datazipf} illustrates the Zipf-like distribution of chunk popularity.
 
 \begin{table}[htbp]
 %\begin{table}[t]
@@ -19,17 +20,17 @@ Additional parameters used in this analysis are defined in Table~\ref{tab:symbol
 %\tabcolsep=0.11cm
 \begin{tabular}{|p{1.0cm}|p{5.75cm}|}
 \hline
-$k$ &  the number of top most popular chunks selected for deduplication\\ 
+$k$ &  The number of top most popular chunks selected for deduplication\\ 
 \hline
-$c$ &  the total amount of data chunks in a cluster of VMs\\ 
+$c$ &  The total amount of data chunks in a cluster of VMs\\ 
 \hline
-$c_u$ &  the total amount of unique fingerprints after perfect  deduplication\\
+$c_u$ &  The total amount of unique fingerprints after perfect  deduplication\\
 \hline
-$f_i$ &  the frequency for the $i$th most popular fingerprint\\
+$f_i$ &  The frequency for the $i$th most popular fingerprint\\
 \hline
-$\delta$ &  the percentage of duplicates detected in local deduplication\\
+$\delta$ &  The percentage of duplicates detected in local deduplication\\
 \hline
-$\sigma$ & = percentage of unique data  belonging to  PDS\\
+$\sigma$ & The percentage of unique data  belonging to  PDS\\
 %\hline
 %$V$ & the average number of VMs per machine\\
 \hline
