@@ -53,7 +53,7 @@ Source-side deduplication (e.g. ~\cite{Symantec2009})
 to a secondary storage, which saves network bandwidth significantly; however its resource
 usage can impact other co-located cloud services. 
 It is memory-intensive to compare a large number of fingerprints and identify
-duplicates, even optimization or approximation techniques are developed~\cite{Guo2011,Dong2011,extreme_binning09}. 
+duplicates, even with optimization or approximation techniques developed~\cite{Guo2011,Dong2011,extreme_binning09}. 
 \comments{
 When deleting unused snapshots, a grouped mark-and-sweep approach~\cite{Guo2011}  
 is effective while it still carries a significant cost, especially in a distributed
@@ -97,7 +97,7 @@ Another issue addressed is fault  isolation in a content sharing environment cau
 One consequence of aggressive deduplication is the possible loss of failure
 resilience.  If a shared block is lost, all files that
 share that block are affected~\cite{Reliability06} and  our work is motivated by this
-and develops VM-centric fault isolation techniques.
+to develop VM-centric fault isolation techniques.
 \comments{
 Since the underlying storage file system block size is typically bigger than the average data chunk size
 used for deduplication,  packaging
