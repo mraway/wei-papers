@@ -3,11 +3,9 @@ Data deduplication is important  for snapshot backup of virtual machines (VMs)
 because of excessive redundant content.  Fingerprint search for source-side duplicate 
 detection is resource intensive when the backup service for VMs  is co-located with  other 
 cloud services.  This paper presents the design and implementation of
-a low-profile VM-centric backup service with  a tradeoff 
+a fast VM-centric backup service with  a tradeoff 
 for a competitive deduplication efficiency while using small computing resources, 
 suitable for running on a converged cloud architecture that cohosts  many other services.
-This cluster-based service restricts global deduplication and 
-separates popular chunks with non-popular ones.   
 The  developed optimization includes similarity-guided local search 
 for  the improved overall deduplication effectiveness 
 and  VM-centric file system block management for the increased VM snapshot availability.  
