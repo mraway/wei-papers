@@ -53,7 +53,7 @@ Source-side deduplication (e.g. ~\cite{Symantec2009})
 to a secondary storage, which saves network bandwidth significantly; however its resource
 usage can impact other co-located cloud services. 
 It is memory-intensive to compare a large number of fingerprints and identify
-duplicates, even with optimization or approximation techniques developed~\cite{Guo2011,Dong2011,extreme_binning09}. 
+duplicates, even with optimization or approximation techniques developed~\cite{Guo2011,Dong2011,extreme_binning09,FuFast2015}. 
 \comments{
 When deleting unused snapshots, a grouped mark-and-sweep approach~\cite{Guo2011}  
 is effective while it still carries a significant cost, especially in a distributed
@@ -107,16 +107,17 @@ affects fault isolation;
 
 
 The main contribution of this paper is
-1) a similarity-guided local deduplication for
-each VM to make the overall deduplication efficiency more competitive 
-to a transitional deduplication scheme;
+1) a design and implementation of a backup service 
+to integrate the VM-centric techniques while minimizing the resource impact on other 
+collocated cloud services;
 2) a VM-centric file block management to improve snapshot availability by
 separating popular chunk replication and
 packaging data chunks from the same VM into a file system block as much as possible; 
-3) a design and implementation of a VM-centric  backup service to integrate and validate
-the proposed techniques while imposing  little resource usage and  minimizing the impact on other 
-collocated cloud services.We provide an analysis on the deduplication efficiency by using popular items
-and also on fault isolation.
+3) an analysis on the deduplication efficiency by using popular items
+and also on the impact of above fault isolation design on snapshot availability.
+The integrated optimization includes  similarity-guided local deduplication for
+each VM to make the overall deduplication efficiency more competitive 
+to a traditional deduplication scheme.
 Our  experimental study compares  the VM-centric approach with the previous 
 VM-oblivious approaches in terms of deduplication efficiency, resource usage,  and snapshot availability.
 %Thus we improve  to avoid such VM-oblivious packaging.
