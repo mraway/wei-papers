@@ -115,11 +115,14 @@ separating popular chunk replication and
 packaging data chunks from the same VM into a file system block as much as possible; 
 3) an analysis on the deduplication efficiency by using popular items
 and also on snapshot availability improved by the above fault isolation design. 
+The analysis provides insights and justification on the proposed VM-centric strategies.
 The integrated optimization includes  similarity-guided local deduplication for
 each VM to make the overall deduplication efficiency more competitive 
 to a traditional deduplication scheme.
 Our  experimental study compares  the VM-centric approach with the previous 
 VM-oblivious approaches in terms of deduplication efficiency, resource usage,  and snapshot availability.
+Compared to our earlier study~\cite{WeiZhangIEEE} which achieves 92\% of the full deduplication
+can do, our integrated system delivers over  96\% of what full deduplication can do. 
 %Thus we improve  to avoid such VM-oblivious packaging.
 %our approach uses a deduplication data chunk size that is smaller than a
 %single file block and
