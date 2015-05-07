@@ -138,6 +138,15 @@ effectiveness~\cite{Guo2011,extreme_binning09,bottleneck08,Dong2011},
 we conduct additional local similarity guided deduplication 
 by comparing chunk fingerprints of a dirty segment in a snapshot 
 with those in  {\em potentially similar} segments from its parent snapshot. 
+
+%MSST-CHANGE-BEGIN
+Similarity-guided search is effective for cases that  data chunks are deduplicated irregularly.
+For example, we found from the Alibaba's cloud cluster dataset that 
+data segment movement happens frequently and  files are  often rewritten rather than being
+modified in place.  A dirty-bit or offset-based detection is not able to detect such a movement.
+%MSST-CHANGE-END
+
+
 We consider a parent  segment is  potentially similar to the current dirty segment if 1) the parent segment
 is at the same offset as the current segment.
 2) the signature of these segments is the same.

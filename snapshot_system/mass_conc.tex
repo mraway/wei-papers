@@ -43,6 +43,14 @@ for other data blocks is 3, and adds only a small cost to storage.
 The offline PDS recomputation does require some modest I/O and memory resource and 
 since the recomputing frequency is relatively low (e.g. on a monthly basis), we expect such resource
 consumption is acceptable in practice.
+%MSST-CHANGE-BEGIN
+The erasure code has been shown to be effective  to improve reliability on duplicated data 
+storage~\cite{Li2011} and such a technique can be incorported.
+Other interesting future work includes
+studying the physical layout of backup images~\cite{SmaldoneWH13} and 
+further assessing PDS seperation.
+% and comparing with related work~\cite{Vrable2009,Tan2010,Fu2014}. 
+%MSST-CHANGE-END
 
 %We have also developed a VM-centric strategy for snapshot deletion and the VM-centric design
 %allows the deletion be localized for each VM, which greatly simplifies the reference counting

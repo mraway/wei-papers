@@ -48,8 +48,8 @@ storage demand.
 %the use of deduplication
 
 %Without deduplication,
-Source-side deduplication (e.g. ~\cite{Symantec2009})
- eliminates duplicates before backup data is transmitted
+Source-side deduplication~\cite{Vrable2009,Tan2010,Fu2014,Symantec2009}
+eliminates duplicates before backup data is transmitted
 to a secondary storage, which saves network bandwidth significantly; however its resource
 usage can impact other co-located cloud services. 
 It is memory-intensive to compare a large number of fingerprints and identify
@@ -83,7 +83,7 @@ or it must forego global deduplication in order to gain scalability
 Our work  considers a backup service with source-side deduplication for converged cloud architectures
 that is co-located with user VMs, sharing the cloud compute, network, and
 storage resource with them.  
-This paper extends our preliminary simulation study  in ~\cite{WeiZhangIEEE} to 
+This paper extends our preliminary simulation study~\cite{WeiZhangIEEE} to 
 restrict the scope of cross-VM deduplication and simplify the deduplication process
 by separating popular data chunks and presents the design and implementation of 
 a VM-centric backup scheme.  

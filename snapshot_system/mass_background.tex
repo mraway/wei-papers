@@ -44,11 +44,20 @@ other cloud services has to minimize its resource impact.
 
 File backup systems have been developed to use fingerprints generated for
 data ``chunks''  to identify duplicate
-content~\cite{venti02,Rhea2008}.  In a simple implementation,
-it is expensive to compare a large number of 
-fingerprints
+content~\cite{venti02,Rhea2008}.  
+%MSST-CHANGE-BEGIN
+Source-side deduplication is studied at a chunk or file
+level~\cite{Vrable2009,Tan2010} for data backup and can be
+integrated  with global deduplication among multiple clients~\cite{Fu2014}.
+In this context, the client side deduplication is considered as the source-side
+and the client-side computing resource  restriction is not a primary concern.
+Our work considers the source-side deduplication in a cloud cluster environment before data is transferred
+to a backup storage and the computing resource constraint at the cluster side is a major concern.
+%MSST-CHANGE-END
+
+It is expensive to compare a large number of fingerprints
 so a number of techniques have been proposed to improve duplicate identification. 
-For example, the data domain method ~\cite{bottleneck08} 
+For example, the Data Domain method~\cite{bottleneck08} 
 uses an in-memory Bloom filter to identify non-duplicates and a prefetching cache for potential
 duplicates that might hit in the future.
 %An improvement to this work with parallelization is in ~\cite{MAD210,DEBAR}.
@@ -56,7 +65,7 @@ duplicates that might hit in the future.
 %to reduce memory requirements at the cost of some loss of deduplication
 %efficiency.
 Additional inline deduplication and  approximation techniques
-are studied in ~\cite{extreme_binning09,sparseindex09,Srinivasan2012,WeiZhangIEEE}.  
+are studied in the previous work~\cite{extreme_binning09,sparseindex09,Srinivasan2012,WeiZhangIEEE}.  
 %and a parallel batch solution for cluster-based deduplication is 
 %studied in ~\cite{WeiZhangIEEE}. 
 % \comments{
@@ -82,8 +91,9 @@ Thus the  desired ratio of raw data to memory ratio is from 100K:1 to 30K:1.
 Our proposed scheme achieves 85K:1
 and this ratio is about the same as the number of machines increases.
 
-Index sampling with a prefetch cache  is proposed 
-in~\cite{Guo2011} for efficient single-machine deduplication. 
+Index sampling with a prefetch cache~\cite{Guo2011} 
+is proposed 
+for efficient single-machine deduplication. 
 This scheme uses 25GB memory per 500TB of raw data
 and thus the raw data to memory ratio is 20K:1. The scheme proposed in this paper 
 uses three times less memory. We have not incorporated this index 
@@ -112,9 +122,8 @@ of access latency for all requests is significant.
 
 While deduplication reduces storage cost, it creates an artificial data dependence among VMs: when a shared data chunk
 is lost in the storage, all VMs that refer such chunks after deduplication face a data loss.
-The work in ~\cite{Reliability06} identifies such an issue in file systems 
-and uses more replication for data shared by more files,
-and we follow this idea and study VM-centric strategies.
+Such an issue has been identified in file systems~\cite{Reliability06}
+and more replication is used for shared data. we follow this idea and study VM-centric strategies.
 When the backup storage is implemented using a distributed file system such as Hadoop and 
 Google file system~\cite{googlefs03},  
 the file system block  size is often chosen to be large (e.g. 64MB). On the other hand, 

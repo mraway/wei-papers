@@ -33,7 +33,8 @@ We use the virtual device driver in Xen that employs a bitmap to track the chang
 that have been made to the virtual disk.
 Every bit in the bitmap represents a fixed-sized (2MB) segment, indicating whether the segment
 has been modified since last backup. 
-Segments are further divided into variable-sized chunks (average 4KB) 
+Segments are further divided into chunks 
+%(average 4KB) 
 using a content-based chunking algorithm~\cite{frame05}, 
 which brings the opportunity of fine-grained deduplication.
 When the VM issues a disk write, the dirty bit for the corresponding segment is set
@@ -47,7 +48,7 @@ The representation of each snapshot has  a two-level index data structure.
 The snapshot meta data (called snapshot recipe) contains a list of segments, each of which contains segment
 metadata of its chunks (called segment recipe).
 In snapshot and segment recipes, 
-the data structures  include references to the actual data location to eliminate the need for additional indirection.
+the data structures  include reference IDs to the actual data location to eliminate the need for additional indirection.
 
 
 \subsection{A VM-centric Snapshot Store}
@@ -75,7 +76,7 @@ As shown in Figure~\ref{fig:as_arch}, we explain the data structure of the snaps
 There is an independent store containing all PDS chunks shared among different VMs as
 a single file.
 %All PDS chunks are stored in one PDS file. 
-Each reference to a PDS data chunk in the PDS index is the offset within the PDS file.
+Each reference ID to a PDS data chunk in the PDS index is the offset within the PDS file.
 %There is an option to use a data structure similar to the non-PDS store. We opt
 %for the simpler format because
 Additional compression is not applied because 
@@ -85,6 +86,10 @@ thus it is not very effective to group a large number of chunks as a compression
 For the same reason, we decide not to take the sampled index approach~\cite{Guo2011} 
 for detecting duplicates from PDS as limited spatial locality is not sufficient to enable
 effective prefetching for sampled indexing.
+%MSST-CHANGE-BEGIN
+It should be noted that the above spatial locality number for PDS data 
+is subject to application characteristics and we plan to study further on this issue in the future.
+%MSST-CHANGE-END
 
 PDS data are re-calculated periodically in an offline manner, but 
 the total data size is small.  When
@@ -101,18 +106,28 @@ conducted periodically. When  chunks are deleted from old snapshots,
 chunks without any reference from other snapshots can be removed by this compaction process.
 By limiting the size of a container, we can control the length of each round of compaction.
 The compaction  can work on one container at a time and move the in-use data chunks to another container. 
+%MSST-CHANGE-BEGIN
+The 1GB setting is based on our experience that compaction 
+performs well and can  complete  in a reasonable amount time.
+%MSST-CHANGE-END
 
 Each non-PDS container is further divided into a set of chunk data groups. Each chunk group is composed of
 a set of data chunks and is the basic unit in data access and retrieval. 
 In writing a chunk during backup, the system accumulates data chunks and stores the entire
 group as a unit after compression. This  compression can reduce data by several times  in our tested data.
+%MSST-CHANGE-BEGIN
+For the experiments, we use LZO2 which is a lossless compression libary and does not affect snapshot
+data availability. 
+%MSST-CHANGE-END
 When accessing a particular chunk, its chunk group is retrieved from the storage
 and decompressed. Given the high spatial locality and usefulness of prefetching  in 
 snapshot chunk accessing~\cite{Guo2011,Rhea2008},
 retrieval of  a data chunk  group naturally works well with prefetching. 
-A  typical chunk group contains 1000 chunks in our experiment.
+%MSST-CHANGE-BEGIN
+A  typical chunk group contains 1000 chunks in our experiment and this setting is effective
+for VM snapshot backup we are studying here.
 % with an average size of 200-600 chunks.
-
+%MSST-CHANGE-END
 %\item
 Each non-PDS data container is represented by three files:
 %in the DFS
@@ -122,13 +137,14 @@ into its location within a container, and
 3) a chunk deletion log file records all the deletion requests within  the container.
 
 %\item
-A non-PDS data chunk reference stored in the index of snapshot recipes
+A non-PDS data chunk reference ID stored in the index of snapshot recipes
 is composed of two parts: a container ID with 2 bytes and a local chunk ID with 6 bytes.
 Each container maintains a local  chunk counter and assigns the current number 
 as a chunk ID  when  a new chunk is added to this  container. 
 Since data chunks are always appended to a snapshot store during backup, 
 local chunk IDs are monotonically increasing.
-When a chunk is to be accessed, the segment recipe contains a reference pointing to  a data chunk, which is used to lookup up the chunk data as described shortly.
+When a chunk is to be accessed, the segment recipe contains a reference ID pointing to  
+a data chunk, which is used to lookup up the chunk data as described shortly.
 
 %\item
 
@@ -141,7 +157,7 @@ Three API calls are supported for data backup:
 For PDS data, the chunk is appended to the end of the PDS file and the offset is returned as the  reference.
 This operation  may only be used during PDS recalculation.
 For non-PDS data, this call places a chunk into 
-the snapshot store and returns a reference to be stored in the recipe of a snapshot. 
+the snapshot store and returns a reference ID to be stored in the recipe of a snapshot. 
 The write requests to append chunks to a VM store are accumulated at the client side. 
 When the number of write requests reaches a fixed group size, the client compresses
 the accumulated   chunk group, adds a chunk group index  to the beginning of the group, and then
@@ -151,10 +167,10 @@ container index file.
 
 \item
 \noindent\textbf{Get()}.
-Fetching PDS data is straightforward since each reference contains 
+Fetching PDS data is straightforward since each reference ID contains 
 the file offset, and the size of a PDS chunk is available from a segment recipe.
 We also maintain a small data cache for the PDS data service to speedup common data fetching.
-To read a non-PDS chunk using its reference with container ID and local chunk ID,  the snapshot store client 
+To read a non-PDS chunk using its reference ID with container ID and local chunk ID,  the snapshot store client 
 first loads the
 corresponding VM's container index file specified by the container ID, then searches the chunk
 groups  using their  chunk ID coverage.
@@ -181,10 +197,18 @@ existing one. This is done by sequentially scanning the old container, copying a
 found in the deletion log to the new container, and creating new chunk groups and indices. 
 Every local chunk ID however is directly copied rather than re-generated. This
 process leaves holes in the chunk ID values, but preserves the order and IDs of chunks.
-As a result, all data references stored 
+As a result, all data reference IDs stored 
 in recipes are permanent and stable, and the data reading process
 is as efficient as before. Maintaining the stability of chunk IDs also ensures that recipes do not
 depend directly on physical storage locations, which simplifies data migration.
+
+%MSST-CHANGE-BEGIN
+It should be emphasized that the deleted chunks are marked in the log but do not get deleted until compaction
+time.  Only compaction process will read and use this information.  
+New snapshots should not refer a chunk marked as deletion
+and referenced data will never enter the delete log. This is guaranteed 
+by the no-false-negative property of the bloom filter.
+%MSST-CHANGE-END
 \end{itemize}
 
 
