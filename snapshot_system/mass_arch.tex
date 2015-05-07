@@ -33,7 +33,7 @@ We use the virtual device driver in Xen that employs a bitmap to track the chang
 that have been made to the virtual disk.
 Every bit in the bitmap represents a fixed-sized (2MB) segment, indicating whether the segment
 has been modified since last backup. 
-Segments are further divided into chunks 
+Segments as super-chunks are further divided into chunks 
 %(average 4KB) 
 using a content-based chunking algorithm~\cite{frame05}, 
 which brings the opportunity of fine-grained deduplication.
@@ -111,21 +111,21 @@ The 1GB setting is based on our experience that compaction
 performs well and can  complete  in a reasonable amount time.
 %MSST-CHANGE-END
 
-Each non-PDS container is further divided into a set of chunk data groups. Each chunk group is composed of
-a set of data chunks and is the basic unit in data access and retrieval. 
+Each non-PDS container is further divided into a set of chunk groups for compression. Each chunk compression group is composed of
+a set of data chunks and is the basic unit for compression and for data access and retrieval. 
 In writing a chunk during backup, the system accumulates data chunks and stores the entire
 group as a unit after compression. This  compression can reduce data by several times  in our tested data.
 %MSST-CHANGE-BEGIN
-For the experiments, we use LZO2 which is a lossless compression libary and does not affect snapshot
+For the experiments, we use LZO2 which is a lossless compression library and does not affect snapshot
 data availability. 
 %MSST-CHANGE-END
-When accessing a particular chunk, its chunk group is retrieved from the storage
+When accessing a particular chunk, its chunk compression group is retrieved from the storage
 and decompressed. Given the high spatial locality and usefulness of prefetching  in 
 snapshot chunk accessing~\cite{Guo2011,Rhea2008},
 retrieval of  a data chunk  group naturally works well with prefetching. 
 %MSST-CHANGE-BEGIN
-A  typical chunk group contains 1000 chunks in our experiment and this setting is effective
-for VM snapshot backup we are studying here.
+A  typical chunk compression group contains 1000 chunks in our experiment and this setting is effective
+for the VM snapshot dataset  experienced at Alibaba.
 % with an average size of 200-600 chunks.
 %MSST-CHANGE-END
 %\item
@@ -203,11 +203,11 @@ is as efficient as before. Maintaining the stability of chunk IDs also ensures t
 depend directly on physical storage locations, which simplifies data migration.
 
 %MSST-CHANGE-BEGIN
-It should be emphasized that the deleted chunks are marked in the log but do not get deleted until compaction
+It should be emphasized that the deleted chunks are marked in the log, but they do not get deleted until compaction
 time.  Only compaction process will read and use this information.  
 New snapshots should not refer a chunk marked as deletion
-and referenced data will never enter the delete log. This is guaranteed 
-by the no-false-negative property of the bloom filter.
+and referenced data will never enter the delete log. 
+%This is guaranteed by the no-false-negative property of the bloom filter.
 %MSST-CHANGE-END
 \end{itemize}
 

@@ -45,7 +45,7 @@ the daily snapshot change rate is about 1-3\% on average.
 %MSST-CHANGE-END
 %All data are divided into 2 MB fix-sized segments and 
 The fingerprint for variable-sized chunks is computed using their SHA-1 hash~\cite{similar94,rabin81}. 
-Note that variable sizing is not required in our scheme and we just follow the setting in the previous work.
+Note that variable sizing is not required in our scheme. 
 %Each segment is divided into 
 %variable-sized content chunks with an average size of 4KB.
 %Popularity of data blocks are collected through global counting and 
@@ -674,6 +674,9 @@ the loss of a single file block
 %VM, VMs can depend on a smaller number of blocks, 
 while in VO, the loss of a
 single block tends to affect many VMs.
+The availability of PDS data is very high as seen in  Table~\ref{tab:fsb-availability} 
+with more  failures. On the other hand, the increasing of failures  gradually affects the availability of non-PDS data. 
+Overall speaking,  VC can  tolerate more failures compared to VO. 
 When the number of physical machines failed reaches 20, the availability of VO reaches 0\%
 and VC also drops to 1.13\%. This is because even though availability for PDS data remains good, VC still
 loses many of the non-PDS blocks given the replication degree for non-PDS is 3.

@@ -108,6 +108,7 @@ under a reasonable memory consumption
 %Fingerprint lookup within a VM does not require a signficant  amount of memory resource.
 We start with the standard version-based detection~\cite{Clements2009,Vrable2009}
 to identify changed content with dirty bits in a coarse grain segment level.
+A segment is essentially a super-chunk containing many data chunks.
 %In our implementation 
 %the segment size is 2MB
 %and the device driver is extended to support tracking changed segments using a dirty bitmap. 
@@ -138,9 +139,8 @@ effectiveness~\cite{Guo2011,extreme_binning09,bottleneck08,Dong2011},
 we conduct additional local similarity guided deduplication 
 by comparing chunk fingerprints of a dirty segment in a snapshot 
 with those in  {\em potentially similar} segments from its parent snapshot. 
-
 %MSST-CHANGE-BEGIN
-Similarity-guided search is effective for cases that  data chunks are deduplicated irregularly.
+Similarity-guided search can be  desirable for cases that  data chunks are duplicated irregularly.
 For example, we found from the Alibaba's cloud cluster dataset that 
 data segment movement happens frequently and  files are  often rewritten rather than being
 modified in place.  A dirty-bit or offset-based detection is not able to detect such a movement.

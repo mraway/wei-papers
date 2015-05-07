@@ -45,10 +45,13 @@ since the recomputing frequency is relatively low (e.g. on a monthly basis), we 
 consumption is acceptable in practice.
 %MSST-CHANGE-BEGIN
 The erasure code has been shown to be effective  to improve reliability on duplicated data 
-storage~\cite{Li2011} and such a technique can be incorported.
+storage~\cite{Li2011} and such a technique can be incorporated.
 Other interesting future work includes
 studying the physical layout of backup images~\cite{SmaldoneWH13} and 
-further assessing PDS seperation.
+further assessing the benefit of PDS separation.
+
+
+
 % and comparing with related work~\cite{Vrable2009,Tan2010,Fu2014}. 
 %MSST-CHANGE-END
 
@@ -66,6 +69,17 @@ The grouped mark-sweep method can take 43 hours using
 The leak repair in VC takes 0.82 hours using 50MB on average while processing
 some VMs may use upto 1.96GB. Such a repair is conducted infrequently (e.g. every 19.6 days) 
 }
+
+\section*{Acknowledgments}
+{
+We would like to thank Yujuan Tan and the anonymous referees for their valuable comments,
+Hao Jiang, Xiaogang Li, Yue Zeng, Weicai Chen, and Shikun Tian from Alibaba for their kind support and feedback. 
+Wei Zhang has received internship support from Alibaba  for VM backup system development.
+This work was supported in part by NSF IIS-1118106.
+Any opinions, findings, and conclusions or recommendations expressed in this material are those of the authors and
+do not necessarily reflect the views of the National Science Foundation or Alibaba.
+}
+
 
 %Currently we are studying how the 
 
